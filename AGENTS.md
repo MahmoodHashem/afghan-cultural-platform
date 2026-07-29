@@ -14,3 +14,5 @@
 - Biome is the only formatter and linter.
 - Do not add ESLint or Prettier.
 - Run `pnpm check`, `pnpm typecheck:web`, and `pnpm build:web` before finishing frontend tasks.
+- NestJS controllers must remain thin.
+- Business logic belongs in NestJS services.
