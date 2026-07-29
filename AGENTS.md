@@ -11,3 +11,6 @@
 - Do not implement product features unless explicitly requested.
 - Complete only the current requested phase.
 - Run relevant verification commands before finishing.
+- Biome is the only formatter and linter.
+- Do not add ESLint or Prettier.
+- Run `pnpm check`, `pnpm typecheck:web`, and `pnpm build:web` before finishing frontend tasks.

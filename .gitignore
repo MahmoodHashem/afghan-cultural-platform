@@ -5,6 +5,7 @@ node_modules/
 .next/
 dist/
 coverage/
+*.tsbuildinfo
 
 # Environment files
 .env
@@ -26,7 +27,9 @@ yarn-error.log*
 pnpm-debug.log*
 
 # Editor files
-.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
 .idea/
 *.swp
 *.swo

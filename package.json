@@ -3,13 +3,22 @@
   "private": true,
   "packageManager": "pnpm@11.5.2",
   "scripts": {
-    "dev": "echo \"No applications have been created yet. Run this after the frontend or backend is added.\"",
-    "build": "echo \"No applications have been created yet. Nothing to build.\"",
-    "lint": "echo \"No applications have been created yet. Nothing to lint.\"",
-    "lint:fix": "echo \"No applications have been created yet. Nothing to lint or fix.\"",
-    "typecheck": "echo \"No applications have been created yet. Nothing to typecheck.\"",
-    "test": "echo \"No applications have been created yet. No tests to run.\"",
-    "format": "echo \"No applications have been created yet. Nothing to format.\"",
-    "format:check": "echo \"No applications have been created yet. Nothing to check for formatting.\""
+    "dev": "echo \"Use pnpm dev:web to run the frontend. Backend setup is pending.\"",
+    "build": "echo \"Use pnpm build:web to build the frontend. Backend setup is pending.\"",
+    "lint": "pnpm check",
+    "lint:fix": "pnpm check:write",
+    "typecheck": "pnpm typecheck:web",
+    "test": "pnpm test:web",
+    "dev:web": "pnpm --filter @afghan-culture/web dev",
+    "build:web": "pnpm --filter @afghan-culture/web build",
+    "typecheck:web": "pnpm --filter @afghan-culture/web typecheck",
+    "test:web": "pnpm --filter @afghan-culture/web test",
+    "check": "biome check .",
+    "check:write": "biome check . --write",
+    "format": "biome format . --write",
+    "format:check": "biome format ."
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.5"
   }
 }

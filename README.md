@@ -11,4 +11,14 @@ Afghan Cultural Information Crowdsourcing Platform is planned as a collaborative
 
 ## Current Status
 
-Workspace foundation only. Application setup will happen in later steps.
+Workspace foundation and the Next.js frontend setup are complete. Biome is selected as the repository formatter and linter.
+
+Run the frontend with:
+
+```sh
+pnpm dev:web
+```
+
+The frontend will be available at `http://localhost:3000`.
+
+Backend, database, and product feature setup are still pending and will happen in later steps.
