@@ -1,0 +1,13 @@
+# AGENTS.md
+
+- Read this file before changing code.
+- Use pnpm only.
+- The frontend will use Next.js.
+- The backend will use NestJS.
+- Business logic must remain in NestJS.
+- Preserve Persian RTL support when frontend work starts.
+- Do not expose secrets.
+- Do not add major dependencies without explaining the reason.
+- Do not implement product features unless explicitly requested.
+- Complete only the current requested phase.
+- Run relevant verification commands before finishing.

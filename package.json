@@ -1,0 +1,15 @@
+{
+  "name": "afghan-cultural-platform",
+  "private": true,
+  "packageManager": "pnpm@11.5.2",
+  "scripts": {
+    "dev": "echo \"No applications have been created yet. Run this after the frontend or backend is added.\"",
+    "build": "echo \"No applications have been created yet. Nothing to build.\"",
+    "lint": "echo \"No applications have been created yet. Nothing to lint.\"",
+    "lint:fix": "echo \"No applications have been created yet. Nothing to lint or fix.\"",
+    "typecheck": "echo \"No applications have been created yet. Nothing to typecheck.\"",
+    "test": "echo \"No applications have been created yet. No tests to run.\"",
+    "format": "echo \"No applications have been created yet. Nothing to format.\"",
+    "format:check": "echo \"No applications have been created yet. Nothing to check for formatting.\""
+  }
+}
