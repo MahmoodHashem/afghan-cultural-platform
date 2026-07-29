@@ -7,12 +7,15 @@ import {
   InformationCircleIcon,
   XCircleIcon,
 } from "@heroicons/react/20/solid";
+import { useTheme } from "next-themes";
 import { Toaster as Sonner, type ToasterProps } from "sonner";
 
 const Toaster = ({ ...props }: ToasterProps) => {
+  const { resolvedTheme = "light" } = useTheme();
+
   return (
     <Sonner
-      theme="light"
+      theme={resolvedTheme as ToasterProps["theme"]}
       dir="rtl"
       className="toaster group"
       icons={{

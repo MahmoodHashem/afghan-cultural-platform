@@ -1,3 +1,4 @@
+import { ThemeToggle } from "@/components/common/theme-toggle";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,13 +19,16 @@ export default function Home() {
   return (
     <main className="min-h-screen py-12">
       <div className="content-container space-y-10">
-        <header className="space-y-3">
-          <p className="text-small font-medium text-primary">میراث افغانستان</p>
-          <h1 className="text-page-title">پیش‌نمایش بنیاد طراحی</h1>
-          <p className="max-w-3xl text-body text-muted-foreground">
-            این صفحه موقت برای بررسی رنگ‌ها، تایپوگرافی، جهت راست‌به‌چپ و عناصر پایه رابط کاربری ساخته
-            شده است.
-          </p>
+        <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="space-y-3">
+            <p className="text-small font-medium text-primary">میراث افغانستان</p>
+            <h1 className="text-page-title">پیش‌نمایش بنیاد طراحی</h1>
+            <p className="max-w-3xl text-body text-muted-foreground">
+              این صفحه موقت برای بررسی رنگ‌ها، تایپوگرافی، جهت راست‌به‌چپ و عناصر پایه رابط کاربری
+              ساخته شده است.
+            </p>
+          </div>
+          <ThemeToggle />
         </header>
 
         <section className="space-y-4">

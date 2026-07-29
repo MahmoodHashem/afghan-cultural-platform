@@ -3,6 +3,8 @@
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/estedad";
 
+@custom-variant dark (&:is(.dark *));
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -75,6 +77,35 @@
   --container-page: 1280px;
   --container-content: 1200px;
   --container-article: 760px;
+}
+
+.dark {
+  --background: #111827;
+  --foreground: #f9fafb;
+  --card: #1f2937;
+  --card-foreground: #f9fafb;
+  --popover: #1f2937;
+  --popover-foreground: #f9fafb;
+  --primary: #5eead4;
+  --primary-foreground: #0f172a;
+  --secondary: #c65d3a;
+  --secondary-foreground: #ffffff;
+  --accent: #d6a84b;
+  --accent-foreground: #111827;
+  --muted: #263244;
+  --muted-foreground: #cbd5e1;
+  --border: #334155;
+  --input: #475569;
+  --ring: #5eead4;
+  --destructive: #f87171;
+  --destructive-foreground: #111827;
+  --primary-hover: #99f6e4;
+  --primary-light: #134e4a;
+  --terracotta: #d97855;
+  --gold: #e6bd66;
+  --success: #86efac;
+  --warning: #facc15;
+  --info: #93c5fd;
 }
 
 @layer base {
