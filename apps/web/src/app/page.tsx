@@ -1,4 +1,7 @@
+import { ExampleFormPreview } from "@/components/common/example-form-preview";
+import { RichTextPreview } from "@/components/common/rich-text-preview";
 import { ThemeToggle } from "@/components/common/theme-toggle";
+import { UiStatePreview } from "@/components/common/ui-state-preview";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,7 +15,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { Toaster } from "@/components/ui/sonner";
 import { Textarea } from "@/components/ui/textarea";
 
 export default function Home() {
@@ -98,6 +100,44 @@ export default function Home() {
           </Card>
         </section>
 
+        <section className="grid gap-6 lg:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>فرم نمونه</CardTitle>
+              <CardDescription>
+                اعتبارسنجی کوتاه با React Hook Form و Zod، بدون ارسال درخواست.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ExampleFormPreview />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>وضعیت رابط کاربری</CardTitle>
+              <CardDescription>نمونه کوچک Zustand برای وضعیت‌های عمومی رابط کاربری.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <UiStatePreview />
+            </CardContent>
+          </Card>
+        </section>
+
+        <section>
+          <Card>
+            <CardHeader>
+              <CardTitle>ویرایشگر متن نمونه</CardTitle>
+              <CardDescription>
+                پایه Tiptap برای متن فارسی راست‌به‌چپ، بدون ذخیره‌سازی محتوا.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <RichTextPreview />
+            </CardContent>
+          </Card>
+        </section>
+
         <section className="article-container space-y-4">
           <h2 className="text-section-title">نمونه تایپوگرافی</h2>
           <div className="space-y-3">
@@ -113,7 +153,6 @@ export default function Home() {
           </div>
         </section>
       </div>
-      <Toaster />
     </main>
   );
 }

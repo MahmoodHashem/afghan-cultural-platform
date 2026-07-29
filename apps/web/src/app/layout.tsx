@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { ThemeProvider } from "@/components/layout/theme-provider";
+import { AppProviders } from "@/providers/app-providers";
 
 import "./globals.css";
 
@@ -17,7 +18,9 @@ export default function RootLayout({
   return (
     <html lang="fa" dir="rtl" className="h-full antialiased" suppressHydrationWarning>
       <body className="flex min-h-full flex-col">
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <AppProviders>{children}</AppProviders>
+        </ThemeProvider>
       </body>
     </html>
   );
