@@ -1,19 +1,175 @@
 @import "tailwindcss";
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/estedad";
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: "Estedad Variable", "Vazirmatn", Tahoma, sans-serif;
+  --font-mono: "Estedad Variable", "Vazirmatn", Tahoma, sans-serif;
+  --font-heading: var(--font-sans);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-light: var(--primary-light);
+  --color-terracotta: var(--terracotta);
+  --color-gold: var(--gold);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+:root {
+  --background: #faf8f3;
+  --foreground: #1f2937;
+  --card: #ffffff;
+  --card-foreground: #1f2937;
+  --popover: #ffffff;
+  --popover-foreground: #1f2937;
+  --primary: #0f766e;
+  --primary-foreground: #ffffff;
+  --secondary: #c65d3a;
+  --secondary-foreground: #ffffff;
+  --accent: #d6a84b;
+  --accent-foreground: #1f2937;
+  --muted: #f1ede4;
+  --muted-foreground: #6b7280;
+  --border: #e5e1d8;
+  --input: #e5e1d8;
+  --ring: #0f766e;
+  --destructive: #b42318;
+  --destructive-foreground: #ffffff;
+  --primary-hover: #115e59;
+  --primary-light: #ccfbf1;
+  --terracotta: #c65d3a;
+  --gold: #d6a84b;
+  --success: #2e7d32;
+  --warning: #b7791f;
+  --info: #2563eb;
+  --radius: 0.5rem;
+  --radius-card: 0.75rem;
+  --radius-dialog: 1rem;
+  --container-page: 1280px;
+  --container-content: 1200px;
+  --container-article: 760px;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    @apply font-sans;
+    direction: rtl;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: "Estedad Variable", "Vazirmatn", Tahoma, sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.8;
+    text-rendering: optimizeLegibility;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-3 ring-ring/40;
+  }
+}
+
+@layer utilities {
+  .page-container {
+    max-width: var(--container-page);
+    margin-inline: auto;
+    padding-inline: 1rem;
+  }
+
+  .content-container {
+    max-width: var(--container-content);
+    margin-inline: auto;
+    padding-inline: 1rem;
+  }
+
+  .article-container {
+    max-width: var(--container-article);
+    margin-inline: auto;
+    padding-inline: 1rem;
+  }
+
+  .text-display {
+    font-size: 40px;
+    font-weight: 700;
+    line-height: 1.35;
+  }
+
+  .text-page-title {
+    font-size: 36px;
+    font-weight: 700;
+    line-height: 1.4;
+  }
+
+  .text-section-title {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.45;
+  }
+
+  .text-card-title {
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1.5;
+  }
+
+  .text-body {
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.8;
+  }
+
+  .text-article {
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 1.9;
+  }
+
+  .text-small {
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  .text-form-label {
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.6;
+  }
+
+  .text-button {
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.5;
+  }
 }
