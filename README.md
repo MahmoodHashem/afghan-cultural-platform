@@ -28,6 +28,14 @@ Run the backend with:
 pnpm dev:api
 ```
 
-The temporary backend route will be available at `http://localhost:3000` when the frontend is not running.
+The API base URL is `http://localhost:4000/api/v1`.
+The health endpoint is `http://localhost:4000/api/v1/health`.
+Swagger documentation is available at `http://localhost:4000/api/docs`.
+
+Required backend environment variables:
+
+- `NODE_ENV`: `development`, `test`, or `production`
+- `PORT`: defaults to `4000`
+- `FRONTEND_URL`: frontend origin allowed by CORS
 
 Backend configuration, database setup, and product feature setup are still pending and will happen in later steps.

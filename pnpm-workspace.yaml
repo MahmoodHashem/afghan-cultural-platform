@@ -4,5 +4,6 @@ packages:
 onlyBuiltDependencies:
   - sharp
 allowBuilds:
+  '@scarf/scarf': false
   sharp: true
   unrs-resolver: true
