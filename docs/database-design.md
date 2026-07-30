@@ -35,7 +35,7 @@ This document defines the planned PostgreSQL and Prisma data model for the Afgha
 
 ## Entity Evaluation For Version One
 
-All 22 approved entities are kept for version one.
+All 23 approved entities are kept for version one.
 
 | Entity               | Decision               | Reason                                                                                                                                          |
 | -------------------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -59,12 +59,13 @@ All 22 approved entities are kept for version one.
 | CorrectionSuggestion | Keep                   | Required workflow for suggested factual/content corrections.                                                                                    |
 | Report               | Keep                   | Required private content complaint workflow.                                                                                                    |
 | RefreshSession       | Keep                   | Required by the planned refresh-token authentication design.                                                                                    |
+| EmailVerificationToken | Keep                 | Required for email verification after email/password registration.                                                                              |
 | PasswordResetToken   | Keep                   | Required by v1 password reset.                                                                                                                  |
 | AuditLog             | Keep                   | Required for traceability of important product actions.                                                                                         |
 
 ### Complete Entity List
 
-Version one contains 22 entities:
+Version one contains 23 entities:
 
 1. `User`
 2. `OAuthAccount`
@@ -86,8 +87,9 @@ Version one contains 22 entities:
 18. `CorrectionSuggestion`
 19. `Report`
 20. `RefreshSession`
-21. `PasswordResetToken`
-22. `AuditLog`
+21. `EmailVerificationToken`
+22. `PasswordResetToken`
+23. `AuditLog`
 
 ## Enums
 
@@ -238,7 +240,7 @@ More audit actions can be added later only when new v1 workflows require them.
 
 **Indexes:** `role`, `status`, `provinceId`, `createdAt`.
 
-**Relations:** OAuth accounts, entries, content versions created, moderation reviews, correction suggestions, reports, ratings, public reviews, bookmarks, refresh sessions, password reset tokens, audit logs as actor or target.
+**Relations:** OAuth accounts, entries, content versions created, moderation reviews, correction suggestions, reports, ratings, public reviews, bookmarks, refresh sessions, email verification tokens, password reset tokens, audit logs as actor or target.
 
 **Deletion behavior:** Version one uses suspension only and does not support physical user deletion. Published cultural history, content versions, audit logs, reviews, reports, and moderation records remain preserved.
 
@@ -751,6 +753,27 @@ More audit actions can be added later only when new v1 workflows require them.
 
 **Deletion behavior:** Cascade or scheduled cleanup is acceptable after expiry/use. Audit password reset actions separately.
 
+### EmailVerificationToken
+
+**Purpose:** Stores hashed email-verification tokens with expiration and single-use tracking.
+
+| Field     | Type     | Required | Default    | Notes                                      |
+| --------- | -------- | -------- | ---------- | ------------------------------------------ |
+| id        | UUID     | Yes      | `uuid()` | Primary key.                               |
+| userId    | UUID     | Yes      | None       | Verification-token owner.                  |
+| tokenHash | String   | Yes      | None       | Hash only, never raw token.                |
+| expiresAt | DateTime | Yes      | None       | Required; registration tokens expire in v1. |
+| usedAt    | DateTime | No       | None       | Set after successful email verification.   |
+| createdAt | DateTime | Yes      | `now()`  | UTC.                                       |
+
+**Unique constraints:** `tokenHash`.
+
+**Indexes:** `userId`, `expiresAt`, `usedAt`.
+
+**Relations:** User.
+
+**Deletion behavior:** Cascade or scheduled cleanup is acceptable after expiry/use because verification tokens are security state, not cultural history. Audit important account actions separately when audit workflows are implemented.
+
 ### AuditLog
 
 **Purpose:** Immutable trace of important user, moderation, correction, report, and admin actions.
@@ -798,6 +821,7 @@ More audit actions can be added later only when new v1 workflows require them.
 - `CulturalEntry` to `Report`: one entry has zero to many reports.
 - `User` to `OAuthAccount`: one user has zero to many linked provider accounts.
 - `User` to `Bookmark`: one user has zero to many private bookmarks.
+- `User` to `EmailVerificationToken`: one user has zero to many email verification tokens.
 - `User` to moderation, correction, report, rating, and review records: a user may create or review many records depending on role.
 
 ## Important Constraints And Business Rules
@@ -808,6 +832,7 @@ More audit actions can be added later only when new v1 workflows require them.
 - A user may link at most one account per provider with unique `(userId, provider)`.
 - Only verified provider emails may be used for automatic account linking.
 - Provider tokens are not stored as application sessions; successful OAuth login still issues platform access and refresh tokens.
+- Email verification tokens must be stored as hashes only and must be single-use with an expiration timestamp.
 - Public entry slug must be unique and immutable after publication.
 - A user may have one rating per entry.
 - Rating changes should update `averageRating`, `ratingCount`, and `lastRatedAt` in one transaction.
@@ -880,6 +905,7 @@ This avoids deletion rules that destroy published cultural history.
 | Province -> District                           | Restrict while referenced.                                                                                                                                             |
 | Tag -> EntryTag                                | Restrict while referenced unless a tag-merge admin workflow is implemented.                                                                                            |
 | User -> RefreshSession                         | Cascade or cleanup after expiry/revocation.                                                                                                                            |
+| User -> EmailVerificationToken                 | Cascade or cleanup after expiry/use.                                                                                                                                   |
 | User -> PasswordResetToken                     | Cascade or cleanup after expiry/use.                                                                                                                                   |
 | Any entity -> AuditLog                         | Preserve audit logs; avoid cascading deletes into audit logs.                                                                                                          |
 
@@ -994,6 +1020,7 @@ Use PostgreSQL `ILIKE` over normalized text for v1. Consider trigram indexes onl
 - Public reviews: `(PublicReview.entryId, PublicReview.status)`, `(PublicReview.userId, PublicReview.status)`
 - Bookmarks: `Bookmark.userId`, `Bookmark.entryId`, `(Bookmark.userId, Bookmark.createdAt)`, unique `(Bookmark.userId, Bookmark.entryId)`
 - OAuth accounts: `OAuthAccount.userId`, `OAuthAccount.provider`, `OAuthAccount.providerEmail`, unique `(OAuthAccount.provider, OAuthAccount.providerAccountId)`, unique `(OAuthAccount.userId, OAuthAccount.provider)`
+- Email verification tokens: `EmailVerificationToken.userId`, `EmailVerificationToken.expiresAt`, `EmailVerificationToken.usedAt`, unique `EmailVerificationToken.tokenHash`
 - Audit logs: `AuditLog.createdAt`, `(AuditLog.action, AuditLog.createdAt)`, `AuditLog.actorId`, `AuditLog.entryId`, `AuditLog.reportId`, `AuditLog.correctionSuggestionId`
 
 ## Mermaid ER Diagram
@@ -1010,6 +1037,7 @@ erDiagram
   User ||--o{ PublicReview : reviews
   User ||--o{ Bookmark : saves
   User ||--o{ RefreshSession : has
+  User ||--o{ EmailVerificationToken : verifies
   User ||--o{ PasswordResetToken : requests
   User ||--o{ AuditLog : acts
 
@@ -1059,7 +1087,7 @@ No unresolved product-level database decisions remain before Prisma implementati
 ## Phase B Implementation Checklist
 
 1. Translate this design into `schema.prisma` with UUID IDs, mapped snake_case tables/columns, relations, enums, defaults, and indexes.
-2. Implement all 22 entities, including `Bookmark` and `OAuthAccount`.
+2. Implement all 23 entities, including `Bookmark`, `OAuthAccount`, and `EmailVerificationToken`.
 3. Implement unique `(userId, entryId)` for `Bookmark`.
 4. Implement bookmark indexes: `userId`, `entryId`, and `(userId, createdAt)`.
 5. Add `thumbnailUrl` to `Image`.
@@ -1067,9 +1095,10 @@ No unresolved product-level database decisions remain before Prisma implementati
 7. Make `User.passwordHash` optional for OAuth-only users.
 8. Add `AuthProvider` and `OAuthAccount`.
 9. Implement unique `(provider, providerAccountId)` and unique `(userId, provider)` for `OAuthAccount`.
-10. Implement the immutable published-entry slug rule in service logic.
-11. Add the manual SQL partial unique index for one active public review per user and entry.
-12. Add the first migration only after models are approved.
-13. Generate Prisma Client after schema implementation.
-14. Add focused tests for status transitions, self-approval prevention, accepted correction versioning, rating uniqueness, rating aggregate updates, review uniqueness, bookmark uniqueness, OAuth account uniqueness, and deletion/preservation behavior.
-15. Keep Prisma access inside NestJS services and transactions.
+10. Add `EmailVerificationToken` with hashed token storage, single-use tracking, expiration, and indexes.
+11. Implement the immutable published-entry slug rule in service logic.
+12. Add the manual SQL partial unique index for one active public review per user and entry.
+13. Add the first migration only after models are approved.
+14. Generate Prisma Client after schema implementation.
+15. Add focused tests for status transitions, self-approval prevention, accepted correction versioning, rating uniqueness, rating aggregate updates, review uniqueness, bookmark uniqueness, OAuth account uniqueness, email verification token behavior, and deletion/preservation behavior.
+16. Keep Prisma access inside NestJS services and transactions.

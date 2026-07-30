@@ -160,26 +160,27 @@ model User {
   createdAt         DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt         DateTime   @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  province                       Province?              @relation("UserProvince", fields: [provinceId], references: [id], onDelete: Restrict)
-  oauthAccounts                  OAuthAccount[]         @relation("OAuthAccountUser")
-  culturalEntries                CulturalEntry[]        @relation("EntryAuthor")
-  contentVersionsCreated         ContentVersion[]       @relation("ContentVersionCreator")
-  moderationReviews              ModerationReview[]     @relation("ModerationReviewer")
-  correctionSuggestionsSubmitted CorrectionSuggestion[] @relation("CorrectionSubmittedBy")
-  correctionSuggestionsReviewed  CorrectionSuggestion[] @relation("CorrectionReviewedBy")
-  reportsSubmitted               Report[]               @relation("ReportSubmittedBy")
-  reportsReviewed                Report[]               @relation("ReportReviewedBy")
-  ratings                        Rating[]               @relation("RatingUser")
-  publicReviews                  PublicReview[]         @relation("PublicReviewUser")
-  hiddenPublicReviews            PublicReview[]         @relation("PublicReviewHiddenBy")
-  bookmarks                      Bookmark[]             @relation("BookmarkUser")
-  refreshSessions                RefreshSession[]       @relation("RefreshSessionUser")
-  passwordResetTokens            PasswordResetToken[]   @relation("PasswordResetTokenUser")
-  imagesUploaded                 Image[]                @relation("ImageUploadedBy")
-  imagesRemoved                  Image[]                @relation("ImageRemovedBy")
-  youtubeVideosRemoved           YouTubeVideo[]         @relation("YouTubeVideoRemovedBy")
-  auditLogsAsActor               AuditLog[]             @relation("AuditActor")
-  auditLogsAsTargetUser          AuditLog[]             @relation("AuditTargetUser")
+  province                       Province?                @relation("UserProvince", fields: [provinceId], references: [id], onDelete: Restrict)
+  oauthAccounts                  OAuthAccount[]           @relation("OAuthAccountUser")
+  culturalEntries                CulturalEntry[]          @relation("EntryAuthor")
+  contentVersionsCreated         ContentVersion[]         @relation("ContentVersionCreator")
+  moderationReviews              ModerationReview[]       @relation("ModerationReviewer")
+  correctionSuggestionsSubmitted CorrectionSuggestion[]   @relation("CorrectionSubmittedBy")
+  correctionSuggestionsReviewed  CorrectionSuggestion[]   @relation("CorrectionReviewedBy")
+  reportsSubmitted               Report[]                 @relation("ReportSubmittedBy")
+  reportsReviewed                Report[]                 @relation("ReportReviewedBy")
+  ratings                        Rating[]                 @relation("RatingUser")
+  publicReviews                  PublicReview[]           @relation("PublicReviewUser")
+  hiddenPublicReviews            PublicReview[]           @relation("PublicReviewHiddenBy")
+  bookmarks                      Bookmark[]               @relation("BookmarkUser")
+  refreshSessions                RefreshSession[]         @relation("RefreshSessionUser")
+  emailVerificationTokens        EmailVerificationToken[] @relation("EmailVerificationTokenUser")
+  passwordResetTokens            PasswordResetToken[]     @relation("PasswordResetTokenUser")
+  imagesUploaded                 Image[]                  @relation("ImageUploadedBy")
+  imagesRemoved                  Image[]                  @relation("ImageRemovedBy")
+  youtubeVideosRemoved           YouTubeVideo[]           @relation("YouTubeVideoRemovedBy")
+  auditLogsAsActor               AuditLog[]               @relation("AuditActor")
+  auditLogsAsTargetUser          AuditLog[]               @relation("AuditTargetUser")
 
   @@index([role])
   @@index([status])
@@ -661,6 +662,22 @@ model PasswordResetToken {
   @@index([expiresAt])
   @@index([usedAt])
   @@map("password_reset_tokens")
+}
+
+model EmailVerificationToken {
+  id        String    @id @default(uuid()) @map("id") @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  tokenHash String    @unique @map("token_hash")
+  expiresAt DateTime  @map("expires_at") @db.Timestamptz(3)
+  usedAt    DateTime? @map("used_at") @db.Timestamptz(3)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user User @relation("EmailVerificationTokenUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([usedAt])
+  @@map("email_verification_tokens")
 }
 
 model AuditLog {
