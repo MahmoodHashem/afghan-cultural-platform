@@ -4,6 +4,7 @@ type EnvironmentVariables = {
   NODE_ENV: "development" | "test" | "production";
   PORT: number;
   FRONTEND_URL: string;
+  DATABASE_URL: string;
 };
 
 const envValidationSchema = Joi.object<EnvironmentVariables>({
@@ -11,6 +12,9 @@ const envValidationSchema = Joi.object<EnvironmentVariables>({
   PORT: Joi.number().port().default(4000),
   FRONTEND_URL: Joi.string()
     .uri({ scheme: ["http", "https"] })
+    .required(),
+  DATABASE_URL: Joi.string()
+    .uri({ scheme: ["postgresql", "postgres"] })
     .required(),
 });
 

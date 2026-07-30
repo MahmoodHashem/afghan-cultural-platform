@@ -12,7 +12,7 @@ Afghan Cultural Information Crowdsourcing Platform is planned as a collaborative
 ## Current Status
 
 Workspace foundation and the Next.js frontend setup are complete. Biome is selected as the repository formatter and linter.
-The NestJS backend foundation is also complete.
+The NestJS backend foundation, global API configuration, and PostgreSQL/Prisma foundation are also complete.
 
 Run the frontend with:
 
@@ -37,5 +37,6 @@ Required backend environment variables:
 - `NODE_ENV`: `development`, `test`, or `production`
 - `PORT`: defaults to `4000`
 - `FRONTEND_URL`: frontend origin allowed by CORS
+- `DATABASE_URL`: PostgreSQL connection URL for Prisma
 
-Backend configuration, database setup, and product feature setup are still pending and will happen in later steps.
+Database setup notes are in `docs/database-setup.md`. Product database models, migrations, and feature setup are still pending and will happen in later steps.
