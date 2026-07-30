@@ -21,10 +21,21 @@ This document defines the planned PostgreSQL and Prisma data model for the Afgha
 - Soft deletion is used only where preserving cultural history, moderation history, or user-facing history is justified.
 - Important workflow changes should happen in transactions and write audit records in the same transaction.
 - Controllers must not query Prisma directly; NestJS services own business rules and database access.
+- Taxonomies remain flat in v1; category hierarchy is not included.
+
+### Display Names And Slugs
+
+- Persian display names remain in `name`.
+- Readable Latin slugs remain in `slug`.
+- Do not add English-name fields to `Province`, `District`, `Category`, `ContentType`, `Tag`, or other taxonomies.
+- Slugs may initially be generated through transliteration.
+- Slugs remain editable before publication for entries and administratively editable for taxonomies.
+- Administrators can manually correct generated slugs.
+- A published `CulturalEntry` slug should remain immutable after publication.
 
 ## Entity Evaluation For Version One
 
-All requested entities are kept for version one.
+All 21 approved entities are kept for version one.
 
 | Entity               | Decision                        | Reason                                                                                                                                                       |
 | -------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -33,7 +44,7 @@ All requested entities are kept for version one.
 | ContentVersion       | Keep                            | Required to preserve submitted and published history.                                                                                                        |
 | ModerationReview     | Keep                            | Required to record approve, reject, changes-requested, hide, restore, and archive decisions.                                                                 |
 | Province             | Keep                            | Required public filter and admin-managed taxonomy.                                                                                                           |
-| District             | Keep as optional managed record | The PRD marks district handling as unresolved, but the entity is useful if districts become managed records. Entries can still also keep free-text location. |
+| District             | Keep as managed record          | Districts use managed records. `provinceId` is required, `districtId` on entries is optional, and entries may still keep free-text location.                |
 | Category             | Keep                            | Required public filter and admin-managed taxonomy.                                                                                                           |
 | ContentType          | Keep                            | Required public filter and admin-managed taxonomy.                                                                                                           |
 | Tag                  | Keep                            | Required flexible public filter and admin-managed taxonomy.                                                                                                  |
@@ -43,11 +54,38 @@ All requested entities are kept for version one.
 | Source               | Keep                            | Required for references, oral sources, interviews, and personal experience.                                                                                  |
 | Rating               | Keep                            | Required helpfulness rating, one active rating per user per entry.                                                                                           |
 | PublicReview         | Keep                            | Required public comments, separate from ratings and corrections.                                                                                             |
+| Bookmark             | Keep                            | Allows a registered user to privately save a published Cultural Entry.                                                                                       |
 | CorrectionSuggestion | Keep                            | Required workflow for suggested factual/content corrections.                                                                                                 |
 | Report               | Keep                            | Required private content complaint workflow.                                                                                                                 |
 | RefreshSession       | Keep                            | Required by the planned refresh-token authentication design.                                                                                                 |
 | PasswordResetToken   | Keep                            | Required by v1 password reset.                                                                                                                               |
 | AuditLog             | Keep                            | Required for traceability of important product actions.                                                                                                      |
+
+### Complete Entity List
+
+Version one contains 21 entities:
+
+1. `User`
+2. `CulturalEntry`
+3. `ContentVersion`
+4. `ModerationReview`
+5. `Province`
+6. `District`
+7. `Category`
+8. `ContentType`
+9. `Tag`
+10. `EntryTag`
+11. `Image`
+12. `YouTubeVideo`
+13. `Source`
+14. `Rating`
+15. `PublicReview`
+16. `Bookmark`
+17. `CorrectionSuggestion`
+18. `Report`
+19. `RefreshSession`
+20. `PasswordResetToken`
+21. `AuditLog`
 
 ## Enums
 
@@ -62,7 +100,7 @@ All requested entities are kept for version one.
 - `ACTIVE`
 - `SUSPENDED`
 
-Used for account suspension/reactivation. Physical user deletion remains an open decision.
+Used for account suspension/reactivation. Version one does not support physical user deletion.
 
 ### EntryStatus
 
@@ -183,9 +221,9 @@ More audit actions can be added later only when new v1 workflows require them.
 | biography         | String           | No       | None          | Short profile text.                                              |
 | provinceId        | UUID             | No       | None          | Optional profile province.                                       |
 | culturalInterests | String[] or Json | No       | None          | Keep simple; final implementation choice can be made in Phase B. |
-| emailVerifiedAt   | DateTime         | No       | None          | Email verification is not blocking v1.                           |
+| emailVerifiedAt   | DateTime         | No       | None          | Mandatory in v1 before full account use; nullable until verified. |
 | lastLoginAt       | DateTime         | No       | None          | Useful for account administration.                               |
-| suspendedAt       | DateTime         | No       | None          | Set when status becomes`SUSPENDED`.                            |
+| suspendedAt       | DateTime         | No       | None          | Set when status becomes `SUSPENDED`.                           |
 | createdAt         | DateTime         | Yes      | `now()`     | UTC.                                                             |
 | updatedAt         | DateTime         | Yes      | `updatedAt` | UTC.                                                             |
 
@@ -193,9 +231,9 @@ More audit actions can be added later only when new v1 workflows require them.
 
 **Indexes:** `role`, `status`, `provinceId`, `createdAt`.
 
-**Relations:** Entries, content versions created, moderation reviews, correction suggestions, reports, ratings, public reviews, refresh sessions, password reset tokens, audit logs as actor or target.
+**Relations:** Entries, content versions created, moderation reviews, correction suggestions, reports, ratings, public reviews, bookmarks, refresh sessions, password reset tokens, audit logs as actor or target.
 
-**Deletion behavior:** Prefer suspension and optional anonymization over physical deletion. Published cultural history, content versions, audit logs, reviews, reports, and moderation records should remain preserved. If user deletion is approved later, relations that represent authorship should use `SetNull` only where the field is optional and public display can show an anonymized contributor name; audit records remain preserved.
+**Deletion behavior:** Version one uses suspension only and does not support physical user deletion. Published cultural history, content versions, audit logs, reviews, reports, and moderation records remain preserved.
 
 ### CulturalEntry
 
@@ -210,8 +248,8 @@ More audit actions can be added later only when new v1 workflows require them.
 | contentJson          | Json        | Yes                    | None          | Tiptap JSON document.                                                              |
 | plainTextContent     | String      | Yes                    | None          | Extracted text for search and moderation.                                          |
 | normalizedSearchText | String      | Yes                    | Empty string  | Persian-normalized title, summary, body, tags, taxonomy, and location.             |
-| status               | EntryStatus | Yes                    | `DRAFT`     | Public search shows only`PUBLISHED`.                                             |
-| authorId             | UUID        | No after anonymization | None          | Required normally; may become nullable only if deletion/anonymization is approved. |
+| status               | EntryStatus | Yes                    | `DRAFT`     | Public search shows only `PUBLISHED`.                                            |
+| authorId             | UUID        | Yes                    | None          | Entry author; preserved because v1 does not physically delete users.              |
 | provinceId           | UUID        | Yes                    | None          | Required taxonomy.                                                                 |
 | districtId           | UUID        | No                     | None          | Optional managed district.                                                         |
 | categoryId           | UUID        | Yes                    | None          | Required taxonomy.                                                                 |
@@ -224,6 +262,7 @@ More audit actions can be added later only when new v1 workflows require them.
 | viewCount            | Int         | Yes                    | `0`         | Used for sorting, not critical to correctness.                                     |
 | averageRating        | Decimal     | Yes                    | `0`         | Denormalized for listing.                                                          |
 | ratingCount          | Int         | Yes                    | `0`         | Denormalized for listing.                                                          |
+| lastRatedAt          | DateTime    | No                     | None          | Latest time an active rating was created, updated, or removed.                     |
 | submittedAt          | DateTime    | No                     | None          | First submission timestamp.                                                        |
 | publishedAt          | DateTime    | No                     | None          | Set when published.                                                                |
 | hiddenAt             | DateTime    | No                     | None          | Set when hidden.                                                                   |
@@ -235,7 +274,7 @@ More audit actions can be added later only when new v1 workflows require them.
 
 **Indexes:** `status`, `provinceId`, `districtId`, `categoryId`, `contentTypeId`, `authorId`, `publishedAt`, `createdAt`, `(status, publishedAt)`, `(status, provinceId)`, `(status, categoryId)`, `(status, contentTypeId)`.
 
-**Relations:** Author, province, optional district, category, content type, tags through `EntryTag`, images, optional YouTube video, sources, content versions, moderation reviews, ratings, public reviews, correction suggestions, reports.
+**Relations:** Author, province, optional district, category, content type, tags through `EntryTag`, images, optional YouTube video, sources, content versions, moderation reviews, ratings, public reviews, bookmarks, correction suggestions, reports.
 
 **Deletion behavior:** Do not physically delete published cultural entries. Use status transitions: `DRAFT` may be hard-deleted by the author before submission; submitted/published entries should use `REJECTED`, `HIDDEN`, or `ARCHIVED`. Audit logs and content versions remain preserved.
 
@@ -272,7 +311,7 @@ More audit actions can be added later only when new v1 workflows require them.
 | -------------- | ------------------ | -------- | ---------- | --------------------------------------------------------- |
 | id             | UUID               | Yes      | `uuid()` | Primary key.                                              |
 | entryId        | UUID               | Yes      | None       | Entry reviewed.                                           |
-| moderatorId    | UUID               | No       | None       | Reviewer; nullable only for anonymization.                |
+| moderatorId    | UUID               | Yes      | None       | Reviewer.                                                 |
 | decision       | ModerationDecision | Yes      | None       | Approve, request changes, reject, hide, restore, archive. |
 | comments       | String             | No       | None       | Required by service for reject/request changes.           |
 | previousStatus | EntryStatus        | Yes      | None       | Audit-friendly workflow trace.                            |
@@ -285,7 +324,7 @@ More audit actions can be added later only when new v1 workflows require them.
 
 **Relations:** Cultural entry, moderator, related content versions.
 
-**Deletion behavior:** Preserve. Deleting or anonymizing a user must not remove moderation history.
+**Deletion behavior:** Preserve. Suspending a user must not remove moderation history.
 
 ### Province
 
@@ -330,11 +369,11 @@ More audit actions can be added later only when new v1 workflows require them.
 
 **Relations:** Province, cultural entries.
 
-**Deletion behavior:** Restrict while referenced by entries. Prefer `isActive = false`. Whether districts are managed records in v1 remains open.
+**Deletion behavior:** Restrict while referenced by entries. Prefer `isActive = false`.
 
 ### Category
 
-**Purpose:** Admin-managed cultural taxonomy and public filter.
+**Purpose:** Admin-managed flat cultural taxonomy and public filter. Category hierarchy is not included in v1.
 
 | Field       | Type     | Required | Default       | Notes                                       |
 | ----------- | -------- | -------- | ------------- | ------------------------------------------- |
@@ -429,7 +468,8 @@ More audit actions can be added later only when new v1 workflows require them.
 | uploadedById         | UUID     | No       | None          | Contributor/uploader.                                  |
 | cloudinaryPublicId   | String   | Yes      | None          | Cloudinary asset identifier.                           |
 | url                  | String   | Yes      | None          | Delivered image URL.                                   |
-| secureUrl            | String   | Yes      | None          | HTTPS URL.                                             |
+| secureUrl            | String   | Yes      | None          | Full HTTPS image URL.                                  |
+| thumbnailUrl         | String   | No       | None          | Optimized Cloudinary thumbnail for listing views.      |
 | width                | Int      | No       | None          | Metadata.                                              |
 | height               | Int      | No       | None          | Metadata.                                              |
 | format               | String   | No       | None          | JPEG, PNG, WebP.                                       |
@@ -452,6 +492,8 @@ More audit actions can be added later only when new v1 workflows require them.
 **Relations:** Cultural entry, uploader, optional remover.
 
 **Deletion behavior:** Draft image records may be deleted when a draft is deleted. For submitted/published entries, use `isRemoved` so content versions and audit history can explain image changes.
+
+**Image URL usage:** `secureUrl` is used for the full image. `thumbnailUrl` is used for smaller cards, search results, dashboards, and listing pages. Cloudinary may generate the thumbnail through an optimized transformation.
 
 ### YouTubeVideo
 
@@ -515,8 +557,8 @@ More audit actions can be added later only when new v1 workflows require them.
 | --------- | -------- | -------- | ------------- | -------------------------------------------- |
 | id        | UUID     | Yes      | `uuid()`    | Primary key.                                 |
 | entryId   | UUID     | Yes      | None          | Rated entry.                                 |
-| userId    | UUID     | No       | None          | Rater; nullable only for anonymization.      |
-| value     | Int      | Yes      | None          | Service validates allowed scale, likely 1-5. |
+| userId    | UUID     | Yes      | None          | Rater.                                       |
+| value     | Int      | Yes      | None          | Service validates the approved 1-5 scale.    |
 | isActive  | Boolean  | Yes      | `true`      | User removal of rating can deactivate.       |
 | createdAt | DateTime | Yes      | `now()`     | UTC.                                         |
 | updatedAt | DateTime | Yes      | `updatedAt` | UTC.                                         |
@@ -537,7 +579,7 @@ More audit actions can be added later only when new v1 workflows require them.
 | ---------- | ------------------ | -------- | ------------- | ------------------------------------------ |
 | id         | UUID               | Yes      | `uuid()`    | Primary key.                               |
 | entryId    | UUID               | Yes      | None          | Reviewed entry.                            |
-| userId     | UUID               | No       | None          | Reviewer; nullable only for anonymization. |
+| userId     | UUID               | Yes      | None          | Reviewer.                                  |
 | body       | String             | Yes      | None          | Public review text.                        |
 | status     | PublicReviewStatus | Yes      | `ACTIVE`    | Active, hidden, or user-deleted.           |
 | hiddenById | UUID               | No       | None          | Moderator/admin who hid it.                |
@@ -552,7 +594,28 @@ More audit actions can be added later only when new v1 workflows require them.
 
 **Relations:** Cultural entry, user, optional hider.
 
-**Deletion behavior:** Recommended status-based deletion (`DELETED`) rather than physical deletion so moderation and dashboard history remain consistent. Final approval is open.
+**Deletion behavior:** Use status-based soft deletion (`DELETED`) rather than physical deletion so moderation and dashboard history remain consistent.
+
+### Bookmark
+
+**Purpose:** Allows a registered user to privately save a published Cultural Entry.
+
+| Field     | Type     | Required | Default    | Notes            |
+| --------- | -------- | -------- | ---------- | ---------------- |
+| id        | UUID     | Yes      | `uuid()` | Primary key.     |
+| userId    | UUID     | Yes      | None       | Bookmark owner.  |
+| entryId   | UUID     | Yes      | None       | Saved entry.     |
+| createdAt | DateTime | Yes      | `now()`  | UTC timestamp.   |
+
+**Unique constraints:** `(userId, entryId)`.
+
+**Indexes:** `userId`, `entryId`, `(userId, createdAt)`.
+
+**Relations:** User, Cultural Entry.
+
+**Deletion behavior:** A user may remove a bookmark through hard deletion. Bookmark deletion does not require versioning or audit history. If user deletion or anonymization is implemented in a future version, the user's bookmarks may be cascade-deleted. Published entries are normally archived rather than physically deleted. Bookmarks for hidden or archived entries may remain stored, but inaccessible content must not be exposed publicly.
+
+**Business rules:** Only authenticated active users can create bookmarks. Only published entries can be bookmarked. A user cannot bookmark the same entry more than once. Bookmark lists are private. Bookmarking does not change rating, popularity, moderation status, or view count. Removing a bookmark should be idempotent where practical.
 
 ### CorrectionSuggestion
 
@@ -562,7 +625,7 @@ More audit actions can be added later only when new v1 workflows require them.
 | ------------------ | ---------------- | -------- | ------------- | ------------------------------------------------- |
 | id                 | UUID             | Yes      | `uuid()`    | Primary key.                                      |
 | entryId            | UUID             | Yes      | None          | Entry being corrected.                            |
-| submittedById      | UUID             | No       | None          | Suggesting user; nullable only for anonymization. |
+| submittedById      | UUID             | Yes      | None          | Suggesting user.                                 |
 | reviewedById       | UUID             | No       | None          | Moderator/admin reviewer.                         |
 | status             | CorrectionStatus | Yes      | `PENDING`   | Pending, accepted, rejected.                      |
 | section            | String           | Yes      | None          | Incorrect/incomplete section.                     |
@@ -592,7 +655,7 @@ More audit actions can be added later only when new v1 workflows require them.
 | ---------------- | ---------------------- | -------- | ------------- | ------------------------------------------ |
 | id               | UUID                   | Yes      | `uuid()`    | Primary key.                               |
 | entryId          | UUID                   | Yes      | None          | Reported entry.                            |
-| reportedById     | UUID                   | No       | None          | Reporter; nullable only for anonymization. |
+| reportedById     | UUID                   | Yes      | None          | Reporter.                                  |
 | reviewedById     | UUID                   | No       | None          | Moderator/admin handling report.           |
 | reason           | ReportReason           | Yes      | None          | Required reason.                           |
 | explanation      | String                 | Yes      | None          | Required details.                          |
@@ -699,20 +762,25 @@ More audit actions can be added later only when new v1 workflows require them.
 - `CulturalEntry` to `ModerationReview`: one entry has zero to many moderation reviews.
 - `CulturalEntry` to `Rating`: one entry has zero to many ratings.
 - `CulturalEntry` to `PublicReview`: one entry has zero to many public reviews.
+- `CulturalEntry` to `Bookmark`: one entry has zero to many bookmarks.
 - `CulturalEntry` to `CorrectionSuggestion`: one entry has zero to many correction suggestions.
 - `CulturalEntry` to `Report`: one entry has zero to many reports.
+- `User` to `Bookmark`: one user has zero to many private bookmarks.
 - `User` to moderation, correction, report, rating, and review records: a user may create or review many records depending on role.
 
 ## Important Constraints And Business Rules
 
 - User email must be unique after normalization.
-- Public entry slug must be unique and permanent.
+- Public entry slug must be unique and immutable after publication.
 - A user may have one rating per entry.
+- Rating changes should update `averageRating`, `ratingCount`, and `lastRatedAt` in one transaction.
 - A user may have one active public review per entry.
+- A user may have one bookmark per entry.
 - Version one supports one optional YouTube video per entry.
 - A moderator cannot approve their own entry; enforce in service logic and test it.
 - Users cannot publish directly; publish only through moderation/admin workflow.
 - Published content must not be silently overwritten.
+- Administrators may edit published content, but every change must create a new `ContentVersion`.
 - Accepted corrections must create a new `ContentVersion`.
 - Previous content versions must remain available to moderators and administrators.
 - Rejection and changes-requested moderation decisions require comments.
@@ -720,24 +788,28 @@ More audit actions can be added later only when new v1 workflows require them.
 - Audit logs must remain preserved.
 - Hidden, rejected, and archived entries must not appear in public search or public listing.
 - Ratings measure helpfulness only and do not change entry status.
+- Bookmarks are private convenience data and do not change rating, popularity, moderation status, or view count.
 - Public reviews do not directly change entry content.
 - Reports do not automatically remove content.
-- Images require ownership or permission confirmation before publication.
+- Images require ownership or permission confirmation before publication. Version one allows up to six images per entry, with a maximum size of 5 MB each.
+- Sources are allowed as zero or many records; written sources are optional because some cultural knowledge is based on oral history or personal experience.
 - YouTube links must be validated and stored as YouTube IDs/URLs only; arbitrary iframes are not accepted.
+- Email verification is mandatory in version one.
+- Ratings use a 1-5 star scale.
 
 ## Deletion And Preservation Rules
 
 ### Users
 
-Suspension is the default account control. A suspended user remains in the database but cannot log in or perform protected actions. Their published entries, reviews, reports, moderation actions, and audit history remain preserved.
+Suspension is the version-one account control. A suspended user remains in the database but cannot log in or perform protected actions. Their published entries, reviews, reports, moderation actions, and audit history remain preserved. Version one does not support physical user deletion.
 
-Physical user deletion is not recommended for v1 because it can damage authorship, moderation, and audit traceability. If deletion is later required, use anonymization:
+When a user is suspended:
 
-- Keep published cultural entries.
-- Replace public contributor display with an anonymized label.
-- Set optional user references to null only where the relation allows it.
-- Preserve audit logs with enough non-sensitive historical context.
-- Revoke refresh sessions and password reset tokens.
+- Revoke refresh sessions.
+- Prevent new protected actions.
+- Preserve published cultural entries.
+- Preserve moderation, correction, report, rating, review, and audit records.
+- Keep private bookmarks stored unless the user removes them before suspension.
 
 ### Cultural Entries
 
@@ -753,15 +825,17 @@ This avoids deletion rules that destroy published cultural history.
 
 | Relation                                       | Behavior                                                                         |
 | ---------------------------------------------- | -------------------------------------------------------------------------------- |
-| User -> CulturalEntry                          | Restrict physical deletion; prefer suspension/anonymization.                     |
+| User -> CulturalEntry                          | Restrict physical deletion; use suspension only in v1.                           |
 | CulturalEntry -> ContentVersion                | Preserve; restrict entry hard delete after submission.                           |
 | CulturalEntry -> ModerationReview              | Preserve.                                                                        |
 | CulturalEntry -> CorrectionSuggestion          | Preserve.                                                                        |
 | CulturalEntry -> Report                        | Preserve privately.                                                              |
 | CulturalEntry -> Rating                        | Preserve or deactivate; do not cascade from published entries.                   |
 | CulturalEntry -> PublicReview                  | Preserve with status; do not cascade from published entries.                     |
-| CulturalEntry -> Image                         | Draft cascade allowed; submitted/published entries use`isRemoved`.             |
-| CulturalEntry -> YouTubeVideo                  | Draft cascade allowed; submitted/published entries use`isRemoved`.             |
+| User -> Bookmark                               | Cascade-delete is acceptable because bookmarks are private convenience data.     |
+| CulturalEntry -> Bookmark                      | Published entries should normally be archived, not physically deleted; if a draft is hard-deleted, bookmark cascade is irrelevant because drafts cannot be bookmarked. |
+| CulturalEntry -> Image                         | Draft cascade allowed; submitted/published entries use `isRemoved`.             |
+| CulturalEntry -> YouTubeVideo                  | Draft cascade allowed; submitted/published entries use `isRemoved`.             |
 | CulturalEntry -> Source                        | Draft cascade allowed; submitted/published source changes require a new version. |
 | CulturalEntry -> EntryTag                      | Draft cascade allowed; preserve for submitted/published entries.                 |
 | Province/Category/ContentType -> CulturalEntry | Restrict while referenced.                                                       |
@@ -821,6 +895,8 @@ This avoids deletion rules that destroy published cultural history.
     {
       "cloudinaryPublicId": "string",
       "url": "string",
+      "secureUrl": "string",
+      "thumbnailUrl": "string | null",
       "caption": "string | null",
       "altText": "string",
       "photographerOrSource": "string | null",
@@ -878,6 +954,7 @@ Use PostgreSQL `ILIKE` over normalized text for v1. Consider trigram indexes onl
 - Corrections: `(CorrectionSuggestion.status, CorrectionSuggestion.submittedAt)`, `CorrectionSuggestion.entryId`, `CorrectionSuggestion.submittedById`
 - Ratings: `(Rating.entryId, Rating.isActive)`, `(Rating.userId, Rating.entryId)`
 - Public reviews: `(PublicReview.entryId, PublicReview.status)`, `(PublicReview.userId, PublicReview.status)`
+- Bookmarks: `Bookmark.userId`, `Bookmark.entryId`, `(Bookmark.userId, Bookmark.createdAt)`, unique `(Bookmark.userId, Bookmark.entryId)`
 - Audit logs: `AuditLog.createdAt`, `(AuditLog.action, AuditLog.createdAt)`, `AuditLog.actorId`, `AuditLog.entryId`, `AuditLog.reportId`, `AuditLog.correctionSuggestionId`
 
 ## Mermaid ER Diagram
@@ -891,6 +968,7 @@ erDiagram
   User ||--o{ Report : submits
   User ||--o{ Rating : rates
   User ||--o{ PublicReview : reviews
+  User ||--o{ Bookmark : saves
   User ||--o{ RefreshSession : has
   User ||--o{ PasswordResetToken : requests
   User ||--o{ AuditLog : acts
@@ -908,6 +986,7 @@ erDiagram
   CulturalEntry ||--o{ Source : cites
   CulturalEntry ||--o{ Rating : receives
   CulturalEntry ||--o{ PublicReview : receives
+  CulturalEntry ||--o{ Bookmark : bookmarked_as
   CulturalEntry ||--o{ CorrectionSuggestion : receives
   CulturalEntry ||--o{ Report : receives
   CulturalEntry ||--o{ EntryTag : has
@@ -921,24 +1000,33 @@ erDiagram
 
 ## Open Decisions Before Prisma Implementation
 
-- Whether districts are managed records in v1 or whether entries use only optional free-text location.
-- Whether physical user deletion is supported or whether v1 supports only suspension and anonymization.
-- Whether public reviews use status-based soft deletion as recommended here, or physical deletion for user-deleted reviews.
-- Whether `AuditLog.metadata` remains flexible JSON or should be split into stricter typed columns for some actions.
-- Whether one or multiple sources are required for each content type; v1 allows zero or many sources because oral history and personal experience may not have written references.
-- Whether email verification is mandatory in v1; this affects `emailVerifiedAt` requirements but not the core schema shape.
-- Final image limits should follow the architecture default of six images and 5 MB, unless the product owner approves another limit.
-- Whether administrators can edit published content directly or must always create a moderated/admin content version. This design assumes every published change creates a version.
-- Whether approved content publishes immediately. This design follows the architecture decision that approval immediately publishes in v1.
-- Exact launch lists for provinces, districts, categories, content types, and initial tags.
-- Whether the rating scale is exactly 1-5. This design assumes 1-5 because it is practical for helpfulness ratings, but the PRD does not specify exact values.
+The following previously open decisions are now approved for Phase B:
+
+- Districts: use managed `District` records. `provinceId` is required, `districtId` is optional on `CulturalEntry`, and `villageOrLocation` remains optional free text.
+- User deletion: version one does not support physical deletion. Use suspension only. Historical data must be preserved.
+- Public reviews: use status-based soft deletion with `ACTIVE`, `HIDDEN`, and `DELETED`.
+- Audit logs: keep `metadata` as flexible JSON.
+- Sources: allow zero or many sources. Written sources are optional because some cultural knowledge is based on oral history or personal experience.
+- Email verification: mandatory in version one.
+- Images: maximum six images per Cultural Entry, maximum 5 MB each.
+- Published content: administrators may edit published content, but every change must create a new `ContentVersion`.
+- Publication: approved content is published immediately.
+- Initial taxonomy: seed Afghanistan's official provinces and districts, with initial categories and content types from the PRD. Tags are created by administrators as needed.
+- Ratings: use a 1-5 star scale.
+
+No unresolved product-level database decisions remain before Prisma implementation. Phase B still needs normal implementation review for field lengths, exact seed slugs, and any raw SQL needed for constraints Prisma cannot express directly.
 
 ## Phase B Implementation Checklist
 
-1. Confirm the open decisions above.
-2. Translate this design into `schema.prisma` with UUID IDs, mapped snake_case tables/columns, relations, enums, defaults, and indexes.
-3. Decide which constraints require raw SQL migrations, especially partial unique indexes for one active public review.
-4. Add the first migration only after models are approved.
-5. Generate Prisma Client after schema implementation.
-6. Add focused tests for status transitions, self-approval prevention, accepted correction versioning, rating uniqueness, review uniqueness, and deletion/preservation behavior.
-7. Keep Prisma access inside NestJS services and transactions.
+1. Translate this design into `schema.prisma` with UUID IDs, mapped snake_case tables/columns, relations, enums, defaults, and indexes.
+2. Implement all 21 entities, including `Bookmark`.
+3. Implement unique `(userId, entryId)` for `Bookmark`.
+4. Implement bookmark indexes: `userId`, `entryId`, and `(userId, createdAt)`.
+5. Add `thumbnailUrl` to `Image`.
+6. Add `lastRatedAt` to `CulturalEntry`.
+7. Implement the immutable published-entry slug rule in service logic.
+8. Decide which constraints require raw SQL migrations, especially partial unique indexes for one active public review.
+9. Add the first migration only after models are approved.
+10. Generate Prisma Client after schema implementation.
+11. Add focused tests for status transitions, self-approval prevention, accepted correction versioning, rating uniqueness, rating aggregate updates, review uniqueness, bookmark uniqueness, and deletion/preservation behavior.
+12. Keep Prisma access inside NestJS services and transactions.
