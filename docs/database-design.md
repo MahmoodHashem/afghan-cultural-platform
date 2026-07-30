@@ -220,7 +220,7 @@ More audit actions can be added later only when new v1 workflows require them.
 | profileImageUrl   | String           | No       | None          | Optional public profile image.                                    |
 | biography         | String           | No       | None          | Short profile text.                                               |
 | provinceId        | UUID             | No       | None          | Optional profile province.                                        |
-| culturalInterests | String[] or Json | No       | None          | Keep simple; final implementation choice can be made in Phase B.  |
+| culturalInterests | String[]         | Yes      | Empty array   | Simple list of Persian cultural-interest labels.                  |
 | emailVerifiedAt   | DateTime         | No       | None          | Mandatory in v1 before full account use; nullable until verified. |
 | lastLoginAt       | DateTime         | No       | None          | Useful for account administration.                                |
 | suspendedAt       | DateTime         | No       | None          | Set when status becomes`SUSPENDED`.                             |
@@ -588,7 +588,7 @@ More audit actions can be added later only when new v1 workflows require them.
 | createdAt  | DateTime           | Yes      | `now()`     | UTC.                             |
 | updatedAt  | DateTime           | Yes      | `updatedAt` | UTC.                             |
 
-**Unique constraints:** One active public review per user per entry should be enforced. In PostgreSQL this is best as a partial unique index on `(user_id, entry_id) WHERE status = 'ACTIVE'`; Prisma may require raw SQL migration for the partial index.
+**Unique constraints:** One active public review per user per entry must be enforced with a PostgreSQL partial unique index on `(user_id, entry_id) WHERE status = 'ACTIVE'`. Prisma cannot define this directly in `schema.prisma`, so the generated migration must include a manual SQL index with a clear explanatory comment. Do not add a normal Prisma `@@unique([userId, entryId])` because users must be able to create a new review after a previous review becomes `DELETED` or `HIDDEN`.
 
 **Indexes:** `entryId`, `userId`, `status`, `(entryId, status)`, `createdAt`.
 
@@ -1025,7 +1025,7 @@ No unresolved product-level database decisions remain before Prisma implementati
 5. Add `thumbnailUrl` to `Image`.
 6. Add `lastRatedAt` to `CulturalEntry`.
 7. Implement the immutable published-entry slug rule in service logic.
-8. Decide which constraints require raw SQL migrations, especially partial unique indexes for one active public review.
+8. Add the manual SQL partial unique index for one active public review per user and entry.
 9. Add the first migration only after models are approved.
 10. Generate Prisma Client after schema implementation.
 11. Add focused tests for status transitions, self-approval prevention, accepted correction versioning, rating uniqueness, rating aggregate updates, review uniqueness, bookmark uniqueness, and deletion/preservation behavior.

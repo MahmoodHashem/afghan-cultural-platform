@@ -7,3 +7,662 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+enum UserRole {
+  USER
+  MODERATOR
+  ADMIN
+
+  @@map("user_role")
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+
+  @@map("user_status")
+}
+
+enum EntryStatus {
+  DRAFT
+  PENDING_REVIEW
+  CHANGES_REQUESTED
+  PUBLISHED
+  REJECTED
+  HIDDEN
+  ARCHIVED
+
+  @@map("entry_status")
+}
+
+enum VersionReason {
+  INITIAL_SUBMISSION
+  RESUBMISSION
+  ACCEPTED_CORRECTION
+  ADMIN_UPDATE
+
+  @@map("version_reason")
+}
+
+enum ModerationDecision {
+  APPROVE
+  REQUEST_CHANGES
+  REJECT
+  HIDE
+  RESTORE
+  ARCHIVE
+
+  @@map("moderation_decision")
+}
+
+enum CorrectionStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+
+  @@map("correction_status")
+}
+
+enum ReportStatus {
+  OPEN
+  UNDER_REVIEW
+  RESOLVED
+
+  @@map("report_status")
+}
+
+enum ReportReason {
+  INACCURATE_INFORMATION
+  OFFENSIVE_OR_DISCRIMINATORY_CONTENT
+  COPYRIGHT_PROBLEM
+  PRIVACY_PROBLEM
+  INCORRECT_PROVINCE_OR_CATEGORY
+  DUPLICATE_CONTENT
+  MISSING_OR_MISLEADING_SOURCE
+  CULTURALLY_SENSITIVE_CONTENT
+  INVALID_YOUTUBE_LINK
+  SPAM
+  OTHER
+
+  @@map("report_reason")
+}
+
+enum ReportResolutionAction {
+  DISMISS
+  HIDE_CONTENT
+  REQUEST_CORRECTIONS
+  REMOVE_IMAGE
+  REMOVE_YOUTUBE_VIDEO
+  ARCHIVE_CONTENT
+  ESCALATE_TO_ADMIN
+
+  @@map("report_resolution_action")
+}
+
+enum SourceType {
+  BOOK
+  ACADEMIC_ARTICLE
+  WEBSITE
+  ARCHIVE
+  INTERVIEW
+  ORAL_SOURCE
+  PERSONAL_EXPERIENCE
+  MUSEUM_OR_INSTITUTION
+  OTHER
+
+  @@map("source_type")
+}
+
+enum PublicReviewStatus {
+  ACTIVE
+  HIDDEN
+  DELETED
+
+  @@map("public_review_status")
+}
+
+enum AuditAction {
+  ENTRY_SUBMITTED
+  ENTRY_APPROVED
+  ENTRY_REJECTED
+  ENTRY_CHANGES_REQUESTED
+  ENTRY_HIDDEN
+  ENTRY_RESTORED
+  CORRECTION_ACCEPTED
+  REPORT_RESOLVED
+  USER_ROLE_CHANGED
+  USER_SUSPENDED
+
+  @@map("audit_action")
+}
+
+model User {
+  id                String     @id @default(uuid()) @map("id") @db.Uuid
+  email             String     @unique @map("email")
+  passwordHash      String     @map("password_hash")
+  role              UserRole   @default(USER) @map("role")
+  status            UserStatus @default(ACTIVE) @map("status")
+  displayName       String     @map("display_name")
+  profileImageUrl   String?    @map("profile_image_url")
+  biography         String?    @map("biography")
+  provinceId        String?    @map("province_id") @db.Uuid
+  culturalInterests String[]   @default([]) @map("cultural_interests")
+  emailVerifiedAt   DateTime?  @map("email_verified_at") @db.Timestamptz(3)
+  lastLoginAt       DateTime?  @map("last_login_at") @db.Timestamptz(3)
+  suspendedAt       DateTime?  @map("suspended_at") @db.Timestamptz(3)
+  createdAt         DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt         DateTime   @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  province                       Province?              @relation("UserProvince", fields: [provinceId], references: [id], onDelete: Restrict)
+  culturalEntries                CulturalEntry[]        @relation("EntryAuthor")
+  contentVersionsCreated         ContentVersion[]       @relation("ContentVersionCreator")
+  moderationReviews              ModerationReview[]     @relation("ModerationReviewer")
+  correctionSuggestionsSubmitted CorrectionSuggestion[] @relation("CorrectionSubmittedBy")
+  correctionSuggestionsReviewed  CorrectionSuggestion[] @relation("CorrectionReviewedBy")
+  reportsSubmitted               Report[]               @relation("ReportSubmittedBy")
+  reportsReviewed                Report[]               @relation("ReportReviewedBy")
+  ratings                        Rating[]               @relation("RatingUser")
+  publicReviews                  PublicReview[]         @relation("PublicReviewUser")
+  hiddenPublicReviews            PublicReview[]         @relation("PublicReviewHiddenBy")
+  bookmarks                      Bookmark[]             @relation("BookmarkUser")
+  refreshSessions                RefreshSession[]       @relation("RefreshSessionUser")
+  passwordResetTokens            PasswordResetToken[]   @relation("PasswordResetTokenUser")
+  imagesUploaded                 Image[]                @relation("ImageUploadedBy")
+  imagesRemoved                  Image[]                @relation("ImageRemovedBy")
+  youtubeVideosRemoved           YouTubeVideo[]         @relation("YouTubeVideoRemovedBy")
+  auditLogsAsActor               AuditLog[]             @relation("AuditActor")
+  auditLogsAsTargetUser          AuditLog[]             @relation("AuditTargetUser")
+
+  @@index([role])
+  @@index([status])
+  @@index([provinceId])
+  @@index([createdAt])
+  @@map("users")
+}
+
+model CulturalEntry {
+  id                   String      @id @default(uuid()) @map("id") @db.Uuid
+  slug                 String?     @unique @map("slug")
+  title                String      @map("title")
+  summary              String      @map("summary")
+  contentJson          Json        @map("content_json")
+  plainTextContent     String      @map("plain_text_content")
+  normalizedSearchText String      @default("") @map("normalized_search_text")
+  status               EntryStatus @default(DRAFT) @map("status")
+  authorId             String      @map("author_id") @db.Uuid
+  provinceId           String      @map("province_id") @db.Uuid
+  districtId           String?     @map("district_id") @db.Uuid
+  categoryId           String      @map("category_id") @db.Uuid
+  contentTypeId        String      @map("content_type_id") @db.Uuid
+  villageOrLocation    String?     @map("village_or_location")
+  historicalPeriod     String?     @map("historical_period")
+  culturalCommunity    String?     @map("cultural_community")
+  alternativeLocalName String?     @map("alternative_local_name")
+  regionalDifferences  String?     @map("regional_differences")
+  viewCount            Int         @default(0) @map("view_count")
+  averageRating        Decimal     @default(0) @map("average_rating")
+  ratingCount          Int         @default(0) @map("rating_count")
+  lastRatedAt          DateTime?   @map("last_rated_at") @db.Timestamptz(3)
+  submittedAt          DateTime?   @map("submitted_at") @db.Timestamptz(3)
+  publishedAt          DateTime?   @map("published_at") @db.Timestamptz(3)
+  hiddenAt             DateTime?   @map("hidden_at") @db.Timestamptz(3)
+  archivedAt           DateTime?   @map("archived_at") @db.Timestamptz(3)
+  createdAt            DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt            DateTime    @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  author                User                   @relation("EntryAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+  province              Province               @relation("EntryProvince", fields: [provinceId], references: [id], onDelete: Restrict)
+  district              District?              @relation("EntryDistrict", fields: [districtId], references: [id], onDelete: Restrict)
+  category              Category               @relation("EntryCategory", fields: [categoryId], references: [id], onDelete: Restrict)
+  contentType           ContentType            @relation("EntryContentType", fields: [contentTypeId], references: [id], onDelete: Restrict)
+  tags                  EntryTag[]             @relation("EntryTags")
+  images                Image[]                @relation("EntryImages")
+  youtubeVideo          YouTubeVideo?          @relation("EntryYouTubeVideo")
+  sources               Source[]               @relation("EntrySources")
+  contentVersions       ContentVersion[]       @relation("EntryContentVersions")
+  moderationReviews     ModerationReview[]     @relation("EntryModerationReviews")
+  ratings               Rating[]               @relation("EntryRatings")
+  publicReviews         PublicReview[]         @relation("EntryPublicReviews")
+  bookmarks             Bookmark[]             @relation("EntryBookmarks")
+  correctionSuggestions CorrectionSuggestion[] @relation("EntryCorrectionSuggestions")
+  reports               Report[]               @relation("EntryReports")
+  auditLogs             AuditLog[]             @relation("AuditEntry")
+
+  @@index([status])
+  @@index([provinceId])
+  @@index([districtId])
+  @@index([categoryId])
+  @@index([contentTypeId])
+  @@index([authorId])
+  @@index([publishedAt])
+  @@index([createdAt])
+  @@index([normalizedSearchText])
+  @@index([status, publishedAt])
+  @@index([status, provinceId])
+  @@index([status, categoryId])
+  @@index([status, contentTypeId])
+  @@index([status, createdAt])
+  @@index([authorId, status])
+  @@map("cultural_entries")
+}
+
+model ContentVersion {
+  id                     String        @id @default(uuid()) @map("id") @db.Uuid
+  entryId                String        @map("entry_id") @db.Uuid
+  versionNumber          Int           @map("version_number")
+  snapshot               Json          @map("snapshot")
+  plainTextContent       String        @map("plain_text_content")
+  versionReason          VersionReason @map("version_reason")
+  createdById            String?       @map("created_by_id") @db.Uuid
+  correctionSuggestionId String?       @map("correction_suggestion_id") @db.Uuid
+  moderationReviewId     String?       @map("moderation_review_id") @db.Uuid
+  createdAt              DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  entry                         CulturalEntry          @relation("EntryContentVersions", fields: [entryId], references: [id], onDelete: Restrict)
+  createdBy                     User?                  @relation("ContentVersionCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  correctionSuggestion          CorrectionSuggestion?  @relation("CorrectionSuggestionContentVersions", fields: [correctionSuggestionId], references: [id], onDelete: SetNull)
+  moderationReview              ModerationReview?      @relation("ModerationReviewContentVersions", fields: [moderationReviewId], references: [id], onDelete: SetNull)
+  acceptedForCorrectionRequests CorrectionSuggestion[] @relation("AcceptedCorrectionVersion")
+
+  @@unique([entryId, versionNumber])
+  @@index([entryId])
+  @@index([createdById])
+  @@index([versionReason])
+  @@index([createdAt])
+  @@map("content_versions")
+}
+
+model ModerationReview {
+  id             String             @id @default(uuid()) @map("id") @db.Uuid
+  entryId        String             @map("entry_id") @db.Uuid
+  moderatorId    String             @map("moderator_id") @db.Uuid
+  decision       ModerationDecision @map("decision")
+  comments       String?            @map("comments")
+  previousStatus EntryStatus        @map("previous_status")
+  nextStatus     EntryStatus        @map("next_status")
+  createdAt      DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  entry           CulturalEntry    @relation("EntryModerationReviews", fields: [entryId], references: [id], onDelete: Restrict)
+  moderator       User             @relation("ModerationReviewer", fields: [moderatorId], references: [id], onDelete: Restrict)
+  contentVersions ContentVersion[] @relation("ModerationReviewContentVersions")
+
+  @@index([entryId])
+  @@index([moderatorId])
+  @@index([decision])
+  @@index([createdAt])
+  @@index([decision, createdAt])
+  @@map("moderation_reviews")
+}
+
+model Province {
+  id        String   @id @default(uuid()) @map("id") @db.Uuid
+  name      String   @unique @map("name")
+  slug      String   @unique @map("slug")
+  sortOrder Int      @default(0) @map("sort_order")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  profileUsers User[]          @relation("UserProvince")
+  entries      CulturalEntry[] @relation("EntryProvince")
+  districts    District[]      @relation("ProvinceDistricts")
+
+  @@index([isActive])
+  @@index([sortOrder])
+  @@map("provinces")
+}
+
+model District {
+  id         String   @id @default(uuid()) @map("id") @db.Uuid
+  provinceId String   @map("province_id") @db.Uuid
+  name       String   @map("name")
+  slug       String   @map("slug")
+  sortOrder  Int      @default(0) @map("sort_order")
+  isActive   Boolean  @default(true) @map("is_active")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  province Province        @relation("ProvinceDistricts", fields: [provinceId], references: [id], onDelete: Restrict)
+  entries  CulturalEntry[] @relation("EntryDistrict")
+
+  @@unique([provinceId, name])
+  @@unique([provinceId, slug])
+  @@index([provinceId])
+  @@index([isActive])
+  @@index([sortOrder])
+  @@map("districts")
+}
+
+model Category {
+  id          String   @id @default(uuid()) @map("id") @db.Uuid
+  name        String   @unique @map("name")
+  slug        String   @unique @map("slug")
+  description String?  @map("description")
+  sortOrder   Int      @default(0) @map("sort_order")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  entries CulturalEntry[] @relation("EntryCategory")
+
+  @@index([isActive])
+  @@index([sortOrder])
+  @@map("categories")
+}
+
+model ContentType {
+  id          String   @id @default(uuid()) @map("id") @db.Uuid
+  name        String   @unique @map("name")
+  slug        String   @unique @map("slug")
+  description String?  @map("description")
+  sortOrder   Int      @default(0) @map("sort_order")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  entries CulturalEntry[] @relation("EntryContentType")
+
+  @@index([isActive])
+  @@index([sortOrder])
+  @@map("content_types")
+}
+
+model Tag {
+  id             String   @id @default(uuid()) @map("id") @db.Uuid
+  name           String   @map("name")
+  slug           String   @unique @map("slug")
+  normalizedName String   @unique @map("normalized_name")
+  isActive       Boolean  @default(true) @map("is_active")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  entries EntryTag[] @relation("TagEntries")
+
+  @@index([isActive])
+  @@index([name])
+  @@map("tags")
+}
+
+model EntryTag {
+  entryId   String   @map("entry_id") @db.Uuid
+  tagId     String   @map("tag_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  entry CulturalEntry @relation("EntryTags", fields: [entryId], references: [id], onDelete: Cascade)
+  tag   Tag           @relation("TagEntries", fields: [tagId], references: [id], onDelete: Restrict)
+
+  @@id([entryId, tagId])
+  @@index([tagId])
+  @@index([entryId])
+  @@map("entry_tags")
+}
+
+model Image {
+  id                   String    @id @default(uuid()) @map("id") @db.Uuid
+  entryId              String    @map("entry_id") @db.Uuid
+  uploadedById         String?   @map("uploaded_by_id") @db.Uuid
+  cloudinaryPublicId   String    @unique @map("cloudinary_public_id")
+  url                  String    @map("url")
+  secureUrl            String    @map("secure_url")
+  thumbnailUrl         String?   @map("thumbnail_url")
+  width                Int?      @map("width")
+  height               Int?      @map("height")
+  format               String?   @map("format")
+  bytes                Int?      @map("bytes")
+  caption              String?   @map("caption")
+  altText              String    @map("alt_text")
+  photographerOrSource String?   @map("photographer_or_source")
+  permissionConfirmed  Boolean   @default(false) @map("permission_confirmed")
+  displayOrder         Int       @default(0) @map("display_order")
+  isRemoved            Boolean   @default(false) @map("is_removed")
+  removedById          String?   @map("removed_by_id") @db.Uuid
+  removedAt            DateTime? @map("removed_at") @db.Timestamptz(3)
+  createdAt            DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt            DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  entry      CulturalEntry @relation("EntryImages", fields: [entryId], references: [id], onDelete: Cascade)
+  uploadedBy User?         @relation("ImageUploadedBy", fields: [uploadedById], references: [id], onDelete: SetNull)
+  removedBy  User?         @relation("ImageRemovedBy", fields: [removedById], references: [id], onDelete: SetNull)
+
+  @@index([entryId])
+  @@index([uploadedById])
+  @@index([entryId, displayOrder])
+  @@index([isRemoved])
+  @@map("images")
+}
+
+model YouTubeVideo {
+  id          String    @id @default(uuid()) @map("id") @db.Uuid
+  entryId     String    @unique @map("entry_id") @db.Uuid
+  videoId     String    @map("video_id")
+  url         String    @map("url")
+  title       String?   @map("title")
+  description String?   @map("description")
+  isRemoved   Boolean   @default(false) @map("is_removed")
+  removedById String?   @map("removed_by_id") @db.Uuid
+  removedAt   DateTime? @map("removed_at") @db.Timestamptz(3)
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  entry     CulturalEntry @relation("EntryYouTubeVideo", fields: [entryId], references: [id], onDelete: Cascade)
+  removedBy User?         @relation("YouTubeVideoRemovedBy", fields: [removedById], references: [id], onDelete: SetNull)
+
+  @@index([videoId])
+  @@index([isRemoved])
+  @@map("youtube_videos")
+}
+
+model Source {
+  id                   String     @id @default(uuid()) @map("id") @db.Uuid
+  entryId              String     @map("entry_id") @db.Uuid
+  type                 SourceType @map("type")
+  title                String?    @map("title")
+  authorOrProvider     String?    @map("author_or_provider")
+  publicationDate      String?    @map("publication_date")
+  websiteUrl           String?    @map("website_url")
+  bookOrArticleDetails String?    @map("book_or_article_details")
+  interviewDate        DateTime?  @map("interview_date") @db.Timestamptz(3)
+  explanation          String?    @map("explanation")
+  displayOrder         Int        @default(0) @map("display_order")
+  createdAt            DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt            DateTime   @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  entry CulturalEntry @relation("EntrySources", fields: [entryId], references: [id], onDelete: Cascade)
+
+  @@index([entryId])
+  @@index([type])
+  @@index([entryId, displayOrder])
+  @@map("sources")
+}
+
+model Rating {
+  id        String   @id @default(uuid()) @map("id") @db.Uuid
+  entryId   String   @map("entry_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  value     Int      @map("value")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  entry CulturalEntry @relation("EntryRatings", fields: [entryId], references: [id], onDelete: Restrict)
+  user  User          @relation("RatingUser", fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, entryId])
+  @@index([entryId])
+  @@index([userId])
+  @@index([entryId, isActive])
+  @@index([value])
+  @@map("ratings")
+}
+
+model PublicReview {
+  id         String             @id @default(uuid()) @map("id") @db.Uuid
+  entryId    String             @map("entry_id") @db.Uuid
+  userId     String             @map("user_id") @db.Uuid
+  body       String             @map("body")
+  status     PublicReviewStatus @default(ACTIVE) @map("status")
+  hiddenById String?            @map("hidden_by_id") @db.Uuid
+  hiddenAt   DateTime?          @map("hidden_at") @db.Timestamptz(3)
+  deletedAt  DateTime?          @map("deleted_at") @db.Timestamptz(3)
+  createdAt  DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime           @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  entry    CulturalEntry @relation("EntryPublicReviews", fields: [entryId], references: [id], onDelete: Restrict)
+  user     User          @relation("PublicReviewUser", fields: [userId], references: [id], onDelete: Restrict)
+  hiddenBy User?         @relation("PublicReviewHiddenBy", fields: [hiddenById], references: [id], onDelete: SetNull)
+
+  @@index([entryId])
+  @@index([userId])
+  @@index([status])
+  @@index([entryId, status])
+  @@index([userId, status])
+  @@index([createdAt])
+  @@map("public_reviews")
+}
+
+model Bookmark {
+  id        String   @id @default(uuid()) @map("id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  entryId   String   @map("entry_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user  User          @relation("BookmarkUser", fields: [userId], references: [id], onDelete: Cascade)
+  entry CulturalEntry @relation("EntryBookmarks", fields: [entryId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, entryId])
+  @@index([userId])
+  @@index([entryId])
+  @@index([userId, createdAt])
+  @@map("bookmarks")
+}
+
+model CorrectionSuggestion {
+  id                 String           @id @default(uuid()) @map("id") @db.Uuid
+  entryId            String           @map("entry_id") @db.Uuid
+  submittedById      String           @map("submitted_by_id") @db.Uuid
+  reviewedById       String?          @map("reviewed_by_id") @db.Uuid
+  status             CorrectionStatus @default(PENDING) @map("status")
+  section            String           @map("section")
+  proposedCorrection String           @map("proposed_correction")
+  reason             String           @map("reason")
+  sourceText         String?          @map("source_text")
+  reviewerComments   String?          @map("reviewer_comments")
+  acceptedVersionId  String?          @map("accepted_version_id") @db.Uuid
+  submittedAt        DateTime         @default(now()) @map("submitted_at") @db.Timestamptz(3)
+  reviewedAt         DateTime?        @map("reviewed_at") @db.Timestamptz(3)
+  createdAt          DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt          DateTime         @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  entry           CulturalEntry    @relation("EntryCorrectionSuggestions", fields: [entryId], references: [id], onDelete: Restrict)
+  submittedBy     User             @relation("CorrectionSubmittedBy", fields: [submittedById], references: [id], onDelete: Restrict)
+  reviewedBy      User?            @relation("CorrectionReviewedBy", fields: [reviewedById], references: [id], onDelete: SetNull)
+  acceptedVersion ContentVersion?  @relation("AcceptedCorrectionVersion", fields: [acceptedVersionId], references: [id], onDelete: SetNull)
+  contentVersions ContentVersion[] @relation("CorrectionSuggestionContentVersions")
+  auditLogs       AuditLog[]       @relation("AuditCorrectionSuggestion")
+
+  @@index([entryId])
+  @@index([submittedById])
+  @@index([reviewedById])
+  @@index([status])
+  @@index([submittedAt])
+  @@index([status, submittedAt])
+  @@map("correction_suggestions")
+}
+
+model Report {
+  id               String                  @id @default(uuid()) @map("id") @db.Uuid
+  entryId          String                  @map("entry_id") @db.Uuid
+  reportedById     String                  @map("reported_by_id") @db.Uuid
+  reviewedById     String?                 @map("reviewed_by_id") @db.Uuid
+  reason           ReportReason            @map("reason")
+  explanation      String                  @map("explanation")
+  status           ReportStatus            @default(OPEN) @map("status")
+  resolutionAction ReportResolutionAction? @map("resolution_action")
+  resolutionNotes  String?                 @map("resolution_notes")
+  resolvedAt       DateTime?               @map("resolved_at") @db.Timestamptz(3)
+  createdAt        DateTime                @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt        DateTime                @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  entry      CulturalEntry @relation("EntryReports", fields: [entryId], references: [id], onDelete: Restrict)
+  reportedBy User          @relation("ReportSubmittedBy", fields: [reportedById], references: [id], onDelete: Restrict)
+  reviewedBy User?         @relation("ReportReviewedBy", fields: [reviewedById], references: [id], onDelete: SetNull)
+  auditLogs  AuditLog[]    @relation("AuditReport")
+
+  @@index([entryId])
+  @@index([reportedById])
+  @@index([reviewedById])
+  @@index([status])
+  @@index([reason])
+  @@index([createdAt])
+  @@index([status, createdAt])
+  @@map("reports")
+}
+
+model RefreshSession {
+  id           String    @id @default(uuid()) @map("id") @db.Uuid
+  userId       String    @map("user_id") @db.Uuid
+  tokenHash    String    @unique @map("token_hash")
+  expiresAt    DateTime  @map("expires_at") @db.Timestamptz(3)
+  revokedAt    DateTime? @map("revoked_at") @db.Timestamptz(3)
+  replacedById String?   @map("replaced_by_id") @db.Uuid
+  userAgent    String?   @map("user_agent")
+  ipAddress    String?   @map("ip_address")
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  user       User             @relation("RefreshSessionUser", fields: [userId], references: [id], onDelete: Cascade)
+  replacedBy RefreshSession?  @relation("RefreshSessionReplacement", fields: [replacedById], references: [id], onDelete: SetNull)
+  replaces   RefreshSession[] @relation("RefreshSessionReplacement")
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([revokedAt])
+  @@map("refresh_sessions")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid()) @map("id") @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  tokenHash String    @unique @map("token_hash")
+  expiresAt DateTime  @map("expires_at") @db.Timestamptz(3)
+  usedAt    DateTime? @map("used_at") @db.Timestamptz(3)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user User @relation("PasswordResetTokenUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([usedAt])
+  @@map("password_reset_tokens")
+}
+
+model AuditLog {
+  id                     String      @id @default(uuid()) @map("id") @db.Uuid
+  action                 AuditAction @map("action")
+  actorId                String?     @map("actor_id") @db.Uuid
+  targetUserId           String?     @map("target_user_id") @db.Uuid
+  entryId                String?     @map("entry_id") @db.Uuid
+  reportId               String?     @map("report_id") @db.Uuid
+  correctionSuggestionId String?     @map("correction_suggestion_id") @db.Uuid
+  metadata               Json?       @map("metadata")
+  requestId              String?     @map("request_id")
+  ipAddress              String?     @map("ip_address")
+  userAgent              String?     @map("user_agent")
+  createdAt              DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  actor                User?                 @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+  targetUser           User?                 @relation("AuditTargetUser", fields: [targetUserId], references: [id], onDelete: SetNull)
+  entry                CulturalEntry?        @relation("AuditEntry", fields: [entryId], references: [id], onDelete: SetNull)
+  report               Report?               @relation("AuditReport", fields: [reportId], references: [id], onDelete: SetNull)
+  correctionSuggestion CorrectionSuggestion? @relation("AuditCorrectionSuggestion", fields: [correctionSuggestionId], references: [id], onDelete: SetNull)
+
+  @@index([action])
+  @@index([actorId])
+  @@index([targetUserId])
+  @@index([entryId])
+  @@index([reportId])
+  @@index([correctionSuggestionId])
+  @@index([createdAt])
+  @@index([action, createdAt])
+  @@map("audit_logs")
+}
