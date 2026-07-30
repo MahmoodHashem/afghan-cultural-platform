@@ -35,11 +35,12 @@ This document defines the planned PostgreSQL and Prisma data model for the Afgha
 
 ## Entity Evaluation For Version One
 
-All 21 approved entities are kept for version one.
+All 22 approved entities are kept for version one.
 
 | Entity               | Decision               | Reason                                                                                                                                          |
 | -------------------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
 | User                 | Keep                   | Required for accounts, profiles, roles, moderation attribution, ratings, reviews, corrections, reports, and audit actions.                      |
+| OAuthAccount         | Keep                   | Required for linking Google and Facebook social-login accounts to platform users.                                                               |
 | CulturalEntry        | Keep                   | Main cultural content object.                                                                                                                   |
 | ContentVersion       | Keep                   | Required to preserve submitted and published history.                                                                                           |
 | ModerationReview     | Keep                   | Required to record approve, reject, changes-requested, hide, restore, and archive decisions.                                                    |
@@ -63,29 +64,30 @@ All 21 approved entities are kept for version one.
 
 ### Complete Entity List
 
-Version one contains 21 entities:
+Version one contains 22 entities:
 
 1. `User`
-2. `CulturalEntry`
-3. `ContentVersion`
-4. `ModerationReview`
-5. `Province`
-6. `District`
-7. `Category`
-8. `ContentType`
-9. `Tag`
-10. `EntryTag`
-11. `Image`
-12. `YouTubeVideo`
-13. `Source`
-14. `Rating`
-15. `PublicReview`
-16. `Bookmark`
-17. `CorrectionSuggestion`
-18. `Report`
-19. `RefreshSession`
-20. `PasswordResetToken`
-21. `AuditLog`
+2. `OAuthAccount`
+3. `CulturalEntry`
+4. `ContentVersion`
+5. `ModerationReview`
+6. `Province`
+7. `District`
+8. `Category`
+9. `ContentType`
+10. `Tag`
+11. `EntryTag`
+12. `Image`
+13. `YouTubeVideo`
+14. `Source`
+15. `Rating`
+16. `PublicReview`
+17. `Bookmark`
+18. `CorrectionSuggestion`
+19. `Report`
+20. `RefreshSession`
+21. `PasswordResetToken`
+22. `AuditLog`
 
 ## Enums
 
@@ -101,6 +103,11 @@ Version one contains 21 entities:
 - `SUSPENDED`
 
 Used for account suspension/reactivation. Version one does not support physical user deletion.
+
+### AuthProvider
+
+- `GOOGLE`
+- `FACEBOOK`
 
 ### EntryStatus
 
@@ -213,7 +220,7 @@ More audit actions can be added later only when new v1 workflows require them.
 | ----------------- | ---------------- | -------- | ------------- | ----------------------------------------------------------------- |
 | id                | UUID             | Yes      | `uuid()`    | Primary key.                                                      |
 | email             | String           | Yes      | None          | Stored normalized lowercase.                                      |
-| passwordHash      | String           | Yes      | None          | Never returned by API.                                            |
+| passwordHash      | String           | No       | None          | Optional because OAuth-only users may not have a password. Never returned by API. |
 | role              | UserRole         | Yes      | `USER`      | One stored role per user in v1.                                   |
 | status            | UserStatus       | Yes      | `ACTIVE`    | Suspended users cannot perform protected actions.                 |
 | displayName       | String           | Yes      | None          | Public name.                                                      |
@@ -231,9 +238,33 @@ More audit actions can be added later only when new v1 workflows require them.
 
 **Indexes:** `role`, `status`, `provinceId`, `createdAt`.
 
-**Relations:** Entries, content versions created, moderation reviews, correction suggestions, reports, ratings, public reviews, bookmarks, refresh sessions, password reset tokens, audit logs as actor or target.
+**Relations:** OAuth accounts, entries, content versions created, moderation reviews, correction suggestions, reports, ratings, public reviews, bookmarks, refresh sessions, password reset tokens, audit logs as actor or target.
 
 **Deletion behavior:** Version one uses suspension only and does not support physical user deletion. Published cultural history, content versions, audit logs, reviews, reports, and moderation records remain preserved.
+
+### OAuthAccount
+
+**Purpose:** Stores a social-login account linked to a platform user.
+
+| Field             | Type         | Required | Default       | Notes                                      |
+| ----------------- | ------------ | -------- | ------------- | ------------------------------------------ |
+| id                | UUID         | Yes      | `uuid()`      | Primary key.                               |
+| userId            | UUID         | Yes      | None          | Linked platform user.                      |
+| provider          | AuthProvider | Yes      | None          | Google or Facebook.                        |
+| providerAccountId | String       | Yes      | None          | Stable provider account identifier.        |
+| providerEmail     | String       | No       | None          | Email returned by provider, when available. |
+| createdAt         | DateTime     | Yes      | `now()`       | UTC.                                       |
+| updatedAt         | DateTime     | Yes      | `updatedAt`   | UTC.                                       |
+
+**Unique constraints:** `(provider, providerAccountId)`, `(userId, provider)`.
+
+**Indexes:** `userId`, `provider`, `providerEmail`.
+
+**Relations:** User.
+
+**Deletion behavior:** Cascade-delete OAuth account records if a user is physically removed in a future version. Suspending a user must not delete linked OAuth accounts.
+
+**Business rules:** Only verified provider emails may be used for automatic account linking. A provider account cannot belong to more than one user. Provider tokens are not stored as application sessions. The backend issues its own access and refresh tokens after successful OAuth login.
 
 ### CulturalEntry
 
@@ -765,12 +796,18 @@ More audit actions can be added later only when new v1 workflows require them.
 - `CulturalEntry` to `Bookmark`: one entry has zero to many bookmarks.
 - `CulturalEntry` to `CorrectionSuggestion`: one entry has zero to many correction suggestions.
 - `CulturalEntry` to `Report`: one entry has zero to many reports.
+- `User` to `OAuthAccount`: one user has zero to many linked provider accounts.
 - `User` to `Bookmark`: one user has zero to many private bookmarks.
 - `User` to moderation, correction, report, rating, and review records: a user may create or review many records depending on role.
 
 ## Important Constraints And Business Rules
 
 - User email must be unique after normalization.
+- User password hash is optional because OAuth-only users may not have a password.
+- OAuth provider accounts must be unique by `(provider, providerAccountId)`.
+- A user may link at most one account per provider with unique `(userId, provider)`.
+- Only verified provider emails may be used for automatic account linking.
+- Provider tokens are not stored as application sessions; successful OAuth login still issues platform access and refresh tokens.
 - Public entry slug must be unique and immutable after publication.
 - A user may have one rating per entry.
 - Rating changes should update `averageRating`, `ratingCount`, and `lastRatedAt` in one transaction.
@@ -826,6 +863,7 @@ This avoids deletion rules that destroy published cultural history.
 | Relation                                       | Behavior                                                                                                                                                               |
 | ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | User -> CulturalEntry                          | Restrict physical deletion; use suspension only in v1.                                                                                                                 |
+| User -> OAuthAccount                           | Cascade-delete is acceptable if physical user deletion is added in a future version; suspension must not delete linked OAuth accounts.                                 |
 | CulturalEntry -> ContentVersion                | Preserve; restrict entry hard delete after submission.                                                                                                                 |
 | CulturalEntry -> ModerationReview              | Preserve.                                                                                                                                                              |
 | CulturalEntry -> CorrectionSuggestion          | Preserve.                                                                                                                                                              |
@@ -955,6 +993,7 @@ Use PostgreSQL `ILIKE` over normalized text for v1. Consider trigram indexes onl
 - Ratings: `(Rating.entryId, Rating.isActive)`, `(Rating.userId, Rating.entryId)`
 - Public reviews: `(PublicReview.entryId, PublicReview.status)`, `(PublicReview.userId, PublicReview.status)`
 - Bookmarks: `Bookmark.userId`, `Bookmark.entryId`, `(Bookmark.userId, Bookmark.createdAt)`, unique `(Bookmark.userId, Bookmark.entryId)`
+- OAuth accounts: `OAuthAccount.userId`, `OAuthAccount.provider`, `OAuthAccount.providerEmail`, unique `(OAuthAccount.provider, OAuthAccount.providerAccountId)`, unique `(OAuthAccount.userId, OAuthAccount.provider)`
 - Audit logs: `AuditLog.createdAt`, `(AuditLog.action, AuditLog.createdAt)`, `AuditLog.actorId`, `AuditLog.entryId`, `AuditLog.reportId`, `AuditLog.correctionSuggestionId`
 
 ## Mermaid ER Diagram
@@ -962,6 +1001,7 @@ Use PostgreSQL `ILIKE` over normalized text for v1. Consider trigram indexes onl
 ```mermaid
 erDiagram
   User ||--o{ CulturalEntry : authors
+  User ||--o{ OAuthAccount : links
   User ||--o{ ContentVersion : creates
   User ||--o{ ModerationReview : moderates
   User ||--o{ CorrectionSuggestion : submits
@@ -1019,14 +1059,17 @@ No unresolved product-level database decisions remain before Prisma implementati
 ## Phase B Implementation Checklist
 
 1. Translate this design into `schema.prisma` with UUID IDs, mapped snake_case tables/columns, relations, enums, defaults, and indexes.
-2. Implement all 21 entities, including `Bookmark`.
+2. Implement all 22 entities, including `Bookmark` and `OAuthAccount`.
 3. Implement unique `(userId, entryId)` for `Bookmark`.
 4. Implement bookmark indexes: `userId`, `entryId`, and `(userId, createdAt)`.
 5. Add `thumbnailUrl` to `Image`.
 6. Add `lastRatedAt` to `CulturalEntry`.
-7. Implement the immutable published-entry slug rule in service logic.
-8. Add the manual SQL partial unique index for one active public review per user and entry.
-9. Add the first migration only after models are approved.
-10. Generate Prisma Client after schema implementation.
-11. Add focused tests for status transitions, self-approval prevention, accepted correction versioning, rating uniqueness, rating aggregate updates, review uniqueness, bookmark uniqueness, and deletion/preservation behavior.
-12. Keep Prisma access inside NestJS services and transactions.
+7. Make `User.passwordHash` optional for OAuth-only users.
+8. Add `AuthProvider` and `OAuthAccount`.
+9. Implement unique `(provider, providerAccountId)` and unique `(userId, provider)` for `OAuthAccount`.
+10. Implement the immutable published-entry slug rule in service logic.
+11. Add the manual SQL partial unique index for one active public review per user and entry.
+12. Add the first migration only after models are approved.
+13. Generate Prisma Client after schema implementation.
+14. Add focused tests for status transitions, self-approval prevention, accepted correction versioning, rating uniqueness, rating aggregate updates, review uniqueness, bookmark uniqueness, OAuth account uniqueness, and deletion/preservation behavior.
+15. Keep Prisma access inside NestJS services and transactions.

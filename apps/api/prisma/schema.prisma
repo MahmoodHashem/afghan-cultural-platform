@@ -23,6 +23,13 @@ enum UserStatus {
   @@map("user_status")
 }
 
+enum AuthProvider {
+  GOOGLE
+  FACEBOOK
+
+  @@map("auth_provider")
+}
+
 enum EntryStatus {
   DRAFT
   PENDING_REVIEW
@@ -139,7 +146,7 @@ enum AuditAction {
 model User {
   id                String     @id @default(uuid()) @map("id") @db.Uuid
   email             String     @unique @map("email")
-  passwordHash      String     @map("password_hash")
+  passwordHash      String?    @map("password_hash")
   role              UserRole   @default(USER) @map("role")
   status            UserStatus @default(ACTIVE) @map("status")
   displayName       String     @map("display_name")
@@ -154,6 +161,7 @@ model User {
   updatedAt         DateTime   @updatedAt @map("updated_at") @db.Timestamptz(3)
 
   province                       Province?              @relation("UserProvince", fields: [provinceId], references: [id], onDelete: Restrict)
+  oauthAccounts                  OAuthAccount[]         @relation("OAuthAccountUser")
   culturalEntries                CulturalEntry[]        @relation("EntryAuthor")
   contentVersionsCreated         ContentVersion[]       @relation("ContentVersionCreator")
   moderationReviews              ModerationReview[]     @relation("ModerationReviewer")
@@ -178,6 +186,25 @@ model User {
   @@index([provinceId])
   @@index([createdAt])
   @@map("users")
+}
+
+model OAuthAccount {
+  id                String       @id @default(uuid()) @map("id") @db.Uuid
+  userId            String       @map("user_id") @db.Uuid
+  provider          AuthProvider @map("provider")
+  providerAccountId String       @map("provider_account_id")
+  providerEmail     String?      @map("provider_email")
+  createdAt         DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt         DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  user User @relation("OAuthAccountUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@unique([userId, provider])
+  @@index([userId])
+  @@index([provider])
+  @@index([providerEmail])
+  @@map("oauth_accounts")
 }
 
 model CulturalEntry {
