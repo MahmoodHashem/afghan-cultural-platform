@@ -1,0 +1,4 @@
+const IS_PUBLIC_ROUTE_KEY = "isPublicRoute";
+const JWT_ACCESS_STRATEGY = "jwt";
+
+export { IS_PUBLIC_ROUTE_KEY, JWT_ACCESS_STRATEGY };

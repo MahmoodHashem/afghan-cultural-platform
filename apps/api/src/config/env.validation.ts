@@ -5,7 +5,13 @@ type EnvironmentVariables = {
   PORT: number;
   FRONTEND_URL: string;
   DATABASE_URL: string;
+  JWT_ACCESS_SECRET: string;
+  JWT_REFRESH_SECRET: string;
+  JWT_ACCESS_EXPIRES_IN: string;
+  JWT_REFRESH_EXPIRES_IN: string;
 };
+
+const MIN_JWT_SECRET_LENGTH = 32;
 
 const envValidationSchema = Joi.object<EnvironmentVariables>({
   NODE_ENV: Joi.string().valid("development", "test", "production").default("development"),
@@ -16,6 +22,10 @@ const envValidationSchema = Joi.object<EnvironmentVariables>({
   DATABASE_URL: Joi.string()
     .uri({ scheme: ["postgresql", "postgres"] })
     .required(),
+  JWT_ACCESS_SECRET: Joi.string().min(MIN_JWT_SECRET_LENGTH).required(),
+  JWT_REFRESH_SECRET: Joi.string().min(MIN_JWT_SECRET_LENGTH).required(),
+  JWT_ACCESS_EXPIRES_IN: Joi.string().trim().min(1).required(),
+  JWT_REFRESH_EXPIRES_IN: Joi.string().trim().min(1).required(),
 });
 
 export type { EnvironmentVariables };
