@@ -3,13 +3,18 @@ import { ConfigService } from "@nestjs/config";
 import { JwtModule, type JwtSignOptions } from "@nestjs/jwt";
 import { PassportModule } from "@nestjs/passport";
 
+import { MailModule } from "@/common/mail/mail.module";
+import { PrismaModule } from "@/database/prisma.module";
 import { JWT_ACCESS_STRATEGY } from "@/modules/auth/auth.constants";
+import { AuthController } from "@/modules/auth/auth.controller";
 import { AuthService } from "@/modules/auth/auth.service";
 import { JwtAccessStrategy } from "@/modules/auth/strategies/jwt-access.strategy";
 import { UsersModule } from "@/modules/users/users.module";
 
 @Module({
   imports: [
+    PrismaModule,
+    MailModule,
     UsersModule,
     PassportModule.register({ defaultStrategy: JWT_ACCESS_STRATEGY }),
     JwtModule.registerAsync({
@@ -29,6 +34,7 @@ import { UsersModule } from "@/modules/users/users.module";
       },
     }),
   ],
+  controllers: [AuthController],
   providers: [AuthService, JwtAccessStrategy],
   exports: [AuthService],
 })
