@@ -3,7 +3,7 @@
 **Phase:** A
 **Scope:** Version one database design only
 
-This document defines the planned PostgreSQL and Prisma data model for the Afghan Cultural Information Crowdsourcing Platform. It is intentionally a design document only; Prisma schema implementation, migrations, seed data, and feature code belong to later phases.
+This document defines the planned PostgreSQL and Prisma data model for the Afghan Cultural Information Crowdsourcing Platform. 
 
 ## Database Goals And Conventions
 
@@ -37,29 +37,29 @@ This document defines the planned PostgreSQL and Prisma data model for the Afgha
 
 All 21 approved entities are kept for version one.
 
-| Entity               | Decision                        | Reason                                                                                                                                                       |
-| -------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| User                 | Keep                            | Required for accounts, profiles, roles, moderation attribution, ratings, reviews, corrections, reports, and audit actions.                                   |
-| CulturalEntry        | Keep                            | Main cultural content object.                                                                                                                                |
-| ContentVersion       | Keep                            | Required to preserve submitted and published history.                                                                                                        |
-| ModerationReview     | Keep                            | Required to record approve, reject, changes-requested, hide, restore, and archive decisions.                                                                 |
-| Province             | Keep                            | Required public filter and admin-managed taxonomy.                                                                                                           |
-| District             | Keep as managed record          | Districts use managed records. `provinceId` is required, `districtId` on entries is optional, and entries may still keep free-text location.                |
-| Category             | Keep                            | Required public filter and admin-managed taxonomy.                                                                                                           |
-| ContentType          | Keep                            | Required public filter and admin-managed taxonomy.                                                                                                           |
-| Tag                  | Keep                            | Required flexible public filter and admin-managed taxonomy.                                                                                                  |
-| EntryTag             | Keep                            | Explicit join table supports uniqueness and future metadata without changing the entry/tag relationship.                                                     |
-| Image                | Keep                            | Required for Cloudinary image metadata and moderation removal without deleting the entry.                                                                    |
-| YouTubeVideo         | Keep                            | Separate one-to-one optional record keeps video validation/removal isolated from the entry.                                                                  |
-| Source               | Keep                            | Required for references, oral sources, interviews, and personal experience.                                                                                  |
-| Rating               | Keep                            | Required helpfulness rating, one active rating per user per entry.                                                                                           |
-| PublicReview         | Keep                            | Required public comments, separate from ratings and corrections.                                                                                             |
-| Bookmark             | Keep                            | Allows a registered user to privately save a published Cultural Entry.                                                                                       |
-| CorrectionSuggestion | Keep                            | Required workflow for suggested factual/content corrections.                                                                                                 |
-| Report               | Keep                            | Required private content complaint workflow.                                                                                                                 |
-| RefreshSession       | Keep                            | Required by the planned refresh-token authentication design.                                                                                                 |
-| PasswordResetToken   | Keep                            | Required by v1 password reset.                                                                                                                               |
-| AuditLog             | Keep                            | Required for traceability of important product actions.                                                                                                      |
+| Entity               | Decision               | Reason                                                                                                                                          |
+| -------------------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| User                 | Keep                   | Required for accounts, profiles, roles, moderation attribution, ratings, reviews, corrections, reports, and audit actions.                      |
+| CulturalEntry        | Keep                   | Main cultural content object.                                                                                                                   |
+| ContentVersion       | Keep                   | Required to preserve submitted and published history.                                                                                           |
+| ModerationReview     | Keep                   | Required to record approve, reject, changes-requested, hide, restore, and archive decisions.                                                    |
+| Province             | Keep                   | Required public filter and admin-managed taxonomy.                                                                                              |
+| District             | Keep as managed record | Districts use managed records.`provinceId` is required, `districtId` on entries is optional, and entries may still keep free-text location. |
+| Category             | Keep                   | Required public filter and admin-managed taxonomy.                                                                                              |
+| ContentType          | Keep                   | Required public filter and admin-managed taxonomy.                                                                                              |
+| Tag                  | Keep                   | Required flexible public filter and admin-managed taxonomy.                                                                                     |
+| EntryTag             | Keep                   | Explicit join table supports uniqueness and future metadata without changing the entry/tag relationship.                                        |
+| Image                | Keep                   | Required for Cloudinary image metadata and moderation removal without deleting the entry.                                                       |
+| YouTubeVideo         | Keep                   | Separate one-to-one optional record keeps video validation/removal isolated from the entry.                                                     |
+| Source               | Keep                   | Required for references, oral sources, interviews, and personal experience.                                                                     |
+| Rating               | Keep                   | Required helpfulness rating, one active rating per user per entry.                                                                              |
+| PublicReview         | Keep                   | Required public comments, separate from ratings and corrections.                                                                                |
+| Bookmark             | Keep                   | Allows a registered user to privately save a published Cultural Entry.                                                                          |
+| CorrectionSuggestion | Keep                   | Required workflow for suggested factual/content corrections.                                                                                    |
+| Report               | Keep                   | Required private content complaint workflow.                                                                                                    |
+| RefreshSession       | Keep                   | Required by the planned refresh-token authentication design.                                                                                    |
+| PasswordResetToken   | Keep                   | Required by v1 password reset.                                                                                                                  |
+| AuditLog             | Keep                   | Required for traceability of important product actions.                                                                                         |
 
 ### Complete Entity List
 
@@ -209,23 +209,23 @@ More audit actions can be added later only when new v1 workflows require them.
 
 **Purpose:** Stores account, authentication, public profile, role, and suspension state.
 
-| Field             | Type             | Required | Default       | Notes                                                            |
-| ----------------- | ---------------- | -------- | ------------- | ---------------------------------------------------------------- |
-| id                | UUID             | Yes      | `uuid()`    | Primary key.                                                     |
-| email             | String           | Yes      | None          | Stored normalized lowercase.                                     |
-| passwordHash      | String           | Yes      | None          | Never returned by API.                                           |
-| role              | UserRole         | Yes      | `USER`      | One stored role per user in v1.                                  |
-| status            | UserStatus       | Yes      | `ACTIVE`    | Suspended users cannot perform protected actions.                |
-| displayName       | String           | Yes      | None          | Public name.                                                     |
-| profileImageUrl   | String           | No       | None          | Optional public profile image.                                   |
-| biography         | String           | No       | None          | Short profile text.                                              |
-| provinceId        | UUID             | No       | None          | Optional profile province.                                       |
-| culturalInterests | String[] or Json | No       | None          | Keep simple; final implementation choice can be made in Phase B. |
+| Field             | Type             | Required | Default       | Notes                                                             |
+| ----------------- | ---------------- | -------- | ------------- | ----------------------------------------------------------------- |
+| id                | UUID             | Yes      | `uuid()`    | Primary key.                                                      |
+| email             | String           | Yes      | None          | Stored normalized lowercase.                                      |
+| passwordHash      | String           | Yes      | None          | Never returned by API.                                            |
+| role              | UserRole         | Yes      | `USER`      | One stored role per user in v1.                                   |
+| status            | UserStatus       | Yes      | `ACTIVE`    | Suspended users cannot perform protected actions.                 |
+| displayName       | String           | Yes      | None          | Public name.                                                      |
+| profileImageUrl   | String           | No       | None          | Optional public profile image.                                    |
+| biography         | String           | No       | None          | Short profile text.                                               |
+| provinceId        | UUID             | No       | None          | Optional profile province.                                        |
+| culturalInterests | String[] or Json | No       | None          | Keep simple; final implementation choice can be made in Phase B.  |
 | emailVerifiedAt   | DateTime         | No       | None          | Mandatory in v1 before full account use; nullable until verified. |
-| lastLoginAt       | DateTime         | No       | None          | Useful for account administration.                               |
-| suspendedAt       | DateTime         | No       | None          | Set when status becomes `SUSPENDED`.                           |
-| createdAt         | DateTime         | Yes      | `now()`     | UTC.                                                             |
-| updatedAt         | DateTime         | Yes      | `updatedAt` | UTC.                                                             |
+| lastLoginAt       | DateTime         | No       | None          | Useful for account administration.                                |
+| suspendedAt       | DateTime         | No       | None          | Set when status becomes`SUSPENDED`.                             |
+| createdAt         | DateTime         | Yes      | `now()`     | UTC.                                                              |
+| updatedAt         | DateTime         | Yes      | `updatedAt` | UTC.                                                              |
 
 **Unique constraints:** `email`.
 
@@ -239,36 +239,36 @@ More audit actions can be added later only when new v1 workflows require them.
 
 **Purpose:** Main cultural content record for articles, oral histories, traditions, places, and practices.
 
-| Field                | Type        | Required               | Default       | Notes                                                                              |
-| -------------------- | ----------- | ---------------------- | ------------- | ---------------------------------------------------------------------------------- |
-| id                   | UUID        | Yes                    | `uuid()`    | Primary key.                                                                       |
-| slug                 | String      | Yes once public        | None          | Permanent public URL slug.                                                         |
-| title                | String      | Yes                    | None          | Persian title.                                                                     |
-| summary              | String      | Yes                    | None          | Short Persian summary.                                                             |
-| contentJson          | Json        | Yes                    | None          | Tiptap JSON document.                                                              |
-| plainTextContent     | String      | Yes                    | None          | Extracted text for search and moderation.                                          |
-| normalizedSearchText | String      | Yes                    | Empty string  | Persian-normalized title, summary, body, tags, taxonomy, and location.             |
-| status               | EntryStatus | Yes                    | `DRAFT`     | Public search shows only `PUBLISHED`.                                            |
-| authorId             | UUID        | Yes                    | None          | Entry author; preserved because v1 does not physically delete users.              |
-| provinceId           | UUID        | Yes                    | None          | Required taxonomy.                                                                 |
-| districtId           | UUID        | No                     | None          | Optional managed district.                                                         |
-| categoryId           | UUID        | Yes                    | None          | Required taxonomy.                                                                 |
-| contentTypeId        | UUID        | Yes                    | None          | Required taxonomy.                                                                 |
-| villageOrLocation    | String      | No                     | None          | Free-text local detail.                                                            |
-| historicalPeriod     | String      | No                     | None          | Optional.                                                                          |
-| culturalCommunity    | String      | No                     | None          | Optional.                                                                          |
-| alternativeLocalName | String      | No                     | None          | Optional.                                                                          |
-| regionalDifferences  | String      | No                     | None          | Optional notes.                                                                    |
-| viewCount            | Int         | Yes                    | `0`         | Used for sorting, not critical to correctness.                                     |
-| averageRating        | Decimal     | Yes                    | `0`         | Denormalized for listing.                                                          |
-| ratingCount          | Int         | Yes                    | `0`         | Denormalized for listing.                                                          |
-| lastRatedAt          | DateTime    | No                     | None          | Latest time an active rating was created, updated, or removed.                     |
-| submittedAt          | DateTime    | No                     | None          | First submission timestamp.                                                        |
-| publishedAt          | DateTime    | No                     | None          | Set when published.                                                                |
-| hiddenAt             | DateTime    | No                     | None          | Set when hidden.                                                                   |
-| archivedAt           | DateTime    | No                     | None          | Set when archived.                                                                 |
-| createdAt            | DateTime    | Yes                    | `now()`     | UTC.                                                                               |
-| updatedAt            | DateTime    | Yes                    | `updatedAt` | UTC.                                                                               |
+| Field                | Type        | Required        | Default       | Notes                                                                  |
+| -------------------- | ----------- | --------------- | ------------- | ---------------------------------------------------------------------- |
+| id                   | UUID        | Yes             | `uuid()`    | Primary key.                                                           |
+| slug                 | String      | Yes once public | None          | Permanent public URL slug.                                             |
+| title                | String      | Yes             | None          | Persian title.                                                         |
+| summary              | String      | Yes             | None          | Short Persian summary.                                                 |
+| contentJson          | Json        | Yes             | None          | Tiptap JSON document.                                                  |
+| plainTextContent     | String      | Yes             | None          | Extracted text for search and moderation.                              |
+| normalizedSearchText | String      | Yes             | Empty string  | Persian-normalized title, summary, body, tags, taxonomy, and location. |
+| status               | EntryStatus | Yes             | `DRAFT`     | Public search shows only`PUBLISHED`.                                 |
+| authorId             | UUID        | Yes             | None          | Entry author; preserved because v1 does not physically delete users.   |
+| provinceId           | UUID        | Yes             | None          | Required taxonomy.                                                     |
+| districtId           | UUID        | No              | None          | Optional managed district.                                             |
+| categoryId           | UUID        | Yes             | None          | Required taxonomy.                                                     |
+| contentTypeId        | UUID        | Yes             | None          | Required taxonomy.                                                     |
+| villageOrLocation    | String      | No              | None          | Free-text local detail.                                                |
+| historicalPeriod     | String      | No              | None          | Optional.                                                              |
+| culturalCommunity    | String      | No              | None          | Optional.                                                              |
+| alternativeLocalName | String      | No              | None          | Optional.                                                              |
+| regionalDifferences  | String      | No              | None          | Optional notes.                                                        |
+| viewCount            | Int         | Yes             | `0`         | Used for sorting, not critical to correctness.                         |
+| averageRating        | Decimal     | Yes             | `0`         | Denormalized for listing.                                              |
+| ratingCount          | Int         | Yes             | `0`         | Denormalized for listing.                                              |
+| lastRatedAt          | DateTime    | No              | None          | Latest time an active rating was created, updated, or removed.         |
+| submittedAt          | DateTime    | No              | None          | First submission timestamp.                                            |
+| publishedAt          | DateTime    | No              | None          | Set when published.                                                    |
+| hiddenAt             | DateTime    | No              | None          | Set when hidden.                                                       |
+| archivedAt           | DateTime    | No              | None          | Set when archived.                                                     |
+| createdAt            | DateTime    | Yes             | `now()`     | UTC.                                                                   |
+| updatedAt            | DateTime    | Yes             | `updatedAt` | UTC.                                                                   |
 
 **Unique constraints:** `slug`.
 
@@ -553,15 +553,15 @@ More audit actions can be added later only when new v1 workflows require them.
 
 **Purpose:** Stores a user helpfulness rating for a published entry.
 
-| Field     | Type     | Required | Default       | Notes                                        |
-| --------- | -------- | -------- | ------------- | -------------------------------------------- |
-| id        | UUID     | Yes      | `uuid()`    | Primary key.                                 |
-| entryId   | UUID     | Yes      | None          | Rated entry.                                 |
-| userId    | UUID     | Yes      | None          | Rater.                                       |
-| value     | Int      | Yes      | None          | Service validates the approved 1-5 scale.    |
-| isActive  | Boolean  | Yes      | `true`      | User removal of rating can deactivate.       |
-| createdAt | DateTime | Yes      | `now()`     | UTC.                                         |
-| updatedAt | DateTime | Yes      | `updatedAt` | UTC.                                         |
+| Field     | Type     | Required | Default       | Notes                                     |
+| --------- | -------- | -------- | ------------- | ----------------------------------------- |
+| id        | UUID     | Yes      | `uuid()`    | Primary key.                              |
+| entryId   | UUID     | Yes      | None          | Rated entry.                              |
+| userId    | UUID     | Yes      | None          | Rater.                                    |
+| value     | Int      | Yes      | None          | Service validates the approved 1-5 scale. |
+| isActive  | Boolean  | Yes      | `true`      | User removal of rating can deactivate.    |
+| createdAt | DateTime | Yes      | `now()`     | UTC.                                      |
+| updatedAt | DateTime | Yes      | `updatedAt` | UTC.                                      |
 
 **Unique constraints:** `(userId, entryId)` for one rating per user per entry.
 
@@ -575,18 +575,18 @@ More audit actions can be added later only when new v1 workflows require them.
 
 **Purpose:** Stores public comments about an entry, separate from ratings and corrections.
 
-| Field      | Type               | Required | Default       | Notes                                      |
-| ---------- | ------------------ | -------- | ------------- | ------------------------------------------ |
-| id         | UUID               | Yes      | `uuid()`    | Primary key.                               |
-| entryId    | UUID               | Yes      | None          | Reviewed entry.                            |
-| userId     | UUID               | Yes      | None          | Reviewer.                                  |
-| body       | String             | Yes      | None          | Public review text.                        |
-| status     | PublicReviewStatus | Yes      | `ACTIVE`    | Active, hidden, or user-deleted.           |
-| hiddenById | UUID               | No       | None          | Moderator/admin who hid it.                |
-| hiddenAt   | DateTime           | No       | None          | UTC.                                       |
-| deletedAt  | DateTime           | No       | None          | UTC.                                       |
-| createdAt  | DateTime           | Yes      | `now()`     | UTC.                                       |
-| updatedAt  | DateTime           | Yes      | `updatedAt` | UTC.                                       |
+| Field      | Type               | Required | Default       | Notes                            |
+| ---------- | ------------------ | -------- | ------------- | -------------------------------- |
+| id         | UUID               | Yes      | `uuid()`    | Primary key.                     |
+| entryId    | UUID               | Yes      | None          | Reviewed entry.                  |
+| userId     | UUID               | Yes      | None          | Reviewer.                        |
+| body       | String             | Yes      | None          | Public review text.              |
+| status     | PublicReviewStatus | Yes      | `ACTIVE`    | Active, hidden, or user-deleted. |
+| hiddenById | UUID               | No       | None          | Moderator/admin who hid it.      |
+| hiddenAt   | DateTime           | No       | None          | UTC.                             |
+| deletedAt  | DateTime           | No       | None          | UTC.                             |
+| createdAt  | DateTime           | Yes      | `now()`     | UTC.                             |
+| updatedAt  | DateTime           | Yes      | `updatedAt` | UTC.                             |
 
 **Unique constraints:** One active public review per user per entry should be enforced. In PostgreSQL this is best as a partial unique index on `(user_id, entry_id) WHERE status = 'ACTIVE'`; Prisma may require raw SQL migration for the partial index.
 
@@ -600,12 +600,12 @@ More audit actions can be added later only when new v1 workflows require them.
 
 **Purpose:** Allows a registered user to privately save a published Cultural Entry.
 
-| Field     | Type     | Required | Default    | Notes            |
-| --------- | -------- | -------- | ---------- | ---------------- |
-| id        | UUID     | Yes      | `uuid()` | Primary key.     |
-| userId    | UUID     | Yes      | None       | Bookmark owner.  |
-| entryId   | UUID     | Yes      | None       | Saved entry.     |
-| createdAt | DateTime | Yes      | `now()`  | UTC timestamp.   |
+| Field     | Type     | Required | Default    | Notes           |
+| --------- | -------- | -------- | ---------- | --------------- |
+| id        | UUID     | Yes      | `uuid()` | Primary key.    |
+| userId    | UUID     | Yes      | None       | Bookmark owner. |
+| entryId   | UUID     | Yes      | None       | Saved entry.    |
+| createdAt | DateTime | Yes      | `now()`  | UTC timestamp.  |
 
 **Unique constraints:** `(userId, entryId)`.
 
@@ -621,23 +621,23 @@ More audit actions can be added later only when new v1 workflows require them.
 
 **Purpose:** Stores proposed corrections for published cultural entries.
 
-| Field              | Type             | Required | Default       | Notes                                             |
-| ------------------ | ---------------- | -------- | ------------- | ------------------------------------------------- |
-| id                 | UUID             | Yes      | `uuid()`    | Primary key.                                      |
-| entryId            | UUID             | Yes      | None          | Entry being corrected.                            |
-| submittedById      | UUID             | Yes      | None          | Suggesting user.                                 |
-| reviewedById       | UUID             | No       | None          | Moderator/admin reviewer.                         |
-| status             | CorrectionStatus | Yes      | `PENDING`   | Pending, accepted, rejected.                      |
-| section            | String           | Yes      | None          | Incorrect/incomplete section.                     |
-| proposedCorrection | String           | Yes      | None          | Proposed replacement/addition.                    |
-| reason             | String           | Yes      | None          | Required explanation.                             |
-| sourceText         | String           | No       | None          | Optional source provided by user.                 |
-| reviewerComments   | String           | No       | None          | Moderator response.                               |
-| acceptedVersionId  | UUID             | No       | None          | New version created if accepted.                  |
-| submittedAt        | DateTime         | Yes      | `now()`     | UTC.                                              |
-| reviewedAt         | DateTime         | No       | None          | UTC.                                              |
-| createdAt          | DateTime         | Yes      | `now()`     | UTC.                                              |
-| updatedAt          | DateTime         | Yes      | `updatedAt` | UTC.                                              |
+| Field              | Type             | Required | Default       | Notes                             |
+| ------------------ | ---------------- | -------- | ------------- | --------------------------------- |
+| id                 | UUID             | Yes      | `uuid()`    | Primary key.                      |
+| entryId            | UUID             | Yes      | None          | Entry being corrected.            |
+| submittedById      | UUID             | Yes      | None          | Suggesting user.                  |
+| reviewedById       | UUID             | No       | None          | Moderator/admin reviewer.         |
+| status             | CorrectionStatus | Yes      | `PENDING`   | Pending, accepted, rejected.      |
+| section            | String           | Yes      | None          | Incorrect/incomplete section.     |
+| proposedCorrection | String           | Yes      | None          | Proposed replacement/addition.    |
+| reason             | String           | Yes      | None          | Required explanation.             |
+| sourceText         | String           | No       | None          | Optional source provided by user. |
+| reviewerComments   | String           | No       | None          | Moderator response.               |
+| acceptedVersionId  | UUID             | No       | None          | New version created if accepted.  |
+| submittedAt        | DateTime         | Yes      | `now()`     | UTC.                              |
+| reviewedAt         | DateTime         | No       | None          | UTC.                              |
+| createdAt          | DateTime         | Yes      | `now()`     | UTC.                              |
+| updatedAt          | DateTime         | Yes      | `updatedAt` | UTC.                              |
 
 **Unique constraints:** None.
 
@@ -651,20 +651,20 @@ More audit actions can be added later only when new v1 workflows require them.
 
 **Purpose:** Stores private content or policy complaints and their moderation resolution.
 
-| Field            | Type                   | Required | Default       | Notes                                      |
-| ---------------- | ---------------------- | -------- | ------------- | ------------------------------------------ |
-| id               | UUID                   | Yes      | `uuid()`    | Primary key.                               |
-| entryId          | UUID                   | Yes      | None          | Reported entry.                            |
-| reportedById     | UUID                   | Yes      | None          | Reporter.                                  |
-| reviewedById     | UUID                   | No       | None          | Moderator/admin handling report.           |
-| reason           | ReportReason           | Yes      | None          | Required reason.                           |
-| explanation      | String                 | Yes      | None          | Required details.                          |
-| status           | ReportStatus           | Yes      | `OPEN`      | Open, under review, resolved.              |
-| resolutionAction | ReportResolutionAction | No       | None          | Set when resolved.                         |
-| resolutionNotes  | String                 | No       | None          | Moderator/admin notes.                     |
-| resolvedAt       | DateTime               | No       | None          | UTC.                                       |
-| createdAt        | DateTime               | Yes      | `now()`     | UTC.                                       |
-| updatedAt        | DateTime               | Yes      | `updatedAt` | UTC.                                       |
+| Field            | Type                   | Required | Default       | Notes                            |
+| ---------------- | ---------------------- | -------- | ------------- | -------------------------------- |
+| id               | UUID                   | Yes      | `uuid()`    | Primary key.                     |
+| entryId          | UUID                   | Yes      | None          | Reported entry.                  |
+| reportedById     | UUID                   | Yes      | None          | Reporter.                        |
+| reviewedById     | UUID                   | No       | None          | Moderator/admin handling report. |
+| reason           | ReportReason           | Yes      | None          | Required reason.                 |
+| explanation      | String                 | Yes      | None          | Required details.                |
+| status           | ReportStatus           | Yes      | `OPEN`      | Open, under review, resolved.    |
+| resolutionAction | ReportResolutionAction | No       | None          | Set when resolved.               |
+| resolutionNotes  | String                 | No       | None          | Moderator/admin notes.           |
+| resolvedAt       | DateTime               | No       | None          | UTC.                             |
+| createdAt        | DateTime               | Yes      | `now()`     | UTC.                             |
+| updatedAt        | DateTime               | Yes      | `updatedAt` | UTC.                             |
 
 **Unique constraints:** None for v1. A duplicate-report prevention rule can be added later if needed.
 
@@ -823,27 +823,27 @@ This avoids deletion rules that destroy published cultural history.
 
 ### Relation Behavior Summary
 
-| Relation                                       | Behavior                                                                         |
-| ---------------------------------------------- | -------------------------------------------------------------------------------- |
-| User -> CulturalEntry                          | Restrict physical deletion; use suspension only in v1.                           |
-| CulturalEntry -> ContentVersion                | Preserve; restrict entry hard delete after submission.                           |
-| CulturalEntry -> ModerationReview              | Preserve.                                                                        |
-| CulturalEntry -> CorrectionSuggestion          | Preserve.                                                                        |
-| CulturalEntry -> Report                        | Preserve privately.                                                              |
-| CulturalEntry -> Rating                        | Preserve or deactivate; do not cascade from published entries.                   |
-| CulturalEntry -> PublicReview                  | Preserve with status; do not cascade from published entries.                     |
-| User -> Bookmark                               | Cascade-delete is acceptable because bookmarks are private convenience data.     |
+| Relation                                       | Behavior                                                                                                                                                               |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| User -> CulturalEntry                          | Restrict physical deletion; use suspension only in v1.                                                                                                                 |
+| CulturalEntry -> ContentVersion                | Preserve; restrict entry hard delete after submission.                                                                                                                 |
+| CulturalEntry -> ModerationReview              | Preserve.                                                                                                                                                              |
+| CulturalEntry -> CorrectionSuggestion          | Preserve.                                                                                                                                                              |
+| CulturalEntry -> Report                        | Preserve privately.                                                                                                                                                    |
+| CulturalEntry -> Rating                        | Preserve or deactivate; do not cascade from published entries.                                                                                                         |
+| CulturalEntry -> PublicReview                  | Preserve with status; do not cascade from published entries.                                                                                                           |
+| User -> Bookmark                               | Cascade-delete is acceptable because bookmarks are private convenience data.                                                                                           |
 | CulturalEntry -> Bookmark                      | Published entries should normally be archived, not physically deleted; if a draft is hard-deleted, bookmark cascade is irrelevant because drafts cannot be bookmarked. |
-| CulturalEntry -> Image                         | Draft cascade allowed; submitted/published entries use `isRemoved`.             |
-| CulturalEntry -> YouTubeVideo                  | Draft cascade allowed; submitted/published entries use `isRemoved`.             |
-| CulturalEntry -> Source                        | Draft cascade allowed; submitted/published source changes require a new version. |
-| CulturalEntry -> EntryTag                      | Draft cascade allowed; preserve for submitted/published entries.                 |
-| Province/Category/ContentType -> CulturalEntry | Restrict while referenced.                                                       |
-| Province -> District                           | Restrict while referenced.                                                       |
-| Tag -> EntryTag                                | Restrict while referenced unless a tag-merge admin workflow is implemented.      |
-| User -> RefreshSession                         | Cascade or cleanup after expiry/revocation.                                      |
-| User -> PasswordResetToken                     | Cascade or cleanup after expiry/use.                                             |
-| Any entity -> AuditLog                         | Preserve audit logs; avoid cascading deletes into audit logs.                    |
+| CulturalEntry -> Image                         | Draft cascade allowed; submitted/published entries use`isRemoved`.                                                                                                   |
+| CulturalEntry -> YouTubeVideo                  | Draft cascade allowed; submitted/published entries use`isRemoved`.                                                                                                   |
+| CulturalEntry -> Source                        | Draft cascade allowed; submitted/published source changes require a new version.                                                                                       |
+| CulturalEntry -> EntryTag                      | Draft cascade allowed; preserve for submitted/published entries.                                                                                                       |
+| Province/Category/ContentType -> CulturalEntry | Restrict while referenced.                                                                                                                                             |
+| Province -> District                           | Restrict while referenced.                                                                                                                                             |
+| Tag -> EntryTag                                | Restrict while referenced unless a tag-merge admin workflow is implemented.                                                                                            |
+| User -> RefreshSession                         | Cascade or cleanup after expiry/revocation.                                                                                                                            |
+| User -> PasswordResetToken                     | Cascade or cleanup after expiry/use.                                                                                                                                   |
+| Any entity -> AuditLog                         | Preserve audit logs; avoid cascading deletes into audit logs.                                                                                                          |
 
 ## Content Version Snapshot Structure
 
