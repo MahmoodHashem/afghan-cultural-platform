@@ -1,17 +1,23 @@
 "use client";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
+  getCurrentUser,
   type LoginWithEmailInput,
   loginWithEmail,
+  logoutAllSessions,
+  logoutCurrentSession,
   type RegisterWithEmailInput,
-  refreshAuthSession,
   registerWithEmail,
 } from "@/features/auth/api/auth-api";
+import { markAuthLogoutStarted, refreshAuthSessionOnce } from "@/lib/auth/auth-coordinator";
+import {
+  clearPrivateAuthQueries,
+  currentUserQueryKey,
+  setCurrentUserQuery,
+} from "@/lib/auth/auth-query";
 import { useAuthStore } from "@/stores/auth-store";
-
-const currentUserQueryKey = ["auth", "current-user"] as const;
 
 function useLogin() {
   const queryClient = useQueryClient();
@@ -21,8 +27,7 @@ function useLogin() {
     mutationFn: (input: LoginWithEmailInput) => loginWithEmail(input),
     onSuccess: (session) => {
       setAuthenticated(session);
-      queryClient.setQueryData(currentUserQueryKey, session.user);
-      void queryClient.invalidateQueries({ queryKey: currentUserQueryKey });
+      setCurrentUserQuery(queryClient, session.user);
     },
   });
 }
@@ -35,8 +40,7 @@ function useRegister() {
     mutationFn: (input: RegisterWithEmailInput) => registerWithEmail(input),
     onSuccess: (session) => {
       setAuthenticated(session);
-      queryClient.setQueryData(currentUserQueryKey, session.user);
-      void queryClient.invalidateQueries({ queryKey: currentUserQueryKey });
+      setCurrentUserQuery(queryClient, session.user);
     },
   });
 }
@@ -47,17 +51,63 @@ function useRefreshAuthSession() {
   const setUnauthenticated = useAuthStore((state) => state.setUnauthenticated);
 
   return useMutation({
-    mutationFn: () => refreshAuthSession(),
+    mutationFn: () => refreshAuthSessionOnce(),
     onSuccess: (session) => {
       setAuthenticated(session);
-      queryClient.setQueryData(currentUserQueryKey, session.user);
-      void queryClient.invalidateQueries({ queryKey: currentUserQueryKey });
+      setCurrentUserQuery(queryClient, session.user);
     },
     onError: () => {
       setUnauthenticated();
-      queryClient.removeQueries({ queryKey: currentUserQueryKey });
+      clearPrivateAuthQueries(queryClient);
     },
   });
 }
 
-export { currentUserQueryKey, useLogin, useRefreshAuthSession, useRegister };
+function useCurrentUser() {
+  return useQuery({
+    queryKey: currentUserQueryKey,
+    queryFn: ({ signal }) => getCurrentUser(signal),
+  });
+}
+
+function useLogout() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => logoutCurrentSession(),
+    onMutate: () => {
+      markAuthLogoutStarted();
+      clearPrivateAuthQueries(queryClient);
+    },
+    onSettled: () => {
+      markAuthLogoutStarted();
+      clearPrivateAuthQueries(queryClient);
+    },
+  });
+}
+
+function useLogoutAll() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => logoutAllSessions(),
+    onMutate: () => {
+      markAuthLogoutStarted();
+      clearPrivateAuthQueries(queryClient);
+    },
+    onSettled: () => {
+      markAuthLogoutStarted();
+      clearPrivateAuthQueries(queryClient);
+    },
+  });
+}
+
+export {
+  currentUserQueryKey,
+  useCurrentUser,
+  useLogin,
+  useLogout,
+  useLogoutAll,
+  useRefreshAuthSession,
+  useRegister,
+};

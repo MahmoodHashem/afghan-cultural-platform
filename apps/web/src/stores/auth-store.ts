@@ -20,15 +20,22 @@ type AuthState = {
   status: AuthStatus;
   accessToken: string | null;
   user: SafeUser | null;
+  setInitializing: () => void;
   setAuthenticated: (session: AuthSession) => void;
   setUnauthenticated: () => void;
   updateUser: (user: SafeUser) => void;
 };
 
 const useAuthStore = create<AuthState>((set) => ({
-  status: "unauthenticated",
+  status: "initializing",
   accessToken: null,
   user: null,
+  setInitializing: () =>
+    set({
+      status: "initializing",
+      accessToken: null,
+      user: null,
+    }),
   setAuthenticated: ({ accessToken, user }) =>
     set({
       status: "authenticated",

@@ -22,6 +22,16 @@ const oauthButtons = read("src/features/auth/components/oauth-buttons.tsx");
 const oauthCallbackPage = read("src/app/auth/callback/page.tsx");
 const oauthCallbackCompletion = read("src/features/auth/components/oauth-callback-completion.tsx");
 const authErrorMessages = read("src/features/auth/utils/auth-error-messages.ts");
+const apiClient = read("src/lib/api/api-client.ts");
+const authCoordinator = read("src/lib/auth/auth-coordinator.ts");
+const authProvider = read("src/providers/auth-provider.tsx");
+const appProviders = read("src/providers/app-providers.tsx");
+const authStore = read("src/stores/auth-store.ts");
+const routeGates = read("src/features/auth/components/route-gates.tsx");
+const authNavigation = read("src/features/auth/components/auth-navigation.tsx");
+const logoutAllButton = read("src/features/auth/components/logout-all-button.tsx");
+const verifiedEmailBanner = read("src/features/auth/components/verified-email-banner.tsx");
+const authQuery = read("src/lib/auth/auth-query.ts");
 
 test("login page renders required fields and links", () => {
   assert.match(loginPage, /title=" خوش آمدید"/);
@@ -110,5 +120,81 @@ test("OAuth errors use controlled Persian messages", () => {
   assert.match(authErrorMessages, /AUTH_FACEBOOK_EMAIL_LINKING_NOT_ALLOWED/);
   assert.match(authErrorMessages, /AUTH_GOOGLE_AUTH_FAILED/);
   assert.match(authErrorMessages, /AUTH_FACEBOOK_AUTH_FAILED/);
+  assert.match(authErrorMessages, /AUTH_REFRESH_TOKEN_EXPIRED/);
+  assert.match(authErrorMessages, /AUTH_REFRESH_TOKEN_REVOKED/);
+  assert.match(authErrorMessages, /AUTH_EMAIL_VERIFICATION_REQUIRED/);
+  assert.match(authErrorMessages, /AUTH_INSUFFICIENT_ROLE/);
   assert.match(oauthCallbackCompletion, /getAuthErrorMessageByCode/);
+});
+
+test("auth bootstrap restores the refresh-cookie session globally", () => {
+  assert.match(authStore, /status: "initializing"/);
+  assert.match(authProvider, /bootstrapAuthSession/);
+  assert.match(appProviders, /<AuthProvider>\{children\}<\/AuthProvider>/);
+  assert.match(authCoordinator, /credentials: "include"/);
+  assert.match(authCoordinator, /setAuthenticated\(session\)/);
+  assert.match(authCoordinator, /setUnauthenticated\(\)/);
+});
+
+test("single-flight refresh coordinates concurrent expired requests", () => {
+  assert.match(authCoordinator, /let refreshPromise: Promise<AuthSession> \| null = null/);
+  assert.match(authCoordinator, /if \(!refreshPromise\)/);
+  assert.match(apiClient, /refreshAccessTokenOnce\(\)/);
+  assert.match(apiClient, /skipAuthRefresh: true/);
+  assert.match(apiClient, /!path\.startsWith\("\/auth\/refresh"\)/);
+});
+
+test("API client retries authenticated 401 responses only once", () => {
+  assert.match(apiClient, /shouldRefreshAccessToken/);
+  assert.match(apiClient, /error\.status === 401/);
+  assert.match(apiClient, /skipAuthRefresh: true/);
+  assert.match(apiClient, /clearAuthSession\(\)/);
+});
+
+test("protected route gates preserve safe next paths and enforce auth states", () => {
+  assert.match(routeGates, /function RequireAuth/);
+  assert.match(routeGates, /status === "initializing"/);
+  assert.match(routeGates, /\/login\?next=/);
+  assert.match(routeGates, /getSafeRedirectPath\(pathname\)/);
+});
+
+test("verified-email and role gates are opt-in frontend UX gates", () => {
+  assert.match(routeGates, /function RequireVerifiedEmail/);
+  assert.match(routeGates, /!user\?\.emailVerified/);
+  assert.match(routeGates, /function RequireRole/);
+  assert.match(routeGates, /roles\.includes\(user\.role\)/);
+  assert.match(verifiedEmailBanner, /ورود به حساب مجاز است/);
+});
+
+test("role-aware navigation reflects auth state without becoming authorization", () => {
+  assert.match(authNavigation, /\/login/);
+  assert.match(authNavigation, /\/register/);
+  assert.match(authNavigation, /\/dashboard/);
+  assert.match(authNavigation, /\/moderator/);
+  assert.match(authNavigation, /\/admin/);
+  assert.match(authNavigation, /ایمیل تأیید نشده/);
+});
+
+test("logout and logout-all clear private auth state", () => {
+  assert.match(authApi, /"\/auth\/logout"/);
+  assert.match(authApi, /"\/auth\/logout-all"/);
+  assert.match(authApi, /skipAuthRefresh: true/);
+  assert.match(authMutations, /useLogout/);
+  assert.match(authMutations, /useLogoutAll/);
+  assert.match(authMutations, /markAuthLogoutStarted\(\)/);
+  assert.match(logoutAllButton, /خروج از همه دستگاه‌ها/);
+});
+
+test("private query cleanup preserves non-auth public query space", () => {
+  assert.match(authQuery, /privateQueryRoots/);
+  assert.match(authQuery, /"auth"/);
+  assert.match(authQuery, /"dashboard"/);
+  assert.doesNotMatch(authQuery, /published/);
+});
+
+test("auth code never stores tokens in browser storage or frontend cookies", () => {
+  const authFiles = [apiClient, authCoordinator, authApi, authMutations, authStore].join("\n");
+
+  assert.doesNotMatch(authFiles, /localStorage|sessionStorage|IndexedDB|document\.cookie/);
+  assert.match(authCoordinator, /credentials: "include"/);
 });
