@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { createOAuthStartUrl } from "@/features/auth/api/auth-api";
 import { AuthDivider } from "@/features/auth/components/auth-divider";
 import { FieldError } from "@/features/auth/components/field-error";
 import { OAuthButtons } from "@/features/auth/components/oauth-buttons";
@@ -41,6 +42,12 @@ function LoginForm() {
     },
     mode: "onBlur",
   });
+
+  function startOAuth(provider: "google" | "facebook") {
+    const nextPath = getSafeRedirectPath(searchParams.get("next"));
+
+    window.location.assign(createOAuthStartUrl(provider, nextPath));
+  }
 
   async function handleLoginSubmit(values: LoginFormValues) {
     setShowUnverifiedNotice(false);
@@ -128,7 +135,12 @@ function LoginForm() {
 
       <AuthDivider label="یا" />
 
-      <OAuthButtons googleLabel="ورود با گوگل" facebookLabel="ورود با فیسبوک" />
+      <OAuthButtons
+        googleLabel="ورود با گوگل"
+        facebookLabel="ورود با فیسبوک"
+        onGoogleClick={() => startOAuth("google")}
+        onFacebookClick={() => startOAuth("facebook")}
+      />
 
       <p className="text-center text-[15px] text-muted-foreground">
         حساب کاربری ندارید؟{" "}

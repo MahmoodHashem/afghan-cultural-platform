@@ -1,4 +1,15 @@
-import { Body, Controller, Get, Inject, Post, Req, Res, UseGuards } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Get,
+  HttpException,
+  Inject,
+  Post,
+  Req,
+  Res,
+  UseGuards,
+} from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
@@ -44,7 +55,10 @@ import { parseCookieHeader } from "@/modules/auth/utils/cookie.util";
 @ApiTags("Authentication")
 @Controller("auth")
 class AuthController {
-  constructor(@Inject(AuthService) private readonly authService: AuthService) {}
+  constructor(
+    @Inject(AuthService) private readonly authService: AuthService,
+    @Inject(ConfigService) private readonly configService: ConfigService,
+  ) {}
 
   @Public()
   @Post("register")
@@ -169,12 +183,9 @@ class AuthController {
   googleCallback(
     @OAuthProfile() profile: NormalizedOAuthProfile,
     @Req() request: Request,
-    @Res({ passthrough: true }) response: Response,
-  ): Promise<AuthSessionResponseDto> {
-    return this.authService.authenticateOAuthUser(
-      profile,
-      this.createAuthRequestContext(request, response),
-    );
+    @Res() response: Response,
+  ): Promise<void> {
+    return this.completeOAuthCallback(profile, request, response, "google");
   }
 
   @Public()
@@ -207,12 +218,9 @@ class AuthController {
   facebookCallback(
     @OAuthProfile() profile: NormalizedOAuthProfile,
     @Req() request: Request,
-    @Res({ passthrough: true }) response: Response,
-  ): Promise<AuthSessionResponseDto> {
-    return this.authService.authenticateOAuthUser(
-      profile,
-      this.createAuthRequestContext(request, response),
-    );
+    @Res() response: Response,
+  ): Promise<void> {
+    return this.completeOAuthCallback(profile, request, response, "facebook");
   }
 
   @Public()
@@ -325,6 +333,95 @@ class AuthController {
         response.clearCookie(cookie.name, cookie.options);
       },
     };
+  }
+
+  private async completeOAuthCallback(
+    profile: NormalizedOAuthProfile,
+    request: Request,
+    response: Response,
+    provider: "google" | "facebook",
+  ): Promise<void> {
+    try {
+      await this.authService.authenticateOAuthUser(
+        profile,
+        this.createAuthRequestContext(request, response),
+      );
+      response.redirect(this.createFrontendOAuthCallbackUrl(request, provider));
+    } catch (error) {
+      response.redirect(
+        this.createFrontendOAuthCallbackUrl(request, provider, this.getOAuthErrorCode(error)),
+      );
+    }
+  }
+
+  private createFrontendOAuthCallbackUrl(
+    request: Request,
+    provider: "google" | "facebook",
+    error?: string,
+  ): string {
+    const callbackUrl = new URL(
+      "/auth/callback",
+      this.configService.getOrThrow<string>("FRONTEND_URL"),
+    );
+    const next = this.getSafeNextPath(
+      typeof request.query.state === "string" ? request.query.state : undefined,
+    );
+
+    callbackUrl.searchParams.set("provider", provider);
+
+    if (next) {
+      callbackUrl.searchParams.set("next", next);
+    }
+
+    if (error) {
+      callbackUrl.searchParams.set("error", error);
+    }
+
+    return callbackUrl.toString();
+  }
+
+  private getOAuthErrorCode(error: unknown): string {
+    if (error instanceof HttpException) {
+      const response = error.getResponse();
+
+      if (typeof response === "object" && response !== null && "error" in response) {
+        const authError = response.error;
+
+        if (
+          typeof authError === "object" &&
+          authError !== null &&
+          "code" in authError &&
+          typeof authError.code === "string"
+        ) {
+          return authError.code;
+        }
+      }
+    }
+
+    return "AUTH_OAUTH_FAILED";
+  }
+
+  private getSafeNextPath(next: string | undefined): string | undefined {
+    if (!next) {
+      return undefined;
+    }
+
+    try {
+      const decodedNext = decodeURIComponent(next);
+
+      if (
+        !decodedNext.startsWith("/") ||
+        decodedNext.startsWith("//") ||
+        decodedNext.includes("\\") ||
+        /^[a-zA-Z][a-zA-Z\d+.-]*:/.test(decodedNext)
+      ) {
+        return undefined;
+      }
+
+      return decodedNext;
+    } catch {
+      return undefined;
+    }
   }
 }
 

@@ -6,14 +6,22 @@ import { Button } from "@/components/ui/button";
 type OAuthButtonsProps = {
   googleLabel: string;
   facebookLabel: string;
+  onGoogleClick?: () => void;
+  onFacebookClick?: () => void;
 };
 
-function OAuthButtons({ googleLabel, facebookLabel }: OAuthButtonsProps) {
+function OAuthButtons({
+  googleLabel,
+  facebookLabel,
+  onGoogleClick,
+  onFacebookClick,
+}: OAuthButtonsProps) {
   return (
     <div className="grid gap-3 sm:grid-cols-2">
       <Button
         type="button"
         variant="outline"
+        onClick={onGoogleClick}
         className="h-11 justify-center gap-3 border-border bg-card text-foreground hover:border-primary/30 hover:bg-primary-light/30"
         aria-label={googleLabel}
       >
@@ -23,6 +31,7 @@ function OAuthButtons({ googleLabel, facebookLabel }: OAuthButtonsProps) {
       <Button
         type="button"
         variant="outline"
+        onClick={onFacebookClick}
         className="h-11 justify-center gap-3 border-border bg-card text-foreground hover:border-primary/30 hover:bg-primary-light/30"
         aria-label={facebookLabel}
       >

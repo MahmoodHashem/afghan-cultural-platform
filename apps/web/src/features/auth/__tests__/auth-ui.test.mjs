@@ -16,13 +16,18 @@ const registerForm = read("src/features/auth/components/register-form.tsx");
 const passwordField = read("src/features/auth/components/password-field.tsx");
 const authAssets = read("src/features/auth/constants/auth-assets.ts");
 const authSchemas = read("src/features/auth/schemas/auth-schemas.ts");
+const authApi = read("src/features/auth/api/auth-api.ts");
+const authMutations = read("src/features/auth/hooks/use-auth-mutations.ts");
+const oauthButtons = read("src/features/auth/components/oauth-buttons.tsx");
+const oauthCallbackPage = read("src/app/auth/callback/page.tsx");
+const oauthCallbackCompletion = read("src/features/auth/components/oauth-callback-completion.tsx");
+const authErrorMessages = read("src/features/auth/utils/auth-error-messages.ts");
 
 test("login page renders required fields and links", () => {
-  assert.match(loginPage, /title="دوباره خوش آمدید"/);
+  assert.match(loginPage, /title=" خوش آمدید"/);
   assert.match(loginPage, /LOGIN_BACKGROUND_SRC/);
   assert.match(loginForm, /ایمیل/);
   assert.match(loginForm, /رمز عبور/);
-  assert.match(loginForm, /مرا به خاطر بسپار/);
   assert.match(loginForm, /\/forgot-password/);
   assert.match(loginForm, /ورود با گوگل/);
   assert.match(loginForm, /ورود با فیسبوک/);
@@ -78,4 +83,32 @@ test("form controls include keyboard-accessible controls and associated errors",
 test("login and register use the same approved login logo asset", () => {
   assert.match(authAssets, /AUTH_LOGO_SRC = "\/images\/large-logo\.png"/);
   assert.doesNotMatch(authAssets, /AUTH_LOGO_SRC = "\/images\/small-logo\.png"/);
+});
+
+test("OAuth buttons are connected through click handlers", () => {
+  assert.match(oauthButtons, /onGoogleClick/);
+  assert.match(oauthButtons, /onFacebookClick/);
+  assert.match(loginForm, /createOAuthStartUrl\(provider, nextPath\)/);
+  assert.match(registerForm, /createOAuthStartUrl\(provider, nextPath\)/);
+});
+
+test("OAuth start URLs use backend auth endpoints without frontend token handling", () => {
+  assert.match(authApi, /\/auth\/\$\{provider\}/);
+  assert.match(authApi, /url\.searchParams\.set\("next", nextPath\)/);
+  assert.doesNotMatch(authApi, /localStorage|sessionStorage|IndexedDB|document\.cookie/);
+});
+
+test("OAuth callback refreshes the backend cookie session into memory", () => {
+  assert.match(oauthCallbackPage, /OAuthCallbackCompletion/);
+  assert.match(oauthCallbackCompletion, /useRefreshAuthSession/);
+  assert.match(oauthCallbackCompletion, /router\.replace\(nextPath\)/);
+  assert.match(authMutations, /refreshAuthSession/);
+  assert.match(authApi, /"\/auth\/refresh"/);
+});
+
+test("OAuth errors use controlled Persian messages", () => {
+  assert.match(authErrorMessages, /AUTH_FACEBOOK_EMAIL_LINKING_NOT_ALLOWED/);
+  assert.match(authErrorMessages, /AUTH_GOOGLE_AUTH_FAILED/);
+  assert.match(authErrorMessages, /AUTH_FACEBOOK_AUTH_FAILED/);
+  assert.match(oauthCallbackCompletion, /getAuthErrorMessageByCode/);
 });

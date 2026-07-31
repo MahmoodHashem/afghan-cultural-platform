@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { createOAuthStartUrl } from "@/features/auth/api/auth-api";
 import { AuthDivider } from "@/features/auth/components/auth-divider";
 import { FieldError } from "@/features/auth/components/field-error";
 import { OAuthButtons } from "@/features/auth/components/oauth-buttons";
@@ -45,6 +46,12 @@ function RegisterForm() {
     },
     mode: "onBlur",
   });
+
+  function startOAuth(provider: "google" | "facebook") {
+    const nextPath = getSafeRedirectPath(searchParams.get("next"));
+
+    window.location.assign(createOAuthStartUrl(provider, nextPath));
+  }
 
   async function handleRegisterSubmit(values: RegisterFormValues) {
     setShowUnverifiedNotice(false);
@@ -208,7 +215,12 @@ function RegisterForm() {
 
       <AuthDivider label="یا با حساب خود ادامه دهید" />
 
-      <OAuthButtons googleLabel="ثبت‌نام با گوگل" facebookLabel="ثبت‌نام با فیسبوک" />
+      <OAuthButtons
+        googleLabel="ثبت‌نام با گوگل"
+        facebookLabel="ثبت‌نام با فیسبوک"
+        onGoogleClick={() => startOAuth("google")}
+        onFacebookClick={() => startOAuth("facebook")}
+      />
 
       <p className="text-center text-[15px] text-muted-foreground">
         قبلاً حساب کاربری دارید؟{" "}

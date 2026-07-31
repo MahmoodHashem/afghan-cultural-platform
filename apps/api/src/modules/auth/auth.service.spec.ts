@@ -722,7 +722,7 @@ describe("AuthService", () => {
   });
 
   it("returns the current user response shape used by the endpoint", () => {
-    const controller = new AuthController(authService);
+    const controller = new AuthController(authService, createConfigService());
 
     expect(controller.getCurrentUser(unverifiedUser)).toEqual({
       data: {

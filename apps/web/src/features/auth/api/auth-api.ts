@@ -1,4 +1,5 @@
 import { apiRequest } from "@/lib/api/api-client";
+import { getPublicApiBaseUrl } from "@/lib/api/env";
 import type { AuthSession } from "@/stores/auth-store";
 
 type LoginWithEmailInput = {
@@ -15,6 +16,8 @@ type RegisterWithEmailInput = {
 type AuthSessionResponse = {
   data: AuthSession;
 };
+
+type OAuthProvider = "google" | "facebook";
 
 async function loginWithEmail(input: LoginWithEmailInput, signal?: AbortSignal) {
   const response = await apiRequest<AuthSessionResponse>("/auth/login", {
@@ -36,5 +39,24 @@ async function registerWithEmail(input: RegisterWithEmailInput, signal?: AbortSi
   return response.data;
 }
 
+async function refreshAuthSession(signal?: AbortSignal) {
+  const response = await apiRequest<AuthSessionResponse>("/auth/refresh", {
+    method: "POST",
+    signal,
+  });
+
+  return response.data;
+}
+
+function createOAuthStartUrl(provider: OAuthProvider, nextPath?: string) {
+  const url = new URL(`${getPublicApiBaseUrl()}/auth/${provider}`);
+
+  if (nextPath) {
+    url.searchParams.set("next", nextPath);
+  }
+
+  return url.toString();
+}
+
 export type { LoginWithEmailInput, RegisterWithEmailInput };
-export { loginWithEmail, registerWithEmail };
+export { createOAuthStartUrl, loginWithEmail, refreshAuthSession, registerWithEmail };
