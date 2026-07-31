@@ -14,6 +14,7 @@ type EnvironmentVariables = {
   SMTP_USER: string;
   SMTP_PASSWORD: string;
   SMTP_FROM: string;
+  SMTP_FROM_NAME: string;
   EMAIL_VERIFICATION_URL: string;
   EMAIL_VERIFICATION_EXPIRES_IN_HOURS: number;
 };
@@ -38,6 +39,7 @@ const envValidationSchema = Joi.object<EnvironmentVariables>({
   SMTP_USER: Joi.string().trim().min(1).required(),
   SMTP_PASSWORD: Joi.string().trim().min(1).required(),
   SMTP_FROM: Joi.string().trim().min(1).required(),
+  SMTP_FROM_NAME: Joi.string().trim().min(1).required(),
   EMAIL_VERIFICATION_URL: Joi.string()
     .uri({ scheme: ["http", "https"] })
     .required(),

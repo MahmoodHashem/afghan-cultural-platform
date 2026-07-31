@@ -428,6 +428,7 @@ describe("AuthService", () => {
               SMTP_USER: "smtp-user",
               SMTP_PASSWORD: "smtp-password",
               SMTP_FROM: "noreply@example.com",
+              SMTP_FROM_NAME: "Afghan Culture Platform",
               EMAIL_VERIFICATION_URL: "http://localhost:3000/verify-email",
               EMAIL_VERIFICATION_EXPIRES_IN_HOURS: 24,
             }),
@@ -504,6 +505,7 @@ function createConfigService(): ConfigService {
     SMTP_USER: "smtp-user",
     SMTP_PASSWORD: "smtp-password",
     SMTP_FROM: "noreply@example.com",
+    SMTP_FROM_NAME: "Afghan Culture Platform",
     EMAIL_VERIFICATION_URL: "http://localhost:3000/verify-email",
     EMAIL_VERIFICATION_EXPIRES_IN_HOURS: 24,
   };

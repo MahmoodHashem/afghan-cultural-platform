@@ -1,6 +1,7 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { createTransport, type SendMailOptions, type Transporter } from "nodemailer";
+import type Mail from "nodemailer/lib/mailer";
 
 type MailMessage = {
   to: string;
@@ -11,13 +12,16 @@ type MailMessage = {
 
 @Injectable()
 class MailService {
-  private readonly from: string;
+  private readonly from: Mail.Address;
   private readonly transporter: Transporter;
 
   constructor(@Inject(ConfigService) configService: ConfigService) {
     const port = configService.getOrThrow<number>("SMTP_PORT");
 
-    this.from = configService.getOrThrow<string>("SMTP_FROM");
+    this.from = {
+      address: configService.getOrThrow<string>("SMTP_FROM"),
+      name: configService.getOrThrow<string>("SMTP_FROM_NAME"),
+    };
     this.transporter = createTransport({
       host: configService.getOrThrow<string>("SMTP_HOST"),
       port,
