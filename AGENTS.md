@@ -19,3 +19,4 @@
 - Do not implement role checks manually in controllers.
 - Use the shared authorization decorators and guards for authentication, roles, and verified-email checks.
 - Frontend hiding is not authorization; backend guards and services must enforce access.
+- Before any frontend work, read AGENTS.frontend.md and every frontend document it references.
