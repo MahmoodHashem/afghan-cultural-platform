@@ -2,16 +2,17 @@ import {
   type CanActivate,
   type ExecutionContext,
   ForbiddenException,
+  Inject,
   Injectable,
 } from "@nestjs/common";
-import type { Reflector } from "@nestjs/core";
+import { Reflector } from "@nestjs/core";
 
 import { AUTH_ERROR_CODES, REQUIRE_VERIFIED_EMAIL_KEY } from "@/modules/auth/auth.constants";
 import type { AuthenticatedRequest } from "@/modules/auth/types/authenticated-request.type";
 
 @Injectable()
 class VerifiedEmailGuard implements CanActivate {
-  constructor(private readonly reflector: Reflector) {}
+  constructor(@Inject(Reflector) private readonly reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
     const requiresVerifiedEmail = this.reflector.getAllAndOverride<boolean>(

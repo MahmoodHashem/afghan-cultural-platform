@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
 import { AuthCard } from "@/features/auth/components/auth-card";
 import { AuthLayout } from "@/features/auth/components/auth-layout";
@@ -21,7 +22,9 @@ export default function LoginPage() {
         title=" خوش آمدید"
         description="برای ادامه مسیر یادگیری و کاوش در میراث افغانستان، وارد شوید."
       >
-        <LoginForm />
+        <Suspense fallback={null}>
+          <LoginForm />
+        </Suspense>
       </AuthCard>
     </AuthLayout>
   );

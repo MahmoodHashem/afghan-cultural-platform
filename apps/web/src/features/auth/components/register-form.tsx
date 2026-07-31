@@ -3,6 +3,8 @@
 import { ArrowLeftIcon, EnvelopeIcon, UserIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
@@ -13,14 +15,25 @@ import { AuthDivider } from "@/features/auth/components/auth-divider";
 import { FieldError } from "@/features/auth/components/field-error";
 import { OAuthButtons } from "@/features/auth/components/oauth-buttons";
 import { PasswordField } from "@/features/auth/components/password-field";
+import { UnverifiedEmailNotice } from "@/features/auth/components/unverified-email-notice";
+import { useRegister } from "@/features/auth/hooks/use-auth-mutations";
 import { type RegisterFormValues, registerSchema } from "@/features/auth/schemas/auth-schemas";
+import { applyApiFieldErrors, getAuthFormErrorMessage } from "@/features/auth/utils/form-errors";
+import { getSafeRedirectPath } from "@/features/auth/utils/redirects";
+import { isApiError } from "@/lib/api/api-error";
 import { cn } from "@/lib/utils";
 
 function RegisterForm() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const registerMutation = useRegister();
+  const [formError, setFormError] = useState<string | null>(null);
+  const [showUnverifiedNotice, setShowUnverifiedNotice] = useState(false);
   const {
     formState: { errors },
     handleSubmit,
     register,
+    setError,
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -33,12 +46,65 @@ function RegisterForm() {
     mode: "onBlur",
   });
 
-  function handleRegisterSubmit(_values: RegisterFormValues) {
-    // TODO: Connect to the auth API integration boundary in the authentication integration step.
+  async function handleRegisterSubmit(values: RegisterFormValues) {
+    setFormError(null);
+    setShowUnverifiedNotice(false);
+
+    try {
+      const session = await registerMutation.mutateAsync({
+        displayName: values.displayName,
+        email: values.email,
+        password: values.password,
+      });
+
+      if (!session.user.emailVerified) {
+        setShowUnverifiedNotice(true);
+      }
+
+      window.setTimeout(
+        () => {
+          router.replace(getSafeRedirectPath(searchParams.get("next")));
+        },
+        session.user.emailVerified ? 0 : 900,
+      );
+    } catch (error) {
+      if (isApiError(error) && error.code === "AUTH_EMAIL_ALREADY_REGISTERED") {
+        setError(
+          "email",
+          {
+            type: "server",
+            message: "این ایمیل قبلاً ثبت شده است.",
+          },
+          {
+            shouldFocus: true,
+          },
+        );
+      } else {
+        applyApiFieldErrors<RegisterFormValues>(error, setError, {
+          displayName: "displayName",
+          email: "email",
+          password: "password",
+        });
+      }
+
+      setFormError(getAuthFormErrorMessage(error));
+    }
   }
 
   return (
     <form className="space-y-5" onSubmit={handleSubmit(handleRegisterSubmit)} noValidate>
+      {formError ? (
+        <div
+          className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-[14px] leading-7 text-destructive"
+          role="alert"
+          aria-live="assertive"
+        >
+          {formError}
+        </div>
+      ) : null}
+
+      {showUnverifiedNotice ? <UnverifiedEmailNotice /> : null}
+
       <div className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="register-name" className="text-form-label">
@@ -136,8 +202,14 @@ function RegisterForm() {
         <FieldError id="accepted-terms-error" message={errors.acceptedTerms?.message} />
       </div>
 
-      <Button type="submit" size="lg" className="h-12 w-full shadow-sm">
-        <span>ثبت‌نام</span>
+      <Button
+        type="submit"
+        size="lg"
+        className="h-12 w-full shadow-sm"
+        disabled={registerMutation.isPending}
+        aria-busy={registerMutation.isPending}
+      >
+        <span>{registerMutation.isPending ? "در حال ثبت‌نام..." : "ثبت‌نام"}</span>
         <ArrowLeftIcon className="size-5" aria-hidden="true" />
       </Button>
 

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
 import { AuthCard } from "@/features/auth/components/auth-card";
 import { AuthLayout } from "@/features/auth/components/auth-layout";
@@ -21,7 +22,9 @@ export default function RegisterPage() {
         title="ایجاد حساب کاربری"
         description="به جمع علاقه‌مندان فرهنگ و دانش افغانستان بپیوندید."
       >
-        <RegisterForm />
+        <Suspense fallback={null}>
+          <RegisterForm />
+        </Suspense>
       </AuthCard>
     </AuthLayout>
   );

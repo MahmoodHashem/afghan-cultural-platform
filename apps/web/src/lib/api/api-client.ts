@@ -1,41 +1,23 @@
+import { ApiError, type ApiFieldError } from "@/lib/api/api-error";
 import { getPublicApiBaseUrl } from "@/lib/api/env";
-
-type ApiSuccessResponse<TData> = {
-  success: true;
-  data: TData;
-  message?: string;
-};
-
-type ApiFieldError = {
-  field: string;
-  message: string;
-};
-
-type ApiErrorResponse = {
-  success: false;
-  message: string;
-  code?: string;
-  fieldErrors?: ApiFieldError[];
-};
-
-class ApiError extends Error {
-  status: number;
-  response: ApiErrorResponse;
-
-  constructor(status: number, response: ApiErrorResponse) {
-    super(response.message);
-    this.name = "ApiError";
-    this.status = status;
-    this.response = response;
-  }
-}
+import { getAccessToken } from "@/stores/auth-store";
 
 type ApiRequestOptions = {
   method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   body?: unknown | FormData;
-  accessToken?: string;
+  accessToken?: string | null;
   signal?: AbortSignal;
   headers?: HeadersInit;
+  includeCredentials?: boolean;
+};
+
+type BackendErrorEnvelope = {
+  error?: {
+    code?: unknown;
+    message?: unknown;
+    fieldErrors?: unknown;
+  };
+  requestId?: unknown;
 };
 
 function createUrl(path: string) {
@@ -49,7 +31,7 @@ function isFormData(body: unknown): body is FormData {
   return typeof FormData !== "undefined" && body instanceof FormData;
 }
 
-async function parseJsonResponse<T>(response: Response): Promise<T | undefined> {
+async function parseJsonResponse(response: Response): Promise<unknown> {
   if (response.status === 204) {
     return undefined;
   }
@@ -60,12 +42,23 @@ async function parseJsonResponse<T>(response: Response): Promise<T | undefined> 
     return undefined;
   }
 
-  return response.json() as Promise<T>;
+  try {
+    return await response.json();
+  } catch {
+    return undefined;
+  }
 }
 
 async function apiRequest<TData>(
   path: string,
-  { method = "GET", body, accessToken, signal, headers }: ApiRequestOptions = {},
+  {
+    method = "GET",
+    body,
+    accessToken = getAccessToken(),
+    signal,
+    headers,
+    includeCredentials = true,
+  }: ApiRequestOptions = {},
 ): Promise<TData> {
   const requestHeaders = new Headers(headers);
 
@@ -77,6 +70,7 @@ async function apiRequest<TData>(
     method,
     headers: requestHeaders,
     signal,
+    credentials: includeCredentials ? "include" : "same-origin",
   };
 
   if (body !== undefined) {
@@ -88,29 +82,79 @@ async function apiRequest<TData>(
     }
   }
 
-  const response = await fetch(createUrl(path), requestInit);
-  const parsedResponse = await parseJsonResponse<ApiSuccessResponse<TData> | ApiErrorResponse>(
-    response,
-  );
+  const url = createUrl(path);
+  let response: Response;
 
-  if (!response.ok) {
-    const errorResponse: ApiErrorResponse =
-      parsedResponse && "success" in parsedResponse && !parsedResponse.success
-        ? parsedResponse
-        : {
-            success: false,
-            message: "درخواست با خطا روبه‌رو شد.",
-          };
-
-    throw new ApiError(response.status, errorResponse);
+  try {
+    response = await fetch(url, requestInit);
+  } catch {
+    throw new ApiError({
+      code: "NETWORK_ERROR",
+      message: "ارتباط با سرور برقرار نشد.",
+    });
   }
 
-  if (parsedResponse && "success" in parsedResponse && parsedResponse.success) {
-    return parsedResponse.data;
+  const parsedResponse = await parseJsonResponse(response);
+
+  if (!response.ok) {
+    throw createApiError(response, parsedResponse);
   }
 
   return parsedResponse as TData;
 }
 
-export type { ApiErrorResponse, ApiFieldError, ApiSuccessResponse };
-export { ApiError, apiRequest };
+function createApiError(response: Response, parsedResponse: unknown): ApiError {
+  const errorEnvelope = isBackendErrorEnvelope(parsedResponse) ? parsedResponse : undefined;
+  const backendError = errorEnvelope?.error;
+  const code =
+    typeof backendError?.code === "string"
+      ? backendError.code
+      : createHttpErrorCode(response.status);
+  const message =
+    typeof backendError?.message === "string" ? backendError.message : "درخواست با خطا روبه‌رو شد.";
+  const requestId =
+    typeof errorEnvelope?.requestId === "string" ? errorEnvelope.requestId : undefined;
+
+  return new ApiError({
+    code,
+    message,
+    fieldErrors: createFieldErrors(backendError?.fieldErrors),
+    requestId,
+    status: response.status,
+  });
+}
+
+function isBackendErrorEnvelope(value: unknown): value is BackendErrorEnvelope {
+  return typeof value === "object" && value !== null && "error" in value;
+}
+
+function createFieldErrors(value: unknown): ApiFieldError[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.flatMap((fieldError) => {
+    if (
+      typeof fieldError === "object" &&
+      fieldError !== null &&
+      "field" in fieldError &&
+      "message" in fieldError &&
+      typeof fieldError.field === "string" &&
+      typeof fieldError.message === "string"
+    ) {
+      return [{ field: fieldError.field, message: fieldError.message }];
+    }
+
+    return [];
+  });
+}
+
+function createHttpErrorCode(status: number) {
+  if (status === 429) {
+    return "TOO_MANY_REQUESTS";
+  }
+
+  return `HTTP_${status}`;
+}
+
+export { apiRequest };

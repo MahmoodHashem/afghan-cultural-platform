@@ -2,9 +2,10 @@ import {
   type CanActivate,
   type ExecutionContext,
   ForbiddenException,
+  Inject,
   Injectable,
 } from "@nestjs/common";
-import type { Reflector } from "@nestjs/core";
+import { Reflector } from "@nestjs/core";
 
 import type { UserRole } from "@/generated/prisma/enums";
 import { AUTH_ERROR_CODES, ROLES_KEY } from "@/modules/auth/auth.constants";
@@ -12,7 +13,7 @@ import type { AuthenticatedRequest } from "@/modules/auth/types/authenticated-re
 
 @Injectable()
 class RolesGuard implements CanActivate {
-  constructor(private readonly reflector: Reflector) {}
+  constructor(@Inject(Reflector) private readonly reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
     const allowedRoles = this.reflector.getAllAndOverride<UserRole[]>(ROLES_KEY, [
