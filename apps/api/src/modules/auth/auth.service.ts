@@ -21,6 +21,7 @@ import type { LoginDto } from "@/modules/auth/dto/login.dto";
 import type { RegisterDto } from "@/modules/auth/dto/register.dto";
 import type { ResendVerificationDto } from "@/modules/auth/dto/resend-verification.dto";
 import type { VerifyEmailDto } from "@/modules/auth/dto/verify-email.dto";
+import type { AuthRequestContext } from "@/modules/auth/types/auth-request-context.type";
 import type {
   AuthSessionResponse,
   CurrentUserResponse,
@@ -45,6 +46,7 @@ import { UsersService } from "@/modules/users/users.service";
 
 type AuthErrorCode = (typeof AUTH_ERROR_CODES)[keyof typeof AUTH_ERROR_CODES];
 type OAuthTransaction = Pick<PrismaService, "oAuthAccount" | "user">;
+type RefreshSessionTransaction = Pick<PrismaService, "refreshSession">;
 
 @Injectable()
 class AuthService {
@@ -56,7 +58,10 @@ class AuthService {
     @Inject(MailService) private readonly mailService: MailService,
   ) {}
 
-  async register(input: RegisterDto): Promise<AuthSessionResponse> {
+  async register(
+    input: RegisterDto,
+    context: AuthRequestContext = {},
+  ): Promise<AuthSessionResponse> {
     const email = this.usersService.normalizeEmail(input.email);
     const existingUser = await this.usersService.findUserByEmail(email);
 
@@ -79,7 +84,7 @@ class AuthService {
     const verificationToken = await this.createEmailVerificationToken(user.id);
     await this.sendVerificationEmail(user, verificationToken);
 
-    return this.createAuthSession(user);
+    return this.createAuthSession(user, context);
   }
 
   async verifyEmail(input: VerifyEmailDto): Promise<VerifyEmailResponse> {
@@ -182,7 +187,7 @@ class AuthService {
     return this.createNeutralVerificationResponse();
   }
 
-  async login(input: LoginDto): Promise<AuthSessionResponse> {
+  async login(input: LoginDto, context: AuthRequestContext = {}): Promise<AuthSessionResponse> {
     const email = this.usersService.normalizeEmail(input.email);
     const user = await this.usersService.findUserCredentialsByEmail(email);
 
@@ -209,10 +214,13 @@ class AuthService {
 
     const loggedInUser = await this.usersService.updateLastLoginAt(user.id, new Date());
 
-    return this.createAuthSession(loggedInUser);
+    return this.createAuthSession(loggedInUser, context);
   }
 
-  async authenticateOAuthUser(profile: NormalizedOAuthProfile): Promise<AuthSessionResponse> {
+  async authenticateOAuthUser(
+    profile: NormalizedOAuthProfile,
+    context: AuthRequestContext = {},
+  ): Promise<AuthSessionResponse> {
     const user = await this.prisma.$transaction(async (transaction) => {
       const existingAccount = await transaction.oAuthAccount.findUnique({
         where: {
@@ -322,7 +330,159 @@ class AuthService {
       }
     });
 
-    return this.createAuthSession(user);
+    return this.createAuthSession(user, context);
+  }
+
+  async refresh(
+    refreshToken: string | undefined,
+    context: AuthRequestContext = {},
+  ): Promise<AuthSessionResponse> {
+    if (!refreshToken) {
+      this.clearRefreshCookie(context);
+      throw this.createRefreshError(
+        AUTH_ERROR_CODES.REFRESH_TOKEN_MISSING,
+        "Refresh token cookie is missing.",
+      );
+    }
+
+    const payload = await this.verifyRefreshToken(refreshToken, context);
+    const now = new Date();
+
+    return this.prisma.$transaction(async (transaction) => {
+      const session = await transaction.refreshSession.findUnique({
+        where: {
+          id: payload.sessionId,
+        },
+        select: {
+          id: true,
+          userId: true,
+          tokenHash: true,
+          expiresAt: true,
+          revokedAt: true,
+          user: {
+            select: this.safeAuthenticatedUserSelect(),
+          },
+        },
+      });
+
+      if (!session) {
+        this.clearRefreshCookie(context);
+        throw this.createRefreshError(
+          AUTH_ERROR_CODES.SESSION_NOT_FOUND,
+          "Refresh session was not found.",
+        );
+      }
+
+      if (session.revokedAt) {
+        this.clearRefreshCookie(context);
+        throw this.createRefreshError(
+          AUTH_ERROR_CODES.REFRESH_TOKEN_REVOKED,
+          "Refresh token session has been revoked.",
+        );
+      }
+
+      if (session.expiresAt <= now) {
+        await transaction.refreshSession.update({
+          where: {
+            id: session.id,
+          },
+          data: {
+            revokedAt: now,
+          },
+        });
+        this.clearRefreshCookie(context);
+        throw this.createRefreshError(
+          AUTH_ERROR_CODES.REFRESH_TOKEN_EXPIRED,
+          "Refresh token has expired.",
+        );
+      }
+
+      if (this.usersService.isSuspended(session.user)) {
+        await this.revokeActiveSessionsForUser(transaction, session.userId, now);
+        this.clearRefreshCookie(context);
+        throw new ForbiddenException(
+          this.createAuthError(AUTH_ERROR_CODES.ACCOUNT_SUSPENDED, "Account is suspended."),
+        );
+      }
+
+      const tokenIsValid = await this.verifyPassword(session.tokenHash, refreshToken);
+
+      if (!tokenIsValid) {
+        this.clearRefreshCookie(context);
+        throw this.createRefreshError(
+          AUTH_ERROR_CODES.REFRESH_TOKEN_INVALID,
+          "Refresh token is invalid.",
+        );
+      }
+
+      const rotatedSession = await this.createRefreshSessionRecord(
+        transaction,
+        session.user,
+        context,
+      );
+
+      await transaction.refreshSession.update({
+        where: {
+          id: session.id,
+        },
+        data: {
+          revokedAt: now,
+          replacedById: rotatedSession.sessionId,
+        },
+      });
+      await this.enforceActiveSessionLimit(transaction, session.userId, now);
+      this.setRefreshCookie(context, rotatedSession.refreshToken, rotatedSession.expiresAt);
+
+      return {
+        data: {
+          accessToken: await this.signAccessToken(session.user, rotatedSession.sessionId),
+          user: this.toSafeAuthUser(session.user),
+        },
+      };
+    });
+  }
+
+  async logout(
+    refreshToken: string | undefined,
+    context: AuthRequestContext = {},
+  ): Promise<MessageResponse> {
+    if (refreshToken) {
+      const payload = await this.tryVerifyRefreshToken(refreshToken);
+
+      if (payload?.sessionId) {
+        await this.prisma.refreshSession.updateMany({
+          where: {
+            id: payload.sessionId,
+            revokedAt: null,
+          },
+          data: {
+            revokedAt: new Date(),
+          },
+        });
+      }
+    }
+
+    this.clearRefreshCookie(context);
+
+    return {
+      data: {
+        message: "Logged out successfully.",
+      },
+    };
+  }
+
+  async logoutAll(
+    user: AuthenticatedUser,
+    context: AuthRequestContext = {},
+  ): Promise<MessageResponse> {
+    await this.revokeActiveSessionsForUser(this.prisma, user.id, new Date());
+    this.clearRefreshCookie(context);
+
+    return {
+      data: {
+        message: "Logged out from all devices successfully.",
+      },
+    };
   }
 
   getCurrentUser(user: AuthenticatedUser): CurrentUserResponse {
@@ -390,10 +550,21 @@ class AuthService {
     return this.configService.getOrThrow<NonNullable<JwtSignOptions["expiresIn"]>>(configKey);
   }
 
-  private async createAuthSession(user: AuthenticatedUser): Promise<AuthSessionResponse> {
+  getRefreshCookieName(): string {
+    return this.configService.get<string>("REFRESH_COOKIE_NAME", "refresh_token");
+  }
+
+  private async createAuthSession(
+    user: AuthenticatedUser,
+    context: AuthRequestContext,
+  ): Promise<AuthSessionResponse> {
+    const session = await this.createRefreshSessionRecord(this.prisma, user, context);
+    await this.enforceActiveSessionLimit(this.prisma, user.id, new Date());
+    this.setRefreshCookie(context, session.refreshToken, session.expiresAt);
+
     return {
       data: {
-        accessToken: await this.signAccessToken(user, randomUUID()),
+        accessToken: await this.signAccessToken(user, session.sessionId),
         user: this.toSafeAuthUser(user),
       },
     };
@@ -452,6 +623,204 @@ class AuthService {
       data: {
         message: EMAIL_VERIFICATION_NEUTRAL_MESSAGE,
       },
+    };
+  }
+
+  private async createRefreshSessionRecord(
+    transaction: RefreshSessionTransaction,
+    user: AuthenticatedUser,
+    context: AuthRequestContext,
+  ): Promise<{ expiresAt: Date; refreshToken: string; sessionId: string }> {
+    const sessionId = randomUUID();
+    const expiresAt = this.createRefreshExpiry(new Date());
+    const refreshToken = await this.signRefreshToken(user.id, sessionId);
+    const tokenHash = await this.hashRefreshToken(refreshToken);
+
+    await transaction.refreshSession.create({
+      data: {
+        id: sessionId,
+        userId: user.id,
+        tokenHash,
+        expiresAt,
+        userAgent: context.userAgent,
+        ipAddress: context.ipAddress,
+      },
+    });
+
+    return {
+      expiresAt,
+      refreshToken,
+      sessionId,
+    };
+  }
+
+  private async enforceActiveSessionLimit(
+    transaction: RefreshSessionTransaction,
+    userId: string,
+    now: Date,
+  ): Promise<void> {
+    const maxActiveSessions = this.configService.get<number>("MAX_ACTIVE_SESSIONS", 10);
+    const activeSessions = await transaction.refreshSession.findMany({
+      where: {
+        userId,
+        revokedAt: null,
+        expiresAt: {
+          gt: now,
+        },
+      },
+      orderBy: {
+        createdAt: "asc",
+      },
+      select: {
+        id: true,
+      },
+    });
+    const sessionsToRevoke = activeSessions.slice(
+      0,
+      Math.max(0, activeSessions.length - maxActiveSessions),
+    );
+
+    if (sessionsToRevoke.length === 0) {
+      return;
+    }
+
+    await transaction.refreshSession.updateMany({
+      where: {
+        id: {
+          in: sessionsToRevoke.map((session) => session.id),
+        },
+      },
+      data: {
+        revokedAt: now,
+      },
+    });
+  }
+
+  private async revokeActiveSessionsForUser(
+    transaction: RefreshSessionTransaction,
+    userId: string,
+    revokedAt: Date,
+  ): Promise<void> {
+    await transaction.refreshSession.updateMany({
+      where: {
+        userId,
+        revokedAt: null,
+      },
+      data: {
+        revokedAt,
+      },
+    });
+  }
+
+  private async verifyRefreshToken(
+    refreshToken: string,
+    context: AuthRequestContext,
+  ): Promise<JwtRefreshTokenPayload> {
+    try {
+      const payload = await this.jwtService.verifyAsync<JwtRefreshTokenPayload>(refreshToken, {
+        secret: this.configService.getOrThrow<string>("JWT_REFRESH_SECRET"),
+      });
+
+      if (!payload.sub || !payload.sessionId) {
+        throw this.createRefreshError(
+          AUTH_ERROR_CODES.REFRESH_TOKEN_INVALID,
+          "Refresh token payload is invalid.",
+        );
+      }
+
+      return payload;
+    } catch (error) {
+      this.clearRefreshCookie(context);
+
+      if (this.isJwtExpiredError(error)) {
+        throw this.createRefreshError(
+          AUTH_ERROR_CODES.REFRESH_TOKEN_EXPIRED,
+          "Refresh token has expired.",
+        );
+      }
+
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+
+      throw this.createRefreshError(
+        AUTH_ERROR_CODES.REFRESH_TOKEN_INVALID,
+        "Refresh token is invalid.",
+      );
+    }
+  }
+
+  private async tryVerifyRefreshToken(
+    refreshToken: string,
+  ): Promise<JwtRefreshTokenPayload | null> {
+    try {
+      return await this.jwtService.verifyAsync<JwtRefreshTokenPayload>(refreshToken, {
+        secret: this.configService.getOrThrow<string>("JWT_REFRESH_SECRET"),
+      });
+    } catch {
+      return null;
+    }
+  }
+
+  private createRefreshExpiry(from: Date): Date {
+    return new Date(from.getTime() + this.getTokenLifetimeMilliseconds("JWT_REFRESH_EXPIRES_IN"));
+  }
+
+  private getTokenLifetimeMilliseconds(configKey: string): number {
+    const lifetime = this.configService.getOrThrow<string>(configKey).trim();
+    const match = lifetime.match(/^(\d+)([smhd])$/i);
+
+    if (!match) {
+      const seconds = Number(lifetime);
+
+      if (Number.isFinite(seconds) && seconds > 0) {
+        return seconds * 1000;
+      }
+
+      throw new Error(`Invalid token lifetime for ${configKey}`);
+    }
+
+    const value = Number(match[1]);
+    const unit = match[2].toLowerCase();
+    const multipliers: Record<string, number> = {
+      s: 1000,
+      m: 60 * 1000,
+      h: 60 * 60 * 1000,
+      d: 24 * 60 * 60 * 1000,
+    };
+
+    return value * multipliers[unit];
+  }
+
+  private setRefreshCookie(
+    context: AuthRequestContext,
+    refreshToken: string,
+    expiresAt: Date,
+  ): void {
+    context.setRefreshCookie?.({
+      name: this.getRefreshCookieName(),
+      value: refreshToken,
+      options: this.createRefreshCookieOptions(expiresAt),
+    });
+  }
+
+  private clearRefreshCookie(context: AuthRequestContext): void {
+    context.clearRefreshCookie?.({
+      name: this.getRefreshCookieName(),
+      options: this.createRefreshCookieOptions(new Date(0)),
+    });
+  }
+
+  private createRefreshCookieOptions(expiresAt: Date) {
+    const cookieDomain = this.configService.get<string>("REFRESH_COOKIE_DOMAIN", "").trim();
+
+    return {
+      httpOnly: true,
+      secure: this.configService.get<string>("NODE_ENV", "development") === "production",
+      sameSite: "lax" as const,
+      path: "/api/v1/auth",
+      expires: expiresAt,
+      ...(cookieDomain ? { domain: cookieDomain } : {}),
     };
   }
 
@@ -558,6 +927,19 @@ class AuthService {
       "code" in error &&
       (error as { code?: unknown }).code === "P2002"
     );
+  }
+
+  private isJwtExpiredError(error: unknown): boolean {
+    return (
+      typeof error === "object" &&
+      error !== null &&
+      "name" in error &&
+      (error as { name?: unknown }).name === "TokenExpiredError"
+    );
+  }
+
+  private createRefreshError(code: AuthErrorCode, message: string): UnauthorizedException {
+    return new UnauthorizedException(this.createAuthError(code, message));
   }
 
   private createAuthError(code: AuthErrorCode, message: string) {

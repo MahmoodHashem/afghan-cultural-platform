@@ -9,6 +9,9 @@ type EnvironmentVariables = {
   JWT_REFRESH_SECRET: string;
   JWT_ACCESS_EXPIRES_IN: string;
   JWT_REFRESH_EXPIRES_IN: string;
+  REFRESH_COOKIE_NAME: string;
+  REFRESH_COOKIE_DOMAIN: string;
+  MAX_ACTIVE_SESSIONS: number;
   SMTP_HOST: string;
   SMTP_PORT: number;
   SMTP_USER: string;
@@ -40,6 +43,9 @@ const envValidationSchema = Joi.object<EnvironmentVariables>({
   JWT_REFRESH_SECRET: Joi.string().min(MIN_JWT_SECRET_LENGTH).required(),
   JWT_ACCESS_EXPIRES_IN: Joi.string().trim().min(1).required(),
   JWT_REFRESH_EXPIRES_IN: Joi.string().trim().min(1).required(),
+  REFRESH_COOKIE_NAME: Joi.string().trim().min(1).default("refresh_token"),
+  REFRESH_COOKIE_DOMAIN: Joi.string().trim().allow("").default(""),
+  MAX_ACTIVE_SESSIONS: Joi.number().integer().positive().default(10),
   SMTP_HOST: Joi.string().trim().min(1).required(),
   SMTP_PORT: Joi.number().port().required(),
   SMTP_USER: Joi.string().trim().min(1).required(),

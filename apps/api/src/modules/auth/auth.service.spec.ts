@@ -17,6 +17,10 @@ import {
 import { AuthController } from "@/modules/auth/auth.controller";
 import { AuthModule } from "@/modules/auth/auth.module";
 import { AuthService } from "@/modules/auth/auth.service";
+import type {
+  AuthRequestContext,
+  RefreshCookie,
+} from "@/modules/auth/types/auth-request-context.type";
 import type { AuthSessionResponse } from "@/modules/auth/types/auth-response.type";
 import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.type";
 import type { JwtAccessTokenPayload } from "@/modules/auth/types/jwt-payload.type";
@@ -34,6 +38,13 @@ type PrismaMock = {
   oAuthAccount: {
     create: jest.Mock;
     findUnique: jest.Mock;
+  };
+  refreshSession: {
+    create: jest.Mock;
+    findMany: jest.Mock;
+    findUnique: jest.Mock;
+    update: jest.Mock;
+    updateMany: jest.Mock;
   };
   user: {
     create: jest.Mock;
@@ -61,6 +72,7 @@ type MailServiceMock = jest.Mocked<Pick<MailService, "sendMail">>;
 const JWT_ACCESS_SECRET = "test-access-secret-with-at-least-32-characters";
 const JWT_REFRESH_SECRET = "test-refresh-secret-with-at-least-32-characters";
 const USER_ID = "90fc7cb5-984d-4ac7-83e6-81ebf63a5c63";
+const REFRESH_SESSION_ID = "57c8704b-3ae5-4e22-b8e6-01615f857df9";
 
 const unverifiedUser: AuthenticatedUser = {
   id: USER_ID,
@@ -139,7 +151,37 @@ describe("AuthService", () => {
       emailVerified: false,
     });
     expect(prisma.emailVerificationToken.create).toHaveBeenCalledTimes(1);
+    expect(prisma.refreshSession.create).toHaveBeenCalledTimes(1);
     expect(mailService.sendMail).toHaveBeenCalledTimes(1);
+    expectSensitiveFieldsToBeAbsent(response);
+  });
+
+  it("sets an HTTP-only refresh cookie during registration", async () => {
+    usersService.findUserByEmail.mockResolvedValue(null);
+    usersService.createEmailPasswordUser.mockResolvedValue(unverifiedUser);
+    const context = createAuthRequestContext();
+
+    const response = await authService.register(
+      {
+        displayName: "Mahmood",
+        email: "mahmood@example.com",
+        password: "StrongPass123",
+      },
+      context,
+    );
+
+    expect(context.setRefreshCookie).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: "refresh_token",
+        value: expect.any(String),
+        options: expect.objectContaining({
+          httpOnly: true,
+          path: "/api/v1/auth",
+          sameSite: "lax",
+          secure: false,
+        }),
+      }),
+    );
     expectSensitiveFieldsToBeAbsent(response);
   });
 
@@ -341,6 +383,35 @@ describe("AuthService", () => {
     expectSensitiveFieldsToBeAbsent(response);
   });
 
+  it("sets an HTTP-only refresh cookie during email login", async () => {
+    const passwordHash = await authService.hashPassword("StrongPass123");
+    const context = createAuthRequestContext();
+
+    usersService.findUserCredentialsByEmail.mockResolvedValue({
+      ...unverifiedUser,
+      passwordHash,
+    });
+    usersService.updateLastLoginAt.mockResolvedValue(unverifiedUser);
+
+    const response = await authService.login(
+      {
+        email: "mahmood@example.com",
+        password: "StrongPass123",
+      },
+      context,
+    );
+
+    expect(context.setRefreshCookie).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: "refresh_token",
+        options: expect.objectContaining({
+          httpOnly: true,
+        }),
+      }),
+    );
+    expect(JSON.stringify(response)).not.toContain(extractRefreshCookieValue(context));
+  });
+
   it("uses a generic error for invalid credentials", async () => {
     usersService.findUserCredentialsByEmail.mockResolvedValue(null);
 
@@ -435,18 +506,27 @@ describe("AuthService", () => {
   });
 
   it("authenticates an existing linked Google account", async () => {
+    const context = createAuthRequestContext();
+
     prisma.oAuthAccount.findUnique.mockResolvedValueOnce({
       user: verifiedUser,
     });
     prisma.user.update.mockResolvedValue(verifiedUser);
 
-    const response = await authService.authenticateOAuthUser(googleProfile);
+    const response = await authService.authenticateOAuthUser(googleProfile, context);
     const payload = await jwtService.verifyAsync<JwtAccessTokenPayload>(response.data.accessToken, {
       secret: JWT_ACCESS_SECRET,
     });
 
     expect(payload.sub).toBe(USER_ID);
     expect(response.data.user.emailVerified).toBe(true);
+    expect(context.setRefreshCookie).toHaveBeenCalledWith(
+      expect.objectContaining({
+        options: expect.objectContaining({
+          httpOnly: true,
+        }),
+      }),
+    );
     expect(prisma.user.update).toHaveBeenCalledWith(
       expect.objectContaining({
         where: {
@@ -567,6 +647,8 @@ describe("AuthService", () => {
   });
 
   it("authenticates an existing linked Facebook account", async () => {
+    const context = createAuthRequestContext();
+
     prisma.oAuthAccount.findUnique.mockResolvedValueOnce({
       user: {
         ...verifiedUser,
@@ -578,7 +660,7 @@ describe("AuthService", () => {
       emailVerifiedAt: null,
     });
 
-    const response = await authService.authenticateOAuthUser(facebookProfile);
+    const response = await authService.authenticateOAuthUser(facebookProfile, context);
     const payload = await jwtService.verifyAsync<JwtAccessTokenPayload>(response.data.accessToken, {
       secret: JWT_ACCESS_SECRET,
     });
@@ -588,6 +670,13 @@ describe("AuthService", () => {
       role: UserRole.USER,
     });
     expect(response.data.user.emailVerified).toBe(false);
+    expect(context.setRefreshCookie).toHaveBeenCalledWith(
+      expect.objectContaining({
+        options: expect.objectContaining({
+          httpOnly: true,
+        }),
+      }),
+    );
     expect(prisma.oAuthAccount.create).not.toHaveBeenCalled();
   });
 
@@ -677,6 +766,236 @@ describe("AuthService", () => {
     );
   });
 
+  it("refreshes access tokens from the cookie and rotates the refresh session", async () => {
+    const context = createAuthRequestContext();
+    const refreshToken = await authService.signRefreshToken(USER_ID, REFRESH_SESSION_ID);
+    const tokenHash = await authService.hashRefreshToken(refreshToken);
+
+    prisma.refreshSession.findUnique.mockResolvedValue({
+      id: REFRESH_SESSION_ID,
+      userId: USER_ID,
+      tokenHash,
+      expiresAt: new Date(Date.now() + 60_000),
+      revokedAt: null,
+      user: verifiedUser,
+    });
+
+    const response = await authService.refresh(refreshToken, context);
+    const payload = await jwtService.verifyAsync<JwtAccessTokenPayload>(response.data.accessToken, {
+      secret: JWT_ACCESS_SECRET,
+    });
+
+    expect(payload.sub).toBe(USER_ID);
+    expect(payload.sessionId).not.toBe(REFRESH_SESSION_ID);
+    expect(prisma.refreshSession.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          id: expect.any(String),
+          userId: USER_ID,
+          tokenHash: expect.any(String),
+          userAgent: "Jest Test Browser",
+          ipAddress: "127.0.0.1",
+        }),
+      }),
+    );
+    expect(prisma.refreshSession.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          id: REFRESH_SESSION_ID,
+        },
+        data: {
+          revokedAt: expect.any(Date),
+          replacedById: expect.any(String),
+        },
+      }),
+    );
+    expect(context.setRefreshCookie).toHaveBeenCalledTimes(1);
+    expect(JSON.stringify(response)).not.toContain(extractRefreshCookieValue(context));
+  });
+
+  it("rejects refresh without a cookie and clears the refresh cookie", async () => {
+    const context = createAuthRequestContext();
+
+    await expectAuthCode(
+      () => authService.refresh(undefined, context),
+      AUTH_ERROR_CODES.REFRESH_TOKEN_MISSING,
+    );
+    expect(context.clearRefreshCookie).toHaveBeenCalledTimes(1);
+  });
+
+  it("rejects a previously rotated refresh token", async () => {
+    const refreshToken = await authService.signRefreshToken(USER_ID, REFRESH_SESSION_ID);
+    const tokenHash = await authService.hashRefreshToken(refreshToken);
+
+    prisma.refreshSession.findUnique.mockResolvedValue({
+      id: REFRESH_SESSION_ID,
+      userId: USER_ID,
+      tokenHash,
+      expiresAt: new Date(Date.now() + 60_000),
+      revokedAt: new Date(),
+      user: verifiedUser,
+    });
+
+    await expectAuthCode(
+      () => authService.refresh(refreshToken, createAuthRequestContext()),
+      AUTH_ERROR_CODES.REFRESH_TOKEN_REVOKED,
+    );
+    expect(prisma.refreshSession.create).not.toHaveBeenCalled();
+  });
+
+  it("rejects expired refresh sessions", async () => {
+    const refreshToken = await authService.signRefreshToken(USER_ID, REFRESH_SESSION_ID);
+    const tokenHash = await authService.hashRefreshToken(refreshToken);
+
+    prisma.refreshSession.findUnique.mockResolvedValue({
+      id: REFRESH_SESSION_ID,
+      userId: USER_ID,
+      tokenHash,
+      expiresAt: new Date(Date.now() - 60_000),
+      revokedAt: null,
+      user: verifiedUser,
+    });
+
+    await expectAuthCode(
+      () => authService.refresh(refreshToken, createAuthRequestContext()),
+      AUTH_ERROR_CODES.REFRESH_TOKEN_EXPIRED,
+    );
+    expect(prisma.refreshSession.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: {
+          revokedAt: expect.any(Date),
+        },
+      }),
+    );
+  });
+
+  it("rejects revoked refresh sessions", async () => {
+    const refreshToken = await authService.signRefreshToken(USER_ID, REFRESH_SESSION_ID);
+    const tokenHash = await authService.hashRefreshToken(refreshToken);
+
+    prisma.refreshSession.findUnique.mockResolvedValue({
+      id: REFRESH_SESSION_ID,
+      userId: USER_ID,
+      tokenHash,
+      expiresAt: new Date(Date.now() + 60_000),
+      revokedAt: new Date(),
+      user: verifiedUser,
+    });
+
+    await expectAuthCode(
+      () => authService.refresh(refreshToken, createAuthRequestContext()),
+      AUTH_ERROR_CODES.REFRESH_TOKEN_REVOKED,
+    );
+  });
+
+  it("rejects missing refresh sessions", async () => {
+    const refreshToken = await authService.signRefreshToken(USER_ID, REFRESH_SESSION_ID);
+
+    prisma.refreshSession.findUnique.mockResolvedValue(null);
+
+    await expectAuthCode(
+      () => authService.refresh(refreshToken, createAuthRequestContext()),
+      AUTH_ERROR_CODES.SESSION_NOT_FOUND,
+    );
+  });
+
+  it("rejects refresh when the presented token does not match the stored hash", async () => {
+    const refreshToken = await authService.signRefreshToken(USER_ID, REFRESH_SESSION_ID);
+    const differentTokenHash = await authService.hashRefreshToken("different-token");
+
+    prisma.refreshSession.findUnique.mockResolvedValue({
+      id: REFRESH_SESSION_ID,
+      userId: USER_ID,
+      tokenHash: differentTokenHash,
+      expiresAt: new Date(Date.now() + 60_000),
+      revokedAt: null,
+      user: verifiedUser,
+    });
+
+    await expectAuthCode(
+      () => authService.refresh(refreshToken, createAuthRequestContext()),
+      AUTH_ERROR_CODES.REFRESH_TOKEN_INVALID,
+    );
+  });
+
+  it("revokes sessions belonging to suspended users during refresh", async () => {
+    const refreshToken = await authService.signRefreshToken(USER_ID, REFRESH_SESSION_ID);
+    const tokenHash = await authService.hashRefreshToken(refreshToken);
+
+    prisma.refreshSession.findUnique.mockResolvedValue({
+      id: REFRESH_SESSION_ID,
+      userId: USER_ID,
+      tokenHash,
+      expiresAt: new Date(Date.now() + 60_000),
+      revokedAt: null,
+      user: {
+        ...verifiedUser,
+        status: UserStatus.SUSPENDED,
+      },
+    });
+
+    await expectAuthCode(
+      () => authService.refresh(refreshToken, createAuthRequestContext()),
+      AUTH_ERROR_CODES.ACCOUNT_SUSPENDED,
+    );
+    expect(prisma.refreshSession.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          userId: USER_ID,
+          revokedAt: null,
+        },
+      }),
+    );
+  });
+
+  it("logs out by revoking the current refresh session and clearing the cookie", async () => {
+    const context = createAuthRequestContext();
+    const refreshToken = await authService.signRefreshToken(USER_ID, REFRESH_SESSION_ID);
+
+    const response = await authService.logout(refreshToken, context);
+
+    expect(response.data.message).toBe("Logged out successfully.");
+    expect(prisma.refreshSession.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          id: REFRESH_SESSION_ID,
+          revokedAt: null,
+        },
+        data: {
+          revokedAt: expect.any(Date),
+        },
+      }),
+    );
+    expect(context.clearRefreshCookie).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps logout idempotent without a refresh cookie", async () => {
+    const context = createAuthRequestContext();
+
+    const response = await authService.logout(undefined, context);
+
+    expect(response.data.message).toBe("Logged out successfully.");
+    expect(prisma.refreshSession.updateMany).not.toHaveBeenCalled();
+    expect(context.clearRefreshCookie).toHaveBeenCalledTimes(1);
+  });
+
+  it("revokes every active refresh session during logout-all", async () => {
+    const context = createAuthRequestContext();
+
+    const response = await authService.logoutAll(verifiedUser, context);
+
+    expect(response.data.message).toBe("Logged out from all devices successfully.");
+    expect(prisma.refreshSession.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          userId: USER_ID,
+          revokedAt: null,
+        },
+      }),
+    );
+    expect(context.clearRefreshCookie).toHaveBeenCalledTimes(1);
+  });
+
   it("loads the auth module with JWT and SMTP configuration from environment values", async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
@@ -757,6 +1076,13 @@ function createPrismaMock(): PrismaMock {
       create: jest.fn().mockResolvedValue({}),
       findUnique: jest.fn(),
     },
+    refreshSession: {
+      create: jest.fn().mockResolvedValue({}),
+      findMany: jest.fn().mockResolvedValue([]),
+      findUnique: jest.fn(),
+      update: jest.fn().mockResolvedValue({}),
+      updateMany: jest.fn().mockResolvedValue({ count: 0 }),
+    },
     user: {
       create: jest.fn(),
       findUnique: jest.fn(),
@@ -778,6 +1104,9 @@ function createConfigService(): ConfigService {
     JWT_REFRESH_SECRET,
     JWT_ACCESS_EXPIRES_IN: "15m",
     JWT_REFRESH_EXPIRES_IN: "7d",
+    REFRESH_COOKIE_NAME: "refresh_token",
+    REFRESH_COOKIE_DOMAIN: "",
+    MAX_ACTIVE_SESSIONS: 10,
     SMTP_HOST: "localhost",
     SMTP_PORT: 587,
     SMTP_USER: "smtp-user",
@@ -795,8 +1124,28 @@ function createConfigService(): ConfigService {
   };
 
   return {
+    get: jest.fn((key: string, defaultValue?: number | string) => values[key] ?? defaultValue),
     getOrThrow: jest.fn((key: string) => values[key]),
   } as unknown as ConfigService;
+}
+
+function createAuthRequestContext(): AuthRequestContext & {
+  clearRefreshCookie: jest.Mock;
+  setRefreshCookie: jest.Mock;
+} {
+  return {
+    ipAddress: "127.0.0.1",
+    userAgent: "Jest Test Browser",
+    clearRefreshCookie: jest.fn(),
+    setRefreshCookie: jest.fn(),
+  };
+}
+
+function extractRefreshCookieValue(context: AuthRequestContext): string {
+  const setRefreshCookie = context.setRefreshCookie as jest.Mock | undefined;
+  const [[cookie]] = setRefreshCookie?.mock.calls ?? [];
+
+  return (cookie as RefreshCookie | undefined)?.value ?? "";
 }
 
 async function expectAuthCode(action: () => Promise<unknown>, expectedCode: string): Promise<void> {

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Inject, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Inject, Post, Req, Res, UseGuards } from "@nestjs/common";
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
@@ -12,6 +12,7 @@ import {
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
 import { Throttle } from "@nestjs/throttler";
+import type { Request, Response } from "express";
 import { AuthService } from "@/modules/auth/auth.service";
 import { CurrentUser } from "@/modules/auth/decorators/current-user.decorator";
 import { OAuthProfile } from "@/modules/auth/decorators/oauth-profile.decorator";
@@ -29,9 +30,14 @@ import { VerifyEmailDto } from "@/modules/auth/dto/verify-email.dto";
 import { FacebookAuthGuard } from "@/modules/auth/guards/facebook-auth.guard";
 import { GoogleAuthGuard } from "@/modules/auth/guards/google-auth.guard";
 import { JwtAuthGuard } from "@/modules/auth/guards/jwt-auth.guard";
+import type {
+  AuthRequestContext,
+  RefreshCookie,
+} from "@/modules/auth/types/auth-request-context.type";
 import type { CurrentUserResponse } from "@/modules/auth/types/auth-response.type";
 import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.type";
 import type { NormalizedOAuthProfile } from "@/modules/auth/types/oauth-profile.type";
+import { parseCookieHeader } from "@/modules/auth/utils/cookie.util";
 
 @ApiTags("Authentication")
 @Controller("auth")
@@ -45,8 +51,12 @@ class AuthController {
   @ApiOkResponse({ type: AuthSessionResponseDto })
   @ApiConflictResponse({ description: "AUTH_EMAIL_ALREADY_REGISTERED" })
   @ApiBadRequestResponse({ description: "Validation failed" })
-  register(@Body() body: RegisterDto): Promise<AuthSessionResponseDto> {
-    return this.authService.register(body);
+  register(
+    @Body() body: RegisterDto,
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<AuthSessionResponseDto> {
+    return this.authService.register(body, this.createAuthRequestContext(request, response));
   }
 
   @Public()
@@ -59,8 +69,12 @@ class AuthController {
   })
   @ApiForbiddenResponse({ description: "AUTH_ACCOUNT_SUSPENDED" })
   @ApiBadRequestResponse({ description: "Validation failed" })
-  login(@Body() body: LoginDto): Promise<AuthSessionResponseDto> {
-    return this.authService.login(body);
+  login(
+    @Body() body: LoginDto,
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<AuthSessionResponseDto> {
+    return this.authService.login(body, this.createAuthRequestContext(request, response));
   }
 
   @Public()
@@ -112,8 +126,15 @@ class AuthController {
   })
   @ApiForbiddenResponse({ description: "AUTH_ACCOUNT_SUSPENDED" })
   @ApiConflictResponse({ description: "AUTH_GOOGLE_ACCOUNT_ALREADY_LINKED" })
-  googleCallback(@OAuthProfile() profile: NormalizedOAuthProfile): Promise<AuthSessionResponseDto> {
-    return this.authService.authenticateOAuthUser(profile);
+  googleCallback(
+    @OAuthProfile() profile: NormalizedOAuthProfile,
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<AuthSessionResponseDto> {
+    return this.authService.authenticateOAuthUser(
+      profile,
+      this.createAuthRequestContext(request, response),
+    );
   }
 
   @Public()
@@ -145,8 +166,73 @@ class AuthController {
   })
   facebookCallback(
     @OAuthProfile() profile: NormalizedOAuthProfile,
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
   ): Promise<AuthSessionResponseDto> {
-    return this.authService.authenticateOAuthUser(profile);
+    return this.authService.authenticateOAuthUser(
+      profile,
+      this.createAuthRequestContext(request, response),
+    );
+  }
+
+  @Public()
+  @Post("refresh")
+  @ApiOperation({
+    summary: "Refresh the platform access token",
+    description:
+      "Reads the refresh token from an HTTP-only cookie, rotates the refresh session, sets a new cookie, and returns a new access token. The refresh token is never returned in JSON.",
+  })
+  @ApiOkResponse({ type: AuthSessionResponseDto })
+  @ApiUnauthorizedResponse({
+    description:
+      "AUTH_REFRESH_TOKEN_MISSING, AUTH_REFRESH_TOKEN_INVALID, AUTH_REFRESH_TOKEN_EXPIRED, AUTH_REFRESH_TOKEN_REVOKED, or AUTH_SESSION_NOT_FOUND",
+  })
+  @ApiForbiddenResponse({ description: "AUTH_ACCOUNT_SUSPENDED" })
+  refresh(
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<AuthSessionResponseDto> {
+    return this.authService.refresh(
+      this.getRefreshTokenFromRequest(request),
+      this.createAuthRequestContext(request, response),
+    );
+  }
+
+  @Public()
+  @Post("logout")
+  @ApiOperation({
+    summary: "Log out the current refresh session",
+    description:
+      "Reads the refresh token from the HTTP-only cookie when present, revokes the matching session, and clears the cookie. No refresh token is accepted from the request body.",
+  })
+  @ApiOkResponse({ type: MessageResponseDto })
+  logout(
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<MessageResponseDto> {
+    return this.authService.logout(
+      this.getRefreshTokenFromRequest(request),
+      this.createAuthRequestContext(request, response),
+    );
+  }
+
+  @Post("logout-all")
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: "Log out all refresh sessions for the current user",
+    description:
+      "Revokes every active refresh session for the authenticated user and clears the current refresh cookie.",
+  })
+  @ApiOkResponse({ type: MessageResponseDto })
+  @ApiUnauthorizedResponse({ description: "Missing or invalid bearer token" })
+  @ApiForbiddenResponse({ description: "AUTH_ACCOUNT_SUSPENDED" })
+  logoutAll(
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<MessageResponseDto> {
+    return this.authService.logoutAll(user, this.createAuthRequestContext(request, response));
   }
 
   @Get("me")
@@ -158,6 +244,23 @@ class AuthController {
   @ApiForbiddenResponse({ description: "AUTH_ACCOUNT_SUSPENDED" })
   getCurrentUser(@CurrentUser() user: AuthenticatedUser): CurrentUserResponse {
     return this.authService.getCurrentUser(user);
+  }
+
+  private getRefreshTokenFromRequest(request: Request): string | undefined {
+    return parseCookieHeader(request.headers.cookie)[this.authService.getRefreshCookieName()];
+  }
+
+  private createAuthRequestContext(request: Request, response: Response): AuthRequestContext {
+    return {
+      ipAddress: request.ip,
+      userAgent: request.get("user-agent"),
+      setRefreshCookie: (cookie: RefreshCookie) => {
+        response.cookie(cookie.name, cookie.value, cookie.options);
+      },
+      clearRefreshCookie: (cookie: Omit<RefreshCookie, "value">) => {
+        response.clearCookie(cookie.name, cookie.options);
+      },
+    };
   }
 }
 
