@@ -12,6 +12,7 @@ import {
 import {
   ApiBearerAuth,
   ApiConflictResponse,
+  ApiExtraModels,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -23,7 +24,7 @@ import {
 import { UserRole } from "@/generated/prisma/enums";
 import { Public } from "@/modules/auth/decorators/public.decorator";
 import { Roles } from "@/modules/auth/decorators/roles.decorator";
-import type {
+import {
   CreateDescribedTaxonomyDto,
   CreateDistrictDto,
   CreateProvinceDto,
@@ -35,7 +36,7 @@ import type {
   UpdateProvinceDto,
   UpdateTagDto,
 } from "@/modules/taxonomy/dto/taxonomy-management.dto";
-import type {
+import {
   AdminDistrictQueryDto,
   AdminTaxonomyQueryDto,
   DistrictQueryDto,
@@ -53,6 +54,22 @@ import {
 import { TaxonomyService } from "@/modules/taxonomy/taxonomy.service";
 
 @ApiTags("Taxonomy")
+@ApiExtraModels(
+  AdminDistrictQueryDto,
+  AdminTaxonomyQueryDto,
+  CreateDescribedTaxonomyDto,
+  CreateDistrictDto,
+  CreateProvinceDto,
+  CreateTagDto,
+  DistrictQueryDto,
+  ReorderTaxonomyDto,
+  SetTaxonomyActiveDto,
+  TaxonomyQueryDto,
+  UpdateDescribedTaxonomyDto,
+  UpdateDistrictDto,
+  UpdateProvinceDto,
+  UpdateTagDto,
+)
 @Controller("taxonomy")
 class TaxonomyController {
   constructor(@Inject(TaxonomyService) private readonly taxonomyService: TaxonomyService) {}

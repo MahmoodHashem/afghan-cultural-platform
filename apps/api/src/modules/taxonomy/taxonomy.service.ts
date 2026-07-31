@@ -77,6 +77,18 @@ const tagSelect = {
   updatedAt: true,
 } as const;
 
+const DEFAULT_PAGE = 1;
+const DEFAULT_LIMIT = 50;
+const DEFAULT_SORT_BY = "sortOrder";
+const DEFAULT_SORT_DIRECTION = "asc";
+
+type NormalizedTaxonomyQuery = {
+  page: number;
+  limit: number;
+  sortBy: "name" | "slug" | "sortOrder" | "createdAt" | "updatedAt";
+  sortDirection: "asc" | "desc";
+};
+
 @Injectable()
 class TaxonomyService {
   constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
@@ -342,6 +354,7 @@ class TaxonomyService {
   private async listProvinces(
     query: AdminTaxonomyQueryDto,
   ): Promise<ListResponse<Prisma.ProvinceGetPayload<{ select: typeof taxonomySelect }>>> {
+    const normalizedQuery = this.normalizeQuery(query);
     const where: Prisma.ProvinceWhereInput = {
       ...(query.isActive === undefined ? {} : { isActive: query.isActive }),
       ...this.searchWhere(query.search),
@@ -350,17 +363,18 @@ class TaxonomyService {
       this.prisma.province.findMany({
         where,
         select: taxonomySelect,
-        orderBy: this.provinceOrderBy(query),
-        skip: this.skip(query),
-        take: query.limit,
+        orderBy: this.provinceOrderBy(normalizedQuery),
+        skip: this.skip(normalizedQuery),
+        take: normalizedQuery.limit,
       }),
       this.prisma.province.count({ where }),
     ]);
 
-    return this.listResponse(items, total, query);
+    return this.listResponse(items, total, normalizedQuery);
   }
 
   private async listDistricts(query: AdminDistrictQueryDto) {
+    const normalizedQuery = this.normalizeQuery(query);
     const provinceId = await this.resolveProvinceId(query.provinceId, query.provinceSlug);
     const where: Prisma.DistrictWhereInput = {
       ...(query.isActive === undefined ? {} : { isActive: query.isActive }),
@@ -371,17 +385,18 @@ class TaxonomyService {
       this.prisma.district.findMany({
         where,
         select: districtSelect,
-        orderBy: this.districtOrderBy(query),
-        skip: this.skip(query),
-        take: query.limit,
+        orderBy: this.districtOrderBy(normalizedQuery),
+        skip: this.skip(normalizedQuery),
+        take: normalizedQuery.limit,
       }),
       this.prisma.district.count({ where }),
     ]);
 
-    return this.listResponse(items, total, query);
+    return this.listResponse(items, total, normalizedQuery);
   }
 
   private async listDescribedTaxonomies(kind: DescribedTaxonomyKind, query: AdminTaxonomyQueryDto) {
+    const normalizedQuery = this.normalizeQuery(query);
     const where: Prisma.CategoryWhereInput = {
       ...(query.isActive === undefined ? {} : { isActive: query.isActive }),
       ...this.searchWhere(query.search),
@@ -392,14 +407,14 @@ class TaxonomyService {
         this.prisma.category.findMany({
           where,
           select: describedTaxonomySelect,
-          orderBy: this.categoryOrderBy(query),
-          skip: this.skip(query),
-          take: query.limit,
+          orderBy: this.categoryOrderBy(normalizedQuery),
+          skip: this.skip(normalizedQuery),
+          take: normalizedQuery.limit,
         }),
         this.prisma.category.count({ where }),
       ]);
 
-      return this.listResponse(items, total, query);
+      return this.listResponse(items, total, normalizedQuery);
     }
 
     const contentTypeWhere: Prisma.ContentTypeWhereInput = {
@@ -410,19 +425,20 @@ class TaxonomyService {
       this.prisma.contentType.findMany({
         where: contentTypeWhere,
         select: describedTaxonomySelect,
-        orderBy: this.contentTypeOrderBy(query),
-        skip: this.skip(query),
-        take: query.limit,
+        orderBy: this.contentTypeOrderBy(normalizedQuery),
+        skip: this.skip(normalizedQuery),
+        take: normalizedQuery.limit,
       }),
       this.prisma.contentType.count({ where: contentTypeWhere }),
     ]);
 
-    return this.listResponse(items, total, query);
+    return this.listResponse(items, total, normalizedQuery);
   }
 
   private async listTags(
     query: AdminTaxonomyQueryDto,
   ): Promise<ListResponse<Prisma.TagGetPayload<{ select: typeof tagSelect }>>> {
+    const normalizedQuery = this.normalizeQuery(query);
     const where: Prisma.TagWhereInput = {
       ...(query.isActive === undefined ? {} : { isActive: query.isActive }),
       ...(query.search
@@ -439,14 +455,14 @@ class TaxonomyService {
       this.prisma.tag.findMany({
         where,
         select: tagSelect,
-        orderBy: this.tagOrderBy(query),
-        skip: this.skip(query),
-        take: query.limit,
+        orderBy: this.tagOrderBy(normalizedQuery),
+        skip: this.skip(normalizedQuery),
+        take: normalizedQuery.limit,
       }),
       this.prisma.tag.count({ where }),
     ]);
 
-    return this.listResponse(items, total, query);
+    return this.listResponse(items, total, normalizedQuery);
   }
 
   private async createDescribedTaxonomy(
@@ -838,11 +854,22 @@ class TaxonomyService {
     };
   }
 
-  private skip(query: TaxonomyQueryDto) {
+  private normalizeQuery(query: TaxonomyQueryDto): NormalizedTaxonomyQuery {
+    return {
+      page: query.page ?? DEFAULT_PAGE,
+      limit: query.limit ?? DEFAULT_LIMIT,
+      sortBy: query.sortBy ?? DEFAULT_SORT_BY,
+      sortDirection: query.sortDirection ?? DEFAULT_SORT_DIRECTION,
+    };
+  }
+
+  private skip(query: NormalizedTaxonomyQuery) {
     return (query.page - 1) * query.limit;
   }
 
-  private provinceOrderBy(query: TaxonomyQueryDto): Prisma.ProvinceOrderByWithRelationInput[] {
+  private provinceOrderBy(
+    query: NormalizedTaxonomyQuery,
+  ): Prisma.ProvinceOrderByWithRelationInput[] {
     switch (query.sortBy) {
       case "createdAt":
         return [{ createdAt: query.sortDirection }, { name: "asc" }];
@@ -857,7 +884,9 @@ class TaxonomyService {
     }
   }
 
-  private districtOrderBy(query: TaxonomyQueryDto): Prisma.DistrictOrderByWithRelationInput[] {
+  private districtOrderBy(
+    query: NormalizedTaxonomyQuery,
+  ): Prisma.DistrictOrderByWithRelationInput[] {
     switch (query.sortBy) {
       case "createdAt":
         return [{ createdAt: query.sortDirection }, { name: "asc" }];
@@ -872,7 +901,9 @@ class TaxonomyService {
     }
   }
 
-  private categoryOrderBy(query: TaxonomyQueryDto): Prisma.CategoryOrderByWithRelationInput[] {
+  private categoryOrderBy(
+    query: NormalizedTaxonomyQuery,
+  ): Prisma.CategoryOrderByWithRelationInput[] {
     switch (query.sortBy) {
       case "createdAt":
         return [{ createdAt: query.sortDirection }, { name: "asc" }];
@@ -888,7 +919,7 @@ class TaxonomyService {
   }
 
   private contentTypeOrderBy(
-    query: TaxonomyQueryDto,
+    query: NormalizedTaxonomyQuery,
   ): Prisma.ContentTypeOrderByWithRelationInput[] {
     switch (query.sortBy) {
       case "createdAt":
@@ -904,7 +935,7 @@ class TaxonomyService {
     }
   }
 
-  private tagOrderBy(query: TaxonomyQueryDto): Prisma.TagOrderByWithRelationInput[] {
+  private tagOrderBy(query: NormalizedTaxonomyQuery): Prisma.TagOrderByWithRelationInput[] {
     switch (query.sortBy) {
       case "createdAt":
         return [{ createdAt: query.sortDirection }, { name: "asc" }];
@@ -922,7 +953,7 @@ class TaxonomyService {
   private listResponse<TItem>(
     data: TItem[],
     total: number,
-    query: TaxonomyQueryDto,
+    query: NormalizedTaxonomyQuery,
   ): ListResponse<TItem> {
     return {
       data,

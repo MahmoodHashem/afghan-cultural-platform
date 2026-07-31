@@ -11,7 +11,7 @@ class TaxonomyQueryDto {
   @Transform(({ value }) => Number(value))
   @IsInt()
   @Min(1)
-  page = 1;
+  page?: number = 1;
 
   @ApiPropertyOptional({ minimum: 1, maximum: 100, default: 50 })
   @IsOptional()
@@ -19,7 +19,7 @@ class TaxonomyQueryDto {
   @IsInt()
   @Min(1)
   @Max(100)
-  limit = 50;
+  limit?: number = 50;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -29,12 +29,12 @@ class TaxonomyQueryDto {
   @ApiPropertyOptional({ enum: TAXONOMY_SORT_FIELDS, default: "sortOrder" })
   @IsOptional()
   @IsIn(TAXONOMY_SORT_FIELDS)
-  sortBy: (typeof TAXONOMY_SORT_FIELDS)[number] = "sortOrder";
+  sortBy?: (typeof TAXONOMY_SORT_FIELDS)[number] = "sortOrder";
 
   @ApiPropertyOptional({ enum: SORT_DIRECTIONS, default: "asc" })
   @IsOptional()
   @IsIn(SORT_DIRECTIONS)
-  sortDirection: (typeof SORT_DIRECTIONS)[number] = "asc";
+  sortDirection?: (typeof SORT_DIRECTIONS)[number] = "asc";
 }
 
 class AdminTaxonomyQueryDto extends TaxonomyQueryDto {

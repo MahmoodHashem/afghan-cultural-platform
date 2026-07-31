@@ -21,6 +21,7 @@
     "prisma:format": "pnpm --filter @afghan-culture/api prisma:format",
     "prisma:validate": "pnpm --filter @afghan-culture/api prisma:validate",
     "prisma:studio": "pnpm --filter @afghan-culture/api prisma:studio",
+    "prisma:seed": "pnpm --filter @afghan-culture/api prisma:seed",
     "check": "biome check .",
     "check:write": "biome check . --write",
     "format": "biome format . --write",

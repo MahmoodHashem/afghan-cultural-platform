@@ -65,6 +65,27 @@ describe("TaxonomyService", () => {
     expect(response.meta.total).toBe(1);
   });
 
+  it("uses stable pagination and sorting defaults when query values are omitted", async () => {
+    prisma.province.findMany.mockResolvedValue([taxonomyItem]);
+    prisma.province.count.mockResolvedValue(1);
+
+    const response = await service.listPublicProvinces({});
+
+    expect(prisma.province.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+        skip: 0,
+        take: 50,
+      }),
+    );
+    expect(response.meta).toEqual({
+      page: 1,
+      limit: 50,
+      total: 1,
+      totalPages: 1,
+    });
+  });
+
   it("generates a slug and creates a province when name and slug are unique", async () => {
     prisma.province.findFirst.mockResolvedValue(null);
     prisma.province.create.mockResolvedValue({
