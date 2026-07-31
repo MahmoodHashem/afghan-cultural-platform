@@ -38,6 +38,7 @@ async function bootstrap() {
     .setTitle("Afghan Cultural Information Platform API")
     .setDescription("REST API for the Afghan cultural information crowdsourcing platform")
     .setVersion("1.0")
+    .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup("api/docs", app, document);

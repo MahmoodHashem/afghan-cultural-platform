@@ -8,6 +8,9 @@ import { envValidationSchema } from "@/config/env.validation";
 import { PrismaModule } from "@/database/prisma.module";
 import { HealthModule } from "@/health/health.module";
 import { AuthModule } from "@/modules/auth/auth.module";
+import { JwtAuthGuard } from "@/modules/auth/guards/jwt-auth.guard";
+import { RolesGuard } from "@/modules/auth/guards/roles.guard";
+import { VerifiedEmailGuard } from "@/modules/auth/guards/verified-email.guard";
 
 @Module({
   imports: [
@@ -29,6 +32,18 @@ import { AuthModule } from "@/modules/auth/auth.module";
     AuthModule,
   ],
   providers: [
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: VerifiedEmailGuard,
+    },
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,

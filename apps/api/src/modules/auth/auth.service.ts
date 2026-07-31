@@ -713,13 +713,17 @@ class AuthService {
 
   async validateUserForAccess(payload: JwtAccessTokenPayload): Promise<AuthenticatedUser> {
     if (!payload.sub || !payload.sessionId || !payload.role) {
-      throw new UnauthorizedException("Invalid access token payload");
+      throw new UnauthorizedException(
+        this.createAuthError(AUTH_ERROR_CODES.UNAUTHORIZED, "Invalid access token payload."),
+      );
     }
 
     const user = await this.usersService.findAuthenticatedUserById(payload.sub);
 
     if (!user) {
-      throw new UnauthorizedException("Invalid or suspended user");
+      throw new UnauthorizedException(
+        this.createAuthError(AUTH_ERROR_CODES.UNAUTHORIZED, "Invalid access token user."),
+      );
     }
 
     this.rejectSuspendedUser(user);

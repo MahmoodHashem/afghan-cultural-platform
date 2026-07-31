@@ -16,3 +16,6 @@
 - Run `pnpm check`, `pnpm typecheck:web`, and `pnpm build:web` before finishing frontend tasks.
 - NestJS controllers must remain thin.
 - Business logic belongs in NestJS services.
+- Do not implement role checks manually in controllers.
+- Use the shared authorization decorators and guards for authentication, roles, and verified-email checks.
+- Frontend hiding is not authorization; backend guards and services must enforce access.

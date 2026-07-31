@@ -3,7 +3,9 @@ import { ApiExcludeEndpoint } from "@nestjs/swagger";
 
 import type { HealthValidationPreviewDto } from "@/health/dto/health-validation-preview.dto";
 import { HealthService } from "@/health/health.service";
+import { Public } from "@/modules/auth/decorators/public.decorator";
 
+@Public()
 @Controller("health")
 class HealthController {
   constructor(@Inject(HealthService) private readonly healthService: HealthService) {}

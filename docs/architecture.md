@@ -284,6 +284,19 @@ Only create `policies`, `mappers`, or other abstractions when they contain usefu
 
 Controllers must remain thin and must not access Prisma directly.
 
+### Authorization
+
+Authentication is global by default in the NestJS API. Routes require a valid JWT access token unless they are explicitly marked with `@Public()`.
+
+Use the shared authorization decorators and guards:
+
+- `@Public()` marks routes such as health, Swagger support routes, registration, login, OAuth start/callback, refresh, logout, forgot-password, reset-password, verify-email, and resend-verification as publicly accessible when appropriate.
+- `@Roles(...roles)` controls role access for moderator and administrator routes.
+- `@RequireVerifiedEmail()` protects contribution-related actions that require a verified email address.
+- Suspended users are blocked centrally during JWT authentication and must not be checked manually in every controller.
+
+Frontend route hiding or button hiding is not authorization. Backend guards and services must enforce access rules.
+
 ---
 
 ## 8. Backend Dependency Direction

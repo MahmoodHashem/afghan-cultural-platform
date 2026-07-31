@@ -32,7 +32,6 @@ import { SetupPasswordDto } from "@/modules/auth/dto/setup-password.dto";
 import { VerifyEmailDto } from "@/modules/auth/dto/verify-email.dto";
 import { FacebookAuthGuard } from "@/modules/auth/guards/facebook-auth.guard";
 import { GoogleAuthGuard } from "@/modules/auth/guards/google-auth.guard";
-import { JwtAuthGuard } from "@/modules/auth/guards/jwt-auth.guard";
 import type {
   AuthRequestContext,
   RefreshCookie,
@@ -258,7 +257,6 @@ class AuthController {
   }
 
   @Post("logout-all")
-  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({
     summary: "Log out all refresh sessions for the current user",
@@ -277,7 +275,6 @@ class AuthController {
   }
 
   @Post("setup-password")
-  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({
     summary: "Set a password for an authenticated OAuth-only account",
@@ -304,7 +301,6 @@ class AuthController {
   }
 
   @Get("me")
-  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: "Get the current authenticated user" })
   @ApiOkResponse({ type: CurrentUserResponseDto })
