@@ -11,6 +11,7 @@ import { AuthModule } from "@/modules/auth/auth.module";
 import { JwtAuthGuard } from "@/modules/auth/guards/jwt-auth.guard";
 import { RolesGuard } from "@/modules/auth/guards/roles.guard";
 import { VerifiedEmailGuard } from "@/modules/auth/guards/verified-email.guard";
+import { TaxonomyModule } from "@/modules/taxonomy/taxonomy.module";
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { VerifiedEmailGuard } from "@/modules/auth/guards/verified-email.guard";
     PrismaModule,
     HealthModule,
     AuthModule,
+    TaxonomyModule,
   ],
   providers: [
     {
