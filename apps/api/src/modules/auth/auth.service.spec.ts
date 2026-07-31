@@ -13,6 +13,7 @@ import { AuthProvider, UserRole, UserStatus } from "@/generated/prisma/enums";
 import {
   AUTH_ERROR_CODES,
   EMAIL_VERIFICATION_NEUTRAL_MESSAGE,
+  PASSWORD_RESET_NEUTRAL_MESSAGE,
 } from "@/modules/auth/auth.constants";
 import { AuthController } from "@/modules/auth/auth.controller";
 import { AuthModule } from "@/modules/auth/auth.module";
@@ -38,6 +39,12 @@ type PrismaMock = {
   oAuthAccount: {
     create: jest.Mock;
     findUnique: jest.Mock;
+  };
+  passwordResetToken: {
+    create: jest.Mock;
+    findUnique: jest.Mock;
+    update: jest.Mock;
+    updateMany: jest.Mock;
   };
   refreshSession: {
     create: jest.Mock;
@@ -67,7 +74,7 @@ type UsersServiceMock = jest.Mocked<
   >
 >;
 
-type MailServiceMock = jest.Mocked<Pick<MailService, "sendMail">>;
+type MailServiceMock = jest.Mocked<Pick<MailService, "sendMail" | "sendPasswordResetEmail">>;
 
 const JWT_ACCESS_SECRET = "test-access-secret-with-at-least-32-characters";
 const JWT_REFRESH_SECRET = "test-refresh-secret-with-at-least-32-characters";
@@ -120,6 +127,7 @@ describe("AuthService", () => {
     prisma = createPrismaMock();
     mailService = {
       sendMail: jest.fn().mockResolvedValue(undefined),
+      sendPasswordResetEmail: jest.fn().mockResolvedValue(undefined),
     };
 
     authService = new AuthService(
@@ -354,6 +362,231 @@ describe("AuthService", () => {
     expect(response.data.message).toBe(EMAIL_VERIFICATION_NEUTRAL_MESSAGE);
     expect(prisma.emailVerificationToken.create).not.toHaveBeenCalled();
     expect(mailService.sendMail).not.toHaveBeenCalled();
+  });
+
+  it("returns a neutral forgot-password response for an existing email", async () => {
+    usersService.findUserByEmail.mockResolvedValue(unverifiedUser);
+
+    const response = await authService.forgotPassword({
+      email: " Mahmood@Example.COM ",
+    });
+
+    expect(response).toEqual({
+      data: {
+        message: PASSWORD_RESET_NEUTRAL_MESSAGE,
+      },
+    });
+    expect(usersService.findUserByEmail).toHaveBeenCalledWith("mahmood@example.com");
+    expect(prisma.passwordResetToken.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          userId: USER_ID,
+          usedAt: null,
+        },
+      }),
+    );
+    expect(prisma.passwordResetToken.create).toHaveBeenCalledTimes(1);
+    expect(mailService.sendPasswordResetEmail).toHaveBeenCalledTimes(1);
+  });
+
+  it("returns a neutral forgot-password response for a missing email", async () => {
+    usersService.findUserByEmail.mockResolvedValue(null);
+
+    const response = await authService.forgotPassword({
+      email: "missing@example.com",
+    });
+
+    expect(response.data.message).toBe(PASSWORD_RESET_NEUTRAL_MESSAGE);
+    expect(prisma.passwordResetToken.create).not.toHaveBeenCalled();
+    expect(mailService.sendPasswordResetEmail).not.toHaveBeenCalled();
+  });
+
+  it("creates only a hashed password reset token and emails the raw token in the reset URL", async () => {
+    usersService.findUserByEmail.mockResolvedValue(unverifiedUser);
+
+    await authService.forgotPassword({
+      email: "mahmood@example.com",
+    });
+
+    const [{ data }] = prisma.passwordResetToken.create.mock.calls[0];
+    const [{ resetUrl }] = mailService.sendPasswordResetEmail.mock.calls[0];
+    const token = new URL(resetUrl).searchParams.get("token") ?? "";
+
+    expect(data.tokenHash).toBe(hashToken(token));
+    expect(data.tokenHash).not.toBe(token);
+    expect(data).not.toHaveProperty("token");
+  });
+
+  it("invalidates previous unused reset tokens before creating a new one", async () => {
+    usersService.findUserByEmail.mockResolvedValue(unverifiedUser);
+
+    await authService.forgotPassword({
+      email: "mahmood@example.com",
+    });
+
+    expect(prisma.passwordResetToken.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          userId: USER_ID,
+          usedAt: null,
+        },
+        data: {
+          usedAt: expect.any(Date),
+        },
+      }),
+    );
+  });
+
+  it("resets a password, marks the token used, revokes refresh sessions, and clears the cookie", async () => {
+    const context = createAuthRequestContext();
+    const token = "valid-password-reset-token";
+
+    prisma.passwordResetToken.findUnique.mockResolvedValue({
+      id: "password-reset-token-id",
+      expiresAt: new Date(Date.now() + 60_000),
+      usedAt: null,
+      user: {
+        ...unverifiedUser,
+        passwordHash: null,
+      },
+    });
+
+    const response = await authService.resetPassword(
+      {
+        token,
+        newPassword: "NewStrongPass123",
+      },
+      context,
+    );
+
+    expect(response.data.message).toBe("Password reset successfully.");
+    expect(prisma.passwordResetToken.findUnique).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          tokenHash: hashToken(token),
+        },
+      }),
+    );
+    expect(prisma.user.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          id: USER_ID,
+        },
+        data: {
+          passwordHash: expect.any(String),
+        },
+      }),
+    );
+    expect(prisma.passwordResetToken.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          id: "password-reset-token-id",
+        },
+        data: {
+          usedAt: expect.any(Date),
+        },
+      }),
+    );
+    expect(prisma.refreshSession.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          userId: USER_ID,
+          revokedAt: null,
+        },
+      }),
+    );
+    expect(context.clearRefreshCookie).toHaveBeenCalledTimes(1);
+    expectSensitiveMessageFieldsToBeAbsent(response);
+  });
+
+  it("rejects an invalid password reset token", async () => {
+    prisma.passwordResetToken.findUnique.mockResolvedValue(null);
+
+    await expectAuthCode(
+      () =>
+        authService.resetPassword({
+          token: "invalid-token",
+          newPassword: "NewStrongPass123",
+        }),
+      AUTH_ERROR_CODES.PASSWORD_RESET_TOKEN_INVALID,
+    );
+  });
+
+  it("rejects an expired password reset token", async () => {
+    prisma.passwordResetToken.findUnique.mockResolvedValue({
+      id: "password-reset-token-id",
+      expiresAt: new Date(Date.now() - 60_000),
+      usedAt: null,
+      user: {
+        ...unverifiedUser,
+        passwordHash: null,
+      },
+    });
+
+    await expectAuthCode(
+      () =>
+        authService.resetPassword({
+          token: "expired-token",
+          newPassword: "NewStrongPass123",
+        }),
+      AUTH_ERROR_CODES.PASSWORD_RESET_TOKEN_EXPIRED,
+    );
+  });
+
+  it("rejects a used password reset token", async () => {
+    prisma.passwordResetToken.findUnique.mockResolvedValue({
+      id: "password-reset-token-id",
+      expiresAt: new Date(Date.now() + 60_000),
+      usedAt: new Date(),
+      user: {
+        ...unverifiedUser,
+        passwordHash: null,
+      },
+    });
+
+    await expectAuthCode(
+      () =>
+        authService.resetPassword({
+          token: "used-token",
+          newPassword: "NewStrongPass123",
+        }),
+      AUTH_ERROR_CODES.PASSWORD_RESET_TOKEN_USED,
+    );
+  });
+
+  it("rejects password reset for suspended users", async () => {
+    prisma.passwordResetToken.findUnique.mockResolvedValue({
+      id: "password-reset-token-id",
+      expiresAt: new Date(Date.now() + 60_000),
+      usedAt: null,
+      user: {
+        ...unverifiedUser,
+        status: UserStatus.SUSPENDED,
+        passwordHash: null,
+      },
+    });
+
+    await expectAuthCode(
+      () =>
+        authService.resetPassword({
+          token: "valid-token",
+          newPassword: "NewStrongPass123",
+        }),
+      AUTH_ERROR_CODES.ACCOUNT_SUSPENDED,
+    );
+    expect(prisma.user.update).not.toHaveBeenCalled();
+  });
+
+  it("rejects weak reset passwords with a stable error code", async () => {
+    await expectAuthCode(
+      () =>
+        authService.resetPassword({
+          token: "valid-token",
+          newPassword: "weak",
+        }),
+      AUTH_ERROR_CODES.PASSWORD_TOO_WEAK,
+    );
+    expect(prisma.passwordResetToken.findUnique).not.toHaveBeenCalled();
   });
 
   it("logs in an unverified email/password user", async () => {
@@ -996,6 +1229,74 @@ describe("AuthService", () => {
     expect(context.clearRefreshCookie).toHaveBeenCalledTimes(1);
   });
 
+  it("sets up a password for an authenticated OAuth-only user", async () => {
+    const context = createAuthRequestContext();
+
+    prisma.user.findUnique.mockResolvedValue({
+      id: USER_ID,
+      status: UserStatus.ACTIVE,
+      passwordHash: null,
+    });
+
+    const response = await authService.setupPassword(
+      unverifiedUser,
+      {
+        newPassword: "NewStrongPass123",
+      },
+      context,
+    );
+
+    expect(response.data.message).toBe("Password configured successfully. Please log in again.");
+    expect(prisma.user.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          id: USER_ID,
+        },
+        data: {
+          passwordHash: expect.any(String),
+        },
+      }),
+    );
+    expect(prisma.refreshSession.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          userId: USER_ID,
+          revokedAt: null,
+        },
+      }),
+    );
+    expect(context.clearRefreshCookie).toHaveBeenCalledTimes(1);
+    expectSensitiveMessageFieldsToBeAbsent(response);
+  });
+
+  it("rejects setup-password when a password is already configured", async () => {
+    prisma.user.findUnique.mockResolvedValue({
+      id: USER_ID,
+      status: UserStatus.ACTIVE,
+      passwordHash: await authService.hashPassword("StrongPass123"),
+    });
+
+    await expectAuthCode(
+      () =>
+        authService.setupPassword(unverifiedUser, {
+          newPassword: "NewStrongPass123",
+        }),
+      AUTH_ERROR_CODES.PASSWORD_ALREADY_CONFIGURED,
+    );
+    expect(prisma.refreshSession.updateMany).not.toHaveBeenCalled();
+  });
+
+  it("rejects weak setup-password values with a stable error code", async () => {
+    await expectAuthCode(
+      () =>
+        authService.setupPassword(unverifiedUser, {
+          newPassword: "weak",
+        }),
+      AUTH_ERROR_CODES.PASSWORD_TOO_WEAK,
+    );
+    expect(prisma.user.findUnique).not.toHaveBeenCalled();
+  });
+
   it("loads the auth module with JWT and SMTP configuration from environment values", async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
@@ -1017,6 +1318,8 @@ describe("AuthService", () => {
               SMTP_FROM_NAME: "Afghan Culture Platform",
               EMAIL_VERIFICATION_URL: "http://localhost:3000/verify-email",
               EMAIL_VERIFICATION_EXPIRES_IN_HOURS: 24,
+              PASSWORD_RESET_URL: "http://localhost:3000/reset-password",
+              PASSWORD_RESET_EXPIRES_IN_MINUTES: 15,
               GOOGLE_CLIENT_ID: "google-client-id",
               GOOGLE_CLIENT_SECRET: "google-client-secret",
               GOOGLE_CALLBACK_URL: "http://localhost:4000/api/v1/auth/google/callback",
@@ -1032,7 +1335,7 @@ describe("AuthService", () => {
       .overrideProvider(PrismaService)
       .useValue(createPrismaMock())
       .overrideProvider(MailService)
-      .useValue({ sendMail: jest.fn() })
+      .useValue({ sendMail: jest.fn(), sendPasswordResetEmail: jest.fn() })
       .compile();
 
     expect(module.get(AuthService)).toBeDefined();
@@ -1076,6 +1379,12 @@ function createPrismaMock(): PrismaMock {
       create: jest.fn().mockResolvedValue({}),
       findUnique: jest.fn(),
     },
+    passwordResetToken: {
+      create: jest.fn().mockResolvedValue({}),
+      findUnique: jest.fn(),
+      update: jest.fn().mockResolvedValue({}),
+      updateMany: jest.fn().mockResolvedValue({ count: 0 }),
+    },
     refreshSession: {
       create: jest.fn().mockResolvedValue({}),
       findMany: jest.fn().mockResolvedValue([]),
@@ -1115,6 +1424,8 @@ function createConfigService(): ConfigService {
     SMTP_FROM_NAME: "Afghan Culture Platform",
     EMAIL_VERIFICATION_URL: "http://localhost:3000/verify-email",
     EMAIL_VERIFICATION_EXPIRES_IN_HOURS: 24,
+    PASSWORD_RESET_URL: "http://localhost:3000/reset-password",
+    PASSWORD_RESET_EXPIRES_IN_MINUTES: 15,
     GOOGLE_CLIENT_ID: "google-client-id",
     GOOGLE_CLIENT_SECRET: "google-client-secret",
     GOOGLE_CALLBACK_URL: "http://localhost:4000/api/v1/auth/google/callback",
@@ -1167,4 +1478,13 @@ function expectSensitiveFieldsToBeAbsent(response: AuthSessionResponse): void {
   expect(serializedResponse).not.toContain("tokenHash");
   expect(serializedResponse).not.toContain("refresh");
   expect(serializedResponse).not.toContain("emailVerifiedAt");
+}
+
+function expectSensitiveMessageFieldsToBeAbsent(response: unknown): void {
+  const serializedResponse = JSON.stringify(response);
+
+  expect(serializedResponse).not.toContain("passwordHash");
+  expect(serializedResponse).not.toContain("tokenHash");
+  expect(serializedResponse).not.toContain("reset-token");
+  expect(serializedResponse).not.toContain("NewStrongPass123");
 }

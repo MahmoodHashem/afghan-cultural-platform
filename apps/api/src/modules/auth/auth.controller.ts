@@ -23,9 +23,12 @@ import {
   MessageResponseDto,
   VerifyEmailResponseDto,
 } from "@/modules/auth/dto/auth-response.dto";
+import { ForgotPasswordDto } from "@/modules/auth/dto/forgot-password.dto";
 import { LoginDto } from "@/modules/auth/dto/login.dto";
 import { RegisterDto } from "@/modules/auth/dto/register.dto";
 import { ResendVerificationDto } from "@/modules/auth/dto/resend-verification.dto";
+import { ResetPasswordDto } from "@/modules/auth/dto/reset-password.dto";
+import { SetupPasswordDto } from "@/modules/auth/dto/setup-password.dto";
 import { VerifyEmailDto } from "@/modules/auth/dto/verify-email.dto";
 import { FacebookAuthGuard } from "@/modules/auth/guards/facebook-auth.guard";
 import { GoogleAuthGuard } from "@/modules/auth/guards/google-auth.guard";
@@ -99,6 +102,44 @@ class AuthController {
   @ApiTooManyRequestsResponse({ description: "Rate limit exceeded" })
   resendVerification(@Body() body: ResendVerificationDto): Promise<MessageResponseDto> {
     return this.authService.resendVerification(body);
+  }
+
+  @Public()
+  @Post("forgot-password")
+  @Throttle({ default: { limit: 3, ttl: 15 * 60_000 } })
+  @ApiOperation({
+    summary: "Request a password reset email",
+    description:
+      "Always returns a neutral response. When an active account exists, a single-use reset token is emailed. The raw token is never returned in JSON.",
+  })
+  @ApiBody({ type: ForgotPasswordDto })
+  @ApiOkResponse({ type: MessageResponseDto })
+  @ApiBadRequestResponse({ description: "Validation failed" })
+  @ApiTooManyRequestsResponse({ description: "Rate limit exceeded" })
+  forgotPassword(@Body() body: ForgotPasswordDto): Promise<MessageResponseDto> {
+    return this.authService.forgotPassword(body);
+  }
+
+  @Public()
+  @Post("reset-password")
+  @ApiOperation({
+    summary: "Reset a password with a single-use token",
+    description:
+      "Accepts the raw reset token from the frontend reset page, hashes it for lookup, sets the new password, revokes refresh sessions, and clears the refresh cookie. The user is not logged in automatically.",
+  })
+  @ApiBody({ type: ResetPasswordDto })
+  @ApiOkResponse({ type: MessageResponseDto })
+  @ApiBadRequestResponse({
+    description:
+      "AUTH_PASSWORD_RESET_TOKEN_INVALID, AUTH_PASSWORD_RESET_TOKEN_EXPIRED, AUTH_PASSWORD_RESET_TOKEN_USED, AUTH_PASSWORD_TOO_WEAK, or validation failed",
+  })
+  @ApiForbiddenResponse({ description: "AUTH_ACCOUNT_SUSPENDED" })
+  resetPassword(
+    @Body() body: ResetPasswordDto,
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<MessageResponseDto> {
+    return this.authService.resetPassword(body, this.createAuthRequestContext(request, response));
   }
 
   @Public()
@@ -233,6 +274,33 @@ class AuthController {
     @Res({ passthrough: true }) response: Response,
   ): Promise<MessageResponseDto> {
     return this.authService.logoutAll(user, this.createAuthRequestContext(request, response));
+  }
+
+  @Post("setup-password")
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: "Set a password for an authenticated OAuth-only account",
+    description:
+      "Only works when the authenticated user does not already have a password. Successful setup revokes refresh sessions and clears the refresh cookie so the user logs in again.",
+  })
+  @ApiBody({ type: SetupPasswordDto })
+  @ApiOkResponse({ type: MessageResponseDto })
+  @ApiBadRequestResponse({ description: "AUTH_PASSWORD_TOO_WEAK or validation failed" })
+  @ApiConflictResponse({ description: "AUTH_PASSWORD_ALREADY_CONFIGURED" })
+  @ApiUnauthorizedResponse({ description: "Missing or invalid bearer token" })
+  @ApiForbiddenResponse({ description: "AUTH_ACCOUNT_SUSPENDED" })
+  setupPassword(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() body: SetupPasswordDto,
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<MessageResponseDto> {
+    return this.authService.setupPassword(
+      user,
+      body,
+      this.createAuthRequestContext(request, response),
+    );
   }
 
   @Get("me")

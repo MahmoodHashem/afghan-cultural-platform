@@ -16,10 +16,14 @@ import { AuthProvider, UserRole, UserStatus } from "@/generated/prisma/enums";
 import {
   AUTH_ERROR_CODES,
   EMAIL_VERIFICATION_NEUTRAL_MESSAGE,
+  PASSWORD_RESET_NEUTRAL_MESSAGE,
 } from "@/modules/auth/auth.constants";
+import type { ForgotPasswordDto } from "@/modules/auth/dto/forgot-password.dto";
 import type { LoginDto } from "@/modules/auth/dto/login.dto";
 import type { RegisterDto } from "@/modules/auth/dto/register.dto";
 import type { ResendVerificationDto } from "@/modules/auth/dto/resend-verification.dto";
+import type { ResetPasswordDto } from "@/modules/auth/dto/reset-password.dto";
+import type { SetupPasswordDto } from "@/modules/auth/dto/setup-password.dto";
 import type { VerifyEmailDto } from "@/modules/auth/dto/verify-email.dto";
 import type { AuthRequestContext } from "@/modules/auth/types/auth-request-context.type";
 import type {
@@ -185,6 +189,183 @@ class AuthService {
     await this.sendVerificationEmail(user, verificationToken);
 
     return this.createNeutralVerificationResponse();
+  }
+
+  async forgotPassword(input: ForgotPasswordDto): Promise<MessageResponse> {
+    const email = this.usersService.normalizeEmail(input.email);
+    const user = await this.usersService.findUserByEmail(email);
+
+    if (!user || this.usersService.isSuspended(user)) {
+      return this.createNeutralPasswordResetResponse();
+    }
+
+    const resetToken = createSecureToken();
+    const tokenHash = hashToken(resetToken);
+    const now = new Date();
+
+    await this.prisma.$transaction(async (transaction) => {
+      await transaction.passwordResetToken.updateMany({
+        where: {
+          userId: user.id,
+          usedAt: null,
+        },
+        data: {
+          usedAt: now,
+        },
+      });
+
+      await transaction.passwordResetToken.create({
+        data: {
+          userId: user.id,
+          tokenHash,
+          expiresAt: this.createPasswordResetExpiry(now),
+        },
+      });
+    });
+
+    await this.sendPasswordResetEmail(user.email, resetToken);
+
+    return this.createNeutralPasswordResetResponse();
+  }
+
+  async resetPassword(
+    input: ResetPasswordDto,
+    context: AuthRequestContext = {},
+  ): Promise<MessageResponse> {
+    this.assertStrongPassword(input.newPassword);
+    const tokenHash = hashToken(input.token);
+    const passwordHash = await this.hashPassword(input.newPassword);
+    const now = new Date();
+
+    await this.prisma.$transaction(async (transaction) => {
+      const resetToken = await transaction.passwordResetToken.findUnique({
+        where: {
+          tokenHash,
+        },
+        select: {
+          id: true,
+          expiresAt: true,
+          usedAt: true,
+          user: {
+            select: {
+              ...this.safeAuthenticatedUserSelect(),
+              passwordHash: true,
+            },
+          },
+        },
+      });
+
+      if (!resetToken) {
+        throw new BadRequestException(
+          this.createAuthError(
+            AUTH_ERROR_CODES.PASSWORD_RESET_TOKEN_INVALID,
+            "Password reset token is invalid.",
+          ),
+        );
+      }
+
+      if (resetToken.usedAt) {
+        throw new BadRequestException(
+          this.createAuthError(
+            AUTH_ERROR_CODES.PASSWORD_RESET_TOKEN_USED,
+            "Password reset token has already been used.",
+          ),
+        );
+      }
+
+      if (resetToken.expiresAt <= now) {
+        throw new BadRequestException(
+          this.createAuthError(
+            AUTH_ERROR_CODES.PASSWORD_RESET_TOKEN_EXPIRED,
+            "Password reset token has expired.",
+          ),
+        );
+      }
+
+      this.rejectSuspendedUser(resetToken.user);
+
+      await transaction.user.update({
+        where: {
+          id: resetToken.user.id,
+        },
+        data: {
+          passwordHash,
+        },
+      });
+      await transaction.passwordResetToken.update({
+        where: {
+          id: resetToken.id,
+        },
+        data: {
+          usedAt: now,
+        },
+      });
+      await this.revokeActiveSessionsForUser(transaction, resetToken.user.id, now);
+    });
+
+    this.clearRefreshCookie(context);
+
+    return {
+      data: {
+        message: "Password reset successfully.",
+      },
+    };
+  }
+
+  async setupPassword(
+    user: AuthenticatedUser,
+    input: SetupPasswordDto,
+    context: AuthRequestContext = {},
+  ): Promise<MessageResponse> {
+    this.rejectSuspendedUser(user);
+    this.assertStrongPassword(input.newPassword);
+    const passwordHash = await this.hashPassword(input.newPassword);
+
+    await this.prisma.$transaction(async (transaction) => {
+      const credentialUser = await transaction.user.findUnique({
+        where: {
+          id: user.id,
+        },
+        select: {
+          id: true,
+          passwordHash: true,
+          status: true,
+        },
+      });
+
+      if (!credentialUser) {
+        throw new UnauthorizedException("Invalid or suspended user");
+      }
+
+      this.rejectSuspendedUser(credentialUser);
+
+      if (credentialUser.passwordHash) {
+        throw new ConflictException(
+          this.createAuthError(
+            AUTH_ERROR_CODES.PASSWORD_ALREADY_CONFIGURED,
+            "Password is already configured for this account.",
+          ),
+        );
+      }
+
+      await transaction.user.update({
+        where: {
+          id: user.id,
+        },
+        data: {
+          passwordHash,
+        },
+      });
+      await this.revokeActiveSessionsForUser(transaction, user.id, new Date());
+    });
+
+    this.clearRefreshCookie(context);
+
+    return {
+      data: {
+        message: "Password configured successfully. Please log in again.",
+      },
+    };
   }
 
   async login(input: LoginDto, context: AuthRequestContext = {}): Promise<AuthSessionResponse> {
@@ -624,6 +805,57 @@ class AuthService {
         message: EMAIL_VERIFICATION_NEUTRAL_MESSAGE,
       },
     };
+  }
+
+  private createNeutralPasswordResetResponse(): MessageResponse {
+    return {
+      data: {
+        message: PASSWORD_RESET_NEUTRAL_MESSAGE,
+      },
+    };
+  }
+
+  private createPasswordResetExpiry(from: Date): Date {
+    const expiresInMinutes = this.configService.getOrThrow<number>(
+      "PASSWORD_RESET_EXPIRES_IN_MINUTES",
+    );
+
+    return new Date(from.getTime() + expiresInMinutes * 60 * 1000);
+  }
+
+  private async sendPasswordResetEmail(email: string, token: string): Promise<void> {
+    const resetUrl = new URL(this.configService.getOrThrow<string>("PASSWORD_RESET_URL"));
+    const expiresInMinutes = this.configService.getOrThrow<number>(
+      "PASSWORD_RESET_EXPIRES_IN_MINUTES",
+    );
+
+    resetUrl.searchParams.set("token", token);
+
+    await this.mailService.sendPasswordResetEmail({
+      to: email,
+      resetUrl: resetUrl.toString(),
+      expiresInMinutes,
+    });
+  }
+
+  private assertStrongPassword(password: string): void {
+    const passwordIsStrong =
+      password.length >= 10 &&
+      password.length <= 128 &&
+      /[a-z]/.test(password) &&
+      /[A-Z]/.test(password) &&
+      /\d/.test(password);
+
+    if (passwordIsStrong) {
+      return;
+    }
+
+    throw new BadRequestException(
+      this.createAuthError(
+        AUTH_ERROR_CODES.PASSWORD_TOO_WEAK,
+        "Password must be 10-128 characters and include uppercase, lowercase, and number characters.",
+      ),
+    );
   }
 
   private async createRefreshSessionRecord(
