@@ -26,6 +26,7 @@ import { LoginDto } from "@/modules/auth/dto/login.dto";
 import { RegisterDto } from "@/modules/auth/dto/register.dto";
 import { ResendVerificationDto } from "@/modules/auth/dto/resend-verification.dto";
 import { VerifyEmailDto } from "@/modules/auth/dto/verify-email.dto";
+import { FacebookAuthGuard } from "@/modules/auth/guards/facebook-auth.guard";
 import { GoogleAuthGuard } from "@/modules/auth/guards/google-auth.guard";
 import { JwtAuthGuard } from "@/modules/auth/guards/jwt-auth.guard";
 import type { CurrentUserResponse } from "@/modules/auth/types/auth-response.type";
@@ -112,6 +113,39 @@ class AuthController {
   @ApiForbiddenResponse({ description: "AUTH_ACCOUNT_SUSPENDED" })
   @ApiConflictResponse({ description: "AUTH_GOOGLE_ACCOUNT_ALREADY_LINKED" })
   googleCallback(@OAuthProfile() profile: NormalizedOAuthProfile): Promise<AuthSessionResponseDto> {
+    return this.authService.authenticateOAuthUser(profile);
+  }
+
+  @Public()
+  @Get("facebook")
+  @UseGuards(FacebookAuthGuard)
+  @ApiOperation({
+    summary: "Start Facebook OAuth login",
+    description:
+      "Redirects the browser to Facebook with email and public profile permissions. The callback returns the platform JWT and safe user profile.",
+  })
+  @ApiOkResponse({ description: "Redirects to Facebook OAuth consent." })
+  startFacebookLogin(): void {}
+
+  @Public()
+  @Get("facebook/callback")
+  @UseGuards(FacebookAuthGuard)
+  @ApiOperation({
+    summary: "Handle Facebook OAuth callback",
+    description:
+      "Authenticates the normalized Facebook profile, creates or loads a linked platform user, and returns the platform access token. Facebook tokens are never returned.",
+  })
+  @ApiOkResponse({ type: AuthSessionResponseDto })
+  @ApiUnauthorizedResponse({
+    description: "AUTH_FACEBOOK_EMAIL_REQUIRED or AUTH_FACEBOOK_AUTH_FAILED",
+  })
+  @ApiForbiddenResponse({ description: "AUTH_ACCOUNT_SUSPENDED" })
+  @ApiConflictResponse({
+    description: "AUTH_FACEBOOK_EMAIL_LINKING_NOT_ALLOWED or AUTH_FACEBOOK_ACCOUNT_ALREADY_LINKED",
+  })
+  facebookCallback(
+    @OAuthProfile() profile: NormalizedOAuthProfile,
+  ): Promise<AuthSessionResponseDto> {
     return this.authService.authenticateOAuthUser(profile);
   }
 

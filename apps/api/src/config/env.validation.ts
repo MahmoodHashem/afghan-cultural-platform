@@ -20,6 +20,9 @@ type EnvironmentVariables = {
   GOOGLE_CLIENT_ID: string;
   GOOGLE_CLIENT_SECRET: string;
   GOOGLE_CALLBACK_URL: string;
+  FACEBOOK_APP_ID: string;
+  FACEBOOK_APP_SECRET: string;
+  FACEBOOK_CALLBACK_URL: string;
 };
 
 const MIN_JWT_SECRET_LENGTH = 32;
@@ -50,6 +53,11 @@ const envValidationSchema = Joi.object<EnvironmentVariables>({
   GOOGLE_CLIENT_ID: Joi.string().trim().min(1).required(),
   GOOGLE_CLIENT_SECRET: Joi.string().trim().min(1).required(),
   GOOGLE_CALLBACK_URL: Joi.string()
+    .uri({ scheme: ["http", "https"] })
+    .required(),
+  FACEBOOK_APP_ID: Joi.string().trim().min(1).required(),
+  FACEBOOK_APP_SECRET: Joi.string().trim().min(1).required(),
+  FACEBOOK_CALLBACK_URL: Joi.string()
     .uri({ scheme: ["http", "https"] })
     .required(),
 });

@@ -86,6 +86,15 @@ const googleProfile: NormalizedOAuthProfile = {
   avatarUrl: "https://example.com/avatar.png",
 };
 
+const facebookProfile: NormalizedOAuthProfile = {
+  provider: AuthProvider.FACEBOOK,
+  providerAccountId: "facebook-account-id",
+  email: "Mahmood@Example.COM",
+  emailVerified: false,
+  displayName: "Mahmood Facebook",
+  avatarUrl: "https://example.com/facebook-avatar.png",
+};
+
 describe("AuthService", () => {
   let authService: AuthService;
   let jwtService: JwtService;
@@ -557,6 +566,117 @@ describe("AuthService", () => {
     expect(prisma.oAuthAccount.create).not.toHaveBeenCalled();
   });
 
+  it("authenticates an existing linked Facebook account", async () => {
+    prisma.oAuthAccount.findUnique.mockResolvedValueOnce({
+      user: {
+        ...verifiedUser,
+        emailVerifiedAt: null,
+      },
+    });
+    prisma.user.update.mockResolvedValue({
+      ...verifiedUser,
+      emailVerifiedAt: null,
+    });
+
+    const response = await authService.authenticateOAuthUser(facebookProfile);
+    const payload = await jwtService.verifyAsync<JwtAccessTokenPayload>(response.data.accessToken, {
+      secret: JWT_ACCESS_SECRET,
+    });
+
+    expect(payload).toMatchObject({
+      sub: USER_ID,
+      role: UserRole.USER,
+    });
+    expect(response.data.user.emailVerified).toBe(false);
+    expect(prisma.oAuthAccount.create).not.toHaveBeenCalled();
+  });
+
+  it("creates a new Facebook user with an unverified platform email", async () => {
+    prisma.oAuthAccount.findUnique.mockResolvedValueOnce(null);
+    prisma.user.findUnique.mockResolvedValue(null);
+    prisma.user.create.mockResolvedValue({
+      ...unverifiedUser,
+      displayName: "Mahmood Facebook",
+      profileImageUrl: "https://example.com/facebook-avatar.png",
+    });
+
+    const response = await authService.authenticateOAuthUser(facebookProfile);
+
+    expect(response.data.user.emailVerified).toBe(false);
+    expect(prisma.user.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          email: "mahmood@example.com",
+          passwordHash: null,
+          role: UserRole.USER,
+          status: UserStatus.ACTIVE,
+          profileImageUrl: "https://example.com/facebook-avatar.png",
+          emailVerifiedAt: null,
+          oauthAccounts: {
+            create: {
+              provider: AuthProvider.FACEBOOK,
+              providerAccountId: "facebook-account-id",
+              providerEmail: "mahmood@example.com",
+            },
+          },
+        }),
+      }),
+    );
+    expect(JSON.stringify(prisma.user.create.mock.calls[0])).not.toContain("accessToken");
+    expect(JSON.stringify(prisma.user.create.mock.calls[0])).not.toContain("refreshToken");
+  });
+
+  it("rejects Facebook authentication when no provider email is returned", async () => {
+    prisma.oAuthAccount.findUnique.mockResolvedValueOnce(null);
+
+    await expectAuthCode(
+      () =>
+        authService.authenticateOAuthUser({
+          ...facebookProfile,
+          email: null,
+        }),
+      AUTH_ERROR_CODES.FACEBOOK_EMAIL_REQUIRED,
+    );
+    expect(prisma.user.findUnique).not.toHaveBeenCalled();
+  });
+
+  it("prevents unsafe Facebook email auto-linking to an existing account", async () => {
+    prisma.oAuthAccount.findUnique.mockResolvedValueOnce(null);
+    prisma.user.findUnique.mockResolvedValue(unverifiedUser);
+
+    await expectAuthCode(
+      () => authService.authenticateOAuthUser(facebookProfile),
+      AUTH_ERROR_CODES.FACEBOOK_EMAIL_LINKING_NOT_ALLOWED,
+    );
+    expect(prisma.oAuthAccount.create).not.toHaveBeenCalled();
+  });
+
+  it("rejects suspended users during Facebook authentication", async () => {
+    prisma.oAuthAccount.findUnique.mockResolvedValueOnce({
+      user: {
+        ...unverifiedUser,
+        status: UserStatus.SUSPENDED,
+      },
+    });
+
+    await expectAuthCode(
+      () => authService.authenticateOAuthUser(facebookProfile),
+      AUTH_ERROR_CODES.ACCOUNT_SUSPENDED,
+    );
+    expect(prisma.user.update).not.toHaveBeenCalled();
+  });
+
+  it("reports duplicate Facebook provider accounts with a stable error code", async () => {
+    prisma.oAuthAccount.findUnique.mockResolvedValueOnce(null);
+    prisma.user.findUnique.mockResolvedValue(null);
+    prisma.user.create.mockRejectedValue({ code: "P2002" });
+
+    await expectAuthCode(
+      () => authService.authenticateOAuthUser(facebookProfile),
+      AUTH_ERROR_CODES.FACEBOOK_ACCOUNT_ALREADY_LINKED,
+    );
+  });
+
   it("loads the auth module with JWT and SMTP configuration from environment values", async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
@@ -581,6 +701,9 @@ describe("AuthService", () => {
               GOOGLE_CLIENT_ID: "google-client-id",
               GOOGLE_CLIENT_SECRET: "google-client-secret",
               GOOGLE_CALLBACK_URL: "http://localhost:4000/api/v1/auth/google/callback",
+              FACEBOOK_APP_ID: "facebook-app-id",
+              FACEBOOK_APP_SECRET: "facebook-app-secret",
+              FACEBOOK_CALLBACK_URL: "http://localhost:4000/api/v1/auth/facebook/callback",
             }),
           ],
         }),
@@ -666,6 +789,9 @@ function createConfigService(): ConfigService {
     GOOGLE_CLIENT_ID: "google-client-id",
     GOOGLE_CLIENT_SECRET: "google-client-secret",
     GOOGLE_CALLBACK_URL: "http://localhost:4000/api/v1/auth/google/callback",
+    FACEBOOK_APP_ID: "facebook-app-id",
+    FACEBOOK_APP_SECRET: "facebook-app-secret",
+    FACEBOOK_CALLBACK_URL: "http://localhost:4000/api/v1/auth/facebook/callback",
   };
 
   return {

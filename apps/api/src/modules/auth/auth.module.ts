@@ -8,6 +8,7 @@ import { PrismaModule } from "@/database/prisma.module";
 import { JWT_ACCESS_STRATEGY } from "@/modules/auth/auth.constants";
 import { AuthController } from "@/modules/auth/auth.controller";
 import { AuthService } from "@/modules/auth/auth.service";
+import { FacebookStrategy } from "@/modules/auth/strategies/facebook.strategy";
 import { GoogleStrategy } from "@/modules/auth/strategies/google.strategy";
 import { JwtAccessStrategy } from "@/modules/auth/strategies/jwt-access.strategy";
 import { UsersModule } from "@/modules/users/users.module";
@@ -36,7 +37,7 @@ import { UsersModule } from "@/modules/users/users.module";
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtAccessStrategy, GoogleStrategy],
+  providers: [AuthService, JwtAccessStrategy, GoogleStrategy, FacebookStrategy],
   exports: [AuthService],
 })
 class AuthModule {}

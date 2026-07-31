@@ -12,7 +12,7 @@ import { JwtService, type JwtSignOptions } from "@nestjs/jwt";
 
 import { MailService } from "@/common/mail/mail.service";
 import { PrismaService } from "@/database/prisma.service";
-import { UserRole, UserStatus } from "@/generated/prisma/enums";
+import { AuthProvider, UserRole, UserStatus } from "@/generated/prisma/enums";
 import {
   AUTH_ERROR_CODES,
   EMAIL_VERIFICATION_NEUTRAL_MESSAGE,
@@ -242,16 +242,12 @@ class AuthService {
         });
       }
 
-      if (!profile.email || !profile.emailVerified) {
-        throw new UnauthorizedException(
-          this.createAuthError(
-            AUTH_ERROR_CODES.GOOGLE_EMAIL_NOT_VERIFIED,
-            "Google email must be verified before authentication.",
-          ),
-        );
+      const email = this.getRequiredOAuthEmail(profile);
+
+      if (profile.provider === AuthProvider.GOOGLE && !profile.emailVerified) {
+        throw this.createGoogleEmailNotVerifiedError();
       }
 
-      const email = this.usersService.normalizeEmail(profile.email);
       const existingUser = await transaction.user.findUnique({
         where: {
           email,
@@ -261,6 +257,10 @@ class AuthService {
 
       if (existingUser) {
         this.rejectSuspendedUser(existingUser);
+
+        if (!profile.emailVerified) {
+          throw this.createOAuthEmailLinkingNotAllowedError(profile.provider);
+        }
 
         const existingProviderForUser = await transaction.oAuthAccount.findUnique({
           where: {
@@ -275,7 +275,7 @@ class AuthService {
         });
 
         if (existingProviderForUser) {
-          throw this.createGoogleAccountAlreadyLinkedError();
+          throw this.createOAuthAccountAlreadyLinkedError(profile.provider);
         }
 
         await this.createOAuthAccountForUser(transaction, existingUser.id, profile, email);
@@ -301,7 +301,7 @@ class AuthService {
             role: UserRole.USER,
             status: UserStatus.ACTIVE,
             profileImageUrl: profile.avatarUrl,
-            emailVerifiedAt: new Date(),
+            emailVerifiedAt: profile.emailVerified ? new Date() : null,
             lastLoginAt: new Date(),
             oauthAccounts: {
               create: {
@@ -315,7 +315,7 @@ class AuthService {
         });
       } catch (error) {
         if (this.isUniqueConstraintError(error)) {
-          throw this.createGoogleAccountAlreadyLinkedError();
+          throw this.createOAuthAccountAlreadyLinkedError(profile.provider);
         }
 
         throw error;
@@ -472,7 +472,7 @@ class AuthService {
       });
     } catch (error) {
       if (this.isUniqueConstraintError(error)) {
-        throw this.createGoogleAccountAlreadyLinkedError();
+        throw this.createOAuthAccountAlreadyLinkedError(profile.provider);
       }
 
       throw error;
@@ -495,11 +495,58 @@ class AuthService {
     );
   }
 
-  private createGoogleAccountAlreadyLinkedError(): ConflictException {
+  private getRequiredOAuthEmail(profile: NormalizedOAuthProfile): string {
+    if (profile.email) {
+      return this.usersService.normalizeEmail(profile.email);
+    }
+
+    if (profile.provider === AuthProvider.FACEBOOK) {
+      throw new UnauthorizedException(
+        this.createAuthError(
+          AUTH_ERROR_CODES.FACEBOOK_EMAIL_REQUIRED,
+          "Facebook did not provide an email address.",
+        ),
+      );
+    }
+
+    throw this.createGoogleEmailNotVerifiedError();
+  }
+
+  private createOAuthEmailLinkingNotAllowedError(provider: AuthProvider): ConflictException {
+    if (provider === AuthProvider.FACEBOOK) {
+      return new ConflictException(
+        this.createAuthError(
+          AUTH_ERROR_CODES.FACEBOOK_EMAIL_LINKING_NOT_ALLOWED,
+          "Facebook email cannot be safely used for automatic account linking.",
+        ),
+      );
+    }
+
     return new ConflictException(
       this.createAuthError(
-        AUTH_ERROR_CODES.GOOGLE_ACCOUNT_ALREADY_LINKED,
-        "Google account is already linked.",
+        AUTH_ERROR_CODES.GOOGLE_EMAIL_NOT_VERIFIED,
+        "Provider email must be verified before account linking.",
+      ),
+    );
+  }
+
+  private createOAuthAccountAlreadyLinkedError(provider: AuthProvider): ConflictException {
+    const errorCode =
+      provider === AuthProvider.FACEBOOK
+        ? AUTH_ERROR_CODES.FACEBOOK_ACCOUNT_ALREADY_LINKED
+        : AUTH_ERROR_CODES.GOOGLE_ACCOUNT_ALREADY_LINKED;
+    const providerName = provider === AuthProvider.FACEBOOK ? "Facebook" : "Google";
+
+    return new ConflictException(
+      this.createAuthError(errorCode, `${providerName} account is already linked.`),
+    );
+  }
+
+  private createGoogleEmailNotVerifiedError(): UnauthorizedException {
+    return new UnauthorizedException(
+      this.createAuthError(
+        AUTH_ERROR_CODES.GOOGLE_EMAIL_NOT_VERIFIED,
+        "Google email must be verified before authentication.",
       ),
     );
   }
