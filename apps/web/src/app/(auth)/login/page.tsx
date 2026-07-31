@@ -18,7 +18,7 @@ export default function LoginPage() {
   return (
     <AuthLayout backgroundSrc={LOGIN_BACKGROUND_SRC} variant="login">
       <AuthCard
-        title="دوباره خوش آمدید"
+        title=" خوش آمدید"
         description="برای ادامه مسیر یادگیری و کاوش در میراث افغانستان، وارد شوید."
       >
         <LoginForm />

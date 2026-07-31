@@ -3,7 +3,6 @@ import Image from "next/image";
 
 import { cn } from "@/lib/utils";
 import { STAR_ICON_SRC } from "../constants/auth-assets";
-import { AuthLogo } from "./auth-logo";
 
 type BrandHighlight = {
   title: string;
@@ -62,7 +61,6 @@ function AuthBrandPanel({ backgroundSrc, variant, className }: AuthBrandPanelPro
 function LoginMessage() {
   return (
     <div className="flex relative not-last: flex-col items-start justify-end h-160 ">
-     
       <div className="max-w-110 space-y-3">
         <div className="mb-2 flex items-center gap-3 text-gold">
           <span className="h-px w-14 bg-gold/70" />
@@ -91,7 +89,6 @@ function LoginMessage() {
 function RegisterHighlights() {
   return (
     <div className="h-187.5 flex items-end relative z-10">
-     
       <div className=" grid grid-cols-3 gap-4">
         {registerHighlights.map((highlight) => (
           <div
