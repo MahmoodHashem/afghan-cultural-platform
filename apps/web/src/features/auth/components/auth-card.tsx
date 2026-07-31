@@ -19,8 +19,8 @@ function AuthCard({ title, description, children, className }: AuthCardProps) {
         className,
       )}
     >
-      <div className="mb-8 flex justify-center lg:hidden">
-        <AuthLogo priority className="w-47.5" />
+      <div className="mb-8 flex justify-center">
+        <AuthLogo priority className="" />
       </div>
       <header className="mb-8 space-y-3 text-center">
         <h1 className="text-[32px] font-bold leading-[1.45] text-foreground sm:text-[40px]">

@@ -16,8 +16,8 @@ function AuthLogo({ className, priority = false }: AuthLogoProps) {
       width={300}
       height={30}
       priority={priority}
-      sizes="(max-width: 640px) 100px, 360px"
-      className={cn("object-contain", className)}
+
+      className={cn("object-contain h-14 sm:w-64 lg:w-96", className)}
     />
   );
 }
