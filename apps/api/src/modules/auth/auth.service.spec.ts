@@ -9,7 +9,7 @@ import { Test, type TestingModule } from "@nestjs/testing";
 
 import { MailService } from "@/common/mail/mail.service";
 import { PrismaService } from "@/database/prisma.service";
-import { UserRole, UserStatus } from "@/generated/prisma/enums";
+import { AuthProvider, UserRole, UserStatus } from "@/generated/prisma/enums";
 import {
   AUTH_ERROR_CODES,
   EMAIL_VERIFICATION_NEUTRAL_MESSAGE,
@@ -20,6 +20,7 @@ import { AuthService } from "@/modules/auth/auth.service";
 import type { AuthSessionResponse } from "@/modules/auth/types/auth-response.type";
 import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.type";
 import type { JwtAccessTokenPayload } from "@/modules/auth/types/jwt-payload.type";
+import type { NormalizedOAuthProfile } from "@/modules/auth/types/oauth-profile.type";
 import { hashToken } from "@/modules/auth/utils/token.util";
 import type { UsersService } from "@/modules/users/users.service";
 
@@ -30,7 +31,12 @@ type PrismaMock = {
     update: jest.Mock;
     updateMany: jest.Mock;
   };
+  oAuthAccount: {
+    create: jest.Mock;
+    findUnique: jest.Mock;
+  };
   user: {
+    create: jest.Mock;
     update: jest.Mock;
     findUnique: jest.Mock;
   };
@@ -69,6 +75,15 @@ const unverifiedUser: AuthenticatedUser = {
 const verifiedUser: AuthenticatedUser = {
   ...unverifiedUser,
   emailVerifiedAt: new Date("2026-01-01T00:00:00.000Z"),
+};
+
+const googleProfile: NormalizedOAuthProfile = {
+  provider: AuthProvider.GOOGLE,
+  providerAccountId: "google-account-id",
+  email: "Mahmood@Example.COM",
+  emailVerified: true,
+  displayName: "Mahmood Google",
+  avatarUrl: "https://example.com/avatar.png",
 };
 
 describe("AuthService", () => {
@@ -410,6 +425,138 @@ describe("AuthService", () => {
     });
   });
 
+  it("authenticates an existing linked Google account", async () => {
+    prisma.oAuthAccount.findUnique.mockResolvedValueOnce({
+      user: verifiedUser,
+    });
+    prisma.user.update.mockResolvedValue(verifiedUser);
+
+    const response = await authService.authenticateOAuthUser(googleProfile);
+    const payload = await jwtService.verifyAsync<JwtAccessTokenPayload>(response.data.accessToken, {
+      secret: JWT_ACCESS_SECRET,
+    });
+
+    expect(payload.sub).toBe(USER_ID);
+    expect(response.data.user.emailVerified).toBe(true);
+    expect(prisma.user.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          id: USER_ID,
+        },
+        data: {
+          lastLoginAt: expect.any(Date),
+        },
+      }),
+    );
+    expect(prisma.oAuthAccount.create).not.toHaveBeenCalled();
+  });
+
+  it("links Google to an existing email account when the provider email is verified", async () => {
+    prisma.oAuthAccount.findUnique.mockResolvedValueOnce(null).mockResolvedValueOnce(null);
+    prisma.user.findUnique.mockResolvedValue(unverifiedUser);
+    prisma.user.update.mockResolvedValue(verifiedUser);
+
+    const response = await authService.authenticateOAuthUser(googleProfile);
+
+    expect(response.data.user.emailVerified).toBe(true);
+    expect(prisma.user.findUnique).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          email: "mahmood@example.com",
+        },
+      }),
+    );
+    expect(prisma.oAuthAccount.create).toHaveBeenCalledWith({
+      data: {
+        userId: USER_ID,
+        provider: AuthProvider.GOOGLE,
+        providerAccountId: "google-account-id",
+        providerEmail: "mahmood@example.com",
+      },
+    });
+    expect(prisma.user.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: {
+          emailVerifiedAt: expect.any(Date),
+          lastLoginAt: expect.any(Date),
+        },
+      }),
+    );
+  });
+
+  it("creates a new Google user and OAuth account for a verified provider email", async () => {
+    prisma.oAuthAccount.findUnique.mockResolvedValueOnce(null);
+    prisma.user.findUnique.mockResolvedValue(null);
+    prisma.user.create.mockResolvedValue(verifiedUser);
+
+    const response = await authService.authenticateOAuthUser(googleProfile);
+
+    expect(response.data.user.emailVerified).toBe(true);
+    expect(prisma.user.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          email: "mahmood@example.com",
+          passwordHash: null,
+          role: UserRole.USER,
+          status: UserStatus.ACTIVE,
+          profileImageUrl: "https://example.com/avatar.png",
+          emailVerifiedAt: expect.any(Date),
+          oauthAccounts: {
+            create: {
+              provider: AuthProvider.GOOGLE,
+              providerAccountId: "google-account-id",
+              providerEmail: "mahmood@example.com",
+            },
+          },
+        }),
+      }),
+    );
+    expect(JSON.stringify(prisma.user.create.mock.calls[0])).not.toContain("accessToken");
+    expect(JSON.stringify(prisma.user.create.mock.calls[0])).not.toContain("refreshToken");
+  });
+
+  it("rejects Google authentication when the provider email is not verified", async () => {
+    prisma.oAuthAccount.findUnique.mockResolvedValueOnce(null);
+
+    await expectAuthCode(
+      () =>
+        authService.authenticateOAuthUser({
+          ...googleProfile,
+          emailVerified: false,
+        }),
+      AUTH_ERROR_CODES.GOOGLE_EMAIL_NOT_VERIFIED,
+    );
+    expect(prisma.user.findUnique).not.toHaveBeenCalled();
+  });
+
+  it("rejects suspended users during Google authentication", async () => {
+    prisma.oAuthAccount.findUnique.mockResolvedValueOnce({
+      user: {
+        ...verifiedUser,
+        status: UserStatus.SUSPENDED,
+      },
+    });
+
+    await expectAuthCode(
+      () => authService.authenticateOAuthUser(googleProfile),
+      AUTH_ERROR_CODES.ACCOUNT_SUSPENDED,
+    );
+    expect(prisma.user.update).not.toHaveBeenCalled();
+  });
+
+  it("prevents linking a second Google account to the same user", async () => {
+    prisma.oAuthAccount.findUnique
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ id: "existing-google-link-id" });
+    prisma.user.findUnique.mockResolvedValue(verifiedUser);
+
+    await expectAuthCode(
+      () => authService.authenticateOAuthUser(googleProfile),
+      AUTH_ERROR_CODES.GOOGLE_ACCOUNT_ALREADY_LINKED,
+    );
+    expect(prisma.oAuthAccount.create).not.toHaveBeenCalled();
+  });
+
   it("loads the auth module with JWT and SMTP configuration from environment values", async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
@@ -431,6 +578,9 @@ describe("AuthService", () => {
               SMTP_FROM_NAME: "Afghan Culture Platform",
               EMAIL_VERIFICATION_URL: "http://localhost:3000/verify-email",
               EMAIL_VERIFICATION_EXPIRES_IN_HOURS: 24,
+              GOOGLE_CLIENT_ID: "google-client-id",
+              GOOGLE_CLIENT_SECRET: "google-client-secret",
+              GOOGLE_CALLBACK_URL: "http://localhost:4000/api/v1/auth/google/callback",
             }),
           ],
         }),
@@ -480,7 +630,12 @@ function createPrismaMock(): PrismaMock {
       update: jest.fn().mockResolvedValue({}),
       updateMany: jest.fn().mockResolvedValue({ count: 0 }),
     },
+    oAuthAccount: {
+      create: jest.fn().mockResolvedValue({}),
+      findUnique: jest.fn(),
+    },
     user: {
+      create: jest.fn(),
       findUnique: jest.fn(),
       update: jest.fn(),
     },
@@ -508,6 +663,9 @@ function createConfigService(): ConfigService {
     SMTP_FROM_NAME: "Afghan Culture Platform",
     EMAIL_VERIFICATION_URL: "http://localhost:3000/verify-email",
     EMAIL_VERIFICATION_EXPIRES_IN_HOURS: 24,
+    GOOGLE_CLIENT_ID: "google-client-id",
+    GOOGLE_CLIENT_SECRET: "google-client-secret",
+    GOOGLE_CALLBACK_URL: "http://localhost:4000/api/v1/auth/google/callback",
   };
 
   return {

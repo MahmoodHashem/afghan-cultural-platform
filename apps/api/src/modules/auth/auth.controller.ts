@@ -14,6 +14,7 @@ import {
 import { Throttle } from "@nestjs/throttler";
 import { AuthService } from "@/modules/auth/auth.service";
 import { CurrentUser } from "@/modules/auth/decorators/current-user.decorator";
+import { OAuthProfile } from "@/modules/auth/decorators/oauth-profile.decorator";
 import { Public } from "@/modules/auth/decorators/public.decorator";
 import {
   AuthSessionResponseDto,
@@ -25,9 +26,11 @@ import { LoginDto } from "@/modules/auth/dto/login.dto";
 import { RegisterDto } from "@/modules/auth/dto/register.dto";
 import { ResendVerificationDto } from "@/modules/auth/dto/resend-verification.dto";
 import { VerifyEmailDto } from "@/modules/auth/dto/verify-email.dto";
+import { GoogleAuthGuard } from "@/modules/auth/guards/google-auth.guard";
 import { JwtAuthGuard } from "@/modules/auth/guards/jwt-auth.guard";
 import type { CurrentUserResponse } from "@/modules/auth/types/auth-response.type";
 import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.type";
+import type { NormalizedOAuthProfile } from "@/modules/auth/types/oauth-profile.type";
 
 @ApiTags("Authentication")
 @Controller("auth")
@@ -81,6 +84,35 @@ class AuthController {
   @ApiTooManyRequestsResponse({ description: "Rate limit exceeded" })
   resendVerification(@Body() body: ResendVerificationDto): Promise<MessageResponseDto> {
     return this.authService.resendVerification(body);
+  }
+
+  @Public()
+  @Get("google")
+  @UseGuards(GoogleAuthGuard)
+  @ApiOperation({
+    summary: "Start Google OAuth login",
+    description:
+      "Redirects the browser to Google with profile and email scopes. The callback returns the platform JWT and safe user profile.",
+  })
+  @ApiOkResponse({ description: "Redirects to Google OAuth consent." })
+  startGoogleLogin(): void {}
+
+  @Public()
+  @Get("google/callback")
+  @UseGuards(GoogleAuthGuard)
+  @ApiOperation({
+    summary: "Handle Google OAuth callback",
+    description:
+      "Authenticates the normalized Google profile, links or creates a platform user, and returns the platform access token. Google tokens are never returned.",
+  })
+  @ApiOkResponse({ type: AuthSessionResponseDto })
+  @ApiUnauthorizedResponse({
+    description: "AUTH_GOOGLE_EMAIL_NOT_VERIFIED or AUTH_GOOGLE_AUTH_FAILED",
+  })
+  @ApiForbiddenResponse({ description: "AUTH_ACCOUNT_SUSPENDED" })
+  @ApiConflictResponse({ description: "AUTH_GOOGLE_ACCOUNT_ALREADY_LINKED" })
+  googleCallback(@OAuthProfile() profile: NormalizedOAuthProfile): Promise<AuthSessionResponseDto> {
+    return this.authService.authenticateOAuthUser(profile);
   }
 
   @Get("me")

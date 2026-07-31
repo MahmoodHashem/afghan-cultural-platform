@@ -17,6 +17,9 @@ type EnvironmentVariables = {
   SMTP_FROM_NAME: string;
   EMAIL_VERIFICATION_URL: string;
   EMAIL_VERIFICATION_EXPIRES_IN_HOURS: number;
+  GOOGLE_CLIENT_ID: string;
+  GOOGLE_CLIENT_SECRET: string;
+  GOOGLE_CALLBACK_URL: string;
 };
 
 const MIN_JWT_SECRET_LENGTH = 32;
@@ -44,6 +47,11 @@ const envValidationSchema = Joi.object<EnvironmentVariables>({
     .uri({ scheme: ["http", "https"] })
     .required(),
   EMAIL_VERIFICATION_EXPIRES_IN_HOURS: Joi.number().integer().positive().required(),
+  GOOGLE_CLIENT_ID: Joi.string().trim().min(1).required(),
+  GOOGLE_CLIENT_SECRET: Joi.string().trim().min(1).required(),
+  GOOGLE_CALLBACK_URL: Joi.string()
+    .uri({ scheme: ["http", "https"] })
+    .required(),
 });
 
 export type { EnvironmentVariables };
