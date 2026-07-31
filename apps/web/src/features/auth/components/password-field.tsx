@@ -38,7 +38,7 @@ function PasswordField({
       </Label>
       <div className="relative">
         <LockClosedIcon
-          className="pointer-events-none absolute top-1/2 end-3 size-5 -translate-y-1/2 text-muted-foreground"
+          className="pointer-events-none absolute top-1/2 inset-e-3 size-5 -translate-y-1/2 text-muted-foreground"
           aria-hidden="true"
         />
         <Input
@@ -57,7 +57,7 @@ function PasswordField({
           size="icon"
           aria-label={toggleLabel}
           onClick={() => setIsVisible((current) => !current)}
-          className="absolute top-1/2 start-1.5 size-8 -translate-y-1/2 text-muted-foreground hover:text-primary"
+          className="absolute top-1/2 inset-s-1.5 size-8 -translate-y-1/2 text-muted-foreground hover:text-primary"
         >
           {isVisible ? (
             <EyeSlashIcon className="size-5" aria-hidden="true" />

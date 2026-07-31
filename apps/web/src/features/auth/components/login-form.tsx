@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,7 +26,6 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const loginMutation = useLogin();
-  const [formError, setFormError] = useState<string | null>(null);
   const [showUnverifiedNotice, setShowUnverifiedNotice] = useState(false);
   const {
     formState: { errors },
@@ -43,7 +43,6 @@ function LoginForm() {
   });
 
   async function handleLoginSubmit(values: LoginFormValues) {
-    setFormError(null);
     setShowUnverifiedNotice(false);
 
     try {
@@ -67,22 +66,12 @@ function LoginForm() {
         email: "email",
         password: "password",
       });
-      setFormError(getAuthFormErrorMessage(error));
+      toast.error(getAuthFormErrorMessage(error));
     }
   }
 
   return (
     <form className="space-y-6" onSubmit={handleSubmit(handleLoginSubmit)} noValidate>
-      {formError ? (
-        <div
-          className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-[14px] leading-7 text-destructive"
-          role="alert"
-          aria-live="assertive"
-        >
-          {formError}
-        </div>
-      ) : null}
-
       {showUnverifiedNotice ? <UnverifiedEmailNotice /> : null}
 
       <div className="space-y-5">

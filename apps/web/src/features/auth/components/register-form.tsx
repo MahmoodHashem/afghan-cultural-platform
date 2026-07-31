@@ -1,12 +1,13 @@
 "use client";
 
+import { ArrowPathIcon } from "@heroicons/react/20/solid";
 import { ArrowLeftIcon, EnvelopeIcon, UserIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -27,7 +28,6 @@ function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const registerMutation = useRegister();
-  const [formError, setFormError] = useState<string | null>(null);
   const [showUnverifiedNotice, setShowUnverifiedNotice] = useState(false);
   const {
     formState: { errors },
@@ -47,7 +47,6 @@ function RegisterForm() {
   });
 
   async function handleRegisterSubmit(values: RegisterFormValues) {
-    setFormError(null);
     setShowUnverifiedNotice(false);
 
     try {
@@ -87,22 +86,12 @@ function RegisterForm() {
         });
       }
 
-      setFormError(getAuthFormErrorMessage(error));
+      toast.error(getAuthFormErrorMessage(error));
     }
   }
 
   return (
     <form className="space-y-5" onSubmit={handleSubmit(handleRegisterSubmit)} noValidate>
-      {formError ? (
-        <div
-          className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-[14px] leading-7 text-destructive"
-          role="alert"
-          aria-live="assertive"
-        >
-          {formError}
-        </div>
-      ) : null}
-
       {showUnverifiedNotice ? <UnverifiedEmailNotice /> : null}
 
       <div className="space-y-4">
@@ -209,8 +198,12 @@ function RegisterForm() {
         disabled={registerMutation.isPending}
         aria-busy={registerMutation.isPending}
       >
-        <span>{registerMutation.isPending ? "در حال ثبت‌نام..." : "ثبت‌نام"}</span>
-        <ArrowLeftIcon className="size-5" aria-hidden="true" />
+        <span>{registerMutation.isPending ? "در حال ثبت‌نام" : "ثبت‌نام"}</span>
+        {registerMutation.isPending ? (
+          <ArrowPathIcon className="animate-spin" />
+        ) : (
+          <ArrowLeftIcon className="size-5" aria-hidden="true" />
+        )}
       </Button>
 
       <AuthDivider label="یا با حساب خود ادامه دهید" />
