@@ -14,6 +14,7 @@ import { validate } from "class-validator";
 
 import type { PrismaService } from "@/database/prisma.service";
 import { EntryStatus, SourceType, UserRole, UserStatus } from "@/generated/prisma/enums";
+import type { AuditService } from "@/modules/audit/audit.service";
 import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.type";
 import { CreateEntryDraftDto } from "@/modules/entries/dto/create-entry-draft.dto";
 import { ENTRY_ERROR_CODES } from "@/modules/entries/entries.constants";
@@ -31,6 +32,7 @@ type DelegateMock = {
   findMany: jest.Mock;
   findUnique: jest.Mock;
   update: jest.Mock;
+  updateMany: jest.Mock;
 };
 
 type TaxonomyDelegateMock = {
@@ -39,6 +41,7 @@ type TaxonomyDelegateMock = {
 
 type PrismaMock = {
   culturalEntry: DelegateMock;
+  contentVersion: DelegateMock;
   province: TaxonomyDelegateMock;
   district: TaxonomyDelegateMock;
   category: TaxonomyDelegateMock;
@@ -55,6 +58,10 @@ type PrismaMock = {
 type MediaServiceMock = {
   uploadEntryImage: jest.Mock;
   deleteImage: jest.Mock;
+};
+
+type AuditServiceMock = {
+  createWithClient: jest.Mock;
 };
 
 type ConfigServiceMock = {
@@ -138,16 +145,19 @@ const createDraftInput = {
 
 describe("EntriesService", () => {
   let prisma: PrismaMock;
+  let auditService: AuditServiceMock;
   let mediaService: MediaServiceMock;
   let configService: ConfigServiceMock;
   let service: EntriesService;
 
   beforeEach(() => {
     prisma = createPrismaMock();
+    auditService = createAuditServiceMock();
     mediaService = createMediaServiceMock();
     configService = createConfigServiceMock();
     service = new EntriesService(
       prisma as unknown as PrismaService,
+      auditService as unknown as AuditService,
       mediaService as unknown as CloudinaryMediaService,
       configService as unknown as ConfigService,
     );
@@ -319,6 +329,137 @@ describe("EntriesService", () => {
       ForbiddenException,
     );
     expect(prisma.culturalEntry.delete).not.toHaveBeenCalled();
+  });
+
+  it("submits a complete draft and creates a first content version", async () => {
+    prisma.culturalEntry.findFirst.mockResolvedValueOnce(createSubmissionEntryPayload());
+    prisma.culturalEntry.updateMany.mockResolvedValue({ count: 1 });
+    prisma.contentVersion.aggregate.mockResolvedValue({ _max: { versionNumber: null } });
+    prisma.contentVersion.create.mockResolvedValue(createContentVersionPayload());
+    prisma.culturalEntry.findUnique.mockResolvedValue(
+      createEntryPayload({ status: EntryStatus.PENDING_REVIEW }),
+    );
+
+    const response = await service.submitOwnEntry(user, ids.entry);
+
+    expect(prisma.culturalEntry.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          id: ids.entry,
+          authorId: user.id,
+          status: EntryStatus.DRAFT,
+        },
+        data: expect.objectContaining({
+          status: EntryStatus.PENDING_REVIEW,
+          submittedAt: expect.any(Date),
+        }),
+      }),
+    );
+    expect(prisma.contentVersion.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          entryId: ids.entry,
+          versionNumber: 1,
+          versionReason: "INITIAL_SUBMISSION",
+          createdById: user.id,
+          snapshot: expect.objectContaining({
+            title: createDraftInput.title,
+            plainTextContent: "متن فرهنگی معتبر",
+            internalReferences: [],
+          }),
+        }),
+      }),
+    );
+    expect(auditService.createWithClient).toHaveBeenCalledWith(
+      prisma,
+      expect.objectContaining({
+        action: "ENTRY_SUBMITTED",
+        actorId: user.id,
+        entryId: ids.entry,
+      }),
+    );
+    expect(response.data.entry.status).toBe(EntryStatus.PENDING_REVIEW);
+    expect(response.data.contentVersion.versionNumber).toBe(1);
+  });
+
+  it("resubmits an entry after requested changes with a resubmission version", async () => {
+    prisma.culturalEntry.findFirst.mockResolvedValueOnce(
+      createSubmissionEntryPayload({
+        status: EntryStatus.CHANGES_REQUESTED,
+        submittedAt: new Date("2026-01-01T00:00:00.000Z"),
+      }),
+    );
+    prisma.culturalEntry.updateMany.mockResolvedValue({ count: 1 });
+    prisma.contentVersion.aggregate.mockResolvedValue({ _max: { versionNumber: 1 } });
+    prisma.contentVersion.create.mockResolvedValue(
+      createContentVersionPayload({
+        versionNumber: 2,
+        versionReason: "RESUBMISSION",
+      }),
+    );
+    prisma.culturalEntry.findUnique.mockResolvedValue(
+      createEntryPayload({ status: EntryStatus.PENDING_REVIEW }),
+    );
+
+    await service.submitOwnEntry(user, ids.entry);
+
+    expect(prisma.contentVersion.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          versionNumber: 2,
+          versionReason: "RESUBMISSION",
+        }),
+      }),
+    );
+  });
+
+  it("rejects incomplete drafts before submission", async () => {
+    prisma.culturalEntry.findFirst.mockResolvedValueOnce(
+      createSubmissionEntryPayload({
+        contentJson: { type: "doc", content: [] },
+        plainTextContent: "",
+      }),
+    );
+
+    await expectErrorCode(
+      () => service.submitOwnEntry(user, ids.entry),
+      ENTRY_ERROR_CODES.SUBMISSION_INCOMPLETE,
+      BadRequestException,
+    );
+    expect(prisma.contentVersion.create).not.toHaveBeenCalled();
+  });
+
+  it("does not reveal another user's entry during submission", async () => {
+    prisma.culturalEntry.findFirst.mockResolvedValueOnce(null);
+
+    await expectErrorCode(
+      () => service.submitOwnEntry(user, ids.entry),
+      ENTRY_ERROR_CODES.NOT_FOUND,
+      NotFoundException,
+    );
+    expect(prisma.contentVersion.create).not.toHaveBeenCalled();
+  });
+
+  it("rejects submission when an internal reference target is no longer published", async () => {
+    prisma.culturalEntry.findFirst.mockResolvedValueOnce(
+      createSubmissionEntryPayload({
+        contentJson: internalReferenceContentJson,
+        plainTextContent: "در کابل نوروز کابل برگزار می‌شود.",
+        outgoingReferences: [
+          createSubmissionReferencePayload({
+            targetStatus: EntryStatus.HIDDEN,
+            publishedAt: null,
+          }),
+        ],
+      }),
+    );
+
+    await expectErrorCode(
+      () => service.submitOwnEntry(user, ids.entry),
+      ENTRY_ERROR_CODES.SUBMISSION_REFERENCE_INVALID,
+      BadRequestException,
+    );
+    expect(prisma.contentVersion.create).not.toHaveBeenCalled();
   });
 
   it("adds existing active tags to an editable owned entry", async () => {
@@ -1230,6 +1371,7 @@ describe("EntriesService", () => {
 function createPrismaMock(): PrismaMock {
   const prisma: PrismaMock = {
     culturalEntry: createDelegateMock(),
+    contentVersion: createDelegateMock(),
     province: createTaxonomyDelegateMock(),
     district: createTaxonomyDelegateMock(),
     category: createTaxonomyDelegateMock(),
@@ -1266,6 +1408,12 @@ function createMediaServiceMock(): MediaServiceMock {
   };
 }
 
+function createAuditServiceMock(): AuditServiceMock {
+  return {
+    createWithClient: jest.fn().mockResolvedValue({ id: "audit-log-id" }),
+  };
+}
+
 function createConfigServiceMock(): ConfigServiceMock {
   return {
     get: jest.fn((key: string, fallback: unknown) => {
@@ -1294,6 +1442,7 @@ function createDelegateMock(): DelegateMock {
     findMany: jest.fn(),
     findUnique: jest.fn(),
     update: jest.fn(),
+    updateMany: jest.fn(),
   };
 }
 
@@ -1325,6 +1474,7 @@ function createEntryPayload(
   overrides: Partial<{
     contentJson: typeof validContentJson | typeof internalReferenceContentJson;
     plainTextContent: string;
+    status: EntryStatus;
   }> = {},
 ) {
   return {
@@ -1334,7 +1484,7 @@ function createEntryPayload(
     summary: createDraftInput.summary,
     contentJson: overrides.contentJson ?? validContentJson,
     plainTextContent: overrides.plainTextContent ?? "متن فرهنگی معتبر",
-    status: EntryStatus.DRAFT,
+    status: overrides.status ?? EntryStatus.DRAFT,
     authorId: user.id,
     provinceId: ids.province,
     districtId: null,
@@ -1378,6 +1528,56 @@ function createEntryForChange() {
   };
 }
 
+function createSubmissionEntryPayload(
+  overrides: Partial<{
+    status: EntryStatus;
+    submittedAt: Date | null;
+    contentJson:
+      | typeof validContentJson
+      | typeof internalReferenceContentJson
+      | { type: string; content: [] };
+    plainTextContent: string;
+    outgoingReferences: ReturnType<typeof createSubmissionReferencePayload>[];
+  }> = {},
+) {
+  return {
+    id: ids.entry,
+    slug: "frhng-kabl",
+    title: createDraftInput.title,
+    summary: createDraftInput.summary,
+    contentJson: overrides.contentJson ?? validContentJson,
+    plainTextContent: overrides.plainTextContent ?? "متن فرهنگی معتبر",
+    normalizedSearchText: "frhng kabl متن فرهنگی معتبر",
+    status: overrides.status ?? EntryStatus.DRAFT,
+    authorId: user.id,
+    provinceId: ids.province,
+    districtId: null,
+    categoryId: ids.category,
+    contentTypeId: ids.contentType,
+    villageOrLocation: "شهر کابل",
+    submittedAt: overrides.submittedAt ?? null,
+    publishedAt: null,
+    author: {
+      id: user.id,
+      displayName: user.displayName,
+    },
+    province: createActiveTaxonomyReference(ids.province, "کابل", "kabul"),
+    district: null,
+    category: createActiveTaxonomyReference(ids.category, "رسم‌ها", "traditions"),
+    contentType: createActiveTaxonomyReference(ids.contentType, "مقاله", "article"),
+    tags: [{ tag: createActiveTaxonomyReference(ids.tagOne, "نوروز", "nowruz") }],
+    sources: [createSourcePayload()],
+    images: [
+      createImagePayload({
+        caption: "شرح تصویر",
+        displayOrder: 0,
+      }),
+    ],
+    youtubeVideo: null,
+    outgoingReferences: overrides.outgoingReferences ?? [],
+  };
+}
+
 function createEditableEntrySummary() {
   return {
     id: ids.entry,
@@ -1390,6 +1590,13 @@ function createTaxonomyReference(id: string, name: string, slug: string) {
     id,
     name,
     slug,
+  };
+}
+
+function createActiveTaxonomyReference(id: string, name: string, slug: string) {
+  return {
+    ...createTaxonomyReference(id, name, slug),
+    isActive: true,
   };
 }
 
@@ -1526,6 +1733,51 @@ function createYouTubeVideoPayload(
     isRemoved: false,
     createdAt: new Date("2026-01-01T00:00:00.000Z"),
     updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+  };
+}
+
+function createContentVersionPayload(
+  overrides: Partial<{
+    versionNumber: number;
+    versionReason: "INITIAL_SUBMISSION" | "RESUBMISSION";
+    moderationReviewId: string | null;
+  }> = {},
+) {
+  return {
+    id: "12121212-1212-4212-8212-121212121212",
+    entryId: ids.entry,
+    versionNumber: overrides.versionNumber ?? 1,
+    snapshot: {
+      schemaVersion: 1,
+      title: createDraftInput.title,
+      plainTextContent: "متن فرهنگی معتبر",
+      internalReferences: [],
+    },
+    plainTextContent: "متن فرهنگی معتبر",
+    versionReason: overrides.versionReason ?? "INITIAL_SUBMISSION",
+    createdById: user.id,
+    correctionSuggestionId: null,
+    moderationReviewId: overrides.moderationReviewId ?? null,
+    createdAt: new Date("2026-01-01T00:00:00.000Z"),
+  };
+}
+
+function createSubmissionReferencePayload(
+  overrides: Partial<{
+    targetStatus: EntryStatus;
+    publishedAt: Date | null;
+  }> = {},
+) {
+  return {
+    targetEntryId: ids.publishedTarget,
+    anchorText: "نوروز کابل",
+    targetEntry: {
+      id: ids.publishedTarget,
+      slug: "nowruz-kabul",
+      title: "نوروز کابل",
+      status: overrides.targetStatus ?? EntryStatus.PUBLISHED,
+      publishedAt: overrides.publishedAt ?? new Date("2026-01-01T00:00:00.000Z"),
+    },
   };
 }
 

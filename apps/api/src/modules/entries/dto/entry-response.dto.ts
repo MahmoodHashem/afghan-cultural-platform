@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
-import { EntryStatus, SourceType } from "@/generated/prisma/enums";
+import { EntryStatus, SourceType, VersionReason } from "@/generated/prisma/enums";
 
 class EntryTaxonomyDto {
   @ApiProperty()
@@ -194,6 +194,38 @@ class EntryReferenceDto {
   targetEntry?: EntryReferenceTargetDto;
 }
 
+class ContentVersionDto {
+  @ApiProperty()
+  id!: string;
+
+  @ApiProperty()
+  entryId!: string;
+
+  @ApiProperty()
+  versionNumber!: number;
+
+  @ApiProperty({ type: Object })
+  snapshot!: unknown;
+
+  @ApiProperty()
+  plainTextContent!: string;
+
+  @ApiProperty({ enum: VersionReason })
+  versionReason!: VersionReason;
+
+  @ApiPropertyOptional()
+  createdById!: string | null;
+
+  @ApiPropertyOptional()
+  correctionSuggestionId!: string | null;
+
+  @ApiPropertyOptional()
+  moderationReviewId!: string | null;
+
+  @ApiProperty()
+  createdAt!: Date;
+}
+
 class EntryDto {
   @ApiProperty()
   id!: string;
@@ -271,6 +303,19 @@ class EntryDto {
 class EntryResponseDto {
   @ApiProperty({ type: EntryDto })
   data!: EntryDto;
+}
+
+class EntrySubmissionDataDto {
+  @ApiProperty({ type: EntryDto })
+  entry!: EntryDto;
+
+  @ApiProperty({ type: ContentVersionDto })
+  contentVersion!: ContentVersionDto;
+}
+
+class EntrySubmissionResponseDto {
+  @ApiProperty({ type: EntrySubmissionDataDto })
+  data!: EntrySubmissionDataDto;
 }
 
 class EntryTagsResponseDto {
@@ -351,6 +396,7 @@ class EntryMessageResponseDto {
 }
 
 export {
+  ContentVersionDto,
   EntryDto,
   EntryImageResponseDto,
   EntryImagesResponseDto,
@@ -362,6 +408,7 @@ export {
   EntryResponseDto,
   EntrySourceResponseDto,
   EntrySourcesResponseDto,
+  EntrySubmissionResponseDto,
   EntryTagsResponseDto,
   EntryYouTubeVideoResponseDto,
 };

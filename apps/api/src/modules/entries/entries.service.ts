@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Inject,
   Injectable,
@@ -10,7 +11,8 @@ import { ConfigService } from "@nestjs/config";
 
 import { PrismaService } from "@/database/prisma.service";
 import type { Prisma } from "@/generated/prisma/client";
-import { EntryStatus } from "@/generated/prisma/enums";
+import { AuditAction, EntryStatus, VersionReason } from "@/generated/prisma/enums";
+import { AuditService } from "@/modules/audit/audit.service";
 import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.type";
 import type {
   CreateEntryDraftDto,
@@ -35,10 +37,12 @@ import type {
 } from "@/modules/entries/dto/entry-youtube.dto";
 import { ENTRY_ERROR_CODES } from "@/modules/entries/entries.constants";
 import {
+  contentVersionSelect,
   entryReferenceTargetSelect,
   entrySelect,
   imageSelect,
   incomingEntryReferenceSelect,
+  mapContentVersion,
   mapEntry,
   mapImage,
   mapIncomingEntryReference,
@@ -104,16 +108,115 @@ type NormalizedEntryReference = {
 };
 
 const editableStatuses = new Set<EntryStatus>([EntryStatus.DRAFT, EntryStatus.CHANGES_REQUESTED]);
+const submittableStatuses = new Set<EntryStatus>([
+  EntryStatus.DRAFT,
+  EntryStatus.CHANGES_REQUESTED,
+]);
 const MAX_REFERENCE_ANCHOR_LENGTH = 180;
 const taxonomyReferenceSelect = {
   id: true,
   name: true,
   slug: true,
 } as const;
+const activeTaxonomyReferenceSelect = {
+  ...taxonomyReferenceSelect,
+  isActive: true,
+} as const;
 const districtReferenceSelect = {
   ...taxonomyReferenceSelect,
   provinceId: true,
 } as const;
+const activeDistrictReferenceSelect = {
+  ...activeTaxonomyReferenceSelect,
+  provinceId: true,
+} as const;
+const submissionSourceOrderBy: Prisma.SourceOrderByWithRelationInput[] = [
+  { displayOrder: "asc" },
+  { createdAt: "asc" },
+];
+const submissionImageOrderBy: Prisma.ImageOrderByWithRelationInput[] = [
+  { displayOrder: "asc" },
+  { createdAt: "asc" },
+];
+const submissionEntrySelect = {
+  id: true,
+  slug: true,
+  title: true,
+  summary: true,
+  contentJson: true,
+  plainTextContent: true,
+  normalizedSearchText: true,
+  status: true,
+  authorId: true,
+  provinceId: true,
+  districtId: true,
+  categoryId: true,
+  contentTypeId: true,
+  villageOrLocation: true,
+  submittedAt: true,
+  publishedAt: true,
+  author: {
+    select: {
+      id: true,
+      displayName: true,
+    },
+  },
+  province: {
+    select: activeTaxonomyReferenceSelect,
+  },
+  district: {
+    select: activeDistrictReferenceSelect,
+  },
+  category: {
+    select: activeTaxonomyReferenceSelect,
+  },
+  contentType: {
+    select: activeTaxonomyReferenceSelect,
+  },
+  tags: {
+    select: {
+      tag: {
+        select: activeTaxonomyReferenceSelect,
+      },
+    },
+    orderBy: {
+      createdAt: "asc",
+    },
+  },
+  sources: {
+    select: sourceSelect,
+    orderBy: submissionSourceOrderBy,
+  },
+  images: {
+    where: {
+      isRemoved: false,
+    },
+    select: imageSelect,
+    orderBy: submissionImageOrderBy,
+  },
+  youtubeVideo: {
+    select: youtubeVideoSelect,
+  },
+  outgoingReferences: {
+    select: {
+      targetEntryId: true,
+      anchorText: true,
+      targetEntry: {
+        select: {
+          id: true,
+          slug: true,
+          title: true,
+          status: true,
+          publishedAt: true,
+        },
+      },
+    },
+    orderBy: { createdAt: "asc" },
+  },
+} as const;
+type SubmissionEntryPayload = Prisma.CulturalEntryGetPayload<{
+  select: typeof submissionEntrySelect;
+}>;
 
 @Injectable()
 class EntriesService {
@@ -121,6 +224,7 @@ class EntriesService {
 
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
+    @Inject(AuditService) private readonly auditService: AuditService,
     @Inject(CloudinaryMediaService) private readonly mediaService: CloudinaryMediaService,
     @Inject(ConfigService) private readonly configService: ConfigService,
   ) {}
@@ -322,6 +426,73 @@ class EntriesService {
         message: "Draft deleted successfully.",
       },
     };
+  }
+
+  async submitOwnEntry(user: AuthenticatedUser, id: string) {
+    return this.prisma.$transaction(async (tx) => {
+      const entry = await this.findOwnedSubmissionEntry(tx, user.id, id);
+
+      if (!submittableStatuses.has(entry.status)) {
+        throw this.invalidStatus("Only draft or changes-requested entries can be submitted.");
+      }
+
+      this.validateEntryReadyForSubmission(entry);
+
+      const previousStatus = entry.status;
+      const nextStatus = EntryStatus.PENDING_REVIEW;
+      const submittedAt = entry.submittedAt ?? new Date();
+      const versionReason =
+        previousStatus === EntryStatus.CHANGES_REQUESTED
+          ? VersionReason.RESUBMISSION
+          : VersionReason.INITIAL_SUBMISSION;
+      const updated = await tx.culturalEntry.updateMany({
+        where: {
+          id: entry.id,
+          authorId: user.id,
+          status: previousStatus,
+        },
+        data: {
+          status: nextStatus,
+          submittedAt,
+        },
+      });
+
+      if (updated.count !== 1) {
+        throw this.submissionConflict();
+      }
+
+      const contentVersion = await this.createContentVersion(tx, entry, versionReason, user.id);
+
+      await this.auditService.createWithClient(tx, {
+        action: AuditAction.ENTRY_SUBMITTED,
+        actorId: user.id,
+        entryId: entry.id,
+        metadata: {
+          entryId: entry.id,
+          versionNumber: contentVersion.versionNumber,
+          oldStatus: previousStatus,
+          newStatus: nextStatus,
+          authorId: user.id,
+          versionReason,
+        },
+      });
+
+      const submittedEntry = await tx.culturalEntry.findUnique({
+        where: { id: entry.id },
+        select: entrySelect,
+      });
+
+      if (!submittedEntry) {
+        throw this.notFound();
+      }
+
+      return {
+        data: {
+          entry: mapEntry(submittedEntry),
+          contentVersion: mapContentVersion(contentVersion),
+        },
+      };
+    });
   }
 
   async addTags(user: AuthenticatedUser, id: string, input: EntryTagsDto) {
@@ -1421,6 +1592,243 @@ class EntriesService {
     return data;
   }
 
+  private async findOwnedSubmissionEntry(
+    client: EntriesDbClient,
+    authorId: string,
+    id: string,
+  ): Promise<SubmissionEntryPayload> {
+    const entry = await client.culturalEntry.findFirst({
+      where: {
+        id,
+        authorId,
+      },
+      select: submissionEntrySelect,
+    });
+
+    if (!entry) {
+      throw this.notFound();
+    }
+
+    return entry;
+  }
+
+  private validateEntryReadyForSubmission(entry: SubmissionEntryPayload): void {
+    const contentJson = this.validateContent(entry.contentJson);
+    const plainTextContent = extractPlainTextFromTiptap(contentJson).trim();
+    const extractedReferences = extractInternalEntryReferences(contentJson);
+
+    if (!entry.title.trim() || !entry.summary.trim() || !plainTextContent) {
+      throw this.incompleteSubmission("Title, summary, and content are required for submission.");
+    }
+
+    if (!entry.slug) {
+      throw this.incompleteSubmission("Entry slug is required before submission.");
+    }
+
+    if (
+      !entry.province?.isActive ||
+      !entry.category?.isActive ||
+      !entry.contentType?.isActive ||
+      (entry.district &&
+        (!entry.district.isActive || entry.district.provinceId !== entry.provinceId))
+    ) {
+      throw this.incompleteSubmission("One or more taxonomy references are inactive or invalid.");
+    }
+
+    if (entry.images.length > this.getMaxImagesPerEntry()) {
+      throw this.incompleteSubmission("Entry has too many images.");
+    }
+
+    for (const image of entry.images) {
+      if (!image.altText.trim() || !image.permissionConfirmed) {
+        throw this.incompleteSubmission("All images require alt text and permission confirmation.");
+      }
+    }
+
+    for (const source of entry.sources) {
+      if (source.websiteUrl) {
+        this.normalizeOptionalUrl(source.websiteUrl);
+      }
+    }
+
+    if (entry.youtubeVideo && !entry.youtubeVideo.isRemoved) {
+      const videoId = extractYouTubeVideoId(entry.youtubeVideo.url);
+
+      if (!videoId || videoId !== entry.youtubeVideo.videoId) {
+        throw this.incompleteSubmission("YouTube video data is invalid.");
+      }
+    }
+
+    if (entry.tags.some((entryTag) => !entryTag.tag.isActive)) {
+      throw this.incompleteSubmission("Inactive tags cannot be submitted.");
+    }
+
+    this.validateSubmissionReferences(entry, extractedReferences);
+  }
+
+  private validateSubmissionReferences(
+    entry: SubmissionEntryPayload,
+    extractedReferences: InternalEntryReference[],
+  ): void {
+    const extractedReferenceKeys = new Set(
+      extractedReferences.map((reference) =>
+        this.referenceKey({
+          targetEntryId: reference.targetEntryId,
+          anchorText: reference.anchorText.trim().replace(/\s+/g, " "),
+        }),
+      ),
+    );
+    const storedReferenceKeys = new Set(
+      entry.outgoingReferences.map((reference) => this.referenceKey(reference)),
+    );
+
+    if (extractedReferences.some((reference) => reference.targetEntryId === entry.id)) {
+      throw this.invalidSubmissionReference("An entry cannot reference itself.");
+    }
+
+    if (extractedReferenceKeys.size !== extractedReferences.length) {
+      throw this.invalidSubmissionReference("Duplicate internal entry references are not allowed.");
+    }
+
+    if (extractedReferenceKeys.size !== storedReferenceKeys.size) {
+      throw this.invalidSubmissionReference("Internal entry references are out of sync.");
+    }
+
+    for (const referenceKey of extractedReferenceKeys) {
+      if (!storedReferenceKeys.has(referenceKey)) {
+        throw this.invalidSubmissionReference("Internal entry references are out of sync.");
+      }
+    }
+
+    for (const reference of entry.outgoingReferences) {
+      if (
+        reference.targetEntryId === entry.id ||
+        reference.targetEntry.status !== EntryStatus.PUBLISHED ||
+        !reference.targetEntry.publishedAt
+      ) {
+        throw this.invalidSubmissionReference("Internal entry reference target is not published.");
+      }
+    }
+  }
+
+  private async createContentVersion(
+    client: EntriesDbClient,
+    entry: SubmissionEntryPayload,
+    versionReason: VersionReason,
+    creatorId: string,
+  ) {
+    const versionNumber = await this.getNextContentVersionNumber(client, entry.id);
+    const createdAt = new Date();
+
+    return client.contentVersion.create({
+      data: {
+        entryId: entry.id,
+        versionNumber,
+        snapshot: this.createContentSnapshot(entry, versionReason, creatorId, createdAt),
+        plainTextContent: entry.plainTextContent,
+        versionReason,
+        createdById: creatorId,
+      },
+      select: contentVersionSelect,
+    });
+  }
+
+  private async getNextContentVersionNumber(
+    client: EntriesDbClient,
+    entryId: string,
+  ): Promise<number> {
+    const result = await client.contentVersion.aggregate({
+      where: { entryId },
+      _max: {
+        versionNumber: true,
+      },
+    });
+
+    return (result._max.versionNumber ?? 0) + 1;
+  }
+
+  private createContentSnapshot(
+    entry: SubmissionEntryPayload,
+    versionReason: VersionReason,
+    creatorId: string,
+    createdAt: Date,
+  ): Prisma.InputJsonValue {
+    return {
+      schemaVersion: 1,
+      entryId: entry.id,
+      title: entry.title,
+      summary: entry.summary,
+      contentJson: entry.contentJson as Prisma.InputJsonValue,
+      plainTextContent: entry.plainTextContent,
+      normalizedSearchText: entry.normalizedSearchText,
+      slug: entry.slug,
+      province: this.mapTaxonomySnapshot(entry.province),
+      district: entry.district ? this.mapTaxonomySnapshot(entry.district) : null,
+      category: this.mapTaxonomySnapshot(entry.category),
+      contentType: this.mapTaxonomySnapshot(entry.contentType),
+      villageOrLocation: entry.villageOrLocation,
+      tags: entry.tags.map((entryTag) => this.mapTaxonomySnapshot(entryTag.tag)),
+      sources: entry.sources.map((source) => ({
+        id: source.id,
+        type: source.type,
+        title: source.title,
+        authorOrProvider: source.authorOrProvider,
+        publicationDate: source.publicationDate,
+        websiteUrl: source.websiteUrl,
+        bookOrArticleDetails: source.bookOrArticleDetails,
+        interviewDate: this.toIsoString(source.interviewDate),
+        explanation: source.explanation,
+        displayOrder: source.displayOrder,
+      })),
+      images: entry.images.map((image) => ({
+        id: image.id,
+        cloudinaryPublicId: image.cloudinaryPublicId,
+        secureUrl: image.secureUrl,
+        thumbnailUrl: image.thumbnailUrl,
+        width: image.width,
+        height: image.height,
+        format: image.format,
+        bytes: image.bytes,
+        caption: image.caption,
+        altText: image.altText,
+        photographerOrSource: image.photographerOrSource,
+        permissionConfirmed: image.permissionConfirmed,
+        displayOrder: image.displayOrder,
+      })),
+      youtubeVideo:
+        entry.youtubeVideo && !entry.youtubeVideo.isRemoved
+          ? {
+              id: entry.youtubeVideo.id,
+              videoId: entry.youtubeVideo.videoId,
+              url: entry.youtubeVideo.url,
+              title: entry.youtubeVideo.title,
+              description: entry.youtubeVideo.description,
+            }
+          : null,
+      internalReferences: entry.outgoingReferences.map((reference) => ({
+        targetEntryId: reference.targetEntryId,
+        targetSlug: reference.targetEntry.slug,
+        targetTitle: reference.targetEntry.title,
+        anchorText: reference.anchorText,
+      })),
+      versionReason,
+      creatorId,
+      createdAt: createdAt.toISOString(),
+    };
+  }
+
+  private mapTaxonomySnapshot(taxonomy: TaxonomyReference) {
+    return {
+      id: taxonomy.id,
+      name: taxonomy.name,
+      slug: taxonomy.slug,
+    };
+  }
+
+  private toIsoString(value: Date | null): string | null {
+    return value ? value.toISOString() : null;
+  }
+
   private async findOwnedEntryForChange(authorId: string, id: string) {
     const entry = await this.prisma.culturalEntry.findFirst({
       where: {
@@ -1950,6 +2358,27 @@ class EntriesService {
     return new BadRequestException({
       error: ENTRY_ERROR_CODES.REFERENCE_ANCHOR_INVALID,
       message: "Internal entry reference anchor text is invalid.",
+    });
+  }
+
+  private incompleteSubmission(message: string): BadRequestException {
+    return new BadRequestException({
+      error: ENTRY_ERROR_CODES.SUBMISSION_INCOMPLETE,
+      message,
+    });
+  }
+
+  private invalidSubmissionReference(message: string): BadRequestException {
+    return new BadRequestException({
+      error: ENTRY_ERROR_CODES.SUBMISSION_REFERENCE_INVALID,
+      message,
+    });
+  }
+
+  private submissionConflict(): ConflictException {
+    return new ConflictException({
+      error: ENTRY_ERROR_CODES.INVALID_STATUS,
+      message: "Entry status changed before submission could be completed.",
     });
   }
 

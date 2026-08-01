@@ -45,6 +45,19 @@ const youtubeVideoSelect = {
   updatedAt: true,
 } as const;
 
+const contentVersionSelect = {
+  id: true,
+  entryId: true,
+  versionNumber: true,
+  snapshot: true,
+  plainTextContent: true,
+  versionReason: true,
+  createdById: true,
+  correctionSuggestionId: true,
+  moderationReviewId: true,
+  createdAt: true,
+} as const;
+
 const entryReferenceTargetSelect = {
   id: true,
   slug: true,
@@ -172,6 +185,9 @@ const entrySelect = {
 } as const;
 
 type EntryPayload = Prisma.CulturalEntryGetPayload<{ select: typeof entrySelect }>;
+type ContentVersionPayload = Prisma.ContentVersionGetPayload<{
+  select: typeof contentVersionSelect;
+}>;
 type IncomingEntryReferencePayload = Prisma.EntryReferenceGetPayload<{
   select: typeof incomingEntryReferenceSelect;
 }>;
@@ -211,6 +227,21 @@ function mapEntry(entry: EntryPayload) {
         : null,
     createdAt: entry.createdAt,
     updatedAt: entry.updatedAt,
+  };
+}
+
+function mapContentVersion(version: ContentVersionPayload) {
+  return {
+    id: version.id,
+    entryId: version.entryId,
+    versionNumber: version.versionNumber,
+    snapshot: version.snapshot,
+    plainTextContent: version.plainTextContent,
+    versionReason: version.versionReason,
+    createdById: version.createdById,
+    correctionSuggestionId: version.correctionSuggestionId,
+    moderationReviewId: version.moderationReviewId,
+    createdAt: version.createdAt,
   };
 }
 
@@ -287,6 +318,7 @@ function mapIncomingEntryReference(reference: IncomingEntryReferencePayload) {
 }
 
 export type {
+  ContentVersionPayload,
   EntryPayload,
   ImagePayload,
   IncomingEntryReferencePayload,
@@ -295,10 +327,12 @@ export type {
   YouTubeVideoPayload,
 };
 export {
+  contentVersionSelect,
   entryReferenceTargetSelect,
   entrySelect,
   imageSelect,
   incomingEntryReferenceSelect,
+  mapContentVersion,
   mapEntry,
   mapImage,
   mapIncomingEntryReference,

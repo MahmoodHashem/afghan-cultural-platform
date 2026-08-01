@@ -53,6 +53,7 @@ import {
   EntryResponseDto,
   EntrySourceResponseDto,
   EntrySourcesResponseDto,
+  EntrySubmissionResponseDto,
   EntryTagsResponseDto,
   EntryYouTubeVideoResponseDto,
 } from "@/modules/entries/dto/entry-response.dto";
@@ -109,6 +110,27 @@ class EntriesController {
   })
   createDraft(@CurrentUser() user: AuthenticatedUser, @Body() body: CreateEntryDraftDto) {
     return this.entriesService.createDraft(user, body);
+  }
+
+  @Post("me/entries/:id/submit")
+  @ApiOperation({
+    summary: "Submit the current user's draft Cultural Entry for moderation",
+    description:
+      "Allowed from DRAFT or CHANGES_REQUESTED. Creates a permanent ContentVersion, moves the entry to PENDING_REVIEW, and writes an audit record.",
+  })
+  @ApiOkResponse({ type: EntrySubmissionResponseDto })
+  @ApiBadRequestResponse({
+    description:
+      "ENTRY_SUBMISSION_INCOMPLETE, ENTRY_SUBMISSION_REFERENCE_INVALID, ENTRY_CONTENT_INVALID, or validation failed",
+  })
+  @ApiUnauthorizedResponse({ description: "Missing or invalid bearer token" })
+  @ApiForbiddenResponse({
+    description:
+      "AUTH_EMAIL_VERIFICATION_REQUIRED, AUTH_ACCOUNT_SUSPENDED, or ENTRY_INVALID_STATUS",
+  })
+  @ApiNotFoundResponse({ description: "ENTRY_NOT_FOUND" })
+  submitOwnEntry(@CurrentUser() user: AuthenticatedUser, @Param("id", ParseUUIDPipe) id: string) {
+    return this.entriesService.submitOwnEntry(user, id);
   }
 
   @Get("entries/reference-targets")

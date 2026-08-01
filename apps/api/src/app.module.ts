@@ -12,6 +12,7 @@ import { JwtAuthGuard } from "@/modules/auth/guards/jwt-auth.guard";
 import { RolesGuard } from "@/modules/auth/guards/roles.guard";
 import { VerifiedEmailGuard } from "@/modules/auth/guards/verified-email.guard";
 import { EntriesModule } from "@/modules/entries/entries.module";
+import { ModerationModule } from "@/modules/moderation/moderation.module";
 import { TaxonomyModule } from "@/modules/taxonomy/taxonomy.module";
 
 @Module({
@@ -33,6 +34,7 @@ import { TaxonomyModule } from "@/modules/taxonomy/taxonomy.module";
     HealthModule,
     AuthModule,
     EntriesModule,
+    ModerationModule,
     TaxonomyModule,
   ],
   providers: [
