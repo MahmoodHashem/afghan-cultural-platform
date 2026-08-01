@@ -95,6 +95,16 @@ const ids = {
   reference: "ffffffff-ffff-4fff-8fff-ffffffffffff",
 };
 
+const publicIds = {
+  author: "11111111-1111-4111-8111-111111111111",
+  province: "33333333-3333-4333-8333-333333333333",
+  otherProvince: "12121212-1212-4212-8212-121212121212",
+  district: "44444444-4444-4444-8444-444444444444",
+  category: "55555555-5555-4555-8555-555555555555",
+  contentType: "66666666-6666-4666-8666-666666666666",
+  tag: "77777777-7777-4777-8777-777777777777",
+};
+
 const validContentJson = {
   type: "doc",
   content: [
@@ -305,6 +315,200 @@ describe("EntriesService", () => {
       }),
     );
     expect(response.meta.total).toBe(1);
+  });
+
+  it("lists only published entries for public browsing without full content JSON", async () => {
+    prisma.culturalEntry.findMany.mockResolvedValue([createPublicEntryCardPayload()]);
+    prisma.culturalEntry.count.mockResolvedValue(1);
+
+    const response = await service.listPublishedEntries({ page: 2, limit: 10 });
+
+    expect(prisma.culturalEntry.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          status: EntryStatus.PUBLISHED,
+          slug: { not: null },
+          publishedAt: { not: null },
+        },
+        skip: 10,
+        take: 10,
+      }),
+    );
+    const listSelect = prisma.culturalEntry.findMany.mock.calls[0]?.[0]?.select;
+
+    expect(listSelect).not.toHaveProperty("contentJson");
+    expect(listSelect).not.toHaveProperty("plainTextContent");
+    expect(response.data[0]).toMatchObject({
+      id: ids.entry,
+      slug: "frhng-kabl",
+      coverImage: {
+        thumbnailUrl: "https://res.cloudinary.com/demo/image/upload/thumb/entries/sample.jpg",
+      },
+    });
+    expect(response.data[0]).not.toHaveProperty("contentJson");
+    expect(response.data[0]).not.toHaveProperty("plainTextContent");
+  });
+
+  it("applies public province, category, content-type, tag, and author filters", async () => {
+    prisma.culturalEntry.findMany.mockResolvedValue([createPublicEntryCardPayload()]);
+    prisma.culturalEntry.count.mockResolvedValue(1);
+
+    await service.listPublishedEntries({
+      provinceId: publicIds.province,
+      categorySlug: "traditions",
+      contentTypeId: publicIds.contentType,
+      tagSlug: "nowruz",
+      authorId: publicIds.author,
+      sort: "recentlyUpdated",
+    });
+
+    expect(prisma.culturalEntry.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          status: EntryStatus.PUBLISHED,
+          provinceId: publicIds.province,
+          category: { slug: "traditions" },
+          contentTypeId: publicIds.contentType,
+          authorId: publicIds.author,
+          tags: {
+            some: {
+              tag: {
+                slug: "nowruz",
+              },
+            },
+          },
+        }),
+        orderBy: [{ updatedAt: "desc" }, { publishedAt: "desc" }, { id: "asc" }],
+      }),
+    );
+  });
+
+  it("supports public oldest sorting", async () => {
+    prisma.culturalEntry.findMany.mockResolvedValue([createPublicEntryCardPayload()]);
+    prisma.culturalEntry.count.mockResolvedValue(1);
+
+    await service.listPublishedEntries({ sort: "oldest" });
+
+    expect(prisma.culturalEntry.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        orderBy: [{ publishedAt: "asc" }, { createdAt: "asc" }, { id: "asc" }],
+      }),
+    );
+  });
+
+  it("rejects unsupported public entry sort values with a stable code", async () => {
+    await expectErrorCode(
+      () => service.listPublishedEntries({ sort: "popular" as never }),
+      ENTRY_ERROR_CODES.QUERY_INVALID,
+      BadRequestException,
+    );
+    expect(prisma.culturalEntry.findMany).not.toHaveBeenCalled();
+  });
+
+  it("rejects inconsistent public district and province filters", async () => {
+    prisma.district.findFirst.mockResolvedValue({
+      provinceId: publicIds.otherProvince,
+      province: {
+        slug: "herat",
+      },
+    });
+
+    await expectErrorCode(
+      () =>
+        service.listPublishedEntries({
+          provinceId: publicIds.province,
+          districtId: publicIds.district,
+        }),
+      ENTRY_ERROR_CODES.FILTER_INVALID,
+      BadRequestException,
+    );
+    expect(prisma.culturalEntry.findMany).not.toHaveBeenCalled();
+  });
+
+  it("returns public detail by a published slug", async () => {
+    prisma.culturalEntry.findFirst.mockResolvedValue(createPublicEntryDetailPayload());
+
+    const response = await service.getPublishedEntryBySlug("frhng-kabl");
+
+    expect(prisma.culturalEntry.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          slug: "frhng-kabl",
+          status: EntryStatus.PUBLISHED,
+          publishedAt: { not: null },
+        },
+      }),
+    );
+    const detailSelect = prisma.culturalEntry.findFirst.mock.calls[0]?.[0]?.select;
+
+    expect(detailSelect.images.orderBy).toEqual([{ displayOrder: "asc" }, { createdAt: "asc" }]);
+    expect(detailSelect.sources.orderBy).toEqual([{ displayOrder: "asc" }, { createdAt: "asc" }]);
+    expect(detailSelect.outgoingReferences.where).toEqual({
+      targetEntry: {
+        status: EntryStatus.PUBLISHED,
+        publishedAt: {
+          not: null,
+        },
+      },
+    });
+    expect(detailSelect.incomingReferences.where).toEqual({
+      sourceEntry: {
+        status: EntryStatus.PUBLISHED,
+        publishedAt: {
+          not: null,
+        },
+      },
+    });
+    expect(response.data).toMatchObject({
+      slug: "frhng-kabl",
+      contentJson: validContentJson,
+      district: {
+        slug: "markaz",
+      },
+      images: [
+        { id: ids.imageOne, displayOrder: 0 },
+        { id: ids.imageTwo, displayOrder: 1 },
+      ],
+      sources: [
+        { id: ids.sourceOne, displayOrder: 0 },
+        { id: ids.sourceTwo, displayOrder: 1 },
+      ],
+      outgoingReferences: [
+        {
+          targetEntryId: ids.publishedTarget,
+          anchorText: "نوروز کابل",
+          targetEntry: {
+            slug: "nowruz-kabul",
+          },
+        },
+      ],
+      incomingReferences: [
+        {
+          sourceEntryId: ids.publishedTarget,
+          sourceEntry: {
+            slug: "published-entry",
+          },
+        },
+      ],
+      seo: {
+        canonicalSlug: "frhng-kabl",
+        image: "https://res.cloudinary.com/demo/image/upload/thumb/entries/sample.jpg",
+      },
+    });
+    expect(response.data).not.toHaveProperty("authorId");
+    expect(response.data.author).not.toHaveProperty("email");
+    expect(prisma.source.findMany).not.toHaveBeenCalled();
+    expect(prisma.image.findMany).not.toHaveBeenCalled();
+  });
+
+  it("returns 404 for unpublished or unavailable slugs", async () => {
+    prisma.culturalEntry.findFirst.mockResolvedValue(null);
+
+    await expectErrorCode(
+      () => service.getPublishedEntryBySlug("draft-entry"),
+      ENTRY_ERROR_CODES.NOT_FOUND,
+      NotFoundException,
+    );
   });
 
   it("hard-deletes only unsubmitted drafts", async () => {
@@ -1575,6 +1779,74 @@ function createSubmissionEntryPayload(
     ],
     youtubeVideo: null,
     outgoingReferences: overrides.outgoingReferences ?? [],
+  };
+}
+
+function createPublicEntryCardPayload() {
+  return {
+    id: ids.entry,
+    slug: "frhng-kabl",
+    title: createDraftInput.title,
+    summary: createDraftInput.summary,
+    averageRating: 4.25,
+    ratingCount: 8,
+    publishedAt: new Date("2026-01-02T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-03T00:00:00.000Z"),
+    author: {
+      id: publicIds.author,
+      displayName: "نویسنده فرهنگی",
+      profileImageUrl: null,
+    },
+    province: createTaxonomyReference(publicIds.province, "کابل", "kabul"),
+    category: createTaxonomyReference(publicIds.category, "رسم‌ها", "traditions"),
+    contentType: createTaxonomyReference(publicIds.contentType, "مقاله", "article"),
+    tags: [{ tag: createTaxonomyReference(publicIds.tag, "نوروز", "nowruz") }],
+    images: [createImagePayload({ id: ids.imageOne, displayOrder: 0 })],
+  };
+}
+
+function createPublicEntryDetailPayload() {
+  return {
+    ...createPublicEntryCardPayload(),
+    contentJson: validContentJson,
+    plainTextContent: "متن فرهنگی معتبر برای نمایش عمومی",
+    villageOrLocation: "شهر کابل",
+    district: createTaxonomyReference(publicIds.district, "مرکز", "markaz"),
+    images: [
+      createImagePayload({ id: ids.imageOne, displayOrder: 0 }),
+      createImagePayload({ id: ids.imageTwo, displayOrder: 1 }),
+    ],
+    sources: [
+      createSourcePayload({ id: ids.sourceOne, displayOrder: 0 }),
+      createSourcePayload({ id: ids.sourceTwo, displayOrder: 1 }),
+    ],
+    youtubeVideo: createYouTubeVideoPayload(),
+    outgoingReferences: [
+      {
+        id: ids.reference,
+        targetEntryId: ids.publishedTarget,
+        anchorText: "نوروز کابل",
+        targetEntry: {
+          id: ids.publishedTarget,
+          slug: "nowruz-kabul",
+          title: "نوروز کابل",
+        },
+      },
+    ],
+    incomingReferences: [
+      {
+        id: ids.reference,
+        sourceEntryId: ids.publishedTarget,
+        anchorText: "فرهنگ کابل",
+        sourceEntry: {
+          id: ids.publishedTarget,
+          slug: "published-entry",
+          title: "نوشته منتشرشده",
+          summary: "خلاصه نوشته منتشرشده",
+          publishedAt: new Date("2026-01-01T00:00:00.000Z"),
+        },
+      },
+    ],
   };
 }
 

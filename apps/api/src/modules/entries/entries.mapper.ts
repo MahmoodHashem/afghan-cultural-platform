@@ -15,6 +15,19 @@ const sourceSelect = {
   updatedAt: true,
 } as const;
 
+const publicSourceSelect = {
+  id: true,
+  type: true,
+  title: true,
+  authorOrProvider: true,
+  publicationDate: true,
+  websiteUrl: true,
+  bookOrArticleDetails: true,
+  interviewDate: true,
+  explanation: true,
+  displayOrder: true,
+} as const;
+
 const imageSelect = {
   id: true,
   cloudinaryPublicId: true,
@@ -34,6 +47,18 @@ const imageSelect = {
   updatedAt: true,
 } as const;
 
+const publicImageSelect = {
+  id: true,
+  secureUrl: true,
+  thumbnailUrl: true,
+  width: true,
+  height: true,
+  caption: true,
+  altText: true,
+  photographerOrSource: true,
+  displayOrder: true,
+} as const;
+
 const youtubeVideoSelect = {
   id: true,
   videoId: true,
@@ -43,6 +68,15 @@ const youtubeVideoSelect = {
   isRemoved: true,
   createdAt: true,
   updatedAt: true,
+} as const;
+
+const publicYoutubeVideoSelect = {
+  id: true,
+  videoId: true,
+  url: true,
+  title: true,
+  description: true,
+  isRemoved: true,
 } as const;
 
 const contentVersionSelect = {
@@ -105,6 +139,13 @@ const sourceOrderBy: Prisma.SourceOrderByWithRelationInput[] = [
   { displayOrder: "asc" },
   { createdAt: "asc" },
 ];
+
+const publishedEntryWhere = {
+  status: "PUBLISHED",
+  publishedAt: {
+    not: null,
+  },
+} as const;
 
 const entrySelect = {
   id: true,
@@ -184,6 +225,132 @@ const entrySelect = {
   },
 } as const;
 
+const publicEntryCardSelect = {
+  id: true,
+  slug: true,
+  title: true,
+  summary: true,
+  averageRating: true,
+  ratingCount: true,
+  publishedAt: true,
+  updatedAt: true,
+  author: {
+    select: {
+      id: true,
+      displayName: true,
+      profileImageUrl: true,
+    },
+  },
+  province: {
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+    },
+  },
+  category: {
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+    },
+  },
+  contentType: {
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+    },
+  },
+  tags: {
+    select: {
+      tag: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+        },
+      },
+    },
+    orderBy: entryTagOrderBy,
+  },
+  images: {
+    where: {
+      isRemoved: false,
+    },
+    select: publicImageSelect,
+    orderBy: imageOrderBy,
+    take: 1,
+  },
+} as const;
+
+const publicEntryDetailSelect = {
+  ...publicEntryCardSelect,
+  contentJson: true,
+  plainTextContent: true,
+  villageOrLocation: true,
+  district: {
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+    },
+  },
+  images: {
+    where: {
+      isRemoved: false,
+    },
+    select: publicImageSelect,
+    orderBy: imageOrderBy,
+  },
+  sources: {
+    select: publicSourceSelect,
+    orderBy: sourceOrderBy,
+  },
+  youtubeVideo: {
+    select: publicYoutubeVideoSelect,
+  },
+  outgoingReferences: {
+    where: {
+      targetEntry: publishedEntryWhere,
+    },
+    select: {
+      id: true,
+      targetEntryId: true,
+      anchorText: true,
+      targetEntry: {
+        select: {
+          id: true,
+          slug: true,
+          title: true,
+        },
+      },
+    },
+    orderBy: { createdAt: "asc" },
+  },
+  incomingReferences: {
+    where: {
+      sourceEntry: publishedEntryWhere,
+    },
+    select: {
+      id: true,
+      sourceEntryId: true,
+      anchorText: true,
+      sourceEntry: {
+        select: {
+          id: true,
+          slug: true,
+          title: true,
+          summary: true,
+          publishedAt: true,
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+    take: 10,
+  },
+} as const;
+
 type EntryPayload = Prisma.CulturalEntryGetPayload<{ select: typeof entrySelect }>;
 type ContentVersionPayload = Prisma.ContentVersionGetPayload<{
   select: typeof contentVersionSelect;
@@ -194,6 +361,12 @@ type IncomingEntryReferencePayload = Prisma.EntryReferenceGetPayload<{
 type ImagePayload = Prisma.ImageGetPayload<{ select: typeof imageSelect }>;
 type OutgoingEntryReferencePayload = Prisma.EntryReferenceGetPayload<{
   select: typeof outgoingEntryReferenceSelect;
+}>;
+type PublicEntryCardPayload = Prisma.CulturalEntryGetPayload<{
+  select: typeof publicEntryCardSelect;
+}>;
+type PublicEntryDetailPayload = Prisma.CulturalEntryGetPayload<{
+  select: typeof publicEntryDetailSelect;
 }>;
 type SourcePayload = Prisma.SourceGetPayload<{ select: typeof sourceSelect }>;
 type YouTubeVideoPayload = Prisma.YouTubeVideoGetPayload<{ select: typeof youtubeVideoSelect }>;
@@ -295,6 +468,130 @@ function mapYouTubeVideo(video: YouTubeVideoPayload) {
   };
 }
 
+function mapPublicEntryCard(entry: PublicEntryCardPayload) {
+  return {
+    id: entry.id,
+    slug: requirePublicSlug(entry.slug),
+    title: entry.title,
+    summary: entry.summary,
+    coverImage: entry.images[0] ? mapPublicImage(entry.images[0]) : null,
+    province: entry.province,
+    category: entry.category,
+    contentType: entry.contentType,
+    tags: entry.tags.map((entryTag) => entryTag.tag),
+    author: entry.author,
+    publishedAt: requirePublishedAt(entry.publishedAt),
+    updatedAt: entry.updatedAt,
+    averageRating: Number(entry.averageRating),
+    ratingCount: entry.ratingCount,
+  };
+}
+
+function mapPublicEntryDetail(entry: PublicEntryDetailPayload) {
+  const card = mapPublicEntryCard({
+    ...entry,
+    images: entry.images.slice(0, 1),
+  });
+
+  return {
+    ...card,
+    contentJson: entry.contentJson,
+    plainTextContent: entry.plainTextContent,
+    district: entry.district,
+    villageOrLocation: entry.villageOrLocation,
+    images: entry.images.map(mapPublicImage),
+    sources: entry.sources.map(mapPublicSource),
+    youtubeVideo:
+      entry.youtubeVideo && !entry.youtubeVideo.isRemoved
+        ? mapPublicYouTubeVideo(entry.youtubeVideo)
+        : null,
+    outgoingReferences: entry.outgoingReferences.map((reference) => ({
+      id: reference.id,
+      targetEntryId: reference.targetEntryId,
+      anchorText: reference.anchorText,
+      targetEntry: {
+        id: reference.targetEntry.id,
+        slug: requirePublicSlug(reference.targetEntry.slug),
+        title: reference.targetEntry.title,
+      },
+    })),
+    incomingReferences: entry.incomingReferences.map((reference) => ({
+      id: reference.id,
+      sourceEntryId: reference.sourceEntryId,
+      anchorText: reference.anchorText,
+      sourceEntry: {
+        id: reference.sourceEntry.id,
+        slug: requirePublicSlug(reference.sourceEntry.slug),
+        title: reference.sourceEntry.title,
+        summary: reference.sourceEntry.summary,
+        publishedAt: requirePublishedAt(reference.sourceEntry.publishedAt),
+      },
+    })),
+    seo: {
+      title: entry.title,
+      summary: entry.summary,
+      canonicalSlug: requirePublicSlug(entry.slug),
+      image: entry.images[0]?.thumbnailUrl ?? entry.images[0]?.secureUrl ?? null,
+      author: entry.author.displayName,
+      publishedAt: requirePublishedAt(entry.publishedAt),
+      modifiedAt: entry.updatedAt,
+      taxonomy: [entry.province, entry.category, entry.contentType],
+      plainTextExcerpt: createPlainTextExcerpt(entry.plainTextContent),
+    },
+  };
+}
+
+function mapPublicImage(image: PublicEntryDetailPayload["images"][number]) {
+  return {
+    id: image.id,
+    secureUrl: image.secureUrl,
+    thumbnailUrl: image.thumbnailUrl,
+    width: image.width,
+    height: image.height,
+    caption: image.caption,
+    altText: image.altText,
+    photographerOrSource: image.photographerOrSource,
+    displayOrder: image.displayOrder,
+  };
+}
+
+function mapPublicSource(source: PublicEntryDetailPayload["sources"][number]) {
+  return {
+    id: source.id,
+    type: source.type,
+    title: source.title,
+    authorOrProvider: source.authorOrProvider,
+    publicationDate: source.publicationDate,
+    websiteUrl: source.websiteUrl,
+    bookOrArticleDetails: source.bookOrArticleDetails,
+    interviewDate: source.interviewDate,
+    explanation: source.explanation,
+    displayOrder: source.displayOrder,
+  };
+}
+
+function mapPublicYouTubeVideo(video: NonNullable<PublicEntryDetailPayload["youtubeVideo"]>) {
+  return {
+    id: video.id,
+    videoId: video.videoId,
+    url: video.url,
+    title: video.title,
+    description: video.description,
+  };
+}
+
+function requirePublicSlug(slug: string | null): string {
+  return slug ?? "";
+}
+
+function requirePublishedAt(publishedAt: Date | null): Date {
+  return publishedAt ?? new Date(0);
+}
+
+function createPlainTextExcerpt(plainText: string): string {
+  return plainText.trim().replace(/\s+/g, " ").slice(0, 220);
+}
+
 function mapOutgoingEntryReference(reference: OutgoingEntryReferencePayload) {
   return {
     id: reference.id,
@@ -323,6 +620,8 @@ export type {
   ImagePayload,
   IncomingEntryReferencePayload,
   OutgoingEntryReferencePayload,
+  PublicEntryCardPayload,
+  PublicEntryDetailPayload,
   SourcePayload,
   YouTubeVideoPayload,
 };
@@ -337,9 +636,13 @@ export {
   mapImage,
   mapIncomingEntryReference,
   mapOutgoingEntryReference,
+  mapPublicEntryCard,
+  mapPublicEntryDetail,
   mapSource,
   mapYouTubeVideo,
   outgoingEntryReferenceSelect,
+  publicEntryCardSelect,
+  publicEntryDetailSelect,
   sourceSelect,
   youtubeVideoSelect,
 };

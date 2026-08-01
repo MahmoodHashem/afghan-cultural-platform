@@ -35,6 +35,7 @@ import type {
   UpdateEntryYouTubeVideoDto,
   UpsertEntryYouTubeVideoDto,
 } from "@/modules/entries/dto/entry-youtube.dto";
+import type { PublicEntryQueryDto } from "@/modules/entries/dto/public-entry-query.dto";
 import { ENTRY_ERROR_CODES } from "@/modules/entries/entries.constants";
 import {
   contentVersionSelect,
@@ -47,9 +48,13 @@ import {
   mapImage,
   mapIncomingEntryReference,
   mapOutgoingEntryReference,
+  mapPublicEntryCard,
+  mapPublicEntryDetail,
   mapSource,
   mapYouTubeVideo,
   outgoingEntryReferenceSelect,
+  publicEntryCardSelect,
+  publicEntryDetailSelect,
   sourceSelect,
   youtubeVideoSelect,
 } from "@/modules/entries/entries.mapper";
@@ -100,6 +105,12 @@ type NormalizedEntryQuery = {
   sortDirection: "asc" | "desc";
 };
 
+type NormalizedPublicEntryQuery = {
+  page: number;
+  limit: number;
+  sort: "newest" | "oldest" | "recentlyUpdated";
+};
+
 type EntriesDbClient = Prisma.TransactionClient | PrismaService;
 type SourceCreateData = Omit<Prisma.SourceUncheckedCreateInput, "entryId" | "displayOrder">;
 type NormalizedEntryReference = {
@@ -113,6 +124,8 @@ const submittableStatuses = new Set<EntryStatus>([
   EntryStatus.CHANGES_REQUESTED,
 ]);
 const MAX_REFERENCE_ANCHOR_LENGTH = 180;
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const taxonomyReferenceSelect = {
   id: true,
   name: true,
@@ -228,6 +241,54 @@ class EntriesService {
     @Inject(CloudinaryMediaService) private readonly mediaService: CloudinaryMediaService,
     @Inject(ConfigService) private readonly configService: ConfigService,
   ) {}
+
+  async listPublishedEntries(query: PublicEntryQueryDto) {
+    const normalizedQuery = this.normalizePublicEntryQuery(query);
+    await this.ensurePublicDistrictProvinceFilterIsValid(query);
+    const where = this.createPublicEntryWhere(query);
+    const [items, total] = await this.prisma.$transaction([
+      this.prisma.culturalEntry.findMany({
+        where,
+        select: publicEntryCardSelect,
+        orderBy: this.publicEntryOrderBy(normalizedQuery),
+        skip: this.skip(normalizedQuery),
+        take: normalizedQuery.limit,
+      }),
+      this.prisma.culturalEntry.count({ where }),
+    ]);
+
+    return {
+      data: items.map(mapPublicEntryCard),
+      meta: {
+        page: normalizedQuery.page,
+        limit: normalizedQuery.limit,
+        total,
+        totalPages: Math.ceil(total / normalizedQuery.limit),
+      },
+    };
+  }
+
+  async getPublishedEntryBySlug(slug: string) {
+    const normalizedSlug = this.normalizePublicSlug(slug);
+    const entry = await this.prisma.culturalEntry.findFirst({
+      where: {
+        slug: normalizedSlug,
+        status: EntryStatus.PUBLISHED,
+        publishedAt: {
+          not: null,
+        },
+      },
+      select: publicEntryDetailSelect,
+    });
+
+    if (!entry) {
+      throw this.notFound();
+    }
+
+    return {
+      data: mapPublicEntryDetail(entry),
+    };
+  }
 
   async createDraft(user: AuthenticatedUser, input: CreateEntryDraftDto) {
     const title = this.normalizeTitle(input.title);
@@ -1216,6 +1277,160 @@ class EntriesService {
     return `${reference.targetEntryId}:${reference.anchorText}`;
   }
 
+  private normalizePublicEntryQuery(query: PublicEntryQueryDto): NormalizedPublicEntryQuery {
+    const sort = query.sort ?? "newest";
+
+    if (sort !== "newest" && sort !== "oldest" && sort !== "recentlyUpdated") {
+      throw this.invalidPublicQuery("Public entry sort value is invalid.");
+    }
+
+    return {
+      page: query.page ?? 1,
+      limit: query.limit ?? 20,
+      sort,
+    };
+  }
+
+  private createPublicEntryWhere(query: PublicEntryQueryDto): Prisma.CulturalEntryWhereInput {
+    const provinceId = this.normalizeUuidFilter(query.provinceId, "provinceId");
+    const provinceSlug = this.normalizeSlugFilter(query.provinceSlug, "provinceSlug");
+    const districtId = this.normalizeUuidFilter(query.districtId, "districtId");
+    const districtSlug = this.normalizeSlugFilter(query.districtSlug, "districtSlug");
+    const categoryId = this.normalizeUuidFilter(query.categoryId, "categoryId");
+    const categorySlug = this.normalizeSlugFilter(query.categorySlug, "categorySlug");
+    const contentTypeId = this.normalizeUuidFilter(query.contentTypeId, "contentTypeId");
+    const contentTypeSlug = this.normalizeSlugFilter(query.contentTypeSlug, "contentTypeSlug");
+    const tagId = this.normalizeUuidFilter(query.tagId, "tagId");
+    const tagSlug = this.normalizeSlugFilter(query.tagSlug, "tagSlug");
+    const authorId = this.normalizeUuidFilter(query.authorId, "authorId");
+
+    return {
+      status: EntryStatus.PUBLISHED,
+      slug: {
+        not: null,
+      },
+      publishedAt: {
+        not: null,
+      },
+      ...(provinceId ? { provinceId } : {}),
+      ...(districtId ? { districtId } : {}),
+      ...(categoryId ? { categoryId } : {}),
+      ...(contentTypeId ? { contentTypeId } : {}),
+      ...(authorId ? { authorId } : {}),
+      ...(provinceSlug ? { province: { slug: provinceSlug } } : {}),
+      ...(districtSlug ? { district: { slug: districtSlug } } : {}),
+      ...(categorySlug ? { category: { slug: categorySlug } } : {}),
+      ...(contentTypeSlug ? { contentType: { slug: contentTypeSlug } } : {}),
+      ...(tagId || tagSlug
+        ? {
+            tags: {
+              some: {
+                ...(tagId ? { tagId } : {}),
+                ...(tagSlug ? { tag: { slug: tagSlug } } : {}),
+              },
+            },
+          }
+        : {}),
+    };
+  }
+
+  private async ensurePublicDistrictProvinceFilterIsValid(
+    query: PublicEntryQueryDto,
+  ): Promise<void> {
+    const provinceId = this.normalizeUuidFilter(query.provinceId, "provinceId");
+    const provinceSlug = this.normalizeSlugFilter(query.provinceSlug, "provinceSlug");
+    const districtId = this.normalizeUuidFilter(query.districtId, "districtId");
+    const districtSlug = this.normalizeSlugFilter(query.districtSlug, "districtSlug");
+
+    if ((!provinceId && !provinceSlug) || (!districtId && !districtSlug)) {
+      return;
+    }
+
+    const district = await this.prisma.district.findFirst({
+      where: {
+        ...(districtId ? { id: districtId } : {}),
+        ...(districtSlug ? { slug: districtSlug } : {}),
+      },
+      select: {
+        provinceId: true,
+        province: {
+          select: {
+            slug: true,
+          },
+        },
+      },
+    });
+
+    if (!district) {
+      throw this.invalidPublicFilter("District filter is invalid.");
+    }
+
+    if (provinceId && district.provinceId !== provinceId) {
+      throw this.invalidPublicFilter("District does not belong to the selected province.");
+    }
+
+    if (provinceSlug && district.province.slug !== provinceSlug) {
+      throw this.invalidPublicFilter("District does not belong to the selected province.");
+    }
+  }
+
+  private publicEntryOrderBy(
+    query: NormalizedPublicEntryQuery,
+  ): Prisma.CulturalEntryOrderByWithRelationInput[] {
+    switch (query.sort) {
+      case "oldest":
+        return [{ publishedAt: "asc" }, { createdAt: "asc" }, { id: "asc" }];
+      case "recentlyUpdated":
+        return [{ updatedAt: "desc" }, { publishedAt: "desc" }, { id: "asc" }];
+      case "newest":
+        return [{ publishedAt: "desc" }, { createdAt: "desc" }, { id: "asc" }];
+    }
+  }
+
+  private normalizeUuidFilter(value: string | undefined, field: string): string | undefined {
+    const normalizedValue = this.normalizeFilterValue(value);
+
+    if (!normalizedValue) {
+      return undefined;
+    }
+
+    if (!UUID_PATTERN.test(normalizedValue)) {
+      throw this.invalidPublicQuery(`${field} must be a valid UUID.`);
+    }
+
+    return normalizedValue;
+  }
+
+  private normalizeSlugFilter(value: string | undefined, field: string): string | undefined {
+    const normalizedValue = this.normalizeFilterValue(value);
+
+    if (!normalizedValue) {
+      return undefined;
+    }
+
+    if (!SLUG_PATTERN.test(normalizedValue)) {
+      throw this.invalidPublicQuery(`${field} must be a valid slug.`);
+    }
+
+    return normalizedValue;
+  }
+
+  private normalizePublicSlug(slug: string): string {
+    const normalizedSlug = slug.trim().toLowerCase();
+
+    if (!SLUG_PATTERN.test(normalizedSlug)) {
+      throw this.invalidPublicQuery("Entry slug must be a valid slug.");
+    }
+
+    return normalizedSlug;
+  }
+
+  private normalizeFilterValue(value: string | undefined): string | undefined {
+    const normalizedValue = value?.trim().toLowerCase();
+
+    return normalizedValue || undefined;
+  }
+
   private async validateTaxonomy({
     provinceId,
     districtId,
@@ -2184,7 +2399,7 @@ class EntriesService {
     return [{ updatedAt: query.sortDirection }, { createdAt: "desc" }];
   }
 
-  private skip(query: NormalizedEntryQuery): number {
+  private skip(query: { page: number; limit: number }): number {
     return (query.page - 1) * query.limit;
   }
 
@@ -2246,6 +2461,20 @@ class EntriesService {
     return new BadRequestException({
       error: ENTRY_ERROR_CODES.TAXONOMY_INVALID,
       message: "One or more taxonomy references are invalid.",
+    });
+  }
+
+  private invalidPublicQuery(message: string): BadRequestException {
+    return new BadRequestException({
+      error: ENTRY_ERROR_CODES.QUERY_INVALID,
+      message,
+    });
+  }
+
+  private invalidPublicFilter(message: string): BadRequestException {
+    return new BadRequestException({
+      error: ENTRY_ERROR_CODES.FILTER_INVALID,
+      message,
     });
   }
 

@@ -194,6 +194,228 @@ class EntryReferenceDto {
   targetEntry?: EntryReferenceTargetDto;
 }
 
+class PublicEntryAuthorDto {
+  @ApiProperty()
+  id!: string;
+
+  @ApiProperty()
+  displayName!: string;
+
+  @ApiPropertyOptional()
+  profileImageUrl!: string | null;
+}
+
+class PublicEntryImageDto {
+  @ApiProperty()
+  id!: string;
+
+  @ApiProperty()
+  secureUrl!: string;
+
+  @ApiPropertyOptional()
+  thumbnailUrl!: string | null;
+
+  @ApiPropertyOptional()
+  width!: number | null;
+
+  @ApiPropertyOptional()
+  height!: number | null;
+
+  @ApiPropertyOptional()
+  caption!: string | null;
+
+  @ApiProperty()
+  altText!: string;
+
+  @ApiPropertyOptional()
+  photographerOrSource!: string | null;
+
+  @ApiProperty()
+  displayOrder!: number;
+}
+
+class PublicEntrySourceDto {
+  @ApiProperty()
+  id!: string;
+
+  @ApiProperty({ enum: SourceType })
+  type!: SourceType;
+
+  @ApiPropertyOptional()
+  title!: string | null;
+
+  @ApiPropertyOptional()
+  authorOrProvider!: string | null;
+
+  @ApiPropertyOptional()
+  publicationDate!: string | null;
+
+  @ApiPropertyOptional()
+  websiteUrl!: string | null;
+
+  @ApiPropertyOptional()
+  bookOrArticleDetails!: string | null;
+
+  @ApiPropertyOptional()
+  interviewDate!: Date | null;
+
+  @ApiPropertyOptional()
+  explanation!: string | null;
+
+  @ApiProperty()
+  displayOrder!: number;
+}
+
+class PublicEntryYouTubeVideoDto {
+  @ApiProperty()
+  id!: string;
+
+  @ApiProperty()
+  videoId!: string;
+
+  @ApiProperty()
+  url!: string;
+
+  @ApiPropertyOptional()
+  title!: string | null;
+
+  @ApiPropertyOptional()
+  description!: string | null;
+}
+
+class PublicEntryOutgoingReferenceDto {
+  @ApiProperty()
+  id!: string;
+
+  @ApiProperty()
+  targetEntryId!: string;
+
+  @ApiProperty()
+  anchorText!: string;
+
+  @ApiProperty({ type: EntryReferenceSourceDto })
+  targetEntry!: EntryReferenceSourceDto;
+}
+
+class PublicEntryIncomingReferenceDto {
+  @ApiProperty()
+  id!: string;
+
+  @ApiProperty()
+  sourceEntryId!: string;
+
+  @ApiProperty()
+  anchorText!: string;
+
+  @ApiProperty({ type: EntryReferenceTargetDto })
+  sourceEntry!: EntryReferenceTargetDto;
+}
+
+class PublicEntrySeoDto {
+  @ApiProperty()
+  title!: string;
+
+  @ApiProperty()
+  summary!: string;
+
+  @ApiProperty()
+  canonicalSlug!: string;
+
+  @ApiPropertyOptional()
+  image!: string | null;
+
+  @ApiProperty()
+  author!: string;
+
+  @ApiProperty()
+  publishedAt!: Date;
+
+  @ApiProperty()
+  modifiedAt!: Date;
+
+  @ApiProperty({ type: [EntryTaxonomyDto] })
+  taxonomy!: EntryTaxonomyDto[];
+
+  @ApiProperty()
+  plainTextExcerpt!: string;
+}
+
+class PublicEntryCardDto {
+  @ApiProperty()
+  id!: string;
+
+  @ApiProperty()
+  slug!: string;
+
+  @ApiProperty()
+  title!: string;
+
+  @ApiProperty()
+  summary!: string;
+
+  @ApiPropertyOptional({ type: PublicEntryImageDto, nullable: true })
+  coverImage!: PublicEntryImageDto | null;
+
+  @ApiProperty({ type: EntryTaxonomyDto })
+  province!: EntryTaxonomyDto;
+
+  @ApiProperty({ type: EntryTaxonomyDto })
+  category!: EntryTaxonomyDto;
+
+  @ApiProperty({ type: EntryTaxonomyDto })
+  contentType!: EntryTaxonomyDto;
+
+  @ApiProperty({ type: [EntryTagDto] })
+  tags!: EntryTagDto[];
+
+  @ApiProperty({ type: PublicEntryAuthorDto })
+  author!: PublicEntryAuthorDto;
+
+  @ApiProperty()
+  publishedAt!: Date;
+
+  @ApiProperty()
+  updatedAt!: Date;
+
+  @ApiProperty()
+  averageRating!: number;
+
+  @ApiProperty()
+  ratingCount!: number;
+}
+
+class PublicEntryDetailDto extends PublicEntryCardDto {
+  @ApiProperty({ type: Object })
+  contentJson!: unknown;
+
+  @ApiProperty()
+  plainTextContent!: string;
+
+  @ApiPropertyOptional({ type: EntryTaxonomyDto, nullable: true })
+  district!: EntryTaxonomyDto | null;
+
+  @ApiPropertyOptional()
+  villageOrLocation!: string | null;
+
+  @ApiProperty({ type: [PublicEntryImageDto] })
+  images!: PublicEntryImageDto[];
+
+  @ApiProperty({ type: [PublicEntrySourceDto] })
+  sources!: PublicEntrySourceDto[];
+
+  @ApiPropertyOptional({ type: PublicEntryYouTubeVideoDto, nullable: true })
+  youtubeVideo!: PublicEntryYouTubeVideoDto | null;
+
+  @ApiProperty({ type: [PublicEntryOutgoingReferenceDto] })
+  outgoingReferences!: PublicEntryOutgoingReferenceDto[];
+
+  @ApiProperty({ type: [PublicEntryIncomingReferenceDto] })
+  incomingReferences!: PublicEntryIncomingReferenceDto[];
+
+  @ApiProperty({ type: PublicEntrySeoDto })
+  seo!: PublicEntrySeoDto;
+}
+
 class ContentVersionDto {
   @ApiProperty()
   id!: string;
@@ -385,6 +607,19 @@ class EntryListResponseDto {
   meta!: EntryListMetaDto;
 }
 
+class PublicEntryListResponseDto {
+  @ApiProperty({ type: [PublicEntryCardDto] })
+  data!: PublicEntryCardDto[];
+
+  @ApiProperty({ type: EntryListMetaDto })
+  meta!: EntryListMetaDto;
+}
+
+class PublicEntryResponseDto {
+  @ApiProperty({ type: PublicEntryDetailDto })
+  data!: PublicEntryDetailDto;
+}
+
 class EntryMessageDataDto {
   @ApiProperty()
   message!: string;
@@ -411,4 +646,6 @@ export {
   EntrySubmissionResponseDto,
   EntryTagsResponseDto,
   EntryYouTubeVideoResponseDto,
+  PublicEntryListResponseDto,
+  PublicEntryResponseDto,
 };
