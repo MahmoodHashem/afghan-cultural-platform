@@ -5,7 +5,6 @@ jest.mock("@/database/prisma.service", () => ({
 import { ForbiddenException, HttpException } from "@nestjs/common";
 import { APP_GUARD, type Reflector } from "@nestjs/core";
 
-import { AppModule } from "@/app.module";
 import { UserRole, UserStatus } from "@/generated/prisma/enums";
 import {
   AUTH_ERROR_CODES,
@@ -153,6 +152,10 @@ describe("authorization guards", () => {
   });
 
   it("configures global auth guard order before throttling", () => {
+    process.env.CLOUDINARY_CLOUD_NAME ??= "test-cloud";
+    process.env.CLOUDINARY_API_KEY ??= "test-key";
+    process.env.CLOUDINARY_API_SECRET ??= "test-secret";
+    const { AppModule } = jest.requireActual("@/app.module") as typeof import("@/app.module");
     const providers = Reflect.getMetadata("providers", AppModule) as Array<{
       provide?: unknown;
       useClass?: { name: string };

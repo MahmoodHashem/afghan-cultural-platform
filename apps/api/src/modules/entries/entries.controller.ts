@@ -9,11 +9,15 @@ import {
   Patch,
   Post,
   Query,
+  UploadedFile,
+  UseInterceptors,
 } from "@nestjs/common";
+import { FileInterceptor } from "@nestjs/platform-express";
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
   ApiBody,
+  ApiConsumes,
   ApiExtraModels,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
@@ -22,6 +26,7 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
+import { memoryStorage } from "multer";
 
 import { CurrentUser } from "@/modules/auth/decorators/current-user.decorator";
 import { RequireVerifiedEmail } from "@/modules/auth/decorators/require-verified-email.decorator";
@@ -30,14 +35,22 @@ import {
   CreateEntryDraftDto,
   UpdateEntryDraftDto,
 } from "@/modules/entries/dto/create-entry-draft.dto";
+import {
+  ReorderEntryImagesDto,
+  UpdateEntryImageMetadataDto,
+  UploadEntryImageDto,
+} from "@/modules/entries/dto/entry-images.dto";
 import { OwnEntriesQueryDto } from "@/modules/entries/dto/entry-query.dto";
 import {
+  EntryImageResponseDto,
+  EntryImagesResponseDto,
   EntryListResponseDto,
   EntryMessageResponseDto,
   EntryResponseDto,
   EntrySourceResponseDto,
   EntrySourcesResponseDto,
   EntryTagsResponseDto,
+  EntryYouTubeVideoResponseDto,
 } from "@/modules/entries/dto/entry-response.dto";
 import {
   CreateEntrySourceDto,
@@ -45,6 +58,10 @@ import {
   UpdateEntrySourceDto,
 } from "@/modules/entries/dto/entry-sources.dto";
 import { EntryTagsDto } from "@/modules/entries/dto/entry-tags.dto";
+import {
+  UpdateEntryYouTubeVideoDto,
+  UpsertEntryYouTubeVideoDto,
+} from "@/modules/entries/dto/entry-youtube.dto";
 import { EntriesService } from "@/modules/entries/entries.service";
 
 @ApiTags("Entries")
@@ -54,9 +71,14 @@ import { EntriesService } from "@/modules/entries/entries.service";
   CreateEntrySourceDto,
   EntryTagsDto,
   OwnEntriesQueryDto,
+  ReorderEntryImagesDto,
   ReorderEntrySourcesDto,
   UpdateEntryDraftDto,
+  UpdateEntryImageMetadataDto,
   UpdateEntrySourceDto,
+  UpdateEntryYouTubeVideoDto,
+  UploadEntryImageDto,
+  UpsertEntryYouTubeVideoDto,
 )
 @RequireVerifiedEmail()
 @Controller()
@@ -276,6 +298,206 @@ class EntriesController {
     @Param("sourceId", ParseUUIDPipe) sourceId: string,
   ) {
     return this.entriesService.deleteSource(user, id, sourceId);
+  }
+
+  @Get("me/entries/:id/images")
+  @ApiOperation({ summary: "List images attached to the current user's editable entry" })
+  @ApiOkResponse({ type: EntryImagesResponseDto })
+  @ApiForbiddenResponse({
+    description:
+      "AUTH_EMAIL_VERIFICATION_REQUIRED, AUTH_ACCOUNT_SUSPENDED, or ENTRY_INVALID_STATUS",
+  })
+  @ApiNotFoundResponse({ description: "ENTRY_NOT_FOUND" })
+  listImages(@CurrentUser() user: AuthenticatedUser, @Param("id", ParseUUIDPipe) id: string) {
+    return this.entriesService.listImages(user, id);
+  }
+
+  @Post("me/entries/:id/images")
+  @UseInterceptors(
+    FileInterceptor("image", {
+      storage: memoryStorage(),
+    }),
+  )
+  @ApiOperation({
+    summary: "Upload an image to the current user's editable entry",
+    description:
+      "Accepts multipart/form-data with an image file. JPEG, PNG, and WebP are supported. The backend validates actual file signatures, size, count, permission confirmation, and metadata.",
+  })
+  @ApiConsumes("multipart/form-data")
+  @ApiBody({
+    schema: {
+      type: "object",
+      required: ["image", "altText", "permissionConfirmed"],
+      properties: {
+        image: {
+          type: "string",
+          format: "binary",
+        },
+        altText: {
+          type: "string",
+          maxLength: 220,
+        },
+        caption: {
+          type: "string",
+          maxLength: 500,
+        },
+        photographerOrSource: {
+          type: "string",
+          maxLength: 180,
+        },
+        permissionConfirmed: {
+          type: "boolean",
+        },
+        displayOrder: {
+          type: "integer",
+          minimum: 0,
+          maximum: 1_000_000,
+        },
+      },
+    },
+  })
+  @ApiOkResponse({ type: EntryImageResponseDto })
+  @ApiBadRequestResponse({
+    description:
+      "IMAGE_LIMIT_EXCEEDED, IMAGE_TOO_LARGE, IMAGE_INVALID_TYPE, IMAGE_UPLOAD_FAILED, IMAGE_PERMISSION_REQUIRED, IMAGE_ORDER_DUPLICATE, or validation failed",
+  })
+  @ApiForbiddenResponse({
+    description:
+      "AUTH_EMAIL_VERIFICATION_REQUIRED, AUTH_ACCOUNT_SUSPENDED, or ENTRY_INVALID_STATUS",
+  })
+  @ApiNotFoundResponse({ description: "ENTRY_NOT_FOUND" })
+  uploadImage(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("id", ParseUUIDPipe) id: string,
+    @Body() body: UploadEntryImageDto,
+    @UploadedFile() image: Express.Multer.File | undefined,
+  ) {
+    return this.entriesService.uploadImage(user, id, body, image);
+  }
+
+  @Patch("me/entries/:id/images/reorder")
+  @ApiOperation({ summary: "Reorder images on the current user's editable entry" })
+  @ApiBody({ type: ReorderEntryImagesDto })
+  @ApiOkResponse({ type: EntryImagesResponseDto })
+  @ApiBadRequestResponse({
+    description: "IMAGE_NOT_FOUND, IMAGE_ORDER_DUPLICATE, or validation failed",
+  })
+  @ApiForbiddenResponse({
+    description:
+      "AUTH_EMAIL_VERIFICATION_REQUIRED, AUTH_ACCOUNT_SUSPENDED, or ENTRY_INVALID_STATUS",
+  })
+  @ApiNotFoundResponse({ description: "ENTRY_NOT_FOUND or IMAGE_NOT_FOUND" })
+  reorderImages(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("id", ParseUUIDPipe) id: string,
+    @Body() body: ReorderEntryImagesDto,
+  ) {
+    return this.entriesService.reorderImages(user, id, body);
+  }
+
+  @Patch("me/entries/:id/images/:imageId")
+  @ApiOperation({ summary: "Update image metadata on the current user's editable entry" })
+  @ApiBody({ type: UpdateEntryImageMetadataDto })
+  @ApiOkResponse({ type: EntryImageResponseDto })
+  @ApiBadRequestResponse({
+    description: "IMAGE_PERMISSION_REQUIRED, IMAGE_ORDER_DUPLICATE, or validation failed",
+  })
+  @ApiForbiddenResponse({
+    description:
+      "AUTH_EMAIL_VERIFICATION_REQUIRED, AUTH_ACCOUNT_SUSPENDED, or ENTRY_INVALID_STATUS",
+  })
+  @ApiNotFoundResponse({ description: "ENTRY_NOT_FOUND or IMAGE_NOT_FOUND" })
+  updateImageMetadata(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("id", ParseUUIDPipe) id: string,
+    @Param("imageId", ParseUUIDPipe) imageId: string,
+    @Body() body: UpdateEntryImageMetadataDto,
+  ) {
+    return this.entriesService.updateImageMetadata(user, id, imageId, body);
+  }
+
+  @Delete("me/entries/:id/images/:imageId")
+  @ApiOperation({ summary: "Delete an image from the current user's editable entry" })
+  @ApiOkResponse({ type: EntryMessageResponseDto })
+  @ApiBadRequestResponse({ description: "IMAGE_DELETE_FAILED" })
+  @ApiForbiddenResponse({
+    description:
+      "AUTH_EMAIL_VERIFICATION_REQUIRED, AUTH_ACCOUNT_SUSPENDED, or ENTRY_INVALID_STATUS",
+  })
+  @ApiNotFoundResponse({ description: "ENTRY_NOT_FOUND or IMAGE_NOT_FOUND" })
+  deleteImage(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("id", ParseUUIDPipe) id: string,
+    @Param("imageId", ParseUUIDPipe) imageId: string,
+  ) {
+    return this.entriesService.deleteImage(user, id, imageId);
+  }
+
+  @Get("me/entries/:id/youtube-video")
+  @ApiOperation({ summary: "Get the current user's editable entry YouTube video" })
+  @ApiOkResponse({ type: EntryYouTubeVideoResponseDto })
+  @ApiForbiddenResponse({
+    description:
+      "AUTH_EMAIL_VERIFICATION_REQUIRED, AUTH_ACCOUNT_SUSPENDED, or ENTRY_INVALID_STATUS",
+  })
+  @ApiNotFoundResponse({ description: "ENTRY_NOT_FOUND" })
+  getYouTubeVideo(@CurrentUser() user: AuthenticatedUser, @Param("id", ParseUUIDPipe) id: string) {
+    return this.entriesService.getYouTubeVideo(user, id);
+  }
+
+  @Post("me/entries/:id/youtube-video")
+  @ApiOperation({
+    summary: "Add or replace the current user's editable entry YouTube video",
+    description:
+      "Accepts supported YouTube URL forms only and stores the extracted YouTube video ID. Raw iframe HTML is rejected.",
+  })
+  @ApiBody({ type: UpsertEntryYouTubeVideoDto })
+  @ApiOkResponse({ type: EntryYouTubeVideoResponseDto })
+  @ApiBadRequestResponse({ description: "YOUTUBE_URL_INVALID or validation failed" })
+  @ApiForbiddenResponse({
+    description:
+      "AUTH_EMAIL_VERIFICATION_REQUIRED, AUTH_ACCOUNT_SUSPENDED, or ENTRY_INVALID_STATUS",
+  })
+  @ApiNotFoundResponse({ description: "ENTRY_NOT_FOUND" })
+  upsertYouTubeVideo(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("id", ParseUUIDPipe) id: string,
+    @Body() body: UpsertEntryYouTubeVideoDto,
+  ) {
+    return this.entriesService.upsertYouTubeVideo(user, id, body);
+  }
+
+  @Patch("me/entries/:id/youtube-video")
+  @ApiOperation({ summary: "Update YouTube video metadata on the current user's editable entry" })
+  @ApiBody({ type: UpdateEntryYouTubeVideoDto })
+  @ApiOkResponse({ type: EntryYouTubeVideoResponseDto })
+  @ApiBadRequestResponse({ description: "Validation failed" })
+  @ApiForbiddenResponse({
+    description:
+      "AUTH_EMAIL_VERIFICATION_REQUIRED, AUTH_ACCOUNT_SUSPENDED, or ENTRY_INVALID_STATUS",
+  })
+  @ApiNotFoundResponse({ description: "ENTRY_NOT_FOUND or YOUTUBE_VIDEO_NOT_FOUND" })
+  updateYouTubeVideo(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("id", ParseUUIDPipe) id: string,
+    @Body() body: UpdateEntryYouTubeVideoDto,
+  ) {
+    return this.entriesService.updateYouTubeVideo(user, id, body);
+  }
+
+  @Delete("me/entries/:id/youtube-video")
+  @ApiOperation({ summary: "Remove the current user's editable entry YouTube video" })
+  @ApiOkResponse({ type: EntryMessageResponseDto })
+  @ApiForbiddenResponse({
+    description:
+      "AUTH_EMAIL_VERIFICATION_REQUIRED, AUTH_ACCOUNT_SUSPENDED, or ENTRY_INVALID_STATUS",
+  })
+  @ApiNotFoundResponse({ description: "ENTRY_NOT_FOUND or YOUTUBE_VIDEO_NOT_FOUND" })
+  removeYouTubeVideo(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("id", ParseUUIDPipe) id: string,
+  ) {
+    return this.entriesService.removeYouTubeVideo(user, id);
   }
 }
 

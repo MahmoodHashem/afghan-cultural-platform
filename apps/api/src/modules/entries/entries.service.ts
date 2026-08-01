@@ -3,8 +3,10 @@ import {
   ForbiddenException,
   Inject,
   Injectable,
+  Logger,
   NotFoundException,
 } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 
 import { PrismaService } from "@/database/prisma.service";
 import type { Prisma } from "@/generated/prisma/client";
@@ -14,6 +16,11 @@ import type {
   CreateEntryDraftDto,
   UpdateEntryDraftDto,
 } from "@/modules/entries/dto/create-entry-draft.dto";
+import type {
+  ReorderEntryImagesDto,
+  UpdateEntryImageMetadataDto,
+  UploadEntryImageDto,
+} from "@/modules/entries/dto/entry-images.dto";
 import type { OwnEntriesQueryDto } from "@/modules/entries/dto/entry-query.dto";
 import type {
   CreateEntrySourceDto,
@@ -21,8 +28,21 @@ import type {
   UpdateEntrySourceDto,
 } from "@/modules/entries/dto/entry-sources.dto";
 import type { EntryTagsDto } from "@/modules/entries/dto/entry-tags.dto";
+import type {
+  UpdateEntryYouTubeVideoDto,
+  UpsertEntryYouTubeVideoDto,
+} from "@/modules/entries/dto/entry-youtube.dto";
 import { ENTRY_ERROR_CODES } from "@/modules/entries/entries.constants";
-import { entrySelect, mapEntry, mapSource, sourceSelect } from "@/modules/entries/entries.mapper";
+import {
+  entrySelect,
+  imageSelect,
+  mapEntry,
+  mapImage,
+  mapSource,
+  mapYouTubeVideo,
+  sourceSelect,
+  youtubeVideoSelect,
+} from "@/modules/entries/entries.mapper";
 import {
   createUniqueEntrySlug,
   normalizeEntrySearchText,
@@ -31,6 +51,11 @@ import {
   extractPlainTextFromTiptap,
   TiptapValidationError,
 } from "@/modules/entries/utils/tiptap-content.util";
+import {
+  createCanonicalYouTubeUrl,
+  extractYouTubeVideoId,
+} from "@/modules/entries/utils/youtube-url.util";
+import { CloudinaryMediaService } from "@/modules/media/cloudinary-media.service";
 
 type TaxonomyReference = {
   id: string;
@@ -79,7 +104,13 @@ const districtReferenceSelect = {
 
 @Injectable()
 class EntriesService {
-  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(EntriesService.name);
+
+  constructor(
+    @Inject(PrismaService) private readonly prisma: PrismaService,
+    @Inject(CloudinaryMediaService) private readonly mediaService: CloudinaryMediaService,
+    @Inject(ConfigService) private readonly configService: ConfigService,
+  ) {}
 
   async createDraft(user: AuthenticatedUser, input: CreateEntryDraftDto) {
     const title = this.normalizeTitle(input.title);
@@ -491,6 +522,259 @@ class EntriesService {
     });
   }
 
+  async listImages(user: AuthenticatedUser, id: string) {
+    await this.ensureOwnedEditableEntry(this.prisma, user.id, id);
+
+    return {
+      data: (await this.listEntryImages(this.prisma, id)).map(mapImage),
+    };
+  }
+
+  async uploadImage(
+    user: AuthenticatedUser,
+    id: string,
+    input: UploadEntryImageDto,
+    file: Express.Multer.File | undefined,
+  ) {
+    await this.ensureOwnedEditableEntry(this.prisma, user.id, id);
+    this.validateImageFile(file);
+    this.ensureImagePermission(input.permissionConfirmed);
+    const displayOrder =
+      input.displayOrder ?? (await this.getNextImageDisplayOrder(this.prisma, id));
+
+    await this.ensureImageDisplayOrderIsAvailable(this.prisma, id, displayOrder);
+    await this.ensureImageCountAllowsUpload(this.prisma, id);
+
+    const uploadedImage = await this.mediaService.uploadEntryImage(file);
+
+    try {
+      const image = await this.prisma.image.create({
+        data: {
+          entryId: id,
+          uploadedById: user.id,
+          cloudinaryPublicId: uploadedImage.publicId,
+          url: uploadedImage.url,
+          secureUrl: uploadedImage.secureUrl,
+          thumbnailUrl: uploadedImage.thumbnailUrl,
+          width: uploadedImage.width,
+          height: uploadedImage.height,
+          format: uploadedImage.format,
+          bytes: uploadedImage.bytes,
+          caption: this.normalizeOptionalText(input.caption),
+          altText: this.normalizeRequiredText(input.altText, "Image alt text is required."),
+          photographerOrSource: this.normalizeOptionalText(input.photographerOrSource),
+          permissionConfirmed: input.permissionConfirmed,
+          displayOrder,
+        },
+        select: imageSelect,
+      });
+
+      return {
+        data: mapImage(image),
+      };
+    } catch (error) {
+      await this.cleanupUploadedImage(uploadedImage.publicId);
+      throw error;
+    }
+  }
+
+  async updateImageMetadata(
+    user: AuthenticatedUser,
+    id: string,
+    imageId: string,
+    input: UpdateEntryImageMetadataDto,
+  ) {
+    return this.prisma.$transaction(async (tx) => {
+      await this.ensureOwnedEditableEntry(tx, user.id, id);
+      const existingImage = await this.findEntryImage(tx, id, imageId);
+
+      if (input.permissionConfirmed === false) {
+        throw this.imagePermissionRequired();
+      }
+
+      if (input.displayOrder !== undefined) {
+        await this.ensureImageDisplayOrderIsAvailable(tx, id, input.displayOrder, existingImage.id);
+      }
+
+      const image = await tx.image.update({
+        where: { id: existingImage.id },
+        data: this.createImageUpdateData(input),
+        select: imageSelect,
+      });
+
+      return {
+        data: mapImage(image),
+      };
+    });
+  }
+
+  async deleteImage(user: AuthenticatedUser, id: string, imageId: string) {
+    await this.ensureOwnedEditableEntry(this.prisma, user.id, id);
+    const existingImage = await this.findEntryImage(this.prisma, id, imageId);
+
+    await this.mediaService.deleteImage(existingImage.cloudinaryPublicId);
+    await this.prisma.image.delete({
+      where: { id: existingImage.id },
+    });
+
+    return {
+      data: {
+        message: "Image deleted successfully.",
+      },
+    };
+  }
+
+  async reorderImages(user: AuthenticatedUser, id: string, input: ReorderEntryImagesDto) {
+    return this.prisma.$transaction(async (tx) => {
+      await this.ensureOwnedEditableEntry(tx, user.id, id);
+      this.ensureUniqueImageIds(input.items.map((item) => item.id));
+      this.ensureUniqueImageDisplayOrders(input.items.map((item) => item.displayOrder));
+
+      const imageIds = input.items.map((item) => item.id);
+      const images = await tx.image.findMany({
+        where: {
+          entryId: id,
+          id: {
+            in: imageIds,
+          },
+          isRemoved: false,
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      if (images.length !== imageIds.length) {
+        throw this.imageNotFound();
+      }
+
+      const conflictingImage = await tx.image.findFirst({
+        where: {
+          entryId: id,
+          isRemoved: false,
+          id: {
+            notIn: imageIds,
+          },
+          displayOrder: {
+            in: input.items.map((item) => item.displayOrder),
+          },
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      if (conflictingImage) {
+        throw this.duplicateImageOrder();
+      }
+
+      await Promise.all(
+        input.items.map((item) =>
+          tx.image.update({
+            where: { id: item.id },
+            data: { displayOrder: item.displayOrder },
+          }),
+        ),
+      );
+
+      return {
+        data: (await this.listEntryImages(tx, id)).map(mapImage),
+      };
+    });
+  }
+
+  async getYouTubeVideo(user: AuthenticatedUser, id: string) {
+    await this.ensureOwnedEditableEntry(this.prisma, user.id, id);
+    const video = await this.prisma.youTubeVideo.findUnique({
+      where: { entryId: id },
+      select: youtubeVideoSelect,
+    });
+
+    return {
+      data: video && !video.isRemoved ? mapYouTubeVideo(video) : null,
+    };
+  }
+
+  async upsertYouTubeVideo(user: AuthenticatedUser, id: string, input: UpsertEntryYouTubeVideoDto) {
+    return this.prisma.$transaction(async (tx) => {
+      await this.ensureOwnedEditableEntry(tx, user.id, id);
+      const videoId = this.extractRequiredYouTubeVideoId(input.url);
+      const url = createCanonicalYouTubeUrl(videoId);
+      const existingVideo = await tx.youTubeVideo.findUnique({
+        where: { entryId: id },
+        select: {
+          id: true,
+          isRemoved: true,
+        },
+      });
+
+      const data = {
+        videoId,
+        url,
+        title: this.normalizeOptionalText(input.title),
+        description: this.normalizeOptionalText(input.description),
+        isRemoved: false,
+        removedById: null,
+        removedAt: null,
+      };
+      const video = existingVideo
+        ? await tx.youTubeVideo.update({
+            where: { id: existingVideo.id },
+            data,
+            select: youtubeVideoSelect,
+          })
+        : await tx.youTubeVideo.create({
+            data: {
+              entryId: id,
+              ...data,
+            },
+            select: youtubeVideoSelect,
+          });
+
+      return {
+        data: mapYouTubeVideo(video),
+      };
+    });
+  }
+
+  async updateYouTubeVideo(user: AuthenticatedUser, id: string, input: UpdateEntryYouTubeVideoDto) {
+    return this.prisma.$transaction(async (tx) => {
+      await this.ensureOwnedEditableEntry(tx, user.id, id);
+      const existingVideo = await this.findEntryYouTubeVideo(tx, id);
+      const video = await tx.youTubeVideo.update({
+        where: { id: existingVideo.id },
+        data: {
+          ...(input.title !== undefined ? { title: this.normalizeOptionalText(input.title) } : {}),
+          ...(input.description !== undefined
+            ? { description: this.normalizeOptionalText(input.description) }
+            : {}),
+        },
+        select: youtubeVideoSelect,
+      });
+
+      return {
+        data: mapYouTubeVideo(video),
+      };
+    });
+  }
+
+  async removeYouTubeVideo(user: AuthenticatedUser, id: string) {
+    return this.prisma.$transaction(async (tx) => {
+      await this.ensureOwnedEditableEntry(tx, user.id, id);
+      const existingVideo = await this.findEntryYouTubeVideo(tx, id);
+
+      await tx.youTubeVideo.delete({
+        where: { id: existingVideo.id },
+      });
+
+      return {
+        data: {
+          message: "YouTube video removed successfully.",
+        },
+      };
+    });
+  }
+
   private async validateTaxonomy({
     provinceId,
     districtId,
@@ -644,6 +928,110 @@ class EntriesService {
     return source;
   }
 
+  private async listEntryImages(client: EntriesDbClient, entryId: string) {
+    return client.image.findMany({
+      where: {
+        entryId,
+        isRemoved: false,
+      },
+      select: imageSelect,
+      orderBy: [{ displayOrder: "asc" }, { createdAt: "asc" }],
+    });
+  }
+
+  private async findEntryImage(client: EntriesDbClient, entryId: string, imageId: string) {
+    const image = await client.image.findFirst({
+      where: {
+        id: imageId,
+        entryId,
+        isRemoved: false,
+      },
+      select: {
+        id: true,
+        cloudinaryPublicId: true,
+        displayOrder: true,
+      },
+    });
+
+    if (!image) {
+      throw this.imageNotFound();
+    }
+
+    return image;
+  }
+
+  private async findEntryYouTubeVideo(client: EntriesDbClient, entryId: string) {
+    const video = await client.youTubeVideo.findUnique({
+      where: { entryId },
+      select: {
+        id: true,
+        isRemoved: true,
+      },
+    });
+
+    if (!video || video.isRemoved) {
+      throw this.youtubeVideoNotFound();
+    }
+
+    return video;
+  }
+
+  private async getNextImageDisplayOrder(
+    client: EntriesDbClient,
+    entryId: string,
+  ): Promise<number> {
+    const result = await client.image.aggregate({
+      where: {
+        entryId,
+        isRemoved: false,
+      },
+      _max: {
+        displayOrder: true,
+      },
+    });
+
+    return (result._max.displayOrder ?? -1) + 1;
+  }
+
+  private async ensureImageDisplayOrderIsAvailable(
+    client: EntriesDbClient,
+    entryId: string,
+    displayOrder: number,
+    excludeImageId?: string,
+  ): Promise<void> {
+    const existingImage = await client.image.findFirst({
+      where: {
+        entryId,
+        displayOrder,
+        isRemoved: false,
+        ...(excludeImageId ? { NOT: { id: excludeImageId } } : {}),
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (existingImage) {
+      throw this.duplicateImageOrder();
+    }
+  }
+
+  private async ensureImageCountAllowsUpload(
+    client: EntriesDbClient,
+    entryId: string,
+  ): Promise<void> {
+    const imageCount = await client.image.count({
+      where: {
+        entryId,
+        isRemoved: false,
+      },
+    });
+
+    if (imageCount >= this.getMaxImagesPerEntry()) {
+      throw this.imageLimitExceeded();
+    }
+  }
+
   private async getNextSourceDisplayOrder(
     client: EntriesDbClient,
     entryId: string,
@@ -726,6 +1114,34 @@ class EntriesService {
 
     if (input.explanation !== undefined) {
       data.explanation = this.normalizeOptionalText(input.explanation);
+    }
+
+    if (input.displayOrder !== undefined) {
+      data.displayOrder = input.displayOrder;
+    }
+
+    return data;
+  }
+
+  private createImageUpdateData(
+    input: UpdateEntryImageMetadataDto,
+  ): Prisma.ImageUncheckedUpdateInput {
+    const data: Prisma.ImageUncheckedUpdateInput = {};
+
+    if (input.altText !== undefined) {
+      data.altText = this.normalizeRequiredText(input.altText, "Image alt text is required.");
+    }
+
+    if (input.caption !== undefined) {
+      data.caption = this.normalizeOptionalText(input.caption);
+    }
+
+    if (input.photographerOrSource !== undefined) {
+      data.photographerOrSource = this.normalizeOptionalText(input.photographerOrSource);
+    }
+
+    if (input.permissionConfirmed !== undefined) {
+      data.permissionConfirmed = input.permissionConfirmed;
     }
 
     if (input.displayOrder !== undefined) {
@@ -963,6 +1379,96 @@ class EntriesService {
     return date;
   }
 
+  private validateImageFile(
+    file: Express.Multer.File | undefined,
+  ): asserts file is Express.Multer.File {
+    if (!file) {
+      throw this.invalidImageType("Image file is required.");
+    }
+
+    const maxSizeBytes = this.getMaxImageSizeBytes();
+
+    if (file.size > maxSizeBytes || file.buffer.length > maxSizeBytes) {
+      throw this.imageTooLarge();
+    }
+
+    const detectedMimeType = this.detectImageMimeType(file.buffer);
+    const allowedMimeTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
+
+    if (
+      !detectedMimeType ||
+      !allowedMimeTypes.has(file.mimetype) ||
+      detectedMimeType !== file.mimetype
+    ) {
+      throw this.invalidImageType("Only valid JPEG, PNG, and WebP images are supported.");
+    }
+  }
+
+  private detectImageMimeType(buffer: Buffer): string | null {
+    if (buffer.length >= 3 && buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff) {
+      return "image/jpeg";
+    }
+
+    if (
+      buffer.length >= 8 &&
+      buffer[0] === 0x89 &&
+      buffer[1] === 0x50 &&
+      buffer[2] === 0x4e &&
+      buffer[3] === 0x47 &&
+      buffer[4] === 0x0d &&
+      buffer[5] === 0x0a &&
+      buffer[6] === 0x1a &&
+      buffer[7] === 0x0a
+    ) {
+      return "image/png";
+    }
+
+    if (
+      buffer.length >= 12 &&
+      buffer.subarray(0, 4).toString("ascii") === "RIFF" &&
+      buffer.subarray(8, 12).toString("ascii") === "WEBP"
+    ) {
+      return "image/webp";
+    }
+
+    return null;
+  }
+
+  private ensureImagePermission(permissionConfirmed: boolean): void {
+    if (!permissionConfirmed) {
+      throw this.imagePermissionRequired();
+    }
+  }
+
+  private getMaxImagesPerEntry(): number {
+    return this.configService.get<number>("MAX_IMAGES_PER_ENTRY", 6);
+  }
+
+  private getMaxImageSizeBytes(): number {
+    return this.configService.get<number>("MAX_IMAGE_SIZE_MB", 5) * 1024 * 1024;
+  }
+
+  private extractRequiredYouTubeVideoId(url: string): string {
+    const videoId = extractYouTubeVideoId(url);
+
+    if (!videoId) {
+      throw this.invalidYouTubeUrl();
+    }
+
+    return videoId;
+  }
+
+  private async cleanupUploadedImage(publicId: string): Promise<void> {
+    try {
+      await this.mediaService.deleteImage(publicId);
+    } catch (error) {
+      this.logger.error(
+        `Failed to clean up uploaded Cloudinary asset ${publicId} after database write failure.`,
+        error instanceof Error ? error.stack : String(error),
+      );
+    }
+  }
+
   private normalizeQuery(query: OwnEntriesQueryDto): NormalizedEntryQuery {
     return {
       page: query.page ?? 1,
@@ -1028,6 +1534,18 @@ class EntriesService {
     }
   }
 
+  private ensureUniqueImageIds(imageIds: string[]): void {
+    if (new Set(imageIds).size !== imageIds.length) {
+      throw this.invalidImageType("Duplicate image IDs are not allowed.");
+    }
+  }
+
+  private ensureUniqueImageDisplayOrders(displayOrders: number[]): void {
+    if (new Set(displayOrders).size !== displayOrders.length) {
+      throw this.duplicateImageOrder();
+    }
+  }
+
   private invalidTaxonomy(): BadRequestException {
     return new BadRequestException({
       error: ENTRY_ERROR_CODES.TAXONOMY_INVALID,
@@ -1074,6 +1592,62 @@ class EntriesService {
     return new BadRequestException({
       error: ENTRY_ERROR_CODES.SOURCE_ORDER_DUPLICATE,
       message: "Duplicate source display order values are not allowed.",
+    });
+  }
+
+  private imageLimitExceeded(): BadRequestException {
+    return new BadRequestException({
+      error: ENTRY_ERROR_CODES.IMAGE_LIMIT_EXCEEDED,
+      message: "Maximum image count for this entry has been reached.",
+    });
+  }
+
+  private imageTooLarge(): BadRequestException {
+    return new BadRequestException({
+      error: ENTRY_ERROR_CODES.IMAGE_TOO_LARGE,
+      message: "Image file is too large.",
+    });
+  }
+
+  private invalidImageType(message: string): BadRequestException {
+    return new BadRequestException({
+      error: ENTRY_ERROR_CODES.IMAGE_INVALID_TYPE,
+      message,
+    });
+  }
+
+  private imageNotFound(): NotFoundException {
+    return new NotFoundException({
+      error: ENTRY_ERROR_CODES.IMAGE_NOT_FOUND,
+      message: "Image was not found.",
+    });
+  }
+
+  private imagePermissionRequired(): BadRequestException {
+    return new BadRequestException({
+      error: ENTRY_ERROR_CODES.IMAGE_PERMISSION_REQUIRED,
+      message: "Image permission confirmation is required.",
+    });
+  }
+
+  private duplicateImageOrder(): BadRequestException {
+    return new BadRequestException({
+      error: ENTRY_ERROR_CODES.IMAGE_ORDER_DUPLICATE,
+      message: "Duplicate image display order values are not allowed.",
+    });
+  }
+
+  private invalidYouTubeUrl(): BadRequestException {
+    return new BadRequestException({
+      error: ENTRY_ERROR_CODES.YOUTUBE_URL_INVALID,
+      message: "YouTube URL is invalid.",
+    });
+  }
+
+  private youtubeVideoNotFound(): NotFoundException {
+    return new NotFoundException({
+      error: ENTRY_ERROR_CODES.YOUTUBE_VIDEO_NOT_FOUND,
+      message: "YouTube video was not found.",
     });
   }
 

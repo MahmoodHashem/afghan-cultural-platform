@@ -28,6 +28,11 @@ type EnvironmentVariables = {
   FACEBOOK_APP_ID: string;
   FACEBOOK_APP_SECRET: string;
   FACEBOOK_CALLBACK_URL: string;
+  CLOUDINARY_CLOUD_NAME: string;
+  CLOUDINARY_API_KEY: string;
+  CLOUDINARY_API_SECRET: string;
+  MAX_IMAGES_PER_ENTRY: number;
+  MAX_IMAGE_SIZE_MB: number;
 };
 
 const MIN_JWT_SECRET_LENGTH = 32;
@@ -72,6 +77,11 @@ const envValidationSchema = Joi.object<EnvironmentVariables>({
   FACEBOOK_CALLBACK_URL: Joi.string()
     .uri({ scheme: ["http", "https"] })
     .required(),
+  CLOUDINARY_CLOUD_NAME: Joi.string().trim().min(1).required(),
+  CLOUDINARY_API_KEY: Joi.string().trim().min(1).required(),
+  CLOUDINARY_API_SECRET: Joi.string().trim().min(1).required(),
+  MAX_IMAGES_PER_ENTRY: Joi.number().integer().positive().default(6),
+  MAX_IMAGE_SIZE_MB: Joi.number().integer().positive().default(5),
 });
 
 export type { EnvironmentVariables };

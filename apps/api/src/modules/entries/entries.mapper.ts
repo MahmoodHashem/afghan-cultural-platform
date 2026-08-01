@@ -15,9 +15,44 @@ const sourceSelect = {
   updatedAt: true,
 } as const;
 
+const imageSelect = {
+  id: true,
+  cloudinaryPublicId: true,
+  url: true,
+  secureUrl: true,
+  thumbnailUrl: true,
+  width: true,
+  height: true,
+  format: true,
+  bytes: true,
+  caption: true,
+  altText: true,
+  photographerOrSource: true,
+  permissionConfirmed: true,
+  displayOrder: true,
+  createdAt: true,
+  updatedAt: true,
+} as const;
+
+const youtubeVideoSelect = {
+  id: true,
+  videoId: true,
+  url: true,
+  title: true,
+  description: true,
+  isRemoved: true,
+  createdAt: true,
+  updatedAt: true,
+} as const;
+
 const entryTagOrderBy: Prisma.EntryTagOrderByWithRelationInput = {
   createdAt: "asc",
 };
+
+const imageOrderBy: Prisma.ImageOrderByWithRelationInput[] = [
+  { displayOrder: "asc" },
+  { createdAt: "asc" },
+];
 
 const sourceOrderBy: Prisma.SourceOrderByWithRelationInput[] = [
   { displayOrder: "asc" },
@@ -90,10 +125,22 @@ const entrySelect = {
     select: sourceSelect,
     orderBy: sourceOrderBy,
   },
+  images: {
+    where: {
+      isRemoved: false,
+    },
+    select: imageSelect,
+    orderBy: imageOrderBy,
+  },
+  youtubeVideo: {
+    select: youtubeVideoSelect,
+  },
 } as const;
 
 type EntryPayload = Prisma.CulturalEntryGetPayload<{ select: typeof entrySelect }>;
+type ImagePayload = Prisma.ImageGetPayload<{ select: typeof imageSelect }>;
 type SourcePayload = Prisma.SourceGetPayload<{ select: typeof sourceSelect }>;
+type YouTubeVideoPayload = Prisma.YouTubeVideoGetPayload<{ select: typeof youtubeVideoSelect }>;
 
 function mapEntry(entry: EntryPayload) {
   return {
@@ -117,8 +164,34 @@ function mapEntry(entry: EntryPayload) {
     contentType: entry.contentType,
     tags: entry.tags.map((entryTag) => entryTag.tag),
     sources: entry.sources.map(mapSource),
+    images: entry.images.map(mapImage),
+    youtubeVideo:
+      entry.youtubeVideo && !entry.youtubeVideo.isRemoved
+        ? mapYouTubeVideo(entry.youtubeVideo)
+        : null,
     createdAt: entry.createdAt,
     updatedAt: entry.updatedAt,
+  };
+}
+
+function mapImage(image: ImagePayload) {
+  return {
+    id: image.id,
+    cloudinaryPublicId: image.cloudinaryPublicId,
+    url: image.url,
+    secureUrl: image.secureUrl,
+    thumbnailUrl: image.thumbnailUrl,
+    width: image.width,
+    height: image.height,
+    format: image.format,
+    bytes: image.bytes,
+    caption: image.caption,
+    altText: image.altText,
+    photographerOrSource: image.photographerOrSource,
+    permissionConfirmed: image.permissionConfirmed,
+    displayOrder: image.displayOrder,
+    createdAt: image.createdAt,
+    updatedAt: image.updatedAt,
   };
 }
 
@@ -139,5 +212,26 @@ function mapSource(source: SourcePayload) {
   };
 }
 
-export type { EntryPayload, SourcePayload };
-export { entrySelect, mapEntry, mapSource, sourceSelect };
+function mapYouTubeVideo(video: YouTubeVideoPayload) {
+  return {
+    id: video.id,
+    videoId: video.videoId,
+    url: video.url,
+    title: video.title,
+    description: video.description,
+    createdAt: video.createdAt,
+    updatedAt: video.updatedAt,
+  };
+}
+
+export type { EntryPayload, ImagePayload, SourcePayload, YouTubeVideoPayload };
+export {
+  entrySelect,
+  imageSelect,
+  mapEntry,
+  mapImage,
+  mapSource,
+  mapYouTubeVideo,
+  sourceSelect,
+  youtubeVideoSelect,
+};

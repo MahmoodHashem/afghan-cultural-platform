@@ -8,6 +8,7 @@ import {
   type HttpException,
   NotFoundException,
 } from "@nestjs/common";
+import type { ConfigService } from "@nestjs/config";
 import { plainToInstance } from "class-transformer";
 import { validate } from "class-validator";
 
@@ -17,6 +18,7 @@ import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.
 import { CreateEntryDraftDto } from "@/modules/entries/dto/create-entry-draft.dto";
 import { ENTRY_ERROR_CODES } from "@/modules/entries/entries.constants";
 import { EntriesService } from "@/modules/entries/entries.service";
+import type { CloudinaryMediaService } from "@/modules/media/cloudinary-media.service";
 
 type DelegateMock = {
   aggregate: jest.Mock;
@@ -44,7 +46,18 @@ type PrismaMock = {
   tag: DelegateMock;
   entryTag: DelegateMock;
   source: DelegateMock;
+  image: DelegateMock;
+  youTubeVideo: DelegateMock;
   $transaction: jest.Mock;
+};
+
+type MediaServiceMock = {
+  uploadEntryImage: jest.Mock;
+  deleteImage: jest.Mock;
+};
+
+type ConfigServiceMock = {
+  get: jest.Mock;
 };
 
 const user: AuthenticatedUser = {
@@ -67,6 +80,9 @@ const ids = {
   tagTwo: "88888888-8888-8888-8888-888888888888",
   sourceOne: "99999999-9999-9999-9999-999999999999",
   sourceTwo: "aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa",
+  imageOne: "bbbbbbbb-bbbb-4bbb-bbbb-bbbbbbbbbbbb",
+  imageTwo: "cccccccc-cccc-4ccc-cccc-cccccccccccc",
+  youtubeVideo: "dddddddd-dddd-4ddd-dddd-dddddddddddd",
 };
 
 const validContentJson = {
@@ -92,11 +108,19 @@ const createDraftInput = {
 
 describe("EntriesService", () => {
   let prisma: PrismaMock;
+  let mediaService: MediaServiceMock;
+  let configService: ConfigServiceMock;
   let service: EntriesService;
 
   beforeEach(() => {
     prisma = createPrismaMock();
-    service = new EntriesService(prisma as unknown as PrismaService);
+    mediaService = createMediaServiceMock();
+    configService = createConfigServiceMock();
+    service = new EntriesService(
+      prisma as unknown as PrismaService,
+      mediaService as unknown as CloudinaryMediaService,
+      configService as unknown as ConfigService,
+    );
   });
 
   it("creates a draft with the authenticated user as author", async () => {
@@ -527,6 +551,379 @@ describe("EntriesService", () => {
     expect(prisma.source.update).not.toHaveBeenCalled();
   });
 
+  it("uploads a valid image with Cloudinary metadata", async () => {
+    prisma.culturalEntry.findFirst.mockResolvedValue(createEditableEntrySummary());
+    prisma.image.aggregate.mockResolvedValue({ _max: { displayOrder: 0 } });
+    prisma.image.findFirst.mockResolvedValue(null);
+    prisma.image.count.mockResolvedValue(1);
+    prisma.image.create.mockResolvedValue(createImagePayload({ displayOrder: 1 }));
+
+    const response = await service.uploadImage(
+      user,
+      ids.entry,
+      {
+        altText: "تصویر یک آیین فرهنگی",
+        permissionConfirmed: true,
+      },
+      createMulterImage(),
+    );
+
+    expect(mediaService.uploadEntryImage).toHaveBeenCalled();
+    expect(prisma.image.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          entryId: ids.entry,
+          uploadedById: user.id,
+          cloudinaryPublicId: "entries/sample",
+          secureUrl: "https://res.cloudinary.com/demo/image/upload/entries/sample.jpg",
+          thumbnailUrl: "https://res.cloudinary.com/demo/image/upload/thumb/entries/sample.jpg",
+          altText: "تصویر یک آیین فرهنگی",
+          permissionConfirmed: true,
+          displayOrder: 1,
+        }),
+      }),
+    );
+    expect(response.data.thumbnailUrl).toBe(
+      "https://res.cloudinary.com/demo/image/upload/thumb/entries/sample.jpg",
+    );
+  });
+
+  it("rejects unsupported or spoofed image files", async () => {
+    prisma.culturalEntry.findFirst.mockResolvedValue(createEditableEntrySummary());
+
+    await expectErrorCode(
+      () =>
+        service.uploadImage(
+          user,
+          ids.entry,
+          {
+            altText: "تصویر",
+            permissionConfirmed: true,
+          },
+          createMulterImage({
+            buffer: Buffer.from("not a real image"),
+            mimetype: "image/jpeg",
+          }),
+        ),
+      ENTRY_ERROR_CODES.IMAGE_INVALID_TYPE,
+      BadRequestException,
+    );
+    expect(mediaService.uploadEntryImage).not.toHaveBeenCalled();
+  });
+
+  it("rejects oversized images", async () => {
+    prisma.culturalEntry.findFirst.mockResolvedValue(createEditableEntrySummary());
+    configService.get.mockImplementation((key: string, fallback: unknown) =>
+      key === "MAX_IMAGE_SIZE_MB" ? 1 : fallback,
+    );
+
+    await expectErrorCode(
+      () =>
+        service.uploadImage(
+          user,
+          ids.entry,
+          {
+            altText: "تصویر",
+            permissionConfirmed: true,
+          },
+          createMulterImage({
+            size: 2 * 1024 * 1024,
+          }),
+        ),
+      ENTRY_ERROR_CODES.IMAGE_TOO_LARGE,
+      BadRequestException,
+    );
+    expect(mediaService.uploadEntryImage).not.toHaveBeenCalled();
+  });
+
+  it("enforces the configured image-count limit", async () => {
+    prisma.culturalEntry.findFirst.mockResolvedValue(createEditableEntrySummary());
+    prisma.image.aggregate.mockResolvedValue({ _max: { displayOrder: 5 } });
+    prisma.image.findFirst.mockResolvedValue(null);
+    prisma.image.count.mockResolvedValue(6);
+
+    await expectErrorCode(
+      () =>
+        service.uploadImage(
+          user,
+          ids.entry,
+          {
+            altText: "تصویر",
+            permissionConfirmed: true,
+          },
+          createMulterImage(),
+        ),
+      ENTRY_ERROR_CODES.IMAGE_LIMIT_EXCEEDED,
+      BadRequestException,
+    );
+    expect(mediaService.uploadEntryImage).not.toHaveBeenCalled();
+  });
+
+  it("requires image permission confirmation", async () => {
+    prisma.culturalEntry.findFirst.mockResolvedValue(createEditableEntrySummary());
+
+    await expectErrorCode(
+      () =>
+        service.uploadImage(
+          user,
+          ids.entry,
+          {
+            altText: "تصویر",
+            permissionConfirmed: false,
+          },
+          createMulterImage(),
+        ),
+      ENTRY_ERROR_CODES.IMAGE_PERMISSION_REQUIRED,
+      BadRequestException,
+    );
+    expect(mediaService.uploadEntryImage).not.toHaveBeenCalled();
+  });
+
+  it("updates image metadata", async () => {
+    prisma.culturalEntry.findFirst.mockResolvedValue(createEditableEntrySummary());
+    prisma.image.findFirst.mockResolvedValueOnce({
+      id: ids.imageOne,
+      cloudinaryPublicId: "entries/sample",
+      displayOrder: 0,
+    });
+    prisma.image.findFirst.mockResolvedValueOnce(null);
+    prisma.image.update.mockResolvedValue(
+      createImagePayload({
+        caption: "شرح تازه",
+        displayOrder: 2,
+      }),
+    );
+
+    const response = await service.updateImageMetadata(user, ids.entry, ids.imageOne, {
+      caption: " شرح تازه ",
+      displayOrder: 2,
+    });
+
+    expect(prisma.image.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: ids.imageOne },
+        data: expect.objectContaining({
+          caption: "شرح تازه",
+          displayOrder: 2,
+        }),
+      }),
+    );
+    expect(response.data.caption).toBe("شرح تازه");
+  });
+
+  it("deletes an image after deleting the Cloudinary asset", async () => {
+    prisma.culturalEntry.findFirst.mockResolvedValue(createEditableEntrySummary());
+    prisma.image.findFirst.mockResolvedValue({
+      id: ids.imageOne,
+      cloudinaryPublicId: "entries/sample",
+      displayOrder: 0,
+    });
+    prisma.image.delete.mockResolvedValue(createImagePayload());
+
+    await expect(service.deleteImage(user, ids.entry, ids.imageOne)).resolves.toMatchObject({
+      data: { message: "Image deleted successfully." },
+    });
+    expect(mediaService.deleteImage).toHaveBeenCalledWith("entries/sample");
+    expect(prisma.image.delete).toHaveBeenCalledWith({ where: { id: ids.imageOne } });
+  });
+
+  it("does not delete the image record when Cloudinary delete fails", async () => {
+    prisma.culturalEntry.findFirst.mockResolvedValue(createEditableEntrySummary());
+    prisma.image.findFirst.mockResolvedValue({
+      id: ids.imageOne,
+      cloudinaryPublicId: "entries/sample",
+      displayOrder: 0,
+    });
+    mediaService.deleteImage.mockRejectedValue(
+      new BadRequestException({
+        error: ENTRY_ERROR_CODES.IMAGE_DELETE_FAILED,
+        message: "Image delete failed.",
+      }),
+    );
+
+    await expectErrorCode(
+      () => service.deleteImage(user, ids.entry, ids.imageOne),
+      ENTRY_ERROR_CODES.IMAGE_DELETE_FAILED,
+      BadRequestException,
+    );
+    expect(prisma.image.delete).not.toHaveBeenCalled();
+  });
+
+  it("reorders images transactionally", async () => {
+    prisma.culturalEntry.findFirst.mockResolvedValue(createEditableEntrySummary());
+    prisma.image.findMany
+      .mockResolvedValueOnce([{ id: ids.imageOne }, { id: ids.imageTwo }])
+      .mockResolvedValueOnce([
+        createImagePayload({ id: ids.imageTwo, displayOrder: 0 }),
+        createImagePayload({ id: ids.imageOne, displayOrder: 1 }),
+      ]);
+    prisma.image.findFirst.mockResolvedValue(null);
+    prisma.image.update.mockResolvedValue(createImagePayload());
+
+    const response = await service.reorderImages(user, ids.entry, {
+      items: [
+        { id: ids.imageOne, displayOrder: 1 },
+        { id: ids.imageTwo, displayOrder: 0 },
+      ],
+    });
+
+    expect(prisma.image.update).toHaveBeenCalledTimes(2);
+    expect(response.data.map((image) => image.id)).toEqual([ids.imageTwo, ids.imageOne]);
+  });
+
+  it("rejects image edits for entries owned by another user", async () => {
+    prisma.culturalEntry.findFirst.mockResolvedValue(null);
+
+    await expectErrorCode(
+      () =>
+        service.uploadImage(
+          user,
+          ids.entry,
+          {
+            altText: "تصویر",
+            permissionConfirmed: true,
+          },
+          createMulterImage(),
+        ),
+      ENTRY_ERROR_CODES.NOT_FOUND,
+      NotFoundException,
+    );
+    expect(mediaService.uploadEntryImage).not.toHaveBeenCalled();
+  });
+
+  it("rejects image edits for non-editable entries", async () => {
+    prisma.culturalEntry.findFirst.mockResolvedValue({
+      ...createEditableEntrySummary(),
+      status: EntryStatus.PUBLISHED,
+    });
+
+    await expectErrorCode(
+      () =>
+        service.uploadImage(
+          user,
+          ids.entry,
+          {
+            altText: "تصویر",
+            permissionConfirmed: true,
+          },
+          createMulterImage(),
+        ),
+      ENTRY_ERROR_CODES.INVALID_STATUS,
+      ForbiddenException,
+    );
+    expect(mediaService.uploadEntryImage).not.toHaveBeenCalled();
+  });
+
+  it("handles Cloudinary upload failure", async () => {
+    prisma.culturalEntry.findFirst.mockResolvedValue(createEditableEntrySummary());
+    prisma.image.aggregate.mockResolvedValue({ _max: { displayOrder: null } });
+    prisma.image.findFirst.mockResolvedValue(null);
+    prisma.image.count.mockResolvedValue(0);
+    mediaService.uploadEntryImage.mockRejectedValue(
+      new BadRequestException({
+        error: ENTRY_ERROR_CODES.IMAGE_UPLOAD_FAILED,
+        message: "Image upload failed.",
+      }),
+    );
+
+    await expectErrorCode(
+      () =>
+        service.uploadImage(
+          user,
+          ids.entry,
+          {
+            altText: "تصویر",
+            permissionConfirmed: true,
+          },
+          createMulterImage(),
+        ),
+      ENTRY_ERROR_CODES.IMAGE_UPLOAD_FAILED,
+      BadRequestException,
+    );
+    expect(prisma.image.create).not.toHaveBeenCalled();
+  });
+
+  it("adds or replaces YouTube video from supported URL variants", async () => {
+    prisma.culturalEntry.findFirst.mockResolvedValue(createEditableEntrySummary());
+    prisma.youTubeVideo.findUnique.mockResolvedValueOnce(null);
+    prisma.youTubeVideo.create.mockResolvedValue(createYouTubeVideoPayload());
+
+    const response = await service.upsertYouTubeVideo(user, ids.entry, {
+      url: "https://youtu.be/abcdefghijk",
+      title: "ویدیوی فرهنگی",
+    });
+
+    expect(prisma.youTubeVideo.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          entryId: ids.entry,
+          videoId: "abcdefghijk",
+          url: "https://www.youtube.com/watch?v=abcdefghijk",
+          title: "ویدیوی فرهنگی",
+        }),
+      }),
+    );
+    expect(response.data.videoId).toBe("abcdefghijk");
+
+    prisma.youTubeVideo.findUnique.mockResolvedValueOnce({
+      id: ids.youtubeVideo,
+      isRemoved: false,
+    });
+    prisma.youTubeVideo.update.mockResolvedValue(
+      createYouTubeVideoPayload({ videoId: "zxywvutsrqp" }),
+    );
+
+    await service.upsertYouTubeVideo(user, ids.entry, {
+      url: "https://www.youtube.com/shorts/zxywvutsrqp",
+    });
+    expect(prisma.youTubeVideo.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          videoId: "zxywvutsrqp",
+        }),
+      }),
+    );
+  });
+
+  it("rejects invalid YouTube URLs and raw iframe HTML", async () => {
+    prisma.culturalEntry.findFirst.mockResolvedValue(createEditableEntrySummary());
+
+    await expectErrorCode(
+      () =>
+        service.upsertYouTubeVideo(user, ids.entry, {
+          url: '<iframe src="https://www.youtube.com/embed/abcdefghijk"></iframe>',
+        }),
+      ENTRY_ERROR_CODES.YOUTUBE_URL_INVALID,
+      BadRequestException,
+    );
+    expect(prisma.youTubeVideo.create).not.toHaveBeenCalled();
+  });
+
+  it("updates and removes YouTube video metadata", async () => {
+    prisma.culturalEntry.findFirst.mockResolvedValue(createEditableEntrySummary());
+    prisma.youTubeVideo.findUnique.mockResolvedValue({
+      id: ids.youtubeVideo,
+      isRemoved: false,
+    });
+    prisma.youTubeVideo.update.mockResolvedValue(
+      createYouTubeVideoPayload({
+        title: "عنوان تازه",
+      }),
+    );
+
+    const response = await service.updateYouTubeVideo(user, ids.entry, {
+      title: " عنوان تازه ",
+    });
+
+    expect(response.data.title).toBe("عنوان تازه");
+    prisma.youTubeVideo.delete.mockResolvedValue(createYouTubeVideoPayload());
+
+    await expect(service.removeYouTubeVideo(user, ids.entry)).resolves.toMatchObject({
+      data: { message: "YouTube video removed successfully." },
+    });
+    expect(prisma.youTubeVideo.delete).toHaveBeenCalledWith({ where: { id: ids.youtubeVideo } });
+  });
+
   it("rejects unsupported protected fields through DTO whitelist validation", async () => {
     const dto = plainToInstance(CreateEntryDraftDto, {
       ...createDraftInput,
@@ -555,6 +952,8 @@ function createPrismaMock(): PrismaMock {
     tag: createDelegateMock(),
     entryTag: createDelegateMock(),
     source: createDelegateMock(),
+    image: createDelegateMock(),
+    youTubeVideo: createDelegateMock(),
     $transaction: jest.fn(),
   };
 
@@ -569,6 +968,29 @@ function createPrismaMock(): PrismaMock {
   );
 
   return prisma;
+}
+
+function createMediaServiceMock(): MediaServiceMock {
+  return {
+    uploadEntryImage: jest.fn().mockResolvedValue(createUploadedCloudinaryImage()),
+    deleteImage: jest.fn().mockResolvedValue(undefined),
+  };
+}
+
+function createConfigServiceMock(): ConfigServiceMock {
+  return {
+    get: jest.fn((key: string, fallback: unknown) => {
+      if (key === "MAX_IMAGES_PER_ENTRY") {
+        return 6;
+      }
+
+      if (key === "MAX_IMAGE_SIZE_MB") {
+        return 5;
+      }
+
+      return fallback;
+    }),
+  };
 }
 
 function createDelegateMock(): DelegateMock {
@@ -635,6 +1057,8 @@ function createEntryPayload() {
     contentType: createTaxonomyReference(ids.contentType, "مقاله", "article"),
     tags: [],
     sources: [],
+    images: [],
+    youtubeVideo: null,
     createdAt: new Date("2026-01-01T00:00:00.000Z"),
     updatedAt: new Date("2026-01-01T00:00:00.000Z"),
   };
@@ -727,6 +1151,85 @@ function createSourcePayload(
     interviewDate: null,
     explanation: null,
     displayOrder: overrides.displayOrder ?? 0,
+    createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+  };
+}
+
+function createImagePayload(
+  overrides: Partial<{
+    id: string;
+    caption: string | null;
+    displayOrder: number;
+  }> = {},
+) {
+  return {
+    id: overrides.id ?? ids.imageOne,
+    cloudinaryPublicId: "entries/sample",
+    url: "http://res.cloudinary.com/demo/image/upload/entries/sample.jpg",
+    secureUrl: "https://res.cloudinary.com/demo/image/upload/entries/sample.jpg",
+    thumbnailUrl: "https://res.cloudinary.com/demo/image/upload/thumb/entries/sample.jpg",
+    width: 1200,
+    height: 800,
+    format: "jpg",
+    bytes: 1024,
+    caption: overrides.caption ?? null,
+    altText: "تصویر یک آیین فرهنگی",
+    photographerOrSource: null,
+    permissionConfirmed: true,
+    displayOrder: overrides.displayOrder ?? 0,
+    createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+  };
+}
+
+function createUploadedCloudinaryImage() {
+  return {
+    publicId: "entries/sample",
+    url: "http://res.cloudinary.com/demo/image/upload/entries/sample.jpg",
+    secureUrl: "https://res.cloudinary.com/demo/image/upload/entries/sample.jpg",
+    thumbnailUrl: "https://res.cloudinary.com/demo/image/upload/thumb/entries/sample.jpg",
+    width: 1200,
+    height: 800,
+    format: "jpg",
+    bytes: 1024,
+  };
+}
+
+function createMulterImage(
+  overrides: Partial<Pick<Express.Multer.File, "buffer" | "mimetype" | "size">> = {},
+): Express.Multer.File {
+  const buffer = overrides.buffer ?? Buffer.from([0xff, 0xd8, 0xff, 0xdb]);
+
+  return {
+    fieldname: "image",
+    originalname: "sample.jpg",
+    encoding: "7bit",
+    mimetype: overrides.mimetype ?? "image/jpeg",
+    size: overrides.size ?? buffer.length,
+    destination: "",
+    filename: "",
+    path: "",
+    buffer,
+    stream: undefined as never,
+  };
+}
+
+function createYouTubeVideoPayload(
+  overrides: Partial<{
+    videoId: string;
+    title: string | null;
+  }> = {},
+) {
+  const videoId = overrides.videoId ?? "abcdefghijk";
+
+  return {
+    id: ids.youtubeVideo,
+    videoId,
+    url: `https://www.youtube.com/watch?v=${videoId}`,
+    title: overrides.title ?? "ویدیوی فرهنگی",
+    description: null,
+    isRemoved: false,
     createdAt: new Date("2026-01-01T00:00:00.000Z"),
     updatedAt: new Date("2026-01-01T00:00:00.000Z"),
   };

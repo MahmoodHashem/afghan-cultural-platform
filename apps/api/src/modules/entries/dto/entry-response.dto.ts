@@ -70,6 +70,79 @@ class EntrySourceDto {
   updatedAt!: Date;
 }
 
+class EntryImageDto {
+  @ApiProperty()
+  id!: string;
+
+  @ApiProperty()
+  cloudinaryPublicId!: string;
+
+  @ApiProperty()
+  url!: string;
+
+  @ApiProperty()
+  secureUrl!: string;
+
+  @ApiPropertyOptional()
+  thumbnailUrl!: string | null;
+
+  @ApiPropertyOptional()
+  width!: number | null;
+
+  @ApiPropertyOptional()
+  height!: number | null;
+
+  @ApiPropertyOptional()
+  format!: string | null;
+
+  @ApiPropertyOptional()
+  bytes!: number | null;
+
+  @ApiPropertyOptional()
+  caption!: string | null;
+
+  @ApiProperty()
+  altText!: string;
+
+  @ApiPropertyOptional()
+  photographerOrSource!: string | null;
+
+  @ApiProperty()
+  permissionConfirmed!: boolean;
+
+  @ApiProperty()
+  displayOrder!: number;
+
+  @ApiProperty()
+  createdAt!: Date;
+
+  @ApiProperty()
+  updatedAt!: Date;
+}
+
+class EntryYouTubeVideoDto {
+  @ApiProperty()
+  id!: string;
+
+  @ApiProperty()
+  videoId!: string;
+
+  @ApiProperty()
+  url!: string;
+
+  @ApiPropertyOptional()
+  title!: string | null;
+
+  @ApiPropertyOptional()
+  description!: string | null;
+
+  @ApiProperty()
+  createdAt!: Date;
+
+  @ApiProperty()
+  updatedAt!: Date;
+}
+
 class EntryDto {
   @ApiProperty()
   id!: string;
@@ -131,6 +204,12 @@ class EntryDto {
   @ApiProperty({ type: [EntrySourceDto] })
   sources!: EntrySourceDto[];
 
+  @ApiProperty({ type: [EntryImageDto] })
+  images!: EntryImageDto[];
+
+  @ApiPropertyOptional({ type: EntryYouTubeVideoDto })
+  youtubeVideo!: EntryYouTubeVideoDto | null;
+
   @ApiProperty()
   createdAt!: Date;
 
@@ -156,6 +235,21 @@ class EntrySourceResponseDto {
 class EntrySourcesResponseDto {
   @ApiProperty({ type: [EntrySourceDto] })
   data!: EntrySourceDto[];
+}
+
+class EntryImageResponseDto {
+  @ApiProperty({ type: EntryImageDto })
+  data!: EntryImageDto;
+}
+
+class EntryImagesResponseDto {
+  @ApiProperty({ type: [EntryImageDto] })
+  data!: EntryImageDto[];
+}
+
+class EntryYouTubeVideoResponseDto {
+  @ApiProperty({ type: EntryYouTubeVideoDto, nullable: true })
+  data!: EntryYouTubeVideoDto | null;
 }
 
 class EntryListMetaDto {
@@ -192,10 +286,13 @@ class EntryMessageResponseDto {
 
 export {
   EntryDto,
+  EntryImageResponseDto,
+  EntryImagesResponseDto,
   EntryListResponseDto,
   EntryMessageResponseDto,
   EntryResponseDto,
   EntrySourceResponseDto,
   EntrySourcesResponseDto,
   EntryTagsResponseDto,
+  EntryYouTubeVideoResponseDto,
 };
