@@ -580,6 +580,8 @@ The editor will support:
 - Blockquotes
     
 - Links
+
+- Manual internal Cultural Entry links
     
 - Text alignment
     
@@ -614,6 +616,34 @@ It will not initially support:
     
 
 Images and YouTube links will remain separate structured fields.
+
+### Internal Cultural Entry links
+
+Version one will support manually created Wikipedia-style internal links between Cultural Entries.
+
+The contributor selects text inside the Tiptap editor and links it to another existing `PUBLISHED` Cultural Entry. The selected text becomes the visible anchor text. The frontend editor should use a dedicated internal-entry link mark or node rather than a normal external URL-only link.
+
+The Tiptap representation should contain at least:
+
+```json
+{
+  "type": "text",
+  "text": "نمونه متن لینک",
+  "marks": [
+    {
+      "type": "internalEntryLink",
+      "attrs": {
+        "targetEntryId": "uuid",
+        "targetSlug": "optional-cached-slug"
+      }
+    }
+  ]
+}
+```
+
+`targetEntryId` is authoritative. `targetSlug` is optional and may be cached only for URL generation or display. Rendering must use the normal link display text as the anchor text.
+
+Automatic keyword detection, automatic link suggestions, link analytics, related-entry discovery, incoming/outgoing link lists, and orphan-entry discovery are deferred to later versions.
 
 ## 7.2 Rich-text storage
 

@@ -536,11 +536,23 @@ A Cultural Entry may contain:
 - Alternative local name
     
 - Related Cultural Entries
+
+- Manual internal links to other published Cultural Entries
     
 - Notes about regional differences
+
+## 9.3 Internal Cultural Entry links
+
+Version one will support Wikipedia-style internal links between Cultural Entries.
+
+A contributor may manually select text inside the Tiptap editor and link that selected text to another existing `PUBLISHED` Cultural Entry. The selected text becomes the visible anchor text. The stored link must reference the target Cultural Entry by ID so it does not depend only on a slug that may change for administrative reasons before publication.
+
+Internal links should use descriptive anchor text and should not be repeated excessively within the same entry. Moderators may review or remove incorrect internal links during moderation. If a target entry later becomes unavailable, hidden, or archived, the public page must handle the reference safely instead of creating a broken reading experience.
+
+Automatic keyword detection, automatic link suggestions, link analytics, incoming/outgoing link lists, related-entry discovery, and orphan-entry discovery are deferred to later versions.
     
 
-## 9.3 Source fields
+## 9.4 Source fields
 
 A source may contain:
 
@@ -774,6 +786,12 @@ Private information such as email addresses shall not be publicly displayed.
 
 **FR-CON-16:** Published Cultural Entries shall receive readable permanent URLs.
 
+**FR-CON-17:** A contributor may manually link selected Tiptap text to another existing published Cultural Entry.
+
+**FR-CON-18:** Internal Cultural Entry links shall store the target entry ID as the authoritative reference.
+
+**FR-CON-19:** The system shall prevent an entry from linking to itself.
+
 ---
 
 ## 13.4 Submission and Moderation
@@ -875,6 +893,10 @@ Private information such as email addresses shall not be publicly displayed.
 **FR-BRW-09:** The page should show related content.
 
 **FR-BRW-10:** Users shall be able to copy or share the page link.
+
+**FR-BRW-11:** Published entry pages shall render approved internal Cultural Entry links safely.
+
+**FR-BRW-12:** If a linked target entry is unavailable, hidden, or archived, the page shall avoid a broken user experience.
 
 ---
 
@@ -1438,6 +1460,12 @@ Moderator may hide reviews that violate rules
 17. Oral history should be labeled as oral history, not automatically presented as established historical fact.
     
 18. Different regional interpretations may coexist when appropriate.
+
+19. Internal Cultural Entry links are manually created in version one.
+
+20. Only published Cultural Entries may be selected as internal-link targets.
+
+21. Internal links must use descriptive anchor text and avoid excessive repetition.
     
 19. Every important moderation action must be traceable.
     

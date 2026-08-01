@@ -355,10 +355,15 @@ Owns:
 - Submission
 - Entry statuses
 - Slugs
+- Manual internal links between published Cultural Entries
 - Sources
 - Tags assigned to entries
 - Content versions
 - Public entry retrieval
+
+Internal Cultural Entry links are owned by the Entries module because they are part of entry content and public reading behavior. In version one, contributors manually select text in the Tiptap editor and link it to another existing `PUBLISHED` Cultural Entry. The selected text becomes the visible anchor text. The stored reference must use the target entry ID as the authoritative identifier; any cached target slug is only for URL generation or display.
+
+Automatic keyword detection, automatic link suggestions, related-entry analytics, and orphan-entry discovery are deferred to later versions.
 
 ### Bookmarks
 
@@ -462,6 +467,7 @@ Entries ────────────► Users
 Entries ────────────► Taxonomy
 Entries ────────────► Media
 Entries ────────────► Audit
+Entries ────────────► Entries
 
 Bookmarks ──────────► Entries
 Bookmarks ──────────► Users
