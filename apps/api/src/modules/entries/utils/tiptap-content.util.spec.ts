@@ -1,4 +1,5 @@
 import {
+  extractInternalEntryReferences,
   extractPlainTextFromTiptap,
   TiptapValidationError,
   validateTiptapDocument,
@@ -66,7 +67,42 @@ describe("Tiptap content utilities", () => {
     ).toThrow(TiptapValidationError);
   });
 
-  it("rejects unsupported marks such as future internal entry links", () => {
+  it("accepts and extracts internal entry link marks", () => {
+    const document = {
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [
+            {
+              type: "text",
+              text: " کابل ",
+              marks: [
+                {
+                  type: "internalEntryLink",
+                  attrs: {
+                    targetEntryId: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
+                    targetSlug: "kabul",
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+
+    expect(() => validateTiptapDocument(document)).not.toThrow();
+    expect(extractInternalEntryReferences(document)).toEqual([
+      {
+        targetEntryId: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
+        targetSlug: "kabul",
+        anchorText: "کابل",
+      },
+    ]);
+  });
+
+  it("rejects malformed internal entry link marks", () => {
     expect(() =>
       validateTiptapDocument({
         type: "doc",

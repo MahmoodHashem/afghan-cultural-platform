@@ -45,6 +45,7 @@ type PrismaMock = {
   contentType: TaxonomyDelegateMock;
   tag: DelegateMock;
   entryTag: DelegateMock;
+  entryReference: DelegateMock;
   source: DelegateMock;
   image: DelegateMock;
   youTubeVideo: DelegateMock;
@@ -71,7 +72,7 @@ const user: AuthenticatedUser = {
 };
 
 const ids = {
-  entry: "22222222-2222-2222-2222-222222222222",
+  entry: "22222222-2222-4222-8222-222222222222",
   province: "33333333-3333-3333-3333-333333333333",
   district: "44444444-4444-4444-4444-444444444444",
   category: "55555555-5555-5555-5555-555555555555",
@@ -83,6 +84,8 @@ const ids = {
   imageOne: "bbbbbbbb-bbbb-4bbb-bbbb-bbbbbbbbbbbb",
   imageTwo: "cccccccc-cccc-4ccc-cccc-cccccccccccc",
   youtubeVideo: "dddddddd-dddd-4ddd-dddd-dddddddddddd",
+  publishedTarget: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
+  reference: "ffffffff-ffff-4fff-8fff-ffffffffffff",
 };
 
 const validContentJson = {
@@ -92,6 +95,33 @@ const validContentJson = {
       type: "paragraph",
       attrs: { textDirection: "rtl" },
       content: [{ type: "text", text: "متن فرهنگی معتبر" }],
+    },
+  ],
+};
+
+const internalReferenceContentJson = {
+  type: "doc",
+  content: [
+    {
+      type: "paragraph",
+      attrs: { textDirection: "rtl" },
+      content: [
+        { type: "text", text: "در کابل " },
+        {
+          type: "text",
+          text: "نوروز کابل",
+          marks: [
+            {
+              type: "internalEntryLink",
+              attrs: {
+                targetEntryId: ids.publishedTarget,
+                targetSlug: "nowruz-kabul",
+              },
+            },
+          ],
+        },
+        { type: "text", text: " برگزار می‌شود." },
+      ],
     },
   ],
 };
@@ -924,6 +954,261 @@ describe("EntriesService", () => {
     expect(prisma.youTubeVideo.delete).toHaveBeenCalledWith({ where: { id: ids.youtubeVideo } });
   });
 
+  it("creates internal references while creating a draft", async () => {
+    mockActiveTaxonomy(prisma);
+    prisma.culturalEntry.findFirst.mockResolvedValueOnce(null);
+    prisma.culturalEntry.create.mockResolvedValue(
+      createEntryPayload({
+        contentJson: internalReferenceContentJson,
+        plainTextContent: "در کابل نوروز کابل برگزار می‌شود.",
+      }),
+    );
+    prisma.culturalEntry.findMany.mockResolvedValue([{ id: ids.publishedTarget }]);
+
+    await service.createDraft(user, {
+      ...createDraftInput,
+      contentJson: internalReferenceContentJson,
+    });
+
+    expect(prisma.entryReference.createMany).toHaveBeenCalledWith({
+      data: [
+        {
+          sourceEntryId: ids.entry,
+          targetEntryId: ids.publishedTarget,
+          anchorText: "نوروز کابل",
+        },
+      ],
+    });
+  });
+
+  it("removes internal references when they are removed from editor content", async () => {
+    prisma.culturalEntry.findFirst.mockResolvedValueOnce(createEntryForChange());
+    mockActiveTaxonomy(prisma);
+    prisma.culturalEntry.update.mockResolvedValue(createEntryPayload());
+
+    await service.updateOwnEntry(user, ids.entry, {
+      contentJson: validContentJson,
+    });
+
+    expect(prisma.entryReference.deleteMany).toHaveBeenCalledWith({
+      where: { sourceEntryId: ids.entry },
+    });
+  });
+
+  it("updates internal references when anchor text changes", async () => {
+    prisma.culturalEntry.findFirst.mockResolvedValueOnce(createEntryForChange());
+    mockActiveTaxonomy(prisma);
+    prisma.culturalEntry.update.mockResolvedValue(
+      createEntryPayload({
+        contentJson: internalReferenceContentJson,
+        plainTextContent: "در کابل نوروز کابل برگزار می‌شود.",
+      }),
+    );
+    prisma.culturalEntry.findMany.mockResolvedValue([{ id: ids.publishedTarget }]);
+    prisma.entryReference.findMany.mockResolvedValue([
+      {
+        id: ids.reference,
+        targetEntryId: ids.publishedTarget,
+        anchorText: "نوروز قدیمی",
+      },
+    ]);
+
+    await service.updateOwnEntry(user, ids.entry, {
+      contentJson: internalReferenceContentJson,
+    });
+
+    expect(prisma.entryReference.deleteMany).toHaveBeenCalledWith({
+      where: {
+        id: {
+          in: [ids.reference],
+        },
+      },
+    });
+    expect(prisma.entryReference.createMany).toHaveBeenCalledWith({
+      data: [
+        {
+          sourceEntryId: ids.entry,
+          targetEntryId: ids.publishedTarget,
+          anchorText: "نوروز کابل",
+        },
+      ],
+    });
+  });
+
+  it("rejects duplicate internal references", async () => {
+    prisma.culturalEntry.findFirst.mockResolvedValueOnce(createEntryForChange());
+    mockActiveTaxonomy(prisma);
+
+    await expectErrorCode(
+      () =>
+        service.updateOwnEntry(user, ids.entry, {
+          contentJson: {
+            type: "doc",
+            content: [
+              {
+                type: "paragraph",
+                content: [
+                  {
+                    type: "text",
+                    text: "نوروز کابل",
+                    marks: [
+                      {
+                        type: "internalEntryLink",
+                        attrs: { targetEntryId: ids.publishedTarget },
+                      },
+                    ],
+                  },
+                  {
+                    type: "text",
+                    text: "نوروز کابل",
+                    marks: [
+                      {
+                        type: "internalEntryLink",
+                        attrs: { targetEntryId: ids.publishedTarget },
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        }),
+      ENTRY_ERROR_CODES.REFERENCE_DUPLICATE,
+      BadRequestException,
+    );
+  });
+
+  it("rejects internal references to the same entry", async () => {
+    prisma.culturalEntry.findFirst.mockResolvedValueOnce(createEntryForChange());
+    mockActiveTaxonomy(prisma);
+
+    await expectErrorCode(
+      () =>
+        service.updateOwnEntry(user, ids.entry, {
+          contentJson: createInternalReferenceContent(ids.entry, "همین نوشته"),
+        }),
+      ENTRY_ERROR_CODES.REFERENCE_SELF,
+      BadRequestException,
+    );
+  });
+
+  it("rejects unpublished internal-reference targets", async () => {
+    prisma.culturalEntry.findFirst.mockResolvedValueOnce(createEntryForChange());
+    mockActiveTaxonomy(prisma);
+    prisma.culturalEntry.findMany.mockResolvedValue([]);
+
+    await expectErrorCode(
+      () =>
+        service.updateOwnEntry(user, ids.entry, {
+          contentJson: internalReferenceContentJson,
+        }),
+      ENTRY_ERROR_CODES.REFERENCE_TARGET_INVALID,
+      BadRequestException,
+    );
+  });
+
+  it("rejects malformed internal-reference marks as invalid Tiptap content", async () => {
+    mockActiveTaxonomy(prisma);
+
+    await expectErrorCode(
+      () =>
+        service.createDraft(user, {
+          ...createDraftInput,
+          contentJson: {
+            type: "doc",
+            content: [
+              {
+                type: "paragraph",
+                content: [
+                  {
+                    type: "text",
+                    text: "کابل",
+                    marks: [{ type: "internalEntryLink", attrs: { targetEntryId: "entry-id" } }],
+                  },
+                ],
+              },
+            ],
+          },
+        }),
+      ENTRY_ERROR_CODES.CONTENT_INVALID,
+      BadRequestException,
+    );
+  });
+
+  it("searches only published entries for internal-link targets", async () => {
+    prisma.culturalEntry.findMany.mockResolvedValue([
+      createReferenceTargetPayload({ title: "نوروز کابل", slug: "nowruz-kabul" }),
+    ]);
+
+    const response = await service.searchReferenceTargets({
+      search: "نوروز",
+      limit: 10,
+    });
+
+    expect(prisma.culturalEntry.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          status: EntryStatus.PUBLISHED,
+        }),
+        take: 30,
+      }),
+    );
+    expect(response.data).toEqual([
+      createReferenceTargetPayload({ title: "نوروز کابل", slug: "nowruz-kabul" }),
+    ]);
+  });
+
+  it("validates a published internal-link target", async () => {
+    prisma.culturalEntry.findFirst.mockResolvedValue(createReferenceTargetPayload());
+
+    await expect(service.validateReferenceTarget(ids.publishedTarget)).resolves.toMatchObject({
+      data: { id: ids.publishedTarget },
+    });
+  });
+
+  it("rejects an invalid internal-link target", async () => {
+    prisma.culturalEntry.findFirst.mockResolvedValue(null);
+
+    await expectErrorCode(
+      () => service.validateReferenceTarget(ids.publishedTarget),
+      ENTRY_ERROR_CODES.REFERENCE_TARGET_INVALID,
+      BadRequestException,
+    );
+  });
+
+  it("lists outgoing references for an owned entry", async () => {
+    prisma.culturalEntry.findFirst.mockResolvedValueOnce(createEditableEntrySummary());
+    prisma.entryReference.findMany.mockResolvedValue([createOutgoingReferencePayload()]);
+
+    const response = await service.listOutgoingReferences(user, ids.entry);
+
+    expect(response.data).toEqual([createOutgoingReferencePayload()]);
+    expect(prisma.entryReference.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { sourceEntryId: ids.entry },
+      }),
+    );
+  });
+
+  it("lists incoming references without exposing other users' private drafts", async () => {
+    prisma.culturalEntry.findFirst.mockResolvedValueOnce(createEditableEntrySummary());
+    prisma.entryReference.findMany.mockResolvedValue([createIncomingReferencePayload()]);
+
+    const response = await service.listIncomingReferences(user, ids.entry);
+
+    expect(response.data).toEqual([createIncomingReferencePayload()]);
+    expect(prisma.entryReference.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          targetEntryId: ids.entry,
+          sourceEntry: {
+            OR: [{ status: EntryStatus.PUBLISHED }, { authorId: user.id }],
+          },
+        },
+      }),
+    );
+  });
+
   it("rejects unsupported protected fields through DTO whitelist validation", async () => {
     const dto = plainToInstance(CreateEntryDraftDto, {
       ...createDraftInput,
@@ -951,6 +1236,7 @@ function createPrismaMock(): PrismaMock {
     contentType: createTaxonomyDelegateMock(),
     tag: createDelegateMock(),
     entryTag: createDelegateMock(),
+    entryReference: createDelegateMock(),
     source: createDelegateMock(),
     image: createDelegateMock(),
     youTubeVideo: createDelegateMock(),
@@ -966,6 +1252,9 @@ function createPrismaMock(): PrismaMock {
       return Promise.all(input);
     },
   );
+  prisma.entryReference.findMany.mockResolvedValue([]);
+  prisma.entryReference.createMany.mockResolvedValue({ count: 0 });
+  prisma.entryReference.deleteMany.mockResolvedValue({ count: 0 });
 
   return prisma;
 }
@@ -1032,14 +1321,19 @@ function mockActiveTaxonomy(
   prisma.district.findFirst.mockResolvedValue(overrides.district ?? null);
 }
 
-function createEntryPayload() {
+function createEntryPayload(
+  overrides: Partial<{
+    contentJson: typeof validContentJson | typeof internalReferenceContentJson;
+    plainTextContent: string;
+  }> = {},
+) {
   return {
     id: ids.entry,
     slug: "frhng-kabl",
     title: createDraftInput.title,
     summary: createDraftInput.summary,
-    contentJson: validContentJson,
-    plainTextContent: "متن فرهنگی معتبر",
+    contentJson: overrides.contentJson ?? validContentJson,
+    plainTextContent: overrides.plainTextContent ?? "متن فرهنگی معتبر",
     status: EntryStatus.DRAFT,
     authorId: user.id,
     provinceId: ids.province,
@@ -1232,6 +1526,76 @@ function createYouTubeVideoPayload(
     isRemoved: false,
     createdAt: new Date("2026-01-01T00:00:00.000Z"),
     updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+  };
+}
+
+function createInternalReferenceContent(
+  targetEntryId = ids.publishedTarget,
+  anchorText = "نوروز کابل",
+) {
+  return {
+    type: "doc",
+    content: [
+      {
+        type: "paragraph",
+        content: [
+          {
+            type: "text",
+            text: anchorText,
+            marks: [
+              {
+                type: "internalEntryLink",
+                attrs: {
+                  targetEntryId,
+                },
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  };
+}
+
+function createReferenceTargetPayload(
+  overrides: Partial<{
+    id: string;
+    slug: string | null;
+    title: string;
+  }> = {},
+) {
+  return {
+    id: overrides.id ?? ids.publishedTarget,
+    slug: overrides.slug ?? "published-entry",
+    title: overrides.title ?? "نوشته منتشرشده",
+    summary: "خلاصه نوشته منتشرشده",
+    publishedAt: new Date("2026-01-01T00:00:00.000Z"),
+  };
+}
+
+function createOutgoingReferencePayload() {
+  return {
+    id: ids.reference,
+    sourceEntryId: ids.entry,
+    targetEntryId: ids.publishedTarget,
+    anchorText: "نوروز کابل",
+    createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    targetEntry: createReferenceTargetPayload(),
+  };
+}
+
+function createIncomingReferencePayload() {
+  return {
+    id: ids.reference,
+    sourceEntryId: ids.publishedTarget,
+    targetEntryId: ids.entry,
+    anchorText: "فرهنگ کابل",
+    createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    sourceEntry: {
+      id: ids.publishedTarget,
+      slug: "published-entry",
+      title: "نوشته منتشرشده",
+    },
   };
 }
 

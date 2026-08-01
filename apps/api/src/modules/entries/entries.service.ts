@@ -22,6 +22,7 @@ import type {
   UploadEntryImageDto,
 } from "@/modules/entries/dto/entry-images.dto";
 import type { OwnEntriesQueryDto } from "@/modules/entries/dto/entry-query.dto";
+import type { EntryReferenceSearchQueryDto } from "@/modules/entries/dto/entry-references.dto";
 import type {
   CreateEntrySourceDto,
   ReorderEntrySourcesDto,
@@ -34,12 +35,17 @@ import type {
 } from "@/modules/entries/dto/entry-youtube.dto";
 import { ENTRY_ERROR_CODES } from "@/modules/entries/entries.constants";
 import {
+  entryReferenceTargetSelect,
   entrySelect,
   imageSelect,
+  incomingEntryReferenceSelect,
   mapEntry,
   mapImage,
+  mapIncomingEntryReference,
+  mapOutgoingEntryReference,
   mapSource,
   mapYouTubeVideo,
+  outgoingEntryReferenceSelect,
   sourceSelect,
   youtubeVideoSelect,
 } from "@/modules/entries/entries.mapper";
@@ -48,7 +54,9 @@ import {
   normalizeEntrySearchText,
 } from "@/modules/entries/utils/entry-slug.util";
 import {
+  extractInternalEntryReferences,
   extractPlainTextFromTiptap,
+  type InternalEntryReference,
   TiptapValidationError,
 } from "@/modules/entries/utils/tiptap-content.util";
 import {
@@ -90,8 +98,13 @@ type NormalizedEntryQuery = {
 
 type EntriesDbClient = Prisma.TransactionClient | PrismaService;
 type SourceCreateData = Omit<Prisma.SourceUncheckedCreateInput, "entryId" | "displayOrder">;
+type NormalizedEntryReference = {
+  targetEntryId: string;
+  anchorText: string;
+};
 
 const editableStatuses = new Set<EntryStatus>([EntryStatus.DRAFT, EntryStatus.CHANGES_REQUESTED]);
+const MAX_REFERENCE_ANCHOR_LENGTH = 180;
 const taxonomyReferenceSelect = {
   id: true,
   name: true,
@@ -117,6 +130,7 @@ class EntriesService {
     const summary = this.normalizeRequiredText(input.summary, "Summary is required.");
     const contentJson = this.validateContent(input.contentJson);
     const plainTextContent = extractPlainTextFromTiptap(contentJson);
+    const entryReferences = extractInternalEntryReferences(contentJson);
     const taxonomy = await this.validateTaxonomy({
       provinceId: input.provinceId,
       districtId: input.districtId ?? null,
@@ -127,29 +141,35 @@ class EntriesService {
     const villageOrLocation = this.normalizeOptionalText(input.villageOrLocation);
 
     const entry = await this.withUniqueConstraintHandling(async () =>
-      this.prisma.culturalEntry.create({
-        data: {
-          title,
-          summary,
-          contentJson: contentJson as Prisma.InputJsonValue,
-          plainTextContent,
-          normalizedSearchText: this.createSearchText({
+      this.prisma.$transaction(async (tx) => {
+        const createdEntry = await tx.culturalEntry.create({
+          data: {
             title,
             summary,
+            contentJson: contentJson as Prisma.InputJsonValue,
             plainTextContent,
+            normalizedSearchText: this.createSearchText({
+              title,
+              summary,
+              plainTextContent,
+              villageOrLocation,
+              taxonomy,
+            }),
+            slug,
+            status: EntryStatus.DRAFT,
+            authorId: user.id,
+            provinceId: taxonomy.province.id,
+            districtId: taxonomy.district?.id ?? null,
+            categoryId: taxonomy.category.id,
+            contentTypeId: taxonomy.contentType.id,
             villageOrLocation,
-            taxonomy,
-          }),
-          slug,
-          status: EntryStatus.DRAFT,
-          authorId: user.id,
-          provinceId: taxonomy.province.id,
-          districtId: taxonomy.district?.id ?? null,
-          categoryId: taxonomy.category.id,
-          contentTypeId: taxonomy.contentType.id,
-          villageOrLocation,
-        },
-        select: entrySelect,
+          },
+          select: entrySelect,
+        });
+
+        await this.syncEntryReferences(tx, createdEntry.id, entryReferences);
+
+        return createdEntry;
       }),
     );
 
@@ -228,6 +248,7 @@ class EntriesService {
       input.contentJson === undefined
         ? existingEntry.plainTextContent
         : extractPlainTextFromTiptap(contentJson);
+    const entryReferences = extractInternalEntryReferences(contentJson);
     const provinceId = input.provinceId ?? existingEntry.provinceId;
     const districtId = input.districtId === undefined ? existingEntry.districtId : input.districtId;
     const categoryId = input.categoryId ?? existingEntry.categoryId;
@@ -248,29 +269,35 @@ class EntriesService {
         : await this.generateUniqueSlug(title, existingEntry.id);
 
     const entry = await this.withUniqueConstraintHandling(async () =>
-      this.prisma.culturalEntry.update({
-        where: { id: existingEntry.id },
-        data: {
-          title,
-          summary,
-          contentJson: contentJson as Prisma.InputJsonValue,
-          plainTextContent,
-          normalizedSearchText: this.createSearchText({
+      this.prisma.$transaction(async (tx) => {
+        const updatedEntry = await tx.culturalEntry.update({
+          where: { id: existingEntry.id },
+          data: {
             title,
             summary,
+            contentJson: contentJson as Prisma.InputJsonValue,
             plainTextContent,
+            normalizedSearchText: this.createSearchText({
+              title,
+              summary,
+              plainTextContent,
+              villageOrLocation,
+              taxonomy,
+              tagNames: existingEntry.tags.map((entryTag) => entryTag.tag.name),
+            }),
+            slug,
+            provinceId: taxonomy.province.id,
+            districtId: taxonomy.district?.id ?? null,
+            categoryId: taxonomy.category.id,
+            contentTypeId: taxonomy.contentType.id,
             villageOrLocation,
-            taxonomy,
-            tagNames: existingEntry.tags.map((entryTag) => entryTag.tag.name),
-          }),
-          slug,
-          provinceId: taxonomy.province.id,
-          districtId: taxonomy.district?.id ?? null,
-          categoryId: taxonomy.category.id,
-          contentTypeId: taxonomy.contentType.id,
-          villageOrLocation,
-        },
-        select: entrySelect,
+          },
+          select: entrySelect,
+        });
+
+        await this.syncEntryReferences(tx, existingEntry.id, entryReferences);
+
+        return updatedEntry;
       }),
     );
 
@@ -775,6 +802,249 @@ class EntriesService {
     });
   }
 
+  async searchReferenceTargets(query: EntryReferenceSearchQueryDto) {
+    const search = query.search?.trim();
+    const limit = query.limit ?? 10;
+    const where: Prisma.CulturalEntryWhereInput = {
+      status: EntryStatus.PUBLISHED,
+      ...(search
+        ? {
+            OR: [
+              {
+                title: {
+                  contains: search,
+                  mode: "insensitive",
+                },
+              },
+              {
+                slug: {
+                  contains: search,
+                  mode: "insensitive",
+                },
+              },
+            ],
+          }
+        : {}),
+    };
+    const entries = await this.prisma.culturalEntry.findMany({
+      where,
+      select: entryReferenceTargetSelect,
+      orderBy: [{ publishedAt: "desc" }, { title: "asc" }],
+      take: Math.min(limit * 3, 60),
+    });
+
+    return {
+      data: this.rankReferenceTargets(entries, search).slice(0, limit),
+    };
+  }
+
+  async validateReferenceTarget(targetEntryId: string) {
+    const target = await this.findPublishedReferenceTarget(this.prisma, targetEntryId);
+
+    return {
+      data: target,
+    };
+  }
+
+  async listOutgoingReferences(user: AuthenticatedUser, id: string) {
+    await this.ensureOwnedEntry(this.prisma, user.id, id);
+    const references = await this.prisma.entryReference.findMany({
+      where: { sourceEntryId: id },
+      select: outgoingEntryReferenceSelect,
+      orderBy: { createdAt: "asc" },
+    });
+
+    return {
+      data: references.map(mapOutgoingEntryReference),
+    };
+  }
+
+  async listIncomingReferences(user: AuthenticatedUser, id: string) {
+    await this.ensureOwnedEntry(this.prisma, user.id, id);
+    const references = await this.prisma.entryReference.findMany({
+      where: {
+        targetEntryId: id,
+        sourceEntry: {
+          OR: [{ status: EntryStatus.PUBLISHED }, { authorId: user.id }],
+        },
+      },
+      select: incomingEntryReferenceSelect,
+      orderBy: { createdAt: "asc" },
+    });
+
+    return {
+      data: references.map(mapIncomingEntryReference),
+    };
+  }
+
+  private async syncEntryReferences(
+    client: EntriesDbClient,
+    sourceEntryId: string,
+    references: InternalEntryReference[],
+  ): Promise<void> {
+    const normalizedReferences = this.normalizeEntryReferences(references);
+
+    if (normalizedReferences.length === 0) {
+      await client.entryReference.deleteMany({
+        where: { sourceEntryId },
+      });
+      return;
+    }
+
+    if (normalizedReferences.some((reference) => reference.targetEntryId === sourceEntryId)) {
+      throw this.selfReference();
+    }
+
+    await this.validatePublishedReferenceTargets(
+      client,
+      normalizedReferences.map((reference) => reference.targetEntryId),
+    );
+
+    const currentReferences = await client.entryReference.findMany({
+      where: { sourceEntryId },
+      select: {
+        id: true,
+        targetEntryId: true,
+        anchorText: true,
+      },
+    });
+    const desiredKeys = new Set(
+      normalizedReferences.map((reference) => this.referenceKey(reference)),
+    );
+    const currentKeys = new Set(currentReferences.map((reference) => this.referenceKey(reference)));
+    const referenceIdsToDelete = currentReferences
+      .filter((reference) => !desiredKeys.has(this.referenceKey(reference)))
+      .map((reference) => reference.id);
+    const referencesToCreate = normalizedReferences.filter(
+      (reference) => !currentKeys.has(this.referenceKey(reference)),
+    );
+
+    if (referenceIdsToDelete.length > 0) {
+      await client.entryReference.deleteMany({
+        where: {
+          id: {
+            in: referenceIdsToDelete,
+          },
+        },
+      });
+    }
+
+    if (referencesToCreate.length > 0) {
+      await client.entryReference.createMany({
+        data: referencesToCreate.map((reference) => ({
+          sourceEntryId,
+          targetEntryId: reference.targetEntryId,
+          anchorText: reference.anchorText,
+        })),
+      });
+    }
+  }
+
+  private normalizeEntryReferences(
+    references: InternalEntryReference[],
+  ): NormalizedEntryReference[] {
+    const normalizedReferences = references.map((reference) => ({
+      targetEntryId: reference.targetEntryId,
+      anchorText: reference.anchorText.trim().replace(/\s+/g, " "),
+    }));
+
+    for (const reference of normalizedReferences) {
+      if (
+        !reference.anchorText ||
+        reference.anchorText.length > MAX_REFERENCE_ANCHOR_LENGTH ||
+        /<\/?\s*(script|iframe|img|table|video|youtube)\b/i.test(reference.anchorText)
+      ) {
+        throw this.invalidReferenceAnchor();
+      }
+    }
+
+    const referenceKeys = normalizedReferences.map((reference) => this.referenceKey(reference));
+
+    if (new Set(referenceKeys).size !== referenceKeys.length) {
+      throw this.duplicateReference();
+    }
+
+    return normalizedReferences;
+  }
+
+  private async validatePublishedReferenceTargets(
+    client: EntriesDbClient,
+    targetEntryIds: string[],
+  ): Promise<void> {
+    const uniqueTargetEntryIds = [...new Set(targetEntryIds)];
+    const targets = await client.culturalEntry.findMany({
+      where: {
+        id: {
+          in: uniqueTargetEntryIds,
+        },
+        status: EntryStatus.PUBLISHED,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (targets.length !== uniqueTargetEntryIds.length) {
+      throw this.invalidReferenceTarget();
+    }
+  }
+
+  private async findPublishedReferenceTarget(client: EntriesDbClient, targetEntryId: string) {
+    const target = await client.culturalEntry.findFirst({
+      where: {
+        id: targetEntryId,
+        status: EntryStatus.PUBLISHED,
+      },
+      select: entryReferenceTargetSelect,
+    });
+
+    if (!target) {
+      throw this.invalidReferenceTarget();
+    }
+
+    return target;
+  }
+
+  private rankReferenceTargets<TEntry extends { title: string; slug: string | null }>(
+    entries: TEntry[],
+    search: string | undefined,
+  ): TEntry[] {
+    if (!search) {
+      return entries;
+    }
+
+    const normalizedSearch = search.toLowerCase();
+
+    return [...entries].sort(
+      (left, right) =>
+        this.referenceTargetRank(left, normalizedSearch) -
+          this.referenceTargetRank(right, normalizedSearch) ||
+        left.title.localeCompare(right.title),
+    );
+  }
+
+  private referenceTargetRank(
+    entry: { title: string; slug: string | null },
+    search: string,
+  ): number {
+    const title = entry.title.toLowerCase();
+    const slug = entry.slug?.toLowerCase() ?? "";
+
+    if (title === search || slug === search) {
+      return 0;
+    }
+
+    if (title.startsWith(search) || slug.startsWith(search)) {
+      return 1;
+    }
+
+    return 2;
+  }
+
+  private referenceKey(reference: { targetEntryId: string; anchorText: string }): string {
+    return `${reference.targetEntryId}:${reference.anchorText}`;
+  }
+
   private async validateTaxonomy({
     provinceId,
     districtId,
@@ -1214,6 +1484,24 @@ class EntriesService {
     return entry;
   }
 
+  private async ensureOwnedEntry(client: EntriesDbClient, authorId: string, id: string) {
+    const entry = await client.culturalEntry.findFirst({
+      where: {
+        id,
+        authorId,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!entry) {
+      throw this.notFound();
+    }
+
+    return entry;
+  }
+
   private async generateUniqueSlug(title: string, excludeEntryId?: string): Promise<string> {
     return createUniqueEntrySlug(title, (slug) => this.slugExists(slug, excludeEntryId));
   }
@@ -1634,6 +1922,34 @@ class EntriesService {
     return new BadRequestException({
       error: ENTRY_ERROR_CODES.IMAGE_ORDER_DUPLICATE,
       message: "Duplicate image display order values are not allowed.",
+    });
+  }
+
+  private duplicateReference(): BadRequestException {
+    return new BadRequestException({
+      error: ENTRY_ERROR_CODES.REFERENCE_DUPLICATE,
+      message: "Duplicate internal entry references are not allowed.",
+    });
+  }
+
+  private selfReference(): BadRequestException {
+    return new BadRequestException({
+      error: ENTRY_ERROR_CODES.REFERENCE_SELF,
+      message: "An entry cannot reference itself.",
+    });
+  }
+
+  private invalidReferenceTarget(): BadRequestException {
+    return new BadRequestException({
+      error: ENTRY_ERROR_CODES.REFERENCE_TARGET_INVALID,
+      message: "Internal entry reference target is invalid.",
+    });
+  }
+
+  private invalidReferenceAnchor(): BadRequestException {
+    return new BadRequestException({
+      error: ENTRY_ERROR_CODES.REFERENCE_ANCHOR_INVALID,
+      message: "Internal entry reference anchor text is invalid.",
     });
   }
 

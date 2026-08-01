@@ -247,6 +247,8 @@ model CulturalEntry {
   images                Image[]                @relation("EntryImages")
   youtubeVideo          YouTubeVideo?          @relation("EntryYouTubeVideo")
   sources               Source[]               @relation("EntrySources")
+  outgoingReferences    EntryReference[]       @relation("EntryReferenceSource")
+  incomingReferences    EntryReference[]       @relation("EntryReferenceTarget")
   contentVersions       ContentVersion[]       @relation("EntryContentVersions")
   moderationReviews     ModerationReview[]     @relation("EntryModerationReviews")
   ratings               Rating[]               @relation("EntryRatings")
@@ -298,6 +300,24 @@ model ContentVersion {
   @@index([versionReason])
   @@index([createdAt])
   @@map("content_versions")
+}
+
+model EntryReference {
+  id            String   @id @default(uuid()) @map("id") @db.Uuid
+  sourceEntryId String   @map("source_entry_id") @db.Uuid
+  targetEntryId String   @map("target_entry_id") @db.Uuid
+  anchorText    String   @map("anchor_text")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  sourceEntry CulturalEntry @relation("EntryReferenceSource", fields: [sourceEntryId], references: [id], onDelete: Cascade)
+  targetEntry CulturalEntry @relation("EntryReferenceTarget", fields: [targetEntryId], references: [id], onDelete: Restrict)
+
+  @@unique([sourceEntryId, targetEntryId, anchorText])
+  @@index([sourceEntryId])
+  @@index([targetEntryId])
+  @@index([sourceEntryId, targetEntryId])
+  @@index([targetEntryId, createdAt])
+  @@map("entry_references")
 }
 
 model ModerationReview {

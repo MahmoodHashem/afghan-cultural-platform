@@ -41,11 +41,15 @@ import {
   UploadEntryImageDto,
 } from "@/modules/entries/dto/entry-images.dto";
 import { OwnEntriesQueryDto } from "@/modules/entries/dto/entry-query.dto";
+import { EntryReferenceSearchQueryDto } from "@/modules/entries/dto/entry-references.dto";
 import {
   EntryImageResponseDto,
   EntryImagesResponseDto,
   EntryListResponseDto,
   EntryMessageResponseDto,
+  EntryReferenceSearchResponseDto,
+  EntryReferencesResponseDto,
+  EntryReferenceValidationResponseDto,
   EntryResponseDto,
   EntrySourceResponseDto,
   EntrySourcesResponseDto,
@@ -69,6 +73,7 @@ import { EntriesService } from "@/modules/entries/entries.service";
 @ApiExtraModels(
   CreateEntryDraftDto,
   CreateEntrySourceDto,
+  EntryReferenceSearchQueryDto,
   EntryTagsDto,
   OwnEntriesQueryDto,
   ReorderEntryImagesDto,
@@ -106,6 +111,36 @@ class EntriesController {
     return this.entriesService.createDraft(user, body);
   }
 
+  @Get("entries/reference-targets")
+  @ApiOperation({
+    summary: "Search published Cultural Entries for internal editor links",
+    description:
+      "Returns only PUBLISHED Cultural Entries. Drafts, hidden entries, archived entries, and unpublished content are never returned.",
+  })
+  @ApiOkResponse({ type: EntryReferenceSearchResponseDto })
+  @ApiBadRequestResponse({ description: "Validation failed" })
+  @ApiUnauthorizedResponse({ description: "Missing or invalid bearer token" })
+  @ApiForbiddenResponse({
+    description: "AUTH_EMAIL_VERIFICATION_REQUIRED or AUTH_ACCOUNT_SUSPENDED",
+  })
+  searchReferenceTargets(@Query() query: EntryReferenceSearchQueryDto) {
+    return this.entriesService.searchReferenceTargets(query);
+  }
+
+  @Get("entries/reference-targets/:targetEntryId")
+  @ApiOperation({
+    summary: "Validate one published Cultural Entry target for an internal editor link",
+  })
+  @ApiOkResponse({ type: EntryReferenceValidationResponseDto })
+  @ApiBadRequestResponse({ description: "ENTRY_REFERENCE_TARGET_INVALID" })
+  @ApiUnauthorizedResponse({ description: "Missing or invalid bearer token" })
+  @ApiForbiddenResponse({
+    description: "AUTH_EMAIL_VERIFICATION_REQUIRED or AUTH_ACCOUNT_SUSPENDED",
+  })
+  validateReferenceTarget(@Param("targetEntryId", ParseUUIDPipe) targetEntryId: string) {
+    return this.entriesService.validateReferenceTarget(targetEntryId);
+  }
+
   @Get("me/entries")
   @ApiOperation({ summary: "List the current user's Cultural Entries" })
   @ApiOkResponse({ type: EntryListResponseDto })
@@ -127,6 +162,40 @@ class EntriesController {
   @ApiNotFoundResponse({ description: "ENTRY_NOT_FOUND" })
   getOwnEntry(@CurrentUser() user: AuthenticatedUser, @Param("id", ParseUUIDPipe) id: string) {
     return this.entriesService.getOwnEntry(user, id);
+  }
+
+  @Get("me/entries/:id/references/outgoing")
+  @ApiOperation({ summary: "List outgoing internal references for the current user's entry" })
+  @ApiOkResponse({ type: EntryReferencesResponseDto })
+  @ApiUnauthorizedResponse({ description: "Missing or invalid bearer token" })
+  @ApiForbiddenResponse({
+    description: "AUTH_EMAIL_VERIFICATION_REQUIRED or AUTH_ACCOUNT_SUSPENDED",
+  })
+  @ApiNotFoundResponse({ description: "ENTRY_NOT_FOUND" })
+  listOutgoingReferences(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("id", ParseUUIDPipe) id: string,
+  ) {
+    return this.entriesService.listOutgoingReferences(user, id);
+  }
+
+  @Get("me/entries/:id/references/incoming")
+  @ApiOperation({
+    summary: "List incoming internal references for the current user's entry",
+    description:
+      "Does not expose private drafts owned by other users. Incoming sources are limited to published entries or the current user's own entries.",
+  })
+  @ApiOkResponse({ type: EntryReferencesResponseDto })
+  @ApiUnauthorizedResponse({ description: "Missing or invalid bearer token" })
+  @ApiForbiddenResponse({
+    description: "AUTH_EMAIL_VERIFICATION_REQUIRED or AUTH_ACCOUNT_SUSPENDED",
+  })
+  @ApiNotFoundResponse({ description: "ENTRY_NOT_FOUND" })
+  listIncomingReferences(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("id", ParseUUIDPipe) id: string,
+  ) {
+    return this.entriesService.listIncomingReferences(user, id);
   }
 
   @Patch("me/entries/:id")

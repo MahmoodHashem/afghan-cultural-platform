@@ -143,6 +143,57 @@ class EntryYouTubeVideoDto {
   updatedAt!: Date;
 }
 
+class EntryReferenceTargetDto {
+  @ApiProperty()
+  id!: string;
+
+  @ApiProperty()
+  slug!: string | null;
+
+  @ApiProperty()
+  title!: string;
+
+  @ApiProperty()
+  summary!: string;
+
+  @ApiProperty()
+  publishedAt!: Date | null;
+}
+
+class EntryReferenceSourceDto {
+  @ApiProperty()
+  id!: string;
+
+  @ApiProperty()
+  slug!: string | null;
+
+  @ApiProperty()
+  title!: string;
+}
+
+class EntryReferenceDto {
+  @ApiProperty()
+  id!: string;
+
+  @ApiProperty()
+  sourceEntryId!: string;
+
+  @ApiProperty()
+  targetEntryId!: string;
+
+  @ApiProperty()
+  anchorText!: string;
+
+  @ApiProperty()
+  createdAt!: Date;
+
+  @ApiPropertyOptional({ type: EntryReferenceSourceDto })
+  sourceEntry?: EntryReferenceSourceDto;
+
+  @ApiPropertyOptional({ type: EntryReferenceTargetDto })
+  targetEntry?: EntryReferenceTargetDto;
+}
+
 class EntryDto {
   @ApiProperty()
   id!: string;
@@ -252,6 +303,21 @@ class EntryYouTubeVideoResponseDto {
   data!: EntryYouTubeVideoDto | null;
 }
 
+class EntryReferenceSearchResponseDto {
+  @ApiProperty({ type: [EntryReferenceTargetDto] })
+  data!: EntryReferenceTargetDto[];
+}
+
+class EntryReferenceValidationResponseDto {
+  @ApiProperty({ type: EntryReferenceTargetDto })
+  data!: EntryReferenceTargetDto;
+}
+
+class EntryReferencesResponseDto {
+  @ApiProperty({ type: [EntryReferenceDto] })
+  data!: EntryReferenceDto[];
+}
+
 class EntryListMetaDto {
   @ApiProperty()
   page!: number;
@@ -290,6 +356,9 @@ export {
   EntryImagesResponseDto,
   EntryListResponseDto,
   EntryMessageResponseDto,
+  EntryReferenceSearchResponseDto,
+  EntryReferencesResponseDto,
+  EntryReferenceValidationResponseDto,
   EntryResponseDto,
   EntrySourceResponseDto,
   EntrySourcesResponseDto,

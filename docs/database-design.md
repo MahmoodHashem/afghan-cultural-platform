@@ -35,7 +35,7 @@ This document defines the planned PostgreSQL and Prisma data model for the Afgha
 
 ## Entity Evaluation For Version One
 
-All 23 currently implemented schema entities are kept for version one. `EntryReference` is an approved future schema addition for the internal-linking feature and must be added in a dedicated later Prisma phase.
+All 24 currently implemented schema entities are kept for version one, including `EntryReference` for manual Wikipedia-style internal links between Cultural Entries.
 
 | Entity               | Decision               | Reason                                                                                                                                          |
 | -------------------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -44,7 +44,7 @@ All 23 currently implemented schema entities are kept for version one. `EntryRef
 | CulturalEntry        | Keep                   | Main cultural content object.                                                                                                                   |
 | ContentVersion       | Keep                   | Required to preserve submitted and published history.                                                                                           |
 | ModerationReview     | Keep                   | Required to record approve, reject, changes-requested, hide, restore, and archive decisions.                                                    |
-| EntryReference       | Approved future schema addition | Required for Wikipedia-style internal links between published Cultural Entries. Not yet implemented in the current Prisma schema.                |
+| EntryReference       | Keep                   | Required for Wikipedia-style internal links between published Cultural Entries.                                                                 |
 | Province             | Keep                   | Required public filter and admin-managed taxonomy.                                                                                              |
 | District             | Keep as managed record | Districts use managed records.`provinceId` is required, `districtId` on entries is optional, and entries may still keep free-text location. |
 | Category             | Keep                   | Required public filter and admin-managed taxonomy.                                                                                              |
@@ -91,8 +91,7 @@ Version one contains 23 entities:
 21. `EmailVerificationToken`
 22. `PasswordResetToken`
 23. `AuditLog`
-
-Planned future schema addition: `EntryReference`.
+24. `EntryReference`
 
 ## Enums
 
@@ -310,9 +309,7 @@ More audit actions can be added later only when new v1 workflows require them.
 
 **Indexes:** `status`, `provinceId`, `districtId`, `categoryId`, `contentTypeId`, `authorId`, `publishedAt`, `createdAt`, `(status, publishedAt)`, `(status, provinceId)`, `(status, categoryId)`, `(status, contentTypeId)`.
 
-**Relations:** Author, province, optional district, category, content type, tags through `EntryTag`, images, optional YouTube video, sources, content versions, moderation reviews, ratings, public reviews, bookmarks, correction suggestions, reports.
-
-**Planned relations:** Outgoing and incoming internal references through the future `EntryReference` entity.
+**Relations:** Author, province, optional district, category, content type, tags through `EntryTag`, images, optional YouTube video, sources, outgoing and incoming internal references through `EntryReference`, content versions, moderation reviews, ratings, public reviews, bookmarks, correction suggestions, reports.
 
 **Deletion behavior:** Do not physically delete published cultural entries. Use status transitions: `DRAFT` may be hard-deleted by the author before submission; submitted/published entries should use `REJECTED`, `HIDDEN`, or `ARCHIVED`. Audit logs and content versions remain preserved.
 
@@ -343,9 +340,7 @@ More audit actions can be added later only when new v1 workflows require them.
 
 ### EntryReference
 
-**Purpose:** Planned entity for Wikipedia-style internal links from one Cultural Entry to another Cultural Entry.
-
-This entity is approved for the internal-linking feature but is not yet implemented in the current Prisma schema or migrations. It should be added in a dedicated future schema phase.
+**Purpose:** Stores manually created Wikipedia-style internal links from one Cultural Entry to another Cultural Entry.
 
 | Field         | Type     | Required | Default    | Notes                                                                            |
 | ------------- | -------- | -------- | ---------- | -------------------------------------------------------------------------------- |
@@ -842,7 +837,7 @@ This entity is approved for the internal-linking feature but is not yet implemen
 - `CulturalEntry` to `YouTubeVideo`: one entry has zero or one YouTube video in v1.
 - `CulturalEntry` to `Source`: one entry has zero to many sources.
 - `CulturalEntry` to `ContentVersion`: one entry has one to many permanent versions after submission.
-- `CulturalEntry` to `EntryReference`: one entry has zero to many outgoing references as a source and zero to many incoming references as a target. This relation is approved for a future schema phase.
+- `CulturalEntry` to `EntryReference`: one entry has zero to many outgoing references as a source and zero to many incoming references as a target.
 - `CulturalEntry` to `ModerationReview`: one entry has zero to many moderation reviews.
 - `CulturalEntry` to `Rating`: one entry has zero to many ratings.
 - `CulturalEntry` to `PublicReview`: one entry has zero to many public reviews.
@@ -1147,9 +1142,8 @@ No unresolved product-level database decisions remain before Prisma implementati
 9. Implement unique `(provider, providerAccountId)` and unique `(userId, provider)` for `OAuthAccount`.
 10. Add `EmailVerificationToken` with hashed token storage, single-use tracking, expiration, and indexes.
 11. Implement the immutable published-entry slug rule in service logic.
-12. In a later internal-linking schema phase, add `EntryReference` with source/target entry relations, anchor text, indexes, and duplicate-prevention constraints.
-13. Add the manual SQL partial unique index for one active public review per user and entry.
-14. Add the first migration only after models are approved.
-15. Generate Prisma Client after schema implementation.
-16. Add focused tests for status transitions, self-approval prevention, accepted correction versioning, rating uniqueness, rating aggregate updates, review uniqueness, bookmark uniqueness, OAuth account uniqueness, email verification token behavior, entry-reference constraints, and deletion/preservation behavior.
+12. Add the manual SQL partial unique index for one active public review per user and entry.
+13. Add the first migration only after models are approved.
+14. Generate Prisma Client after schema implementation.
+15. Add focused tests for status transitions, self-approval prevention, accepted correction versioning, rating uniqueness, rating aggregate updates, review uniqueness, bookmark uniqueness, OAuth account uniqueness, email verification token behavior, entry-reference constraints, and deletion/preservation behavior.
 17. Keep Prisma access inside NestJS services and transactions.

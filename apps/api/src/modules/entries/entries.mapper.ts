@@ -45,6 +45,40 @@ const youtubeVideoSelect = {
   updatedAt: true,
 } as const;
 
+const entryReferenceTargetSelect = {
+  id: true,
+  slug: true,
+  title: true,
+  summary: true,
+  publishedAt: true,
+} as const;
+
+const outgoingEntryReferenceSelect = {
+  id: true,
+  sourceEntryId: true,
+  targetEntryId: true,
+  anchorText: true,
+  createdAt: true,
+  targetEntry: {
+    select: entryReferenceTargetSelect,
+  },
+} as const;
+
+const incomingEntryReferenceSelect = {
+  id: true,
+  sourceEntryId: true,
+  targetEntryId: true,
+  anchorText: true,
+  createdAt: true,
+  sourceEntry: {
+    select: {
+      id: true,
+      slug: true,
+      title: true,
+    },
+  },
+} as const;
+
 const entryTagOrderBy: Prisma.EntryTagOrderByWithRelationInput = {
   createdAt: "asc",
 };
@@ -138,7 +172,13 @@ const entrySelect = {
 } as const;
 
 type EntryPayload = Prisma.CulturalEntryGetPayload<{ select: typeof entrySelect }>;
+type IncomingEntryReferencePayload = Prisma.EntryReferenceGetPayload<{
+  select: typeof incomingEntryReferenceSelect;
+}>;
 type ImagePayload = Prisma.ImageGetPayload<{ select: typeof imageSelect }>;
+type OutgoingEntryReferencePayload = Prisma.EntryReferenceGetPayload<{
+  select: typeof outgoingEntryReferenceSelect;
+}>;
 type SourcePayload = Prisma.SourceGetPayload<{ select: typeof sourceSelect }>;
 type YouTubeVideoPayload = Prisma.YouTubeVideoGetPayload<{ select: typeof youtubeVideoSelect }>;
 
@@ -224,14 +264,48 @@ function mapYouTubeVideo(video: YouTubeVideoPayload) {
   };
 }
 
-export type { EntryPayload, ImagePayload, SourcePayload, YouTubeVideoPayload };
+function mapOutgoingEntryReference(reference: OutgoingEntryReferencePayload) {
+  return {
+    id: reference.id,
+    sourceEntryId: reference.sourceEntryId,
+    targetEntryId: reference.targetEntryId,
+    anchorText: reference.anchorText,
+    createdAt: reference.createdAt,
+    targetEntry: reference.targetEntry,
+  };
+}
+
+function mapIncomingEntryReference(reference: IncomingEntryReferencePayload) {
+  return {
+    id: reference.id,
+    sourceEntryId: reference.sourceEntryId,
+    targetEntryId: reference.targetEntryId,
+    anchorText: reference.anchorText,
+    createdAt: reference.createdAt,
+    sourceEntry: reference.sourceEntry,
+  };
+}
+
+export type {
+  EntryPayload,
+  ImagePayload,
+  IncomingEntryReferencePayload,
+  OutgoingEntryReferencePayload,
+  SourcePayload,
+  YouTubeVideoPayload,
+};
 export {
+  entryReferenceTargetSelect,
   entrySelect,
   imageSelect,
+  incomingEntryReferenceSelect,
   mapEntry,
   mapImage,
+  mapIncomingEntryReference,
+  mapOutgoingEntryReference,
   mapSource,
   mapYouTubeVideo,
+  outgoingEntryReferenceSelect,
   sourceSelect,
   youtubeVideoSelect,
 };

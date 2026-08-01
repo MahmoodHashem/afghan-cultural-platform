@@ -8,6 +8,12 @@ type TiptapNode = {
   text?: unknown;
 };
 
+type InternalEntryReference = {
+  targetEntryId: string;
+  targetSlug: string | null;
+  anchorText: string;
+};
+
 const ALLOWED_NODE_TYPES = new Set([
   "doc",
   "paragraph",
@@ -19,9 +25,10 @@ const ALLOWED_NODE_TYPES = new Set([
   "blockquote",
 ]);
 
-const ALLOWED_MARK_TYPES = new Set(["bold", "italic", "underline", "link"]);
+const ALLOWED_MARK_TYPES = new Set(["bold", "italic", "underline", "link", "internalEntryLink"]);
 const TEXT_ALIGN_VALUES = new Set(["left", "center", "right", "justify", "start", "end"]);
 const TEXT_DIRECTION_VALUES = new Set(["rtl", "ltr"]);
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 class TiptapValidationError extends Error {
   constructor(message: string) {
@@ -51,6 +58,12 @@ function extractPlainTextFromTiptap(document: unknown): string {
     .map((line) => line.replace(/\s+/g, " ").trim())
     .filter(Boolean)
     .join("\n");
+}
+
+function extractInternalEntryReferences(document: unknown): InternalEntryReference[] {
+  validateTiptapDocument(document);
+
+  return collectInternalEntryReferences(document);
 }
 
 function validateNode(node: TiptapNode, path: string): void {
@@ -156,8 +169,44 @@ function validateMark(mark: unknown, path: string): void {
     return;
   }
 
+  if (mark.type === "internalEntryLink") {
+    validateInternalEntryLinkMark(mark, path);
+    return;
+  }
+
   if (mark.attrs !== undefined && (!isRecord(mark.attrs) || Object.keys(mark.attrs).length > 0)) {
     throw new TiptapValidationError(`Unsupported mark attributes at ${path}.`);
+  }
+}
+
+function validateInternalEntryLinkMark(mark: Record<string, unknown>, path: string): void {
+  if (!isRecord(mark.attrs)) {
+    throw new TiptapValidationError(`Internal entry link attributes are required at ${path}.`);
+  }
+
+  const allowedAttributes = new Set(["targetEntryId", "targetSlug"]);
+
+  for (const key of Object.keys(mark.attrs)) {
+    if (!allowedAttributes.has(key)) {
+      throw new TiptapValidationError(
+        `Unsupported internal entry link attribute "${key}" at ${path}.`,
+      );
+    }
+  }
+
+  if (
+    typeof mark.attrs.targetEntryId !== "string" ||
+    !UUID_PATTERN.test(mark.attrs.targetEntryId)
+  ) {
+    throw new TiptapValidationError(`Invalid internal entry target ID at ${path}.`);
+  }
+
+  if (
+    mark.attrs.targetSlug !== undefined &&
+    mark.attrs.targetSlug !== null &&
+    typeof mark.attrs.targetSlug !== "string"
+  ) {
+    throw new TiptapValidationError(`Invalid internal entry target slug at ${path}.`);
   }
 }
 
@@ -195,6 +244,33 @@ function collectTextLines(node: TiptapNode): string[] {
   }
 
   return childLines;
+}
+
+function collectInternalEntryReferences(node: TiptapNode): InternalEntryReference[] {
+  const references: InternalEntryReference[] = [];
+
+  if (node.type === "text" && typeof node.text === "string" && Array.isArray(node.marks)) {
+    for (const mark of node.marks) {
+      if (isRecord(mark) && mark.type === "internalEntryLink" && isRecord(mark.attrs)) {
+        references.push({
+          targetEntryId: mark.attrs.targetEntryId as string,
+          targetSlug:
+            typeof mark.attrs.targetSlug === "string" && mark.attrs.targetSlug.trim()
+              ? mark.attrs.targetSlug.trim()
+              : null,
+          anchorText: node.text.replace(/\s+/g, " ").trim(),
+        });
+      }
+    }
+  }
+
+  if (Array.isArray(node.content)) {
+    references.push(
+      ...node.content.flatMap((child) => collectInternalEntryReferences(child as TiptapNode)),
+    );
+  }
+
+  return references.filter((reference) => reference.anchorText.length > 0);
 }
 
 function allowedNodeAttributes(nodeType: string): Set<string> {
@@ -243,5 +319,10 @@ function isSafeLink(href: string): boolean {
   }
 }
 
-export type { TiptapDocument };
-export { extractPlainTextFromTiptap, TiptapValidationError, validateTiptapDocument };
+export type { InternalEntryReference, TiptapDocument };
+export {
+  extractInternalEntryReferences,
+  extractPlainTextFromTiptap,
+  TiptapValidationError,
+  validateTiptapDocument,
+};
