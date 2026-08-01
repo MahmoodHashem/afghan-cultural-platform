@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
-import { EntryStatus } from "@/generated/prisma/enums";
+import { EntryStatus, SourceType } from "@/generated/prisma/enums";
 
 class EntryTaxonomyDto {
   @ApiProperty()
@@ -19,6 +19,55 @@ class EntryAuthorDto {
 
   @ApiProperty()
   displayName!: string;
+}
+
+class EntryTagDto {
+  @ApiProperty()
+  id!: string;
+
+  @ApiProperty()
+  name!: string;
+
+  @ApiProperty()
+  slug!: string;
+}
+
+class EntrySourceDto {
+  @ApiProperty()
+  id!: string;
+
+  @ApiProperty({ enum: SourceType })
+  type!: SourceType;
+
+  @ApiPropertyOptional()
+  title!: string | null;
+
+  @ApiPropertyOptional()
+  authorOrProvider!: string | null;
+
+  @ApiPropertyOptional()
+  publicationDate!: string | null;
+
+  @ApiPropertyOptional()
+  websiteUrl!: string | null;
+
+  @ApiPropertyOptional()
+  bookOrArticleDetails!: string | null;
+
+  @ApiPropertyOptional()
+  interviewDate!: Date | null;
+
+  @ApiPropertyOptional()
+  explanation!: string | null;
+
+  @ApiProperty()
+  displayOrder!: number;
+
+  @ApiProperty()
+  createdAt!: Date;
+
+  @ApiProperty()
+  updatedAt!: Date;
 }
 
 class EntryDto {
@@ -76,6 +125,12 @@ class EntryDto {
   @ApiProperty({ type: EntryTaxonomyDto })
   contentType!: EntryTaxonomyDto;
 
+  @ApiProperty({ type: [EntryTagDto] })
+  tags!: EntryTagDto[];
+
+  @ApiProperty({ type: [EntrySourceDto] })
+  sources!: EntrySourceDto[];
+
   @ApiProperty()
   createdAt!: Date;
 
@@ -86,6 +141,21 @@ class EntryDto {
 class EntryResponseDto {
   @ApiProperty({ type: EntryDto })
   data!: EntryDto;
+}
+
+class EntryTagsResponseDto {
+  @ApiProperty({ type: [EntryTagDto] })
+  data!: EntryTagDto[];
+}
+
+class EntrySourceResponseDto {
+  @ApiProperty({ type: EntrySourceDto })
+  data!: EntrySourceDto;
+}
+
+class EntrySourcesResponseDto {
+  @ApiProperty({ type: [EntrySourceDto] })
+  data!: EntrySourceDto[];
 }
 
 class EntryListMetaDto {
@@ -120,4 +190,12 @@ class EntryMessageResponseDto {
   data!: EntryMessageDataDto;
 }
 
-export { EntryDto, EntryListResponseDto, EntryMessageResponseDto, EntryResponseDto };
+export {
+  EntryDto,
+  EntryListResponseDto,
+  EntryMessageResponseDto,
+  EntryResponseDto,
+  EntrySourceResponseDto,
+  EntrySourcesResponseDto,
+  EntryTagsResponseDto,
+};

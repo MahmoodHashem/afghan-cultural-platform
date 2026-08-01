@@ -35,12 +35,29 @@ import {
   EntryListResponseDto,
   EntryMessageResponseDto,
   EntryResponseDto,
+  EntrySourceResponseDto,
+  EntrySourcesResponseDto,
+  EntryTagsResponseDto,
 } from "@/modules/entries/dto/entry-response.dto";
+import {
+  CreateEntrySourceDto,
+  ReorderEntrySourcesDto,
+  UpdateEntrySourceDto,
+} from "@/modules/entries/dto/entry-sources.dto";
+import { EntryTagsDto } from "@/modules/entries/dto/entry-tags.dto";
 import { EntriesService } from "@/modules/entries/entries.service";
 
 @ApiTags("Entries")
 @ApiBearerAuth()
-@ApiExtraModels(CreateEntryDraftDto, OwnEntriesQueryDto, UpdateEntryDraftDto)
+@ApiExtraModels(
+  CreateEntryDraftDto,
+  CreateEntrySourceDto,
+  EntryTagsDto,
+  OwnEntriesQueryDto,
+  ReorderEntrySourcesDto,
+  UpdateEntryDraftDto,
+  UpdateEntrySourceDto,
+)
 @RequireVerifiedEmail()
 @Controller()
 class EntriesController {
@@ -127,6 +144,138 @@ class EntriesController {
   @ApiNotFoundResponse({ description: "ENTRY_NOT_FOUND" })
   deleteOwnDraft(@CurrentUser() user: AuthenticatedUser, @Param("id", ParseUUIDPipe) id: string) {
     return this.entriesService.deleteOwnDraft(user, id);
+  }
+
+  @Post("me/entries/:id/tags")
+  @ApiOperation({ summary: "Add existing active tags to the current user's editable entry" })
+  @ApiBody({ type: EntryTagsDto })
+  @ApiOkResponse({ type: EntryTagsResponseDto })
+  @ApiBadRequestResponse({
+    description: "ENTRY_TAG_DUPLICATE, ENTRY_TAG_INVALID, or validation failed",
+  })
+  @ApiForbiddenResponse({
+    description:
+      "AUTH_EMAIL_VERIFICATION_REQUIRED, AUTH_ACCOUNT_SUSPENDED, or ENTRY_INVALID_STATUS",
+  })
+  @ApiNotFoundResponse({ description: "ENTRY_NOT_FOUND" })
+  addTags(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("id", ParseUUIDPipe) id: string,
+    @Body() body: EntryTagsDto,
+  ) {
+    return this.entriesService.addTags(user, id, body);
+  }
+
+  @Patch("me/entries/:id/tags")
+  @ApiOperation({ summary: "Replace all tags on the current user's editable entry" })
+  @ApiBody({ type: EntryTagsDto })
+  @ApiOkResponse({ type: EntryTagsResponseDto })
+  @ApiBadRequestResponse({
+    description: "ENTRY_TAG_DUPLICATE, ENTRY_TAG_INVALID, or validation failed",
+  })
+  @ApiForbiddenResponse({
+    description:
+      "AUTH_EMAIL_VERIFICATION_REQUIRED, AUTH_ACCOUNT_SUSPENDED, or ENTRY_INVALID_STATUS",
+  })
+  @ApiNotFoundResponse({ description: "ENTRY_NOT_FOUND" })
+  replaceTags(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("id", ParseUUIDPipe) id: string,
+    @Body() body: EntryTagsDto,
+  ) {
+    return this.entriesService.replaceTags(user, id, body);
+  }
+
+  @Delete("me/entries/:id/tags/:tagId")
+  @ApiOperation({ summary: "Remove one tag from the current user's editable entry" })
+  @ApiOkResponse({ type: EntryTagsResponseDto })
+  @ApiBadRequestResponse({ description: "ENTRY_TAG_INVALID" })
+  @ApiForbiddenResponse({
+    description:
+      "AUTH_EMAIL_VERIFICATION_REQUIRED, AUTH_ACCOUNT_SUSPENDED, or ENTRY_INVALID_STATUS",
+  })
+  @ApiNotFoundResponse({ description: "ENTRY_NOT_FOUND" })
+  removeTag(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("id", ParseUUIDPipe) id: string,
+    @Param("tagId", ParseUUIDPipe) tagId: string,
+  ) {
+    return this.entriesService.removeTag(user, id, tagId);
+  }
+
+  @Post("me/entries/:id/sources")
+  @ApiOperation({ summary: "Create a source on the current user's editable entry" })
+  @ApiBody({ type: CreateEntrySourceDto })
+  @ApiOkResponse({ type: EntrySourceResponseDto })
+  @ApiBadRequestResponse({
+    description: "ENTRY_SOURCE_INVALID, ENTRY_SOURCE_ORDER_DUPLICATE, or validation failed",
+  })
+  @ApiForbiddenResponse({
+    description:
+      "AUTH_EMAIL_VERIFICATION_REQUIRED, AUTH_ACCOUNT_SUSPENDED, or ENTRY_INVALID_STATUS",
+  })
+  @ApiNotFoundResponse({ description: "ENTRY_NOT_FOUND" })
+  createSource(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("id", ParseUUIDPipe) id: string,
+    @Body() body: CreateEntrySourceDto,
+  ) {
+    return this.entriesService.createSource(user, id, body);
+  }
+
+  @Patch("me/entries/:id/sources/reorder")
+  @ApiOperation({ summary: "Reorder sources on the current user's editable entry" })
+  @ApiBody({ type: ReorderEntrySourcesDto })
+  @ApiOkResponse({ type: EntrySourcesResponseDto })
+  @ApiBadRequestResponse({ description: "ENTRY_SOURCE_INVALID or ENTRY_SOURCE_ORDER_DUPLICATE" })
+  @ApiForbiddenResponse({
+    description:
+      "AUTH_EMAIL_VERIFICATION_REQUIRED, AUTH_ACCOUNT_SUSPENDED, or ENTRY_INVALID_STATUS",
+  })
+  @ApiNotFoundResponse({ description: "ENTRY_NOT_FOUND or ENTRY_SOURCE_NOT_FOUND" })
+  reorderSources(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("id", ParseUUIDPipe) id: string,
+    @Body() body: ReorderEntrySourcesDto,
+  ) {
+    return this.entriesService.reorderSources(user, id, body);
+  }
+
+  @Patch("me/entries/:id/sources/:sourceId")
+  @ApiOperation({ summary: "Update a source on the current user's editable entry" })
+  @ApiBody({ type: UpdateEntrySourceDto })
+  @ApiOkResponse({ type: EntrySourceResponseDto })
+  @ApiBadRequestResponse({
+    description: "ENTRY_SOURCE_INVALID, ENTRY_SOURCE_ORDER_DUPLICATE, or validation failed",
+  })
+  @ApiForbiddenResponse({
+    description:
+      "AUTH_EMAIL_VERIFICATION_REQUIRED, AUTH_ACCOUNT_SUSPENDED, or ENTRY_INVALID_STATUS",
+  })
+  @ApiNotFoundResponse({ description: "ENTRY_NOT_FOUND or ENTRY_SOURCE_NOT_FOUND" })
+  updateSource(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("id", ParseUUIDPipe) id: string,
+    @Param("sourceId", ParseUUIDPipe) sourceId: string,
+    @Body() body: UpdateEntrySourceDto,
+  ) {
+    return this.entriesService.updateSource(user, id, sourceId, body);
+  }
+
+  @Delete("me/entries/:id/sources/:sourceId")
+  @ApiOperation({ summary: "Delete a source from the current user's editable entry" })
+  @ApiOkResponse({ type: EntryMessageResponseDto })
+  @ApiForbiddenResponse({
+    description:
+      "AUTH_EMAIL_VERIFICATION_REQUIRED, AUTH_ACCOUNT_SUSPENDED, or ENTRY_INVALID_STATUS",
+  })
+  @ApiNotFoundResponse({ description: "ENTRY_NOT_FOUND or ENTRY_SOURCE_NOT_FOUND" })
+  deleteSource(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("id", ParseUUIDPipe) id: string,
+    @Param("sourceId", ParseUUIDPipe) sourceId: string,
+  ) {
+    return this.entriesService.deleteSource(user, id, sourceId);
   }
 }
 

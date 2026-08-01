@@ -15,8 +15,14 @@ import type {
   UpdateEntryDraftDto,
 } from "@/modules/entries/dto/create-entry-draft.dto";
 import type { OwnEntriesQueryDto } from "@/modules/entries/dto/entry-query.dto";
+import type {
+  CreateEntrySourceDto,
+  ReorderEntrySourcesDto,
+  UpdateEntrySourceDto,
+} from "@/modules/entries/dto/entry-sources.dto";
+import type { EntryTagsDto } from "@/modules/entries/dto/entry-tags.dto";
 import { ENTRY_ERROR_CODES } from "@/modules/entries/entries.constants";
-import { entrySelect, mapEntry } from "@/modules/entries/entries.mapper";
+import { entrySelect, mapEntry, mapSource, sourceSelect } from "@/modules/entries/entries.mapper";
 import {
   createUniqueEntrySlug,
   normalizeEntrySearchText,
@@ -43,12 +49,22 @@ type ValidatedTaxonomy = {
   contentType: TaxonomyReference;
 };
 
+type SearchTaxonomy = {
+  province: TaxonomyReference;
+  district: TaxonomyReference | null;
+  category: TaxonomyReference;
+  contentType: TaxonomyReference;
+};
+
 type NormalizedEntryQuery = {
   page: number;
   limit: number;
   sortBy: "createdAt" | "updatedAt";
   sortDirection: "asc" | "desc";
 };
+
+type EntriesDbClient = Prisma.TransactionClient | PrismaService;
+type SourceCreateData = Omit<Prisma.SourceUncheckedCreateInput, "entryId" | "displayOrder">;
 
 const editableStatuses = new Set<EntryStatus>([EntryStatus.DRAFT, EntryStatus.CHANGES_REQUESTED]);
 const taxonomyReferenceSelect = {
@@ -214,6 +230,7 @@ class EntriesService {
             plainTextContent,
             villageOrLocation,
             taxonomy,
+            tagNames: existingEntry.tags.map((entryTag) => entryTag.tag.name),
           }),
           slug,
           provinceId: taxonomy.province.id,
@@ -247,6 +264,231 @@ class EntriesService {
         message: "Draft deleted successfully.",
       },
     };
+  }
+
+  async addTags(user: AuthenticatedUser, id: string, input: EntryTagsDto) {
+    return this.prisma.$transaction(async (tx) => {
+      await this.ensureOwnedEditableEntry(tx, user.id, id);
+      const tags = await this.validateActiveTags(tx, input.tagIds);
+      const existingTags = await tx.entryTag.findMany({
+        where: {
+          entryId: id,
+          tagId: {
+            in: tags.map((tag) => tag.id),
+          },
+        },
+        select: {
+          tagId: true,
+        },
+      });
+
+      if (existingTags.length > 0) {
+        throw this.duplicateTags();
+      }
+
+      if (tags.length > 0) {
+        await tx.entryTag.createMany({
+          data: tags.map((tag) => ({
+            entryId: id,
+            tagId: tag.id,
+          })),
+        });
+      }
+
+      await this.refreshEntrySearchText(tx, id);
+
+      return {
+        data: await this.listEntryTags(tx, id),
+      };
+    });
+  }
+
+  async replaceTags(user: AuthenticatedUser, id: string, input: EntryTagsDto) {
+    return this.prisma.$transaction(async (tx) => {
+      await this.ensureOwnedEditableEntry(tx, user.id, id);
+      const tags = await this.validateActiveTags(tx, input.tagIds);
+
+      await tx.entryTag.deleteMany({
+        where: { entryId: id },
+      });
+
+      if (tags.length > 0) {
+        await tx.entryTag.createMany({
+          data: tags.map((tag) => ({
+            entryId: id,
+            tagId: tag.id,
+          })),
+        });
+      }
+
+      await this.refreshEntrySearchText(tx, id);
+
+      return {
+        data: await this.listEntryTags(tx, id),
+      };
+    });
+  }
+
+  async removeTag(user: AuthenticatedUser, id: string, tagId: string) {
+    return this.prisma.$transaction(async (tx) => {
+      await this.ensureOwnedEditableEntry(tx, user.id, id);
+      const existingTag = await tx.entryTag.findUnique({
+        where: {
+          entryId_tagId: {
+            entryId: id,
+            tagId,
+          },
+        },
+        select: {
+          tagId: true,
+        },
+      });
+
+      if (!existingTag) {
+        throw this.invalidTags();
+      }
+
+      await tx.entryTag.delete({
+        where: {
+          entryId_tagId: {
+            entryId: id,
+            tagId,
+          },
+        },
+      });
+      await this.refreshEntrySearchText(tx, id);
+
+      return {
+        data: await this.listEntryTags(tx, id),
+      };
+    });
+  }
+
+  async createSource(user: AuthenticatedUser, id: string, input: CreateEntrySourceDto) {
+    return this.prisma.$transaction(async (tx) => {
+      await this.ensureOwnedEditableEntry(tx, user.id, id);
+      const displayOrder = input.displayOrder ?? (await this.getNextSourceDisplayOrder(tx, id));
+
+      await this.ensureSourceDisplayOrderIsAvailable(tx, id, displayOrder);
+
+      const source = await tx.source.create({
+        data: {
+          ...this.createSourceData(input),
+          entryId: id,
+          displayOrder,
+        },
+        select: sourceSelect,
+      });
+
+      return {
+        data: mapSource(source),
+      };
+    });
+  }
+
+  async updateSource(
+    user: AuthenticatedUser,
+    id: string,
+    sourceId: string,
+    input: UpdateEntrySourceDto,
+  ) {
+    return this.prisma.$transaction(async (tx) => {
+      await this.ensureOwnedEditableEntry(tx, user.id, id);
+      const existingSource = await this.findEntrySource(tx, id, sourceId);
+
+      if (input.displayOrder !== undefined) {
+        await this.ensureSourceDisplayOrderIsAvailable(
+          tx,
+          id,
+          input.displayOrder,
+          existingSource.id,
+        );
+      }
+
+      const source = await tx.source.update({
+        where: { id: existingSource.id },
+        data: this.createSourceUpdateData(input),
+        select: sourceSelect,
+      });
+
+      return {
+        data: mapSource(source),
+      };
+    });
+  }
+
+  async deleteSource(user: AuthenticatedUser, id: string, sourceId: string) {
+    return this.prisma.$transaction(async (tx) => {
+      await this.ensureOwnedEditableEntry(tx, user.id, id);
+      const existingSource = await this.findEntrySource(tx, id, sourceId);
+
+      await tx.source.delete({
+        where: { id: existingSource.id },
+      });
+
+      return {
+        data: {
+          message: "Source deleted successfully.",
+        },
+      };
+    });
+  }
+
+  async reorderSources(user: AuthenticatedUser, id: string, input: ReorderEntrySourcesDto) {
+    return this.prisma.$transaction(async (tx) => {
+      await this.ensureOwnedEditableEntry(tx, user.id, id);
+      this.ensureUniqueSourceIds(input.items.map((item) => item.id));
+      this.ensureUniqueDisplayOrders(input.items.map((item) => item.displayOrder));
+
+      const sourceIds = input.items.map((item) => item.id);
+      const sources = await tx.source.findMany({
+        where: {
+          entryId: id,
+          id: {
+            in: sourceIds,
+          },
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      if (sources.length !== sourceIds.length) {
+        throw this.sourceNotFound();
+      }
+
+      const conflictingSource = await tx.source.findFirst({
+        where: {
+          entryId: id,
+          id: {
+            notIn: sourceIds,
+          },
+          displayOrder: {
+            in: input.items.map((item) => item.displayOrder),
+          },
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      if (conflictingSource) {
+        throw this.duplicateSourceOrder();
+      }
+
+      await Promise.all(
+        input.items.map((item) =>
+          tx.source.update({
+            where: { id: item.id },
+            data: { displayOrder: item.displayOrder },
+          }),
+        ),
+      );
+
+      return {
+        data: (await this.listEntrySources(tx, id)).map(mapSource),
+      };
+    });
   }
 
   private async validateTaxonomy({
@@ -321,6 +563,178 @@ class EntriesService {
     return contentJson as Record<string, unknown>;
   }
 
+  private async validateActiveTags(
+    client: EntriesDbClient,
+    tagIds: string[],
+  ): Promise<TaxonomyReference[]> {
+    this.ensureUniqueTagIds(tagIds);
+
+    if (tagIds.length === 0) {
+      return [];
+    }
+
+    const tags = await client.tag.findMany({
+      where: {
+        id: {
+          in: tagIds,
+        },
+        isActive: true,
+      },
+      select: taxonomyReferenceSelect,
+    });
+
+    if (tags.length !== tagIds.length) {
+      throw this.invalidTags();
+    }
+
+    const tagsById = new Map(tags.map((tag) => [tag.id, tag]));
+
+    return tagIds.map((tagId) => {
+      const tag = tagsById.get(tagId);
+
+      if (!tag) {
+        throw this.invalidTags();
+      }
+
+      return tag;
+    });
+  }
+
+  private async listEntryTags(
+    client: EntriesDbClient,
+    entryId: string,
+  ): Promise<TaxonomyReference[]> {
+    const entryTags = await client.entryTag.findMany({
+      where: { entryId },
+      select: {
+        tag: {
+          select: taxonomyReferenceSelect,
+        },
+      },
+      orderBy: { createdAt: "asc" },
+    });
+
+    return entryTags.map((entryTag) => entryTag.tag);
+  }
+
+  private async listEntrySources(client: EntriesDbClient, entryId: string) {
+    return client.source.findMany({
+      where: { entryId },
+      select: sourceSelect,
+      orderBy: [{ displayOrder: "asc" }, { createdAt: "asc" }],
+    });
+  }
+
+  private async findEntrySource(client: EntriesDbClient, entryId: string, sourceId: string) {
+    const source = await client.source.findFirst({
+      where: {
+        id: sourceId,
+        entryId,
+      },
+      select: {
+        id: true,
+        displayOrder: true,
+      },
+    });
+
+    if (!source) {
+      throw this.sourceNotFound();
+    }
+
+    return source;
+  }
+
+  private async getNextSourceDisplayOrder(
+    client: EntriesDbClient,
+    entryId: string,
+  ): Promise<number> {
+    const result = await client.source.aggregate({
+      where: { entryId },
+      _max: {
+        displayOrder: true,
+      },
+    });
+
+    return (result._max.displayOrder ?? -1) + 1;
+  }
+
+  private async ensureSourceDisplayOrderIsAvailable(
+    client: EntriesDbClient,
+    entryId: string,
+    displayOrder: number,
+    excludeSourceId?: string,
+  ): Promise<void> {
+    const existingSource = await client.source.findFirst({
+      where: {
+        entryId,
+        displayOrder,
+        ...(excludeSourceId ? { NOT: { id: excludeSourceId } } : {}),
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (existingSource) {
+      throw this.duplicateSourceOrder();
+    }
+  }
+
+  private createSourceData(input: CreateEntrySourceDto): SourceCreateData {
+    return {
+      type: input.type,
+      title: this.normalizeOptionalText(input.title),
+      authorOrProvider: this.normalizeOptionalText(input.authorOrProvider),
+      publicationDate: this.normalizeOptionalText(input.publicationDate),
+      websiteUrl: this.normalizeOptionalUrl(input.websiteUrl),
+      bookOrArticleDetails: this.normalizeOptionalText(input.bookOrArticleDetails),
+      interviewDate: this.normalizeOptionalDate(input.interviewDate),
+      explanation: this.normalizeOptionalText(input.explanation),
+    };
+  }
+
+  private createSourceUpdateData(input: UpdateEntrySourceDto): Prisma.SourceUncheckedUpdateInput {
+    const data: Prisma.SourceUncheckedUpdateInput = {};
+
+    if (input.type !== undefined) {
+      data.type = input.type;
+    }
+
+    if (input.title !== undefined) {
+      data.title = this.normalizeOptionalText(input.title);
+    }
+
+    if (input.authorOrProvider !== undefined) {
+      data.authorOrProvider = this.normalizeOptionalText(input.authorOrProvider);
+    }
+
+    if (input.publicationDate !== undefined) {
+      data.publicationDate = this.normalizeOptionalText(input.publicationDate);
+    }
+
+    if (input.websiteUrl !== undefined) {
+      data.websiteUrl = this.normalizeOptionalUrl(input.websiteUrl);
+    }
+
+    if (input.bookOrArticleDetails !== undefined) {
+      data.bookOrArticleDetails = this.normalizeOptionalText(input.bookOrArticleDetails);
+    }
+
+    if (input.interviewDate !== undefined) {
+      data.interviewDate = this.normalizeOptionalDate(input.interviewDate);
+    }
+
+    if (input.explanation !== undefined) {
+      data.explanation = this.normalizeOptionalText(input.explanation);
+    }
+
+    if (input.displayOrder !== undefined) {
+      data.displayOrder = input.displayOrder;
+    }
+
+    return data;
+  }
+
   private async findOwnedEntryForChange(authorId: string, id: string) {
     const entry = await this.prisma.culturalEntry.findFirst({
       where: {
@@ -342,11 +756,43 @@ class EntriesService {
         villageOrLocation: true,
         submittedAt: true,
         publishedAt: true,
+        tags: {
+          select: {
+            tag: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
       },
     });
 
     if (!entry) {
       throw this.notFound();
+    }
+
+    return entry;
+  }
+
+  private async ensureOwnedEditableEntry(client: EntriesDbClient, authorId: string, id: string) {
+    const entry = await client.culturalEntry.findFirst({
+      where: {
+        id,
+        authorId,
+      },
+      select: {
+        id: true,
+        status: true,
+      },
+    });
+
+    if (!entry) {
+      throw this.notFound();
+    }
+
+    if (!editableStatuses.has(entry.status)) {
+      throw this.invalidStatus("Only draft or changes-requested entries can be edited.");
     }
 
     return entry;
@@ -374,12 +820,14 @@ class EntriesService {
     plainTextContent,
     villageOrLocation,
     taxonomy,
+    tagNames = [],
   }: {
     title: string;
     summary: string;
     plainTextContent: string;
     villageOrLocation: string | null;
-    taxonomy: ValidatedTaxonomy;
+    taxonomy: SearchTaxonomy;
+    tagNames?: string[];
   }): string {
     return normalizeEntrySearchText([
       title,
@@ -390,7 +838,56 @@ class EntriesService {
       taxonomy.district?.name,
       taxonomy.category.name,
       taxonomy.contentType.name,
+      ...tagNames,
     ]);
+  }
+
+  private async refreshEntrySearchText(client: EntriesDbClient, entryId: string): Promise<void> {
+    const entry = await client.culturalEntry.findUnique({
+      where: { id: entryId },
+      select: {
+        title: true,
+        summary: true,
+        plainTextContent: true,
+        villageOrLocation: true,
+        province: { select: taxonomyReferenceSelect },
+        district: { select: taxonomyReferenceSelect },
+        category: { select: taxonomyReferenceSelect },
+        contentType: { select: taxonomyReferenceSelect },
+        tags: {
+          select: {
+            tag: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!entry) {
+      throw this.notFound();
+    }
+
+    await client.culturalEntry.update({
+      where: { id: entryId },
+      data: {
+        normalizedSearchText: this.createSearchText({
+          title: entry.title,
+          summary: entry.summary,
+          plainTextContent: entry.plainTextContent,
+          villageOrLocation: entry.villageOrLocation,
+          taxonomy: {
+            province: entry.province,
+            district: entry.district,
+            category: entry.category,
+            contentType: entry.contentType,
+          },
+          tagNames: entry.tags.map((entryTag) => entryTag.tag.name),
+        }),
+      },
+    });
   }
 
   private normalizeTitle(title: string): string {
@@ -423,6 +920,47 @@ class EntriesService {
     const normalizedText = value?.trim().replace(/\s+/g, " ");
 
     return normalizedText || null;
+  }
+
+  private normalizeOptionalUrl(value: string | null | undefined): string | null {
+    const normalizedUrl = value?.trim();
+
+    if (!normalizedUrl) {
+      return null;
+    }
+
+    try {
+      const url = new URL(normalizedUrl);
+
+      if (url.protocol !== "http:" && url.protocol !== "https:") {
+        throw this.invalidSource("Only HTTP and HTTPS source URLs are supported.");
+      }
+
+      url.protocol = url.protocol.toLowerCase();
+      url.hostname = url.hostname.toLowerCase();
+
+      return url.toString();
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+
+      throw this.invalidSource("Source URL is invalid.");
+    }
+  }
+
+  private normalizeOptionalDate(value: string | null | undefined): Date | null {
+    if (!value) {
+      return null;
+    }
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+      throw this.invalidSource("Source date is invalid.");
+    }
+
+    return date;
   }
 
   private normalizeQuery(query: OwnEntriesQueryDto): NormalizedEntryQuery {
@@ -472,6 +1010,24 @@ class EntriesService {
     );
   }
 
+  private ensureUniqueTagIds(tagIds: string[]): void {
+    if (new Set(tagIds).size !== tagIds.length) {
+      throw this.duplicateTags();
+    }
+  }
+
+  private ensureUniqueSourceIds(sourceIds: string[]): void {
+    if (new Set(sourceIds).size !== sourceIds.length) {
+      throw this.invalidSource("Duplicate source IDs are not allowed.");
+    }
+  }
+
+  private ensureUniqueDisplayOrders(displayOrders: number[]): void {
+    if (new Set(displayOrders).size !== displayOrders.length) {
+      throw this.duplicateSourceOrder();
+    }
+  }
+
   private invalidTaxonomy(): BadRequestException {
     return new BadRequestException({
       error: ENTRY_ERROR_CODES.TAXONOMY_INVALID,
@@ -483,6 +1039,41 @@ class EntriesService {
     return new ForbiddenException({
       error: ENTRY_ERROR_CODES.INVALID_STATUS,
       message,
+    });
+  }
+
+  private duplicateTags(): BadRequestException {
+    return new BadRequestException({
+      error: ENTRY_ERROR_CODES.TAG_DUPLICATE,
+      message: "Duplicate tags are not allowed.",
+    });
+  }
+
+  private invalidTags(): BadRequestException {
+    return new BadRequestException({
+      error: ENTRY_ERROR_CODES.TAG_INVALID,
+      message: "One or more tags are invalid.",
+    });
+  }
+
+  private sourceNotFound(): NotFoundException {
+    return new NotFoundException({
+      error: ENTRY_ERROR_CODES.SOURCE_NOT_FOUND,
+      message: "Source was not found.",
+    });
+  }
+
+  private invalidSource(message: string): BadRequestException {
+    return new BadRequestException({
+      error: ENTRY_ERROR_CODES.SOURCE_INVALID,
+      message,
+    });
+  }
+
+  private duplicateSourceOrder(): BadRequestException {
+    return new BadRequestException({
+      error: ENTRY_ERROR_CODES.SOURCE_ORDER_DUPLICATE,
+      message: "Duplicate source display order values are not allowed.",
     });
   }
 

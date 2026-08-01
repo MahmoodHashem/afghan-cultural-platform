@@ -12,18 +12,22 @@ import { plainToInstance } from "class-transformer";
 import { validate } from "class-validator";
 
 import type { PrismaService } from "@/database/prisma.service";
-import { EntryStatus, UserRole, UserStatus } from "@/generated/prisma/enums";
+import { EntryStatus, SourceType, UserRole, UserStatus } from "@/generated/prisma/enums";
 import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.type";
 import { CreateEntryDraftDto } from "@/modules/entries/dto/create-entry-draft.dto";
 import { ENTRY_ERROR_CODES } from "@/modules/entries/entries.constants";
 import { EntriesService } from "@/modules/entries/entries.service";
 
 type DelegateMock = {
+  aggregate: jest.Mock;
   count: jest.Mock;
   create: jest.Mock;
+  createMany: jest.Mock;
   delete: jest.Mock;
+  deleteMany: jest.Mock;
   findFirst: jest.Mock;
   findMany: jest.Mock;
+  findUnique: jest.Mock;
   update: jest.Mock;
 };
 
@@ -37,6 +41,9 @@ type PrismaMock = {
   district: TaxonomyDelegateMock;
   category: TaxonomyDelegateMock;
   contentType: TaxonomyDelegateMock;
+  tag: DelegateMock;
+  entryTag: DelegateMock;
+  source: DelegateMock;
   $transaction: jest.Mock;
 };
 
@@ -56,6 +63,10 @@ const ids = {
   district: "44444444-4444-4444-4444-444444444444",
   category: "55555555-5555-5555-5555-555555555555",
   contentType: "66666666-6666-6666-6666-666666666666",
+  tagOne: "77777777-7777-7777-7777-777777777777",
+  tagTwo: "88888888-8888-8888-8888-888888888888",
+  sourceOne: "99999999-9999-9999-9999-999999999999",
+  sourceTwo: "aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa",
 };
 
 const validContentJson = {
@@ -256,6 +267,266 @@ describe("EntriesService", () => {
     expect(prisma.culturalEntry.delete).not.toHaveBeenCalled();
   });
 
+  it("adds existing active tags to an editable owned entry", async () => {
+    prisma.culturalEntry.findFirst.mockResolvedValue(createEditableEntrySummary());
+    prisma.tag.findMany.mockResolvedValue([createTagReference(), createSecondTagReference()]);
+    prisma.entryTag.findMany
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([{ tag: createTagReference() }, { tag: createSecondTagReference() }]);
+    prisma.entryTag.createMany.mockResolvedValue({ count: 2 });
+    prisma.culturalEntry.findUnique.mockResolvedValue(
+      createEntrySearchPayload(["نوروز", "موسیقی"]),
+    );
+    prisma.culturalEntry.update.mockResolvedValue(createEntryPayload());
+
+    const response = await service.addTags(user, ids.entry, {
+      tagIds: [ids.tagOne, ids.tagTwo],
+    });
+
+    expect(prisma.entryTag.createMany).toHaveBeenCalledWith({
+      data: [
+        { entryId: ids.entry, tagId: ids.tagOne },
+        { entryId: ids.entry, tagId: ids.tagTwo },
+      ],
+    });
+    expect(prisma.culturalEntry.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          normalizedSearchText: expect.stringContaining("نوروز"),
+        }),
+      }),
+    );
+    expect(response.data).toEqual([createTagReference(), createSecondTagReference()]);
+  });
+
+  it("replaces all tags transactionally", async () => {
+    prisma.culturalEntry.findFirst.mockResolvedValue(createEditableEntrySummary());
+    prisma.tag.findMany.mockResolvedValue([createSecondTagReference()]);
+    prisma.entryTag.findMany.mockResolvedValueOnce([{ tag: createSecondTagReference() }]);
+    prisma.entryTag.deleteMany.mockResolvedValue({ count: 2 });
+    prisma.entryTag.createMany.mockResolvedValue({ count: 1 });
+    prisma.culturalEntry.findUnique.mockResolvedValue(createEntrySearchPayload(["موسیقی"]));
+    prisma.culturalEntry.update.mockResolvedValue(createEntryPayload());
+
+    const response = await service.replaceTags(user, ids.entry, {
+      tagIds: [ids.tagTwo],
+    });
+
+    expect(prisma.entryTag.deleteMany).toHaveBeenCalledWith({ where: { entryId: ids.entry } });
+    expect(prisma.entryTag.createMany).toHaveBeenCalledWith({
+      data: [{ entryId: ids.entry, tagId: ids.tagTwo }],
+    });
+    expect(response.data).toEqual([createSecondTagReference()]);
+  });
+
+  it("removes an assigned tag from an editable owned entry", async () => {
+    prisma.culturalEntry.findFirst.mockResolvedValue(createEditableEntrySummary());
+    prisma.entryTag.findUnique.mockResolvedValue({ tagId: ids.tagOne });
+    prisma.entryTag.delete.mockResolvedValue({ entryId: ids.entry, tagId: ids.tagOne });
+    prisma.entryTag.findMany.mockResolvedValue([{ tag: createSecondTagReference() }]);
+    prisma.culturalEntry.findUnique.mockResolvedValue(createEntrySearchPayload(["موسیقی"]));
+    prisma.culturalEntry.update.mockResolvedValue(createEntryPayload());
+
+    const response = await service.removeTag(user, ids.entry, ids.tagOne);
+
+    expect(prisma.entryTag.delete).toHaveBeenCalledWith({
+      where: {
+        entryId_tagId: {
+          entryId: ids.entry,
+          tagId: ids.tagOne,
+        },
+      },
+    });
+    expect(response.data).toEqual([createSecondTagReference()]);
+  });
+
+  it("rejects duplicate tag IDs before writing tag assignments", async () => {
+    prisma.culturalEntry.findFirst.mockResolvedValue(createEditableEntrySummary());
+
+    await expectErrorCode(
+      () =>
+        service.addTags(user, ids.entry, {
+          tagIds: [ids.tagOne, ids.tagOne],
+        }),
+      ENTRY_ERROR_CODES.TAG_DUPLICATE,
+      BadRequestException,
+    );
+    expect(prisma.entryTag.createMany).not.toHaveBeenCalled();
+  });
+
+  it("rejects inactive or missing tags", async () => {
+    prisma.culturalEntry.findFirst.mockResolvedValue(createEditableEntrySummary());
+    prisma.tag.findMany.mockResolvedValue([createTagReference()]);
+
+    await expectErrorCode(
+      () =>
+        service.addTags(user, ids.entry, {
+          tagIds: [ids.tagOne, ids.tagTwo],
+        }),
+      ENTRY_ERROR_CODES.TAG_INVALID,
+      BadRequestException,
+    );
+    expect(prisma.entryTag.createMany).not.toHaveBeenCalled();
+  });
+
+  it("creates a source with normalized URL and next display order", async () => {
+    prisma.culturalEntry.findFirst.mockResolvedValue(createEditableEntrySummary());
+    prisma.source.aggregate.mockResolvedValue({ _max: { displayOrder: 1 } });
+    prisma.source.findFirst.mockResolvedValue(null);
+    prisma.source.create.mockResolvedValue(
+      createSourcePayload({
+        websiteUrl: "https://example.com/source",
+        displayOrder: 2,
+      }),
+    );
+
+    const response = await service.createSource(user, ids.entry, {
+      type: SourceType.WEBSITE,
+      title: "منبع فرهنگی",
+      websiteUrl: " HTTPS://Example.com/source ",
+    });
+
+    expect(prisma.source.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          entryId: ids.entry,
+          type: SourceType.WEBSITE,
+          title: "منبع فرهنگی",
+          websiteUrl: "https://example.com/source",
+          displayOrder: 2,
+        }),
+      }),
+    );
+    expect(response.data.websiteUrl).toBe("https://example.com/source");
+  });
+
+  it("updates an existing source on an editable owned entry", async () => {
+    prisma.culturalEntry.findFirst.mockResolvedValue(createEditableEntrySummary());
+    prisma.source.findFirst.mockResolvedValueOnce({ id: ids.sourceOne, displayOrder: 0 });
+    prisma.source.findFirst.mockResolvedValueOnce(null);
+    prisma.source.update.mockResolvedValue(
+      createSourcePayload({
+        title: "منبع تازه",
+        displayOrder: 5,
+      }),
+    );
+
+    const response = await service.updateSource(user, ids.entry, ids.sourceOne, {
+      title: " منبع تازه ",
+      displayOrder: 5,
+    });
+
+    expect(prisma.source.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: ids.sourceOne },
+        data: expect.objectContaining({
+          title: "منبع تازه",
+          displayOrder: 5,
+        }),
+      }),
+    );
+    expect(response.data.title).toBe("منبع تازه");
+  });
+
+  it("removes a source from an editable owned entry", async () => {
+    prisma.culturalEntry.findFirst.mockResolvedValue(createEditableEntrySummary());
+    prisma.source.findFirst.mockResolvedValue({ id: ids.sourceOne, displayOrder: 0 });
+    prisma.source.delete.mockResolvedValue(createSourcePayload());
+
+    await expect(service.deleteSource(user, ids.entry, ids.sourceOne)).resolves.toMatchObject({
+      data: { message: "Source deleted successfully." },
+    });
+    expect(prisma.source.delete).toHaveBeenCalledWith({ where: { id: ids.sourceOne } });
+  });
+
+  it("reorders entry sources after validating ownership and conflicts", async () => {
+    prisma.culturalEntry.findFirst.mockResolvedValue(createEditableEntrySummary());
+    prisma.source.findMany
+      .mockResolvedValueOnce([{ id: ids.sourceOne }, { id: ids.sourceTwo }])
+      .mockResolvedValueOnce([
+        createSourcePayload({ id: ids.sourceTwo, displayOrder: 0 }),
+        createSourcePayload({ id: ids.sourceOne, displayOrder: 1 }),
+      ]);
+    prisma.source.findFirst.mockResolvedValue(null);
+    prisma.source.update.mockResolvedValue(createSourcePayload());
+
+    const response = await service.reorderSources(user, ids.entry, {
+      items: [
+        { id: ids.sourceOne, displayOrder: 1 },
+        { id: ids.sourceTwo, displayOrder: 0 },
+      ],
+    });
+
+    expect(prisma.source.update).toHaveBeenCalledTimes(2);
+    expect(response.data.map((source) => source.id)).toEqual([ids.sourceTwo, ids.sourceOne]);
+  });
+
+  it("rejects invalid source URLs", async () => {
+    prisma.culturalEntry.findFirst.mockResolvedValue(createEditableEntrySummary());
+    prisma.source.aggregate.mockResolvedValue({ _max: { displayOrder: null } });
+    prisma.source.findFirst.mockResolvedValue(null);
+
+    await expectErrorCode(
+      () =>
+        service.createSource(user, ids.entry, {
+          type: SourceType.WEBSITE,
+          websiteUrl: "not-a-url",
+        }),
+      ENTRY_ERROR_CODES.SOURCE_INVALID,
+      BadRequestException,
+    );
+    expect(prisma.source.create).not.toHaveBeenCalled();
+  });
+
+  it("does not reveal source or tag changes for entries owned by another user", async () => {
+    prisma.culturalEntry.findFirst.mockResolvedValue(null);
+
+    await expectErrorCode(
+      () =>
+        service.addTags(user, ids.entry, {
+          tagIds: [ids.tagOne],
+        }),
+      ENTRY_ERROR_CODES.NOT_FOUND,
+      NotFoundException,
+    );
+    expect(prisma.tag.findMany).not.toHaveBeenCalled();
+  });
+
+  it("rejects tag and source edits for non-editable entries", async () => {
+    prisma.culturalEntry.findFirst.mockResolvedValue({
+      ...createEditableEntrySummary(),
+      status: EntryStatus.PUBLISHED,
+    });
+
+    await expectErrorCode(
+      () =>
+        service.createSource(user, ids.entry, {
+          type: SourceType.WEBSITE,
+          title: "منبع",
+        }),
+      ENTRY_ERROR_CODES.INVALID_STATUS,
+      ForbiddenException,
+    );
+    expect(prisma.source.create).not.toHaveBeenCalled();
+  });
+
+  it("rejects source reorder duplicate orders before writing updates", async () => {
+    prisma.culturalEntry.findFirst.mockResolvedValue(createEditableEntrySummary());
+
+    await expectErrorCode(
+      () =>
+        service.reorderSources(user, ids.entry, {
+          items: [
+            { id: ids.sourceOne, displayOrder: 1 },
+            { id: ids.sourceTwo, displayOrder: 1 },
+          ],
+        }),
+      ENTRY_ERROR_CODES.SOURCE_ORDER_DUPLICATE,
+      BadRequestException,
+    );
+    expect(prisma.source.update).not.toHaveBeenCalled();
+  });
+
   it("rejects unsupported protected fields through DTO whitelist validation", async () => {
     const dto = plainToInstance(CreateEntryDraftDto, {
       ...createDraftInput,
@@ -281,11 +552,20 @@ function createPrismaMock(): PrismaMock {
     district: createTaxonomyDelegateMock(),
     category: createTaxonomyDelegateMock(),
     contentType: createTaxonomyDelegateMock(),
+    tag: createDelegateMock(),
+    entryTag: createDelegateMock(),
+    source: createDelegateMock(),
     $transaction: jest.fn(),
   };
 
-  prisma.$transaction.mockImplementation((queries: Array<Promise<unknown>>) =>
-    Promise.all(queries),
+  prisma.$transaction.mockImplementation(
+    (input: Array<Promise<unknown>> | ((client: PrismaMock) => unknown)) => {
+      if (typeof input === "function") {
+        return input(prisma);
+      }
+
+      return Promise.all(input);
+    },
   );
 
   return prisma;
@@ -293,11 +573,15 @@ function createPrismaMock(): PrismaMock {
 
 function createDelegateMock(): DelegateMock {
   return {
+    aggregate: jest.fn(),
     count: jest.fn(),
     create: jest.fn(),
+    createMany: jest.fn(),
     delete: jest.fn(),
+    deleteMany: jest.fn(),
     findFirst: jest.fn(),
     findMany: jest.fn(),
+    findUnique: jest.fn(),
     update: jest.fn(),
   };
 }
@@ -349,6 +633,8 @@ function createEntryPayload() {
     district: null,
     category: createTaxonomyReference(ids.category, "رسم‌ها", "traditions"),
     contentType: createTaxonomyReference(ids.contentType, "مقاله", "article"),
+    tags: [],
+    sources: [],
     createdAt: new Date("2026-01-01T00:00:00.000Z"),
     updatedAt: new Date("2026-01-01T00:00:00.000Z"),
   };
@@ -370,6 +656,14 @@ function createEntryForChange() {
     villageOrLocation: "شهر کابل",
     submittedAt: null,
     publishedAt: null,
+    tags: [],
+  };
+}
+
+function createEditableEntrySummary() {
+  return {
+    id: ids.entry,
+    status: EntryStatus.DRAFT,
   };
 }
 
@@ -385,6 +679,56 @@ function createDistrictReference(provinceId = ids.province) {
   return {
     ...createTaxonomyReference(ids.district, "مرکز", "markaz"),
     provinceId,
+  };
+}
+
+function createTagReference() {
+  return createTaxonomyReference(ids.tagOne, "نوروز", "nowruz");
+}
+
+function createSecondTagReference() {
+  return createTaxonomyReference(ids.tagTwo, "موسیقی", "music");
+}
+
+function createEntrySearchPayload(tagNames: string[] = []) {
+  return {
+    title: createDraftInput.title,
+    summary: createDraftInput.summary,
+    plainTextContent: "متن فرهنگی معتبر",
+    villageOrLocation: "شهر کابل",
+    province: createTaxonomyReference(ids.province, "کابل", "kabul"),
+    district: null,
+    category: createTaxonomyReference(ids.category, "رسم‌ها", "traditions"),
+    contentType: createTaxonomyReference(ids.contentType, "مقاله", "article"),
+    tags: tagNames.map((name) => ({
+      tag: {
+        name,
+      },
+    })),
+  };
+}
+
+function createSourcePayload(
+  overrides: Partial<{
+    id: string;
+    title: string | null;
+    websiteUrl: string | null;
+    displayOrder: number;
+  }> = {},
+) {
+  return {
+    id: overrides.id ?? ids.sourceOne,
+    type: SourceType.WEBSITE,
+    title: overrides.title ?? "منبع فرهنگی",
+    authorOrProvider: null,
+    publicationDate: null,
+    websiteUrl: overrides.websiteUrl ?? "https://example.com/",
+    bookOrArticleDetails: null,
+    interviewDate: null,
+    explanation: null,
+    displayOrder: overrides.displayOrder ?? 0,
+    createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
   };
 }
 
