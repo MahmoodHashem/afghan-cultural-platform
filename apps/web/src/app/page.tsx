@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
+import { HomeFooter } from "@/features/home/components/home-footer";
 import { HomeHero } from "@/features/home/components/home-hero";
 
 export default function Home() {
@@ -159,6 +160,7 @@ export default function Home() {
           </section>
         </div>
       </section>
+      <HomeFooter />
     </main>
   );
 }

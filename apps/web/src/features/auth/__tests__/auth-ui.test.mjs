@@ -33,6 +33,7 @@ const logoutAllButton = read("src/features/auth/components/logout-all-button.tsx
 const verifiedEmailBanner = read("src/features/auth/components/verified-email-banner.tsx");
 const authQuery = read("src/lib/auth/auth-query.ts");
 const homePage = read("src/app/page.tsx");
+const homeFooter = read("src/features/home/components/home-footer.tsx");
 const homeHero = read("src/features/home/components/home-hero.tsx");
 
 test("login page renders required fields and links", () => {
@@ -203,6 +204,7 @@ test("auth code never stores tokens in browser storage or frontend cookies", () 
 
 test("homepage keeps the design preview and adds the premium hero first", () => {
   assert.match(homePage, /<HomeHero \/>/);
+  assert.match(homePage, /<HomeFooter \/>/);
   assert.match(homePage, /id="design-preview"/);
   assert.match(homePage, /پیش‌نمایش بنیاد طراحی/);
 });
@@ -232,4 +234,18 @@ test("homepage header compacts on scroll while preserving logo, search, and acti
   assert.match(homeHero, /max-w-\[1040px\] gap-2 border border-border bg-card/);
   assert.match(homeHero, /h-9 min-w-\[240px\] max-w-\[320px\] border-border/);
   assert.match(homeHero, /<HeroAuthControls isCompact=\{isCompact\} \/>/);
+});
+
+test("homepage footer matches the attached full-width footer design", () => {
+  assert.match(homeFooter, /w-full border-t border-border bg-background/);
+  assert.match(homeFooter, /میراث افغانستان/);
+  assert.match(homeFooter, /فرهنگ، تاریخ، هویت ما/);
+  assert.match(homeFooter, /دسترسی سریع/);
+  assert.match(homeFooter, /منابع/);
+  assert.match(homeFooter, /در خبرنامه ما عضو شوید/);
+  assert.match(homeFooter, /ایمیل شما/);
+  assert.match(homeFooter, /siInstagram/);
+  assert.match(homeFooter, /siFacebook/);
+  assert.match(homeFooter, /siX/);
+  assert.match(homeFooter, /siYoutube/);
 });
