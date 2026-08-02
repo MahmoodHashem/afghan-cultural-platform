@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
-import { EntryStatus, SourceType, VersionReason } from "@/generated/prisma/enums";
+import { EntryStatus, GeographicScope, SourceType, VersionReason } from "@/generated/prisma/enums";
 
 class EntryTaxonomyDto {
   @ApiProperty()
@@ -356,8 +356,11 @@ class PublicEntryCardDto {
   @ApiPropertyOptional({ type: PublicEntryImageDto, nullable: true })
   coverImage!: PublicEntryImageDto | null;
 
-  @ApiProperty({ type: EntryTaxonomyDto })
-  province!: EntryTaxonomyDto;
+  @ApiProperty({ enum: GeographicScope })
+  geographicScope!: GeographicScope;
+
+  @ApiPropertyOptional({ type: EntryTaxonomyDto, nullable: true })
+  province!: EntryTaxonomyDto | null;
 
   @ApiProperty({ type: EntryTaxonomyDto })
   category!: EntryTaxonomyDto;
@@ -470,11 +473,14 @@ class EntryDto {
   @ApiProperty({ enum: EntryStatus })
   status!: EntryStatus;
 
+  @ApiProperty({ enum: GeographicScope })
+  geographicScope!: GeographicScope;
+
   @ApiProperty()
   authorId!: string;
 
-  @ApiProperty()
-  provinceId!: string;
+  @ApiPropertyOptional({ nullable: true })
+  provinceId!: string | null;
 
   @ApiPropertyOptional()
   districtId!: string | null;
@@ -491,8 +497,8 @@ class EntryDto {
   @ApiProperty({ type: EntryAuthorDto })
   author!: EntryAuthorDto;
 
-  @ApiProperty({ type: EntryTaxonomyDto })
-  province!: EntryTaxonomyDto;
+  @ApiPropertyOptional({ type: EntryTaxonomyDto, nullable: true })
+  province!: EntryTaxonomyDto | null;
 
   @ApiPropertyOptional({ type: EntryTaxonomyDto, nullable: true })
   district!: EntryTaxonomyDto | null;

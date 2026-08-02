@@ -42,6 +42,14 @@ enum EntryStatus {
   @@map("entry_status")
 }
 
+enum GeographicScope {
+  PROVINCE
+  NATIONAL
+  NONE
+
+  @@map("geographic_scope")
+}
+
 enum VersionReason {
   INITIAL_SUBMISSION
   RESUBMISSION
@@ -209,37 +217,38 @@ model OAuthAccount {
 }
 
 model CulturalEntry {
-  id                   String      @id @default(uuid()) @map("id") @db.Uuid
-  slug                 String?     @unique @map("slug")
-  title                String      @map("title")
-  summary              String      @map("summary")
-  contentJson          Json        @map("content_json")
-  plainTextContent     String      @map("plain_text_content")
-  normalizedSearchText String      @default("") @map("normalized_search_text")
-  status               EntryStatus @default(DRAFT) @map("status")
-  authorId             String      @map("author_id") @db.Uuid
-  provinceId           String      @map("province_id") @db.Uuid
-  districtId           String?     @map("district_id") @db.Uuid
-  categoryId           String      @map("category_id") @db.Uuid
-  contentTypeId        String      @map("content_type_id") @db.Uuid
-  villageOrLocation    String?     @map("village_or_location")
-  historicalPeriod     String?     @map("historical_period")
-  culturalCommunity    String?     @map("cultural_community")
-  alternativeLocalName String?     @map("alternative_local_name")
-  regionalDifferences  String?     @map("regional_differences")
-  viewCount            Int         @default(0) @map("view_count")
-  averageRating        Decimal     @default(0) @map("average_rating")
-  ratingCount          Int         @default(0) @map("rating_count")
-  lastRatedAt          DateTime?   @map("last_rated_at") @db.Timestamptz(3)
-  submittedAt          DateTime?   @map("submitted_at") @db.Timestamptz(3)
-  publishedAt          DateTime?   @map("published_at") @db.Timestamptz(3)
-  hiddenAt             DateTime?   @map("hidden_at") @db.Timestamptz(3)
-  archivedAt           DateTime?   @map("archived_at") @db.Timestamptz(3)
-  createdAt            DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt            DateTime    @updatedAt @map("updated_at") @db.Timestamptz(3)
+  id                   String          @id @default(uuid()) @map("id") @db.Uuid
+  slug                 String?         @unique @map("slug")
+  title                String          @map("title")
+  summary              String          @map("summary")
+  contentJson          Json            @map("content_json")
+  plainTextContent     String          @map("plain_text_content")
+  normalizedSearchText String          @default("") @map("normalized_search_text")
+  status               EntryStatus     @default(DRAFT) @map("status")
+  geographicScope      GeographicScope @default(PROVINCE) @map("geographic_scope")
+  authorId             String          @map("author_id") @db.Uuid
+  provinceId           String?         @map("province_id") @db.Uuid
+  districtId           String?         @map("district_id") @db.Uuid
+  categoryId           String          @map("category_id") @db.Uuid
+  contentTypeId        String          @map("content_type_id") @db.Uuid
+  villageOrLocation    String?         @map("village_or_location")
+  historicalPeriod     String?         @map("historical_period")
+  culturalCommunity    String?         @map("cultural_community")
+  alternativeLocalName String?         @map("alternative_local_name")
+  regionalDifferences  String?         @map("regional_differences")
+  viewCount            Int             @default(0) @map("view_count")
+  averageRating        Decimal         @default(0) @map("average_rating")
+  ratingCount          Int             @default(0) @map("rating_count")
+  lastRatedAt          DateTime?       @map("last_rated_at") @db.Timestamptz(3)
+  submittedAt          DateTime?       @map("submitted_at") @db.Timestamptz(3)
+  publishedAt          DateTime?       @map("published_at") @db.Timestamptz(3)
+  hiddenAt             DateTime?       @map("hidden_at") @db.Timestamptz(3)
+  archivedAt           DateTime?       @map("archived_at") @db.Timestamptz(3)
+  createdAt            DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt            DateTime        @updatedAt @map("updated_at") @db.Timestamptz(3)
 
   author                User                   @relation("EntryAuthor", fields: [authorId], references: [id], onDelete: Restrict)
-  province              Province               @relation("EntryProvince", fields: [provinceId], references: [id], onDelete: Restrict)
+  province              Province?              @relation("EntryProvince", fields: [provinceId], references: [id], onDelete: Restrict)
   district              District?              @relation("EntryDistrict", fields: [districtId], references: [id], onDelete: Restrict)
   category              Category               @relation("EntryCategory", fields: [categoryId], references: [id], onDelete: Restrict)
   contentType           ContentType            @relation("EntryContentType", fields: [contentTypeId], references: [id], onDelete: Restrict)
@@ -259,6 +268,7 @@ model CulturalEntry {
   auditLogs             AuditLog[]             @relation("AuditEntry")
 
   @@index([status])
+  @@index([geographicScope])
   @@index([provinceId])
   @@index([districtId])
   @@index([categoryId])
@@ -268,6 +278,7 @@ model CulturalEntry {
   @@index([createdAt])
   @@index([normalizedSearchText])
   @@index([status, publishedAt])
+  @@index([geographicScope, provinceId])
   @@index([status, provinceId])
   @@index([status, categoryId])
   @@index([status, contentTypeId])

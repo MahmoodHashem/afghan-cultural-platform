@@ -155,6 +155,7 @@ const entrySelect = {
   contentJson: true,
   plainTextContent: true,
   status: true,
+  geographicScope: true,
   authorId: true,
   provinceId: true,
   districtId: true,
@@ -232,6 +233,7 @@ const publicEntryCardSelect = {
   summary: true,
   averageRating: true,
   ratingCount: true,
+  geographicScope: true,
   publishedAt: true,
   updatedAt: true,
   author: {
@@ -380,6 +382,7 @@ function mapEntry(entry: EntryPayload) {
     contentJson: entry.contentJson,
     plainTextContent: entry.plainTextContent,
     status: entry.status,
+    geographicScope: entry.geographicScope,
     authorId: entry.authorId,
     provinceId: entry.provinceId,
     districtId: entry.districtId,
@@ -475,6 +478,7 @@ function mapPublicEntryCard(entry: PublicEntryCardPayload) {
     title: entry.title,
     summary: entry.summary,
     coverImage: entry.images[0] ? mapPublicImage(entry.images[0]) : null,
+    geographicScope: entry.geographicScope,
     province: entry.province,
     category: entry.category,
     contentType: entry.contentType,
@@ -535,7 +539,9 @@ function mapPublicEntryDetail(entry: PublicEntryDetailPayload) {
       author: entry.author.displayName,
       publishedAt: requirePublishedAt(entry.publishedAt),
       modifiedAt: entry.updatedAt,
-      taxonomy: [entry.province, entry.category, entry.contentType],
+      taxonomy: [entry.province, entry.category, entry.contentType].filter(
+        (taxonomy) => taxonomy !== null,
+      ),
       plainTextExcerpt: createPlainTextExcerpt(entry.plainTextContent),
     },
   };

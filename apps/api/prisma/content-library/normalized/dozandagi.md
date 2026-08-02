@@ -3,6 +3,7 @@ key: "dozandagi"
 title: "دوزندگی سنتی در افغانستان"
 slug: "dozandagi"
 summary: "دوزندگی در افغانستان بخشی از صنایع دستی و پوشاک سنتی است و در دوره‌های تاریخی مختلف با گلدوزی و سوزن‌دوزی پیوند داشته است."
+geographicScope: NATIONAL
 province: null
 district: null
 category: "صنایع دستی"

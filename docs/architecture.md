@@ -435,6 +435,22 @@ taxonomy/
 
 Taxonomy records remain grouped in one module to avoid creating many small top-level modules.
 
+### Cultural Entry Geographic Scope
+
+Cultural Entries use the v1 `GeographicScope` enum:
+
+- `PROVINCE`: tied to one specific province. `provinceId` is required, `districtId` is optional, and the district must belong to the selected province.
+- `NATIONAL`: Afghanistan-wide content. `provinceId` and `districtId` must both be empty.
+- `NONE`: content without meaningful geographic dependency. `provinceId` and `districtId` must both be empty.
+
+Persian UI labels for frontend use:
+
+- `PROVINCE`: normally display the actual province name, such as `هرات`, `کابل`, or `بلخ`.
+- `NATIONAL`: `سراسر افغانستان`.
+- `NONE`: `بدون وابستگی جغرافیایی`, or omit the label when cleaner.
+
+Public province filters return only entries with `geographicScope = PROVINCE`. National entries are filtered through `geographicScope = NATIONAL`; entries with `NONE` must not be assigned to a province. `MULTI_PROVINCE` is excluded from v1 because it is vague without storing actual provinces. A future `EntryProvince` relation can be added only if real multi-province filtering requirements justify it.
+
 ### Media
 
 Owns:

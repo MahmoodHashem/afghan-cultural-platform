@@ -3,6 +3,7 @@ key: "molana-jalaluddin-balkhi"
 title: "مولانا جلال‌الدین بلخی"
 slug: "molana-jalaluddin-balkhi"
 summary: "مولانا جلال‌الدین بلخی شاعر، عارف و متفکر فارسی‌زبان است که میراث ادبی و معنوی او در حوزه فرهنگی افغانستان جایگاه مهمی دارد."
+geographicScope: PROVINCE
 province: "بلخ"
 district: null
 category: "شعر و ادبیات"

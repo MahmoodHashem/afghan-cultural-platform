@@ -3,6 +3,7 @@ key: "herat-citadel"
 title: "ارگ هرات"
 slug: "herat-citadel"
 summary: "ارگ هرات یا قلعه اختیارالدین از دژهای تاریخی شهر هرات است و در روایت‌های تاریخی با دوره‌ها و بازسازی‌های گوناگون پیوند دارد."
+geographicScope: PROVINCE
 province: "هرات"
 district: null
 category: "جای‌های تاریخی"

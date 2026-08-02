@@ -1,6 +1,6 @@
 # Database Setup
 
-The API is configured for PostgreSQL through Prisma. This step only prepares the foundation; no product models or migrations exist yet.
+The API is configured for PostgreSQL through Prisma. Schema migrations are kept under `apps/api/prisma/migrations` and should be applied without resetting existing development data unless a reset is explicitly requested.
 
 ## Local PostgreSQL
 
@@ -44,4 +44,31 @@ Start Prisma Studio:
 pnpm prisma:studio
 ```
 
-Migrations will be created and committed later when product models are added. Do not run migrations for the current empty schema foundation.
+## Content Library Geography Metadata
+
+Normalized content-library Markdown front matter must use the approved simplified geography shape:
+
+```yaml
+geographicScope: PROVINCE
+province: herat
+district:
+```
+
+```yaml
+geographicScope: NATIONAL
+province:
+district:
+```
+
+```yaml
+geographicScope: NONE
+province:
+district:
+```
+
+Rules:
+
+- `PROVINCE` requires a province and may include an optional district.
+- `NATIONAL` and `NONE` must leave both `province` and `district` empty.
+- Province names appearing in tags are not structured province relations.
+- `MULTI_PROVINCE` is not part of v1; add a future many-to-many `EntryProvince` relation only if approved filtering requirements justify it.

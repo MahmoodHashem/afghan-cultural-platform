@@ -3,6 +3,7 @@ key: "qalin"
 title: "قالین‌بافی در افغانستان"
 slug: "qalin"
 summary: "قالین و فرش‌بافی از هنرهای دیرینه افغانستان است و با زندگی کوچی، پشم، نمد و نقش‌های محلی پیوند دارد."
+geographicScope: NATIONAL
 province: null
 district: null
 category: "صنایع دستی"

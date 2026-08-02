@@ -3,6 +3,7 @@ key: "gand-afghan-dress"
 title: "لباس محلی گند افغانی"
 slug: "gand-afghan-dress"
 summary: "گند یکی از لباس‌های محلی زنانه افغانستان است که با پارچه، دوخت و آرایش سنتی شناخته می‌شود."
+geographicScope: PROVINCE
 province: "هرات"
 district: null
 category: "لباس"

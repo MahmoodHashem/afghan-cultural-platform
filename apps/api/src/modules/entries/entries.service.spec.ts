@@ -13,7 +13,13 @@ import { plainToInstance } from "class-transformer";
 import { validate } from "class-validator";
 
 import type { PrismaService } from "@/database/prisma.service";
-import { EntryStatus, SourceType, UserRole, UserStatus } from "@/generated/prisma/enums";
+import {
+  EntryStatus,
+  GeographicScope,
+  SourceType,
+  UserRole,
+  UserStatus,
+} from "@/generated/prisma/enums";
 import type { AuditService } from "@/modules/audit/audit.service";
 import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.type";
 import { CreateEntryDraftDto } from "@/modules/entries/dto/create-entry-draft.dto";
@@ -147,6 +153,7 @@ const createDraftInput = {
   title: "فرهنگ کابل",
   summary: "این خلاصه معتبر برای پیش‌نویس فرهنگی است.",
   contentJson: validContentJson,
+  geographicScope: GeographicScope.PROVINCE,
   provinceId: ids.province,
   categoryId: ids.category,
   contentTypeId: ids.contentType,
@@ -191,6 +198,104 @@ describe("EntriesService", () => {
       }),
     );
     expect(response.data.authorId).toBe(user.id);
+  });
+
+  it("creates a national draft without province or district", async () => {
+    mockActiveTaxonomy(prisma);
+    prisma.culturalEntry.findFirst.mockResolvedValueOnce(null);
+    prisma.culturalEntry.create.mockResolvedValue(
+      createEntryPayload({
+        geographicScope: GeographicScope.NATIONAL,
+        provinceId: null,
+        province: null,
+      }),
+    );
+
+    await service.createDraft(user, {
+      ...createDraftInput,
+      geographicScope: GeographicScope.NATIONAL,
+      provinceId: null,
+      districtId: null,
+    });
+
+    expect(prisma.culturalEntry.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          geographicScope: GeographicScope.NATIONAL,
+          provinceId: null,
+          districtId: null,
+        }),
+      }),
+    );
+    expect(prisma.province.findFirst).not.toHaveBeenCalled();
+  });
+
+  it("rejects a provincial draft without a province", async () => {
+    mockActiveTaxonomy(prisma);
+
+    await expectErrorCode(
+      () =>
+        service.createDraft(user, {
+          ...createDraftInput,
+          provinceId: null,
+        }),
+      ENTRY_ERROR_CODES.GEOGRAPHY_INVALID,
+      BadRequestException,
+    );
+  });
+
+  it("rejects national and non-geographic drafts with province or district data", async () => {
+    mockActiveTaxonomy(prisma);
+
+    await expectErrorCode(
+      () =>
+        service.createDraft(user, {
+          ...createDraftInput,
+          geographicScope: GeographicScope.NATIONAL,
+          districtId: null,
+        }),
+      ENTRY_ERROR_CODES.GEOGRAPHY_INVALID,
+      BadRequestException,
+    );
+
+    await expectErrorCode(
+      () =>
+        service.createDraft(user, {
+          ...createDraftInput,
+          geographicScope: GeographicScope.NONE,
+          provinceId: null,
+          districtId: ids.district,
+        }),
+      ENTRY_ERROR_CODES.GEOGRAPHY_INVALID,
+      BadRequestException,
+    );
+  });
+
+  it("allows an optional district when it belongs to the selected province", async () => {
+    mockActiveTaxonomy(prisma, {
+      district: createDistrictReference(ids.province),
+    });
+    prisma.culturalEntry.findFirst.mockResolvedValueOnce(null);
+    prisma.culturalEntry.create.mockResolvedValue({
+      ...createEntryPayload(),
+      districtId: ids.district,
+      district: createTaxonomyReference(ids.district, "مرکز", "markaz"),
+    });
+
+    await service.createDraft(user, {
+      ...createDraftInput,
+      districtId: ids.district,
+    });
+
+    expect(prisma.culturalEntry.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          geographicScope: GeographicScope.PROVINCE,
+          provinceId: ids.province,
+          districtId: ids.district,
+        }),
+      }),
+    );
   });
 
   it("rejects inactive taxonomy records", async () => {
@@ -267,6 +372,33 @@ describe("EntriesService", () => {
       }),
     );
     expect(response.data.summary).toBe("خلاصه تازه برای ویرایش پیش‌نویس.");
+  });
+
+  it("clears province and district when an editable draft changes to national scope", async () => {
+    prisma.culturalEntry.findFirst.mockResolvedValue(createEntryForChange());
+    mockActiveTaxonomy(prisma);
+    prisma.culturalEntry.update.mockResolvedValue(
+      createEntryPayload({
+        geographicScope: GeographicScope.NATIONAL,
+        provinceId: null,
+        province: null,
+      }),
+    );
+
+    await service.updateOwnEntry(user, ids.entry, {
+      geographicScope: GeographicScope.NATIONAL,
+    });
+
+    expect(prisma.culturalEntry.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          geographicScope: GeographicScope.NATIONAL,
+          provinceId: null,
+          districtId: null,
+        }),
+      }),
+    );
+    expect(prisma.province.findFirst).not.toHaveBeenCalled();
   });
 
   it("does not reveal another user's draft", async () => {
@@ -366,6 +498,7 @@ describe("EntriesService", () => {
       expect.objectContaining({
         where: expect.objectContaining({
           status: EntryStatus.PUBLISHED,
+          geographicScope: GeographicScope.PROVINCE,
           provinceId: publicIds.province,
           category: { slug: "traditions" },
           contentTypeId: publicIds.contentType,
@@ -381,6 +514,46 @@ describe("EntriesService", () => {
         orderBy: [{ updatedAt: "desc" }, { publishedAt: "desc" }, { id: "asc" }],
       }),
     );
+  });
+
+  it("filters national public entries separately from provincial entries", async () => {
+    prisma.culturalEntry.findMany.mockResolvedValue([
+      {
+        ...createPublicEntryCardPayload(),
+        geographicScope: GeographicScope.NATIONAL,
+        province: null,
+      },
+    ]);
+    prisma.culturalEntry.count.mockResolvedValue(1);
+
+    const response = await service.listPublishedEntries({
+      geographicScope: GeographicScope.NATIONAL,
+    });
+
+    expect(prisma.culturalEntry.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          geographicScope: GeographicScope.NATIONAL,
+        }),
+      }),
+    );
+    expect(response.data[0]).toMatchObject({
+      geographicScope: GeographicScope.NATIONAL,
+      province: null,
+    });
+  });
+
+  it("rejects province filters with national or non-geographic public scope", async () => {
+    await expectErrorCode(
+      () =>
+        service.listPublishedEntries({
+          geographicScope: GeographicScope.NATIONAL,
+          provinceSlug: "kabul",
+        }),
+      ENTRY_ERROR_CODES.FILTER_INVALID,
+      BadRequestException,
+    );
+    expect(prisma.culturalEntry.findMany).not.toHaveBeenCalled();
   });
 
   it("supports public oldest sorting", async () => {
@@ -1677,7 +1850,10 @@ function mockActiveTaxonomy(
 function createEntryPayload(
   overrides: Partial<{
     contentJson: typeof validContentJson | typeof internalReferenceContentJson;
+    geographicScope: GeographicScope;
     plainTextContent: string;
+    province: ReturnType<typeof createTaxonomyReference> | null;
+    provinceId: string | null;
     status: EntryStatus;
   }> = {},
 ) {
@@ -1690,7 +1866,8 @@ function createEntryPayload(
     plainTextContent: overrides.plainTextContent ?? "متن فرهنگی معتبر",
     status: overrides.status ?? EntryStatus.DRAFT,
     authorId: user.id,
-    provinceId: ids.province,
+    geographicScope: overrides.geographicScope ?? GeographicScope.PROVINCE,
+    provinceId: overrides.provinceId === undefined ? ids.province : overrides.provinceId,
     districtId: null,
     categoryId: ids.category,
     contentTypeId: ids.contentType,
@@ -1699,7 +1876,10 @@ function createEntryPayload(
       id: user.id,
       displayName: user.displayName,
     },
-    province: createTaxonomyReference(ids.province, "کابل", "kabul"),
+    province:
+      overrides.province === undefined
+        ? createTaxonomyReference(ids.province, "کابل", "kabul")
+        : overrides.province,
     district: null,
     category: createTaxonomyReference(ids.category, "رسم‌ها", "traditions"),
     contentType: createTaxonomyReference(ids.contentType, "مقاله", "article"),
@@ -1721,6 +1901,7 @@ function createEntryForChange() {
     contentJson: validContentJson,
     plainTextContent: "متن فرهنگی معتبر",
     status: EntryStatus.DRAFT,
+    geographicScope: GeographicScope.PROVINCE,
     provinceId: ids.province,
     districtId: null,
     categoryId: ids.category,
@@ -1754,6 +1935,7 @@ function createSubmissionEntryPayload(
     normalizedSearchText: "frhng kabl متن فرهنگی معتبر",
     status: overrides.status ?? EntryStatus.DRAFT,
     authorId: user.id,
+    geographicScope: GeographicScope.PROVINCE,
     provinceId: ids.province,
     districtId: null,
     categoryId: ids.category,
@@ -1790,6 +1972,7 @@ function createPublicEntryCardPayload() {
     summary: createDraftInput.summary,
     averageRating: 4.25,
     ratingCount: 8,
+    geographicScope: GeographicScope.PROVINCE,
     publishedAt: new Date("2026-01-02T00:00:00.000Z"),
     updatedAt: new Date("2026-01-03T00:00:00.000Z"),
     author: {
@@ -1893,6 +2076,7 @@ function createEntrySearchPayload(tagNames: string[] = []) {
     summary: createDraftInput.summary,
     plainTextContent: "متن فرهنگی معتبر",
     villageOrLocation: "شهر کابل",
+    geographicScope: GeographicScope.PROVINCE,
     province: createTaxonomyReference(ids.province, "کابل", "kabul"),
     district: null,
     category: createTaxonomyReference(ids.category, "رسم‌ها", "traditions"),

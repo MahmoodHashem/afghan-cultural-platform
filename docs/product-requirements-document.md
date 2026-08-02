@@ -760,11 +760,11 @@ Private information such as email addresses shall not be publicly displayed.
 
 **FR-CON-03:** A user shall enter a title, summary, and main content.
 
-**FR-CON-04:** A user shall select a province.
+**FR-CON-04:** A user shall select a geographic scope: one specific province, Afghanistan-wide, or no meaningful geographic dependency. Province selection is required only for province-scoped entries.
 
 **FR-CON-05:** A user shall select a category.
 
-**FR-CON-06:** A user may add a district or location.
+**FR-CON-06:** A user may add a district or location only when the entry is province-scoped.
 
 **FR-CON-07:** A user may add tags.
 
@@ -851,7 +851,7 @@ Private information such as email addresses shall not be publicly displayed.
 
 **FR-BRW-02:** The home page shall show selected, recent, or featured content.
 
-**FR-BRW-03:** Visitors shall be able to browse by province.
+**FR-BRW-03:** Visitors shall be able to browse by province for province-scoped Cultural Entries and filter national entries separately.
 
 **FR-BRW-04:** Visitors shall be able to browse by category.
 
@@ -921,7 +921,7 @@ Private information such as email addresses shall not be publicly displayed.
 - Locations
     
 
-**FR-SRC-03:** Users shall be able to filter by province.
+**FR-SRC-03:** Users shall be able to filter by province for province-scoped Cultural Entries and by geographic scope for national or non-geographic entries.
 
 **FR-SRC-04:** Users shall be able to filter by category.
 
@@ -1752,7 +1752,7 @@ The first version will be considered complete when:
     
 11. Visitors can search published content in Persian.
     
-12. Visitors can filter by province, category, tag, and content type.
+12. Visitors can filter by province for province-scoped entries, by geographic scope for national/non-geographic entries, and by category, tag, and content type.
     
 13. Users can rate published content.
     

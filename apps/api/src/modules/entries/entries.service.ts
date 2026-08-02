@@ -11,7 +11,7 @@ import { ConfigService } from "@nestjs/config";
 
 import { PrismaService } from "@/database/prisma.service";
 import type { Prisma } from "@/generated/prisma/client";
-import { AuditAction, EntryStatus, VersionReason } from "@/generated/prisma/enums";
+import { AuditAction, EntryStatus, GeographicScope, VersionReason } from "@/generated/prisma/enums";
 import { AuditService } from "@/modules/audit/audit.service";
 import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.type";
 import type {
@@ -85,14 +85,16 @@ type DistrictReference = TaxonomyReference & {
 };
 
 type ValidatedTaxonomy = {
-  province: TaxonomyReference;
+  geographicScope: GeographicScope;
+  province: TaxonomyReference | null;
   district: DistrictReference | null;
   category: TaxonomyReference;
   contentType: TaxonomyReference;
 };
 
 type SearchTaxonomy = {
-  province: TaxonomyReference;
+  geographicScope: GeographicScope;
+  province: TaxonomyReference | null;
   district: TaxonomyReference | null;
   category: TaxonomyReference;
   contentType: TaxonomyReference;
@@ -160,6 +162,7 @@ const submissionEntrySelect = {
   plainTextContent: true,
   normalizedSearchText: true,
   status: true,
+  geographicScope: true,
   authorId: true,
   provinceId: true,
   districtId: true,
@@ -297,6 +300,7 @@ class EntriesService {
     const plainTextContent = extractPlainTextFromTiptap(contentJson);
     const entryReferences = extractInternalEntryReferences(contentJson);
     const taxonomy = await this.validateTaxonomy({
+      geographicScope: input.geographicScope,
       provinceId: input.provinceId,
       districtId: input.districtId ?? null,
       categoryId: input.categoryId,
@@ -323,7 +327,8 @@ class EntriesService {
             slug,
             status: EntryStatus.DRAFT,
             authorId: user.id,
-            provinceId: taxonomy.province.id,
+            geographicScope: taxonomy.geographicScope,
+            provinceId: taxonomy.province?.id ?? null,
             districtId: taxonomy.district?.id ?? null,
             categoryId: taxonomy.category.id,
             contentTypeId: taxonomy.contentType.id,
@@ -414,8 +419,21 @@ class EntriesService {
         ? existingEntry.plainTextContent
         : extractPlainTextFromTiptap(contentJson);
     const entryReferences = extractInternalEntryReferences(contentJson);
-    const provinceId = input.provinceId ?? existingEntry.provinceId;
-    const districtId = input.districtId === undefined ? existingEntry.districtId : input.districtId;
+    const geographicScope = input.geographicScope ?? existingEntry.geographicScope;
+    const provinceId =
+      geographicScope === GeographicScope.PROVINCE
+        ? (input.provinceId ?? existingEntry.provinceId)
+        : input.provinceId === undefined
+          ? null
+          : input.provinceId;
+    const districtId =
+      geographicScope === GeographicScope.PROVINCE
+        ? input.districtId === undefined
+          ? existingEntry.districtId
+          : input.districtId
+        : input.districtId === undefined
+          ? null
+          : input.districtId;
     const categoryId = input.categoryId ?? existingEntry.categoryId;
     const contentTypeId = input.contentTypeId ?? existingEntry.contentTypeId;
     const villageOrLocation =
@@ -423,6 +441,7 @@ class EntriesService {
         ? existingEntry.villageOrLocation
         : this.normalizeOptionalText(input.villageOrLocation);
     const taxonomy = await this.validateTaxonomy({
+      geographicScope,
       provinceId,
       districtId,
       categoryId,
@@ -451,7 +470,8 @@ class EntriesService {
               tagNames: existingEntry.tags.map((entryTag) => entryTag.tag.name),
             }),
             slug,
-            provinceId: taxonomy.province.id,
+            geographicScope: taxonomy.geographicScope,
+            provinceId: taxonomy.province?.id ?? null,
             districtId: taxonomy.district?.id ?? null,
             categoryId: taxonomy.category.id,
             contentTypeId: taxonomy.contentType.id,
@@ -1303,6 +1323,17 @@ class EntriesService {
     const tagId = this.normalizeUuidFilter(query.tagId, "tagId");
     const tagSlug = this.normalizeSlugFilter(query.tagSlug, "tagSlug");
     const authorId = this.normalizeUuidFilter(query.authorId, "authorId");
+    const hasProvinceFilter = Boolean(provinceId || provinceSlug || districtId || districtSlug);
+
+    if (
+      query.geographicScope &&
+      query.geographicScope !== GeographicScope.PROVINCE &&
+      hasProvinceFilter
+    ) {
+      throw this.invalidPublicFilter(
+        "Province and district filters can only be used with PROVINCE geographic scope.",
+      );
+    }
 
     return {
       status: EntryStatus.PUBLISHED,
@@ -1312,6 +1343,10 @@ class EntriesService {
       publishedAt: {
         not: null,
       },
+      ...(query.geographicScope ? { geographicScope: query.geographicScope } : {}),
+      ...(!query.geographicScope && hasProvinceFilter
+        ? { geographicScope: GeographicScope.PROVINCE }
+        : {}),
       ...(provinceId ? { provinceId } : {}),
       ...(districtId ? { districtId } : {}),
       ...(categoryId ? { categoryId } : {}),
@@ -1432,25 +1467,39 @@ class EntriesService {
   }
 
   private async validateTaxonomy({
+    geographicScope,
     provinceId,
     districtId,
     categoryId,
     contentTypeId,
   }: {
+    geographicScope: GeographicScope;
     provinceId: string | null | undefined;
     districtId?: string | null;
     categoryId: string | null | undefined;
     contentTypeId: string | null | undefined;
   }): Promise<ValidatedTaxonomy> {
-    if (!provinceId || !categoryId || !contentTypeId) {
+    if (!categoryId || !contentTypeId) {
       throw this.invalidTaxonomy();
     }
 
+    if (geographicScope === GeographicScope.PROVINCE && !provinceId) {
+      throw this.invalidGeography("Province is required for provincial Cultural Entries.");
+    }
+
+    if (geographicScope !== GeographicScope.PROVINCE && (provinceId || districtId)) {
+      throw this.invalidGeography(
+        "Province and district must be empty for national or non-geographic Cultural Entries.",
+      );
+    }
+
     const [province, category, contentType, district] = await Promise.all([
-      this.prisma.province.findFirst({
-        where: { id: provinceId, isActive: true },
-        select: taxonomyReferenceSelect,
-      }),
+      provinceId
+        ? this.prisma.province.findFirst({
+            where: { id: provinceId, isActive: true },
+            select: taxonomyReferenceSelect,
+          })
+        : Promise.resolve(null),
       this.prisma.category.findFirst({
         where: { id: categoryId, isActive: true },
         select: taxonomyReferenceSelect,
@@ -1467,11 +1516,16 @@ class EntriesService {
         : Promise.resolve(null),
     ]);
 
-    if (!province || !category || !contentType || (districtId && !district)) {
+    if (
+      (geographicScope === GeographicScope.PROVINCE && !province) ||
+      !category ||
+      !contentType ||
+      (districtId && !district)
+    ) {
       throw this.invalidTaxonomy();
     }
 
-    if (district && district.provinceId !== province.id) {
+    if (district && district.provinceId !== province?.id) {
       throw new BadRequestException({
         error: ENTRY_ERROR_CODES.DISTRICT_PROVINCE_MISMATCH,
         message: "District does not belong to the selected province.",
@@ -1479,6 +1533,7 @@ class EntriesService {
     }
 
     return {
+      geographicScope,
       province,
       district,
       category,
@@ -1841,11 +1896,9 @@ class EntriesService {
     }
 
     if (
-      !entry.province?.isActive ||
       !entry.category?.isActive ||
       !entry.contentType?.isActive ||
-      (entry.district &&
-        (!entry.district.isActive || entry.district.provinceId !== entry.provinceId))
+      !this.entryGeographyIsValidForSubmission(entry)
     ) {
       throw this.incompleteSubmission("One or more taxonomy references are inactive or invalid.");
     }
@@ -1879,6 +1932,18 @@ class EntriesService {
     }
 
     this.validateSubmissionReferences(entry, extractedReferences);
+  }
+
+  private entryGeographyIsValidForSubmission(entry: SubmissionEntryPayload): boolean {
+    if (entry.geographicScope === GeographicScope.PROVINCE) {
+      return Boolean(
+        entry.province?.isActive &&
+          (!entry.district ||
+            (entry.district.isActive && entry.district.provinceId === entry.provinceId)),
+      );
+    }
+
+    return !entry.provinceId && !entry.districtId && !entry.province && !entry.district;
   }
 
   private validateSubmissionReferences(
@@ -1977,7 +2042,8 @@ class EntriesService {
       plainTextContent: entry.plainTextContent,
       normalizedSearchText: entry.normalizedSearchText,
       slug: entry.slug,
-      province: this.mapTaxonomySnapshot(entry.province),
+      geographicScope: entry.geographicScope,
+      province: entry.province ? this.mapTaxonomySnapshot(entry.province) : null,
       district: entry.district ? this.mapTaxonomySnapshot(entry.district) : null,
       category: this.mapTaxonomySnapshot(entry.category),
       contentType: this.mapTaxonomySnapshot(entry.contentType),
@@ -2058,6 +2124,7 @@ class EntriesService {
         contentJson: true,
         plainTextContent: true,
         status: true,
+        geographicScope: true,
         provinceId: true,
         districtId: true,
         categoryId: true,
@@ -2161,12 +2228,24 @@ class EntriesService {
       summary,
       plainTextContent,
       villageOrLocation,
-      taxonomy.province.name,
+      taxonomy.province?.name,
+      this.geographicScopeSearchLabel(taxonomy.geographicScope),
       taxonomy.district?.name,
       taxonomy.category.name,
       taxonomy.contentType.name,
       ...tagNames,
     ]);
+  }
+
+  private geographicScopeSearchLabel(geographicScope: GeographicScope): string | null {
+    switch (geographicScope) {
+      case GeographicScope.NATIONAL:
+        return "سراسر افغانستان";
+      case GeographicScope.NONE:
+        return "بدون وابستگی جغرافیایی";
+      case GeographicScope.PROVINCE:
+        return null;
+    }
   }
 
   private async refreshEntrySearchText(client: EntriesDbClient, entryId: string): Promise<void> {
@@ -2177,6 +2256,7 @@ class EntriesService {
         summary: true,
         plainTextContent: true,
         villageOrLocation: true,
+        geographicScope: true,
         province: { select: taxonomyReferenceSelect },
         district: { select: taxonomyReferenceSelect },
         category: { select: taxonomyReferenceSelect },
@@ -2206,6 +2286,7 @@ class EntriesService {
           plainTextContent: entry.plainTextContent,
           villageOrLocation: entry.villageOrLocation,
           taxonomy: {
+            geographicScope: entry.geographicScope,
             province: entry.province,
             district: entry.district,
             category: entry.category,
@@ -2461,6 +2542,13 @@ class EntriesService {
     return new BadRequestException({
       error: ENTRY_ERROR_CODES.TAXONOMY_INVALID,
       message: "One or more taxonomy references are invalid.",
+    });
+  }
+
+  private invalidGeography(message: string): BadRequestException {
+    return new BadRequestException({
+      error: ENTRY_ERROR_CODES.GEOGRAPHY_INVALID,
+      message,
     });
   }
 

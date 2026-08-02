@@ -3,6 +3,7 @@ key: "abdul-rahman-jami"
 title: "عبدالرحمن جامی"
 slug: "abdul-rahman-jami"
 summary: "نورالدین عبدالرحمن جامی از شاعران، عارفان و نویسندگان برجسته فارسی‌زبان و پیوندخورده با هرات است."
+geographicScope: PROVINCE
 province: "هرات"
 district: null
 category: "شعر و ادبیات"

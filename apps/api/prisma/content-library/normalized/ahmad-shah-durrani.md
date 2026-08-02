@@ -3,6 +3,7 @@ key: "ahmad-shah-durrani"
 title: "احمدشاه درانی"
 slug: "ahmad-shah-durrani"
 summary: "احمدشاه درانی از شخصیت‌های مهم تاریخ افغانستان و بنیان‌گذار دولت درانی دانسته می‌شود."
+geographicScope: NATIONAL
 province: null
 district: null
 category: "شعر و ادبیات"

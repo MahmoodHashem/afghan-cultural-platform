@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional, PartialType } from "@nestjs/swagger";
 import {
+  IsEnum,
   IsNotEmpty,
   IsObject,
   IsOptional,
@@ -8,6 +9,8 @@ import {
   MaxLength,
   MinLength,
 } from "class-validator";
+
+import { GeographicScope } from "@/generated/prisma/enums";
 
 class CreateEntryDraftDto {
   @ApiProperty({ minLength: 2, maxLength: 180 })
@@ -31,9 +34,19 @@ class CreateEntryDraftDto {
   @IsObject()
   contentJson!: Record<string, unknown>;
 
-  @ApiProperty()
+  @ApiProperty({
+    enum: GeographicScope,
+    description:
+      "Simplified geographic scope. PROVINCE requires provinceId; NATIONAL and NONE require provinceId and districtId to be null.",
+    example: GeographicScope.PROVINCE,
+  })
+  @IsEnum(GeographicScope)
+  geographicScope!: GeographicScope;
+
+  @ApiPropertyOptional({ nullable: true })
+  @IsOptional()
   @IsUUID()
-  provinceId!: string;
+  provinceId?: string | null;
 
   @ApiPropertyOptional({ nullable: true })
   @IsOptional()

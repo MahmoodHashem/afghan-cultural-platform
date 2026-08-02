@@ -1,6 +1,8 @@
 import { ApiPropertyOptional } from "@nestjs/swagger";
 import { Transform } from "class-transformer";
-import { IsInt, IsOptional, IsString, Max, Min } from "class-validator";
+import { IsEnum, IsInt, IsOptional, IsString, Max, Min } from "class-validator";
+
+import { GeographicScope } from "@/generated/prisma/enums";
 
 const PUBLIC_ENTRY_SORT_VALUES = ["newest", "oldest", "recentlyUpdated"] as const;
 
@@ -74,6 +76,15 @@ class PublicEntryQueryDto {
   @IsOptional()
   @IsString()
   authorId?: string;
+
+  @ApiPropertyOptional({
+    enum: GeographicScope,
+    description:
+      "Filter by geographic scope. Province filters only match PROVINCE entries; NATIONAL and NONE are returned through this filter.",
+  })
+  @IsOptional()
+  @IsEnum(GeographicScope)
+  geographicScope?: GeographicScope;
 
   @ApiPropertyOptional({ enum: PUBLIC_ENTRY_SORT_VALUES, default: "newest" })
   @IsOptional()

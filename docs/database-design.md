@@ -22,6 +22,7 @@ This document defines the planned PostgreSQL and Prisma data model for the Afgha
 - Important workflow changes should happen in transactions and write audit records in the same transaction.
 - Controllers must not query Prisma directly; NestJS services own business rules and database access.
 - Taxonomies remain flat in v1; category hierarchy is not included.
+- Cultural Entries use a simplified `GeographicScope` in v1: one specific province, Afghanistan-wide/national, or no meaningful geographic dependency.
 
 ### Display Names And Slugs
 
@@ -46,7 +47,7 @@ All 24 currently implemented schema entities are kept for version one, including
 | ModerationReview     | Keep                   | Required to record approve, reject, changes-requested, hide, restore, and archive decisions.                                                    |
 | EntryReference       | Keep                   | Required for Wikipedia-style internal links between published Cultural Entries.                                                                 |
 | Province             | Keep                   | Required public filter and admin-managed taxonomy.                                                                                              |
-| District             | Keep as managed record | Districts use managed records.`provinceId` is required, `districtId` on entries is optional, and entries may still keep free-text location. |
+| District             | Keep as managed record | Districts use managed records. `provinceId` is required on districts, `districtId` on entries is optional, and entries may still keep free-text location. |
 | Category             | Keep                   | Required public filter and admin-managed taxonomy.                                                                                              |
 | ContentType          | Keep                   | Required public filter and admin-managed taxonomy.                                                                                              |
 | Tag                  | Keep                   | Required flexible public filter and admin-managed taxonomy.                                                                                     |
@@ -66,7 +67,7 @@ All 24 currently implemented schema entities are kept for version one, including
 
 ### Complete Entity List
 
-Version one contains 23 entities:
+Version one contains 24 entities:
 
 1. `User`
 2. `OAuthAccount`
@@ -126,6 +127,20 @@ Uses the practical architecture workflow for version one:
 - `ARCHIVED`
 
 The broader PRD mentions `UNDER_REVIEW`, `RESUBMITTED`, `APPROVED`, and `REMOVED`, but the architecture specification narrows v1 to the list above. `APPROVED` is represented by immediate transition to `PUBLISHED`.
+
+### GeographicScope
+
+- `PROVINCE`
+- `NATIONAL`
+- `NONE`
+
+Meaning and Persian UI labels:
+
+- `PROVINCE` means the entry is tied to one specific province. The website should normally display the selected province name, such as `هرات`, `کابل`, or `بلخ`.
+- `NATIONAL` means the entry is Afghanistan-wide. Display label: `سراسر افغانستان`.
+- `NONE` means the entry is not meaningfully tied to a geographic location. Display label: `بدون وابستگی جغرافیایی`, or omit the location label when that creates a cleaner interface.
+
+`MULTI_PROVINCE` is intentionally excluded from v1 because it is vague without storing the actual province set. A future `EntryProvince` many-to-many relation may be added only if real filtering and editorial requirements justify it.
 
 ### VersionReason
 
@@ -284,9 +299,10 @@ More audit actions can be added later only when new v1 workflows require them.
 | plainTextContent     | String      | Yes             | None          | Extracted text for search and moderation.                              |
 | normalizedSearchText | String      | Yes             | Empty string  | Persian-normalized title, summary, body, tags, taxonomy, and location. |
 | status               | EntryStatus | Yes             | `DRAFT`     | Public search shows only`PUBLISHED`.                                 |
+| geographicScope      | GeographicScope | Yes        | `PROVINCE`  | `PROVINCE`, `NATIONAL`, or `NONE`.                                    |
 | authorId             | UUID        | Yes             | None          | Entry author; preserved because v1 does not physically delete users.   |
-| provinceId           | UUID        | Yes             | None          | Required taxonomy.                                                     |
-| districtId           | UUID        | No              | None          | Optional managed district.                                             |
+| provinceId           | UUID        | No              | None          | Required only when `geographicScope = PROVINCE`.                       |
+| districtId           | UUID        | No              | None          | Optional only when `geographicScope = PROVINCE`; must belong to province. |
 | categoryId           | UUID        | Yes             | None          | Required taxonomy.                                                     |
 | contentTypeId        | UUID        | Yes             | None          | Required taxonomy.                                                     |
 | villageOrLocation    | String      | No              | None          | Free-text local detail.                                                |
@@ -307,9 +323,9 @@ More audit actions can be added later only when new v1 workflows require them.
 
 **Unique constraints:** `slug`.
 
-**Indexes:** `status`, `provinceId`, `districtId`, `categoryId`, `contentTypeId`, `authorId`, `publishedAt`, `createdAt`, `(status, publishedAt)`, `(status, provinceId)`, `(status, categoryId)`, `(status, contentTypeId)`.
+**Indexes:** `status`, `geographicScope`, `provinceId`, `districtId`, `categoryId`, `contentTypeId`, `authorId`, `publishedAt`, `createdAt`, `(status, publishedAt)`, `(status, provinceId)`, `(geographicScope, provinceId)`, `(status, categoryId)`, `(status, contentTypeId)`.
 
-**Relations:** Author, province, optional district, category, content type, tags through `EntryTag`, images, optional YouTube video, sources, outgoing and incoming internal references through `EntryReference`, content versions, moderation reviews, ratings, public reviews, bookmarks, correction suggestions, reports.
+**Relations:** Author, optional province, optional district, category, content type, tags through `EntryTag`, images, optional YouTube video, sources, outgoing and incoming internal references through `EntryReference`, content versions, moderation reviews, ratings, public reviews, bookmarks, correction suggestions, reports.
 
 **Deletion behavior:** Do not physically delete published cultural entries. Use status transitions: `DRAFT` may be hard-deleted by the author before submission; submitted/published entries should use `REJECTED`, `HIDDEN`, or `ARCHIVED`. Audit logs and content versions remain preserved.
 
@@ -828,8 +844,8 @@ More audit actions can be added later only when new v1 workflows require them.
 ## Main Relationships
 
 - `User` to `CulturalEntry`: one user authors many entries.
-- `CulturalEntry` to `Province`: many entries belong to one province.
-- `CulturalEntry` to `District`: many entries may belong to one district; district is optional.
+- `CulturalEntry` to `Province`: many entries may belong to one province when `geographicScope = PROVINCE`; national and non-geographic entries have no province.
+- `CulturalEntry` to `District`: many entries may belong to one district when `geographicScope = PROVINCE`; district is optional and must belong to the selected province.
 - `CulturalEntry` to `Category`: many entries belong to one category.
 - `CulturalEntry` to `ContentType`: many entries belong to one content type.
 - `CulturalEntry` to `Tag`: many-to-many through `EntryTag`.
@@ -859,6 +875,10 @@ More audit actions can be added later only when new v1 workflows require them.
 - Provider tokens are not stored as application sessions; successful OAuth login still issues platform access and refresh tokens.
 - Email verification tokens must be stored as hashes only and must be single-use with an expiration timestamp.
 - Public entry slug must be unique and immutable after publication.
+- `CulturalEntry.geographicScope = PROVINCE` requires `provinceId`; `districtId` is optional but must belong to the selected province.
+- `CulturalEntry.geographicScope = NATIONAL` requires `provinceId = null` and `districtId = null`.
+- `CulturalEntry.geographicScope = NONE` requires `provinceId = null` and `districtId = null`.
+- Province filters must return only entries with `geographicScope = PROVINCE` and the matching province. National entries are available through a separate `geographicScope = NATIONAL` filter, and `NONE` entries must not be assigned to a province.
 - A user may have one rating per entry.
 - Rating changes should update `averageRating`, `ratingCount`, and `lastRatedAt` in one transaction.
 - A user may have one active public review per entry.
@@ -959,8 +979,9 @@ This avoids deletion rules that destroy published cultural history.
     }
   ],
   "taxonomy": {
-    "provinceId": "uuid",
-    "provinceName": "string",
+    "geographicScope": "PROVINCE | NATIONAL | NONE",
+    "provinceId": "uuid | null",
+    "provinceName": "string | null",
     "districtId": "uuid | null",
     "districtName": "string | null",
     "categoryId": "uuid",
@@ -1032,10 +1053,12 @@ Do not add indexes that do not support a known v1 query, queue, dashboard, or ru
 ### Public Entry Search And Listing
 
 - `CulturalEntry.status`
+- `CulturalEntry.geographicScope`
 - `CulturalEntry.publishedAt`
 - `CulturalEntry.normalizedSearchText`
 - `(CulturalEntry.status, CulturalEntry.publishedAt)`
 - `(CulturalEntry.status, CulturalEntry.provinceId)`
+- `(CulturalEntry.geographicScope, CulturalEntry.provinceId)`
 - `(CulturalEntry.status, CulturalEntry.categoryId)`
 - `(CulturalEntry.status, CulturalEntry.contentTypeId)`
 - `EntryTag.tagId`
@@ -1050,7 +1073,8 @@ Use PostgreSQL `ILIKE` over normalized text for v1. Consider trigram indexes onl
 ### Workflow And Dashboard Indexes
 
 - Entry status queue: `(CulturalEntry.status, CulturalEntry.createdAt)`
-- Province filter: `CulturalEntry.provinceId`
+- Geographic scope filter: `CulturalEntry.geographicScope`
+- Province filter: `(CulturalEntry.geographicScope, CulturalEntry.provinceId)`
 - District filter: `CulturalEntry.districtId`
 - Category filter: `CulturalEntry.categoryId`
 - Content type filter: `CulturalEntry.contentTypeId`
@@ -1115,7 +1139,7 @@ erDiagram
 
 The following previously open decisions are now approved for Phase B:
 
-- Districts: use managed `District` records. `provinceId` is required, `districtId` is optional on `CulturalEntry`, and `villageOrLocation` remains optional free text.
+- Districts: use managed `District` records. `provinceId` is required on `District`. On `CulturalEntry`, `districtId` is optional and allowed only when `geographicScope = PROVINCE`; `villageOrLocation` remains optional free text.
 - User deletion: version one does not support physical deletion. Use suspension only. Historical data must be preserved.
 - Public reviews: use status-based soft deletion with `ACTIVE`, `HIDDEN`, and `DELETED`.
 - Audit logs: keep `metadata` as flexible JSON.
@@ -1132,18 +1156,19 @@ No unresolved product-level database decisions remain before Prisma implementati
 ## Phase B Implementation Checklist
 
 1. Translate this design into `schema.prisma` with UUID IDs, mapped snake_case tables/columns, relations, enums, defaults, and indexes.
-2. Implement all 23 entities, including `Bookmark`, `OAuthAccount`, and `EmailVerificationToken`.
+2. Implement all 24 entities, including `Bookmark`, `OAuthAccount`, `EmailVerificationToken`, and `EntryReference`.
 3. Implement unique `(userId, entryId)` for `Bookmark`.
 4. Implement bookmark indexes: `userId`, `entryId`, and `(userId, createdAt)`.
 5. Add `thumbnailUrl` to `Image`.
 6. Add `lastRatedAt` to `CulturalEntry`.
-7. Make `User.passwordHash` optional for OAuth-only users.
-8. Add `AuthProvider` and `OAuthAccount`.
-9. Implement unique `(provider, providerAccountId)` and unique `(userId, provider)` for `OAuthAccount`.
-10. Add `EmailVerificationToken` with hashed token storage, single-use tracking, expiration, and indexes.
-11. Implement the immutable published-entry slug rule in service logic.
-12. Add the manual SQL partial unique index for one active public review per user and entry.
-13. Add the first migration only after models are approved.
-14. Generate Prisma Client after schema implementation.
-15. Add focused tests for status transitions, self-approval prevention, accepted correction versioning, rating uniqueness, rating aggregate updates, review uniqueness, bookmark uniqueness, OAuth account uniqueness, email verification token behavior, entry-reference constraints, and deletion/preservation behavior.
+7. Add `GeographicScope` to `CulturalEntry`, make `provinceId` optional, keep `districtId` optional, and enforce the approved `PROVINCE`/`NATIONAL`/`NONE` validation rules in service logic and database constraints where practical.
+8. Make `User.passwordHash` optional for OAuth-only users.
+9. Add `AuthProvider` and `OAuthAccount`.
+10. Implement unique `(provider, providerAccountId)` and unique `(userId, provider)` for `OAuthAccount`.
+11. Add `EmailVerificationToken` with hashed token storage, single-use tracking, expiration, and indexes.
+12. Implement the immutable published-entry slug rule in service logic.
+13. Add the manual SQL partial unique index for one active public review per user and entry.
+14. Add the first migration only after models are approved.
+15. Generate Prisma Client after schema implementation.
+16. Add focused tests for status transitions, self-approval prevention, accepted correction versioning, rating uniqueness, rating aggregate updates, review uniqueness, bookmark uniqueness, OAuth account uniqueness, email verification token behavior, entry-reference constraints, geography-scope validation, and deletion/preservation behavior.
 17. Keep Prisma access inside NestJS services and transactions.
