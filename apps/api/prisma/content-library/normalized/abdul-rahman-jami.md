@@ -37,7 +37,7 @@ sources:
 internalLinks:
   - targetKey: "molana-jalaluddin-balkhi"
     anchorText: "مولانا"
-reviewStatus: NEEDS_REVIEW
+reviewStatus: APPROVED
 ---
 
 ## معرفی

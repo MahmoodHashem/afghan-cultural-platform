@@ -24,7 +24,7 @@ sources:
 internalLinks:
   - targetKey: "abdul-rahman-jami"
     anchorText: "عبدالرحمن جامی"
-reviewStatus: NEEDS_REVIEW
+reviewStatus: APPROVED
 ---
 
 ## معرفی

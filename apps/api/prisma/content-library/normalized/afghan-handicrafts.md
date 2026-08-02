@@ -28,7 +28,7 @@ internalLinks:
     anchorText: "مسجد جامع هرات"
   - targetKey: "qalin"
     anchorText: "قالین"
-reviewStatus: NEEDS_REVIEW
+reviewStatus: APPROVED
 ---
 
 ## معرفی

@@ -14,7 +14,7 @@ tags:
   - "گلیم"
 sources: []
 internalLinks: []
-reviewStatus: NEEDS_REVIEW
+reviewStatus: APPROVED
 ---
 
 ## معرفی

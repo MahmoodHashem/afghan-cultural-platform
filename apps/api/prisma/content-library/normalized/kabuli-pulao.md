@@ -18,7 +18,7 @@ sources:
     author: "Wikipedia"
     published: "2013-12-02"
 internalLinks: []
-reviewStatus: NEEDS_REVIEW
+reviewStatus: APPROVED
 ---
 
 ## معرفی

@@ -22,7 +22,7 @@ internalLinks:
     anchorText: "فخرالدین رازی"
   - targetKey: "khwaja-abdullah-ansari"
     anchorText: "خواجه عبدالله انصاری"
-reviewStatus: NEEDS_REVIEW
+reviewStatus: APPROVED
 ---
 
 ## معرفی

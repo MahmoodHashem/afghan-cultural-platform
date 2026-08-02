@@ -20,7 +20,7 @@ sources:
 internalLinks:
   - targetKey: "timur-shah-mausoleum"
     anchorText: "تیمورشاه"
-reviewStatus: NEEDS_REVIEW
+reviewStatus: APPROVED
 ---
 
 ## معرفی

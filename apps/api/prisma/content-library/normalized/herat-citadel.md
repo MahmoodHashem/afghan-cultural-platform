@@ -27,7 +27,7 @@ sources:
     author: null
     published: "2019-02-26"
 internalLinks: []
-reviewStatus: NEEDS_REVIEW
+reviewStatus: APPROVED
 ---
 
 ## معرفی

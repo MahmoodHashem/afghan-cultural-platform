@@ -20,7 +20,7 @@ sources:
 internalLinks:
   - targetKey: "afghan-handicrafts"
     anchorText: "صنایع دستی"
-reviewStatus: NEEDS_REVIEW
+reviewStatus: APPROVED
 ---
 
 ## معرفی

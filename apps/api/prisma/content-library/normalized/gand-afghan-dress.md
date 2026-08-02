@@ -22,7 +22,7 @@ internalLinks:
     anchorText: "صنایع دستی افغانستان"
   - targetKey: "dozandagi"
     anchorText: "سوزن دوزی"
-reviewStatus: NEEDS_REVIEW
+reviewStatus: APPROVED
 ---
 ## معرفی
 

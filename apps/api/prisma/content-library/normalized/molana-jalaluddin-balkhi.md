@@ -25,7 +25,7 @@ sources:
 internalLinks:
   - targetKey: "fakhr-razi"
     anchorText: "فخرالدین رازی"
-reviewStatus: NEEDS_REVIEW
+reviewStatus: APPROVED
 ---
 
 ## معرفی

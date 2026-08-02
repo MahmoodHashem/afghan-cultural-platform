@@ -27,7 +27,7 @@ sources:
     author: "موسسه فرهنگی اکو"
     published: null
 internalLinks: []
-reviewStatus: NEEDS_REVIEW
+reviewStatus: APPROVED
 ---
 
 ## معرفی

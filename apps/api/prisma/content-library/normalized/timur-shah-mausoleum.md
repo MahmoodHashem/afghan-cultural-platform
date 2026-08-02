@@ -20,7 +20,7 @@ sources:
 internalLinks:
   - targetKey: "ahmad-shah-durrani"
     anchorText: "احمدشاه درانی"
-reviewStatus: NEEDS_REVIEW
+reviewStatus: APPROVED
 ---
 
 ## معرفی

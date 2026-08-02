@@ -19,7 +19,7 @@ sources:
     author: "Wikipedia"
     published: "2008-03-08"
 internalLinks: []
-reviewStatus: NEEDS_REVIEW
+reviewStatus: APPROVED
 ---
 
 ## معرفی
