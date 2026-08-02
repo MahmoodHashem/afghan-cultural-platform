@@ -16,7 +16,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Menubar, MenubarMenu, MenubarTrigger } from "@/components/ui/menubar";
+import { Menubar } from "@/components/ui/menubar";
 import { cn } from "@/lib/utils";
 import { type SafeUser, useAuthStore } from "@/stores/auth-store";
 
@@ -220,22 +220,21 @@ function LandingHeader({ isCompact }: { isCompact: boolean }) {
           )}
         >
           {navigationItems.map((item) => (
-            <MenubarMenu key={item.href}>
-              <MenubarTrigger
-                render={<Link href={item.href} />}
-                className={cn(
-                  "relative h-auto rounded-full font-semibold transition-colors focus-visible:outline-none focus-visible:ring-3",
-                  isCompact
-                    ? "px-3 py-1.5 text-[13px] text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-ring/40"
-                    : "px-3 py-2 text-[14px] text-white/84 hover:bg-transparent hover:text-white focus-visible:ring-white/35",
-                )}
-              >
-                {item.label}
-                {item.href === "/" && !isCompact ? (
-                  <span className="absolute inset-x-5 -bottom-1 h-0.5 rounded-full bg-white/72" />
-                ) : null}
-              </MenubarTrigger>
-            </MenubarMenu>
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "relative h-auto rounded-full font-semibold transition-colors focus-visible:outline-none focus-visible:ring-3",
+                isCompact
+                  ? "px-3 py-1.5 text-[13px] text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-ring/40"
+                  : "px-3 py-2 text-[14px] text-white/84 hover:bg-transparent hover:text-white focus-visible:ring-white/35",
+              )}
+            >
+              {item.label}
+              {item.href === "/" && !isCompact ? (
+                <span className="absolute inset-x-5 -bottom-1 h-0.5 rounded-full bg-white/72" />
+              ) : null}
+            </Link>
           ))}
         </Menubar>
 
