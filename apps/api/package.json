@@ -19,7 +19,9 @@
     "prisma:validate": "prisma validate",
     "prisma:studio": "prisma studio",
     "prisma:migrate:dev": "prisma migrate dev",
-    "prisma:seed": "prisma db seed"
+    "prisma:seed": "prisma db seed",
+    "prisma:seed:taxonomy": "tsx -r tsconfig-paths/register prisma/seed-taxonomy.ts",
+    "prisma:seed:demo": "tsx -r tsconfig-paths/register prisma/seed-demo.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

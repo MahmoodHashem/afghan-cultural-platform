@@ -276,7 +276,6 @@ model CulturalEntry {
   @@index([authorId])
   @@index([publishedAt])
   @@index([createdAt])
-  @@index([normalizedSearchText])
   @@index([status, publishedAt])
   @@index([geographicScope, provinceId])
   @@index([status, provinceId])
