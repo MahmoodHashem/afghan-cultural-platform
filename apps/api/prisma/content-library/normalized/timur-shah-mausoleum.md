@@ -1,7 +1,7 @@
 ---
 key: "timur-shah-mausoleum"
 title: "آرامگاه تیمورشاه"
-slug: "timur-shah-mausoleum"
+slug: "آرامگاه-تیمورشاه"
 summary: "آرامگاه تیمورشاه بنایی تاریخی در شهر کابل است که به دلیل دفن تیمورشاه درانی شناخته می‌شود."
 geographicScope: PROVINCE
 province: "کابل"

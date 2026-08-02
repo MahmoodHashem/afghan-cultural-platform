@@ -1,7 +1,7 @@
 ---
 key: "khwaja-abdullah-ansari"
 title: "خواجه عبدالله انصاری"
-slug: "khwaja-abdullah-ansari"
+slug: "خواجه-عبدالله-انصاری"
 summary: "خواجه عبدالله انصاری، معروف به پیر هرات، عارف، عالم و نویسنده فارسی‌زبان سده پنجم هجری است."
 geographicScope: PROVINCE
 province: "هرات"

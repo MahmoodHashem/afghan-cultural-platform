@@ -545,7 +545,7 @@ A Cultural Entry may contain:
 
 Version one will support Wikipedia-style internal links between Cultural Entries.
 
-A contributor may manually select text inside the Tiptap editor and link that selected text to another existing `PUBLISHED` Cultural Entry. The selected text becomes the visible anchor text. The stored link must reference the target Cultural Entry by ID so it does not depend only on a slug that may change for administrative reasons before publication.
+A contributor may manually select text inside the Tiptap editor and link that selected text to another existing `PUBLISHED` Cultural Entry. The selected text becomes the visible anchor text. The stored link must reference the target Cultural Entry by ID so it does not depend on a slug that may change for administrative reasons before publication. Normalized content files may use a stable internal `targetKey` before database import, but public reader URLs use the entry’s Persian slug.
 
 Internal links should use descriptive anchor text and should not be repeated excessively within the same entry. Moderators may review or remove incorrect internal links during moderation. If a target entry later becomes unavailable, hidden, or archived, the public page must handle the reference safely instead of creating a broken reading experience.
 

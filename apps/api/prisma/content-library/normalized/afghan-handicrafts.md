@@ -1,7 +1,7 @@
 ---
 key: "afghan-handicrafts"
 title: "صنایع دستی افغانستان"
-slug: "afghan-handicrafts"
+slug: "صنایع-دستی-افغانستان"
 summary: "صنایع دستی افغانستان مجموعه‌ای از هنرهای بومی مانند قالین‌بافی، گلدوزی، فلزکاری، چوب‌تراشی و کاشی‌کاری است."
 geographicScope: NATIONAL
 province: null

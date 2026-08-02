@@ -16,7 +16,7 @@ This document defines the planned PostgreSQL and Prisma data model for the Afgha
 - Database tables: plural snake_case, for example `cultural_entries`.
 - Database columns: snake_case, for example `published_at`.
 - Enum values: UPPER_SNAKE_CASE.
-- Public cultural entries have unique, readable slugs.
+- Public cultural entries have unique Persian slugs. Seed/import tooling also uses a stable internal key.
 - Persian search uses normalized text stored on the entry for practical PostgreSQL search.
 - Soft deletion is used only where preserving cultural history, moderation history, or user-facing history is justified.
 - Important workflow changes should happen in transactions and write audit records in the same transaction.
@@ -24,15 +24,19 @@ This document defines the planned PostgreSQL and Prisma data model for the Afgha
 - Taxonomies remain flat in v1; category hierarchy is not included.
 - Cultural Entries use a simplified `GeographicScope` in v1: one specific province, Afghanistan-wide/national, or no meaningful geographic dependency.
 
-### Display Names And Slugs
+### Display Names, Keys, And Slugs
 
-- Persian display names remain in `name`.
-- Readable Latin slugs remain in `slug`.
+- `id` is the UUID database identity used by relations.
+- `key` is a stable internal Cultural Entry identity for seed/import/tooling. It uses lowercase Latin kebab-case and is immutable after creation.
+- `slug` is the public Cultural Entry URL identifier. It supports normalized Persian Unicode and is the canonical public URL.
+- Persian taxonomy display names remain in `name`.
+- Readable Latin taxonomy slugs remain in `slug`.
 - Do not add English-name fields to `Province`, `District`, `Category`, `ContentType`, `Tag`, or other taxonomies.
-- Slugs may initially be generated through transliteration.
+- Taxonomy slugs may initially be generated through transliteration.
 - Slugs remain editable before publication for entries and administratively editable for taxonomies.
 - Administrators can manually correct generated slugs.
 - A published `CulturalEntry` slug should remain immutable after publication.
+- Public Cultural Entry lookups use `slug`; content-library internal links use `targetKey` before database resolution; stored relations continue to use UUID IDs.
 
 ## Entity Evaluation For Version One
 
@@ -292,7 +296,8 @@ More audit actions can be added later only when new v1 workflows require them.
 | Field                | Type        | Required        | Default       | Notes                                                                  |
 | -------------------- | ----------- | --------------- | ------------- | ---------------------------------------------------------------------- |
 | id                   | UUID        | Yes             | `uuid()`    | Primary key.                                                           |
-| slug                 | String      | Yes once public | None          | Permanent public URL slug.                                             |
+| key                  | String      | Yes             | None          | Stable internal lowercase Latin kebab-case identity for seed/import/tooling. |
+| slug                 | String      | Yes             | None          | Public normalized Persian URL slug.                                    |
 | title                | String      | Yes             | None          | Persian title.                                                         |
 | summary              | String      | Yes             | None          | Short Persian summary.                                                 |
 | contentJson          | Json        | Yes             | None          | Tiptap JSON document.                                                  |
@@ -321,7 +326,7 @@ More audit actions can be added later only when new v1 workflows require them.
 | createdAt            | DateTime    | Yes             | `now()`     | UTC.                                                                   |
 | updatedAt            | DateTime    | Yes             | `updatedAt` | UTC.                                                                   |
 
-**Unique constraints:** `slug`.
+**Unique constraints:** `key`, `slug`.
 
 **Indexes:** `status`, `geographicScope`, `provinceId`, `districtId`, `categoryId`, `contentTypeId`, `authorId`, `publishedAt`, `createdAt`, `(status, publishedAt)`, `(status, provinceId)`, `(geographicScope, provinceId)`, `(status, categoryId)`, `(status, contentTypeId)`.
 
@@ -875,6 +880,8 @@ More audit actions can be added later only when new v1 workflows require them.
 - Provider tokens are not stored as application sessions; successful OAuth login still issues platform access and refresh tokens.
 - Email verification tokens must be stored as hashes only and must be single-use with an expiration timestamp.
 - Public entry slug must be unique and immutable after publication.
+- Public entry slug is Persian and canonical. Existing Latin public URLs would require an approved redirect or legacy-slug strategy before production use.
+- Cultural Entry `key` must be unique, lowercase Latin kebab-case, immutable after creation, and never used as a database relation key.
 - `CulturalEntry.geographicScope = PROVINCE` requires `provinceId`; `districtId` is optional but must belong to the selected province.
 - `CulturalEntry.geographicScope = NATIONAL` requires `provinceId = null` and `districtId = null`.
 - `CulturalEntry.geographicScope = NONE` requires `provinceId = null` and `districtId = null`.
@@ -893,6 +900,7 @@ More audit actions can be added later only when new v1 workflows require them.
 - An entry cannot link to itself.
 - Internal links are manually created by contributors in v1; automatic keyword detection and suggestions are deferred.
 - Internal links must store the target entry ID as the authoritative reference. A cached slug may be used only for URL generation or display.
+- Content-library internal links use `targetKey`; the seed/import process resolves `targetKey` to the target entry UUID.
 - Moderators may review or remove incorrect internal references.
 - Internal links should use descriptive anchor text, and excessive repeated linking should be avoided.
 - Previous content versions must remain available to moderators and administrators.
@@ -967,6 +975,8 @@ This avoids deletion rules that destroy published cultural history.
 
 ```json
 {
+  "key": "stable-latin-entry-key",
+  "slug": "normalized-persian-public-slug",
   "title": "string",
   "summary": "string",
   "contentJson": {},
@@ -1151,7 +1161,7 @@ The following previously open decisions are now approved for Phase B:
 - Initial taxonomy: seed Afghanistan's official provinces and districts, with initial categories and content types from the PRD. Tags are created by administrators as needed.
 - Ratings: use a 1-5 star scale.
 
-No unresolved product-level database decisions remain before Prisma implementation. Phase B still needs normal implementation review for field lengths, exact seed slugs, and any raw SQL needed for constraints Prisma cannot express directly.
+No unresolved product-level database decisions remain before Prisma implementation. Phase B still needs normal implementation review for field lengths, exact seed keys and Persian slugs, and any raw SQL needed for constraints Prisma cannot express directly.
 
 ## Phase B Implementation Checklist
 
@@ -1166,7 +1176,7 @@ No unresolved product-level database decisions remain before Prisma implementati
 9. Add `AuthProvider` and `OAuthAccount`.
 10. Implement unique `(provider, providerAccountId)` and unique `(userId, provider)` for `OAuthAccount`.
 11. Add `EmailVerificationToken` with hashed token storage, single-use tracking, expiration, and indexes.
-12. Implement the immutable published-entry slug rule in service logic.
+12. Add required unique `CulturalEntry.key`, keep required unique Persian `CulturalEntry.slug`, and implement key immutability plus published-entry slug immutability in service logic.
 13. Add the manual SQL partial unique index for one active public review per user and entry.
 14. Add the first migration only after models are approved.
 15. Generate Prisma Client after schema implementation.

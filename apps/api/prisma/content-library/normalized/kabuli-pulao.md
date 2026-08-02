@@ -1,7 +1,7 @@
 ---
 key: "kabuli-pulao"
 title: "کابلی‌پلو"
-slug: "kabuli-pulao"
+slug: "کابلی-پلو"
 summary: "کابلی‌پلو یا قابلی‌پلو غذای شناخته‌شده افغانستان است که با برنج، گوشت، هویج، کشمش و گاه مغزها تهیه می‌شود."
 geographicScope: NATIONAL
 province: null

@@ -456,7 +456,10 @@ class EntryDto {
   id!: string;
 
   @ApiProperty()
-  slug!: string | null;
+  key!: string;
+
+  @ApiProperty()
+  slug!: string;
 
   @ApiProperty()
   title!: string;

@@ -46,7 +46,22 @@ pnpm prisma:studio
 
 ## Content Library Geography Metadata
 
-Normalized content-library Markdown front matter must use the approved simplified geography shape:
+Normalized content-library Markdown front matter must include:
+
+```yaml
+key: khwaja-abdullah-ansari
+slug: خواجه-عبدالله-انصاری
+title: خواجه عبدالله انصاری
+```
+
+Rules:
+
+- `key` is the stable internal identity. It must be unique lowercase Latin kebab-case.
+- `slug` is the canonical public Persian URL text. It must be unique and normalized for URLs.
+- `title` is the Persian display title.
+- Internal links use `targetKey`; the importer resolves keys to UUID entry IDs.
+
+It must also use the approved simplified geography shape:
 
 ```yaml
 geographicScope: PROVINCE

@@ -1,7 +1,7 @@
 ---
 key: "babur-garden"
 title: "باغ بابر"
-slug: "babur-garden"
+slug: "باغ-بابر"
 summary: "باغ بابر باغی تاریخی در کابل است که با بابر، معماری باغ‌سازی و میراث تاریخی افغانستان پیوند دارد."
 geographicScope: PROVINCE
 province: "کابل"

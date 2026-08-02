@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 
+import { isValidEntryKey, isValidEntrySlug } from "@/modules/entries/utils/entry-slug.util";
 import {
   extractInternalEntryReferences,
   extractPlainTextFromTiptap,
@@ -109,12 +110,20 @@ function validateNormalizedEntryDocument(document: NormalizedEntryDocument): voi
     throw new Error(`${fileName}: key is required.`);
   }
 
+  if (!isValidEntryKey(frontMatter.key)) {
+    throw new Error(`${fileName}: key must be lowercase Latin kebab-case.`);
+  }
+
   if (!frontMatter.title.trim()) {
     throw new Error(`${fileName}: title is required.`);
   }
 
   if (!frontMatter.slug.trim()) {
     throw new Error(`${fileName}: slug is required.`);
+  }
+
+  if (!isValidEntrySlug(frontMatter.slug)) {
+    throw new Error(`${fileName}: slug must be normalized Persian URL text.`);
   }
 
   if (!frontMatter.summary.trim()) {

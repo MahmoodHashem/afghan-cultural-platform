@@ -149,6 +149,7 @@ const publishedEntryWhere = {
 
 const entrySelect = {
   id: true,
+  key: true,
   slug: true,
   title: true,
   summary: true,
@@ -376,6 +377,7 @@ type YouTubeVideoPayload = Prisma.YouTubeVideoGetPayload<{ select: typeof youtub
 function mapEntry(entry: EntryPayload) {
   return {
     id: entry.id,
+    key: entry.key,
     slug: entry.slug,
     title: entry.title,
     summary: entry.summary,

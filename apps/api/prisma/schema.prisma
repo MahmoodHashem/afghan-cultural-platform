@@ -218,7 +218,8 @@ model OAuthAccount {
 
 model CulturalEntry {
   id                   String          @id @default(uuid()) @map("id") @db.Uuid
-  slug                 String?         @unique @map("slug")
+  key                  String          @unique @map("key")
+  slug                 String          @unique @map("slug")
   title                String          @map("title")
   summary              String          @map("summary")
   contentJson          Json            @map("content_json")

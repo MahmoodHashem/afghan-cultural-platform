@@ -354,14 +354,21 @@ Owns:
 - Entry editing
 - Submission
 - Entry statuses
-- Slugs
+- Stable internal keys
+- Persian public slugs
 - Manual internal links between published Cultural Entries
 - Sources
 - Tags assigned to entries
 - Content versions
 - Public entry retrieval
 
-Internal Cultural Entry links are owned by the Entries module because they are part of entry content and public reading behavior. In version one, contributors manually select text in the Tiptap editor and link it to another existing `PUBLISHED` Cultural Entry. The selected text becomes the visible anchor text. The stored reference must use the target entry ID as the authoritative identifier; any cached target slug is only for URL generation or display.
+Cultural Entry identity uses three separate identifiers:
+
+- `id`: UUID database identity used for all relations.
+- `key`: stable lowercase Latin kebab-case identity for normalized content, demo seeds, and internal tooling.
+- `slug`: normalized Persian public URL segment used by `GET /api/v1/entries/:slug`.
+
+Internal Cultural Entry links are owned by the Entries module because they are part of entry content and public reading behavior. In version one, contributors manually select text in the Tiptap editor and link it to another existing `PUBLISHED` Cultural Entry. The selected text becomes the visible anchor text. The stored reference must use the target entry ID as the authoritative identifier; any cached target slug is only for URL generation or display. Content-library files use `targetKey` only before import; the importer resolves keys to UUID IDs.
 
 Automatic keyword detection, automatic link suggestions, related-entry analytics, and orphan-entry discovery are deferred to later versions.
 

@@ -123,7 +123,8 @@ describe("ModerationService", () => {
       .mockResolvedValueOnce(createDecisionEntryPayload())
       .mockResolvedValueOnce({
         id: ids.entry,
-        slug: "snapshot-slug",
+        key: "snapshot-entry",
+        slug: "نمونه-ثبت-شده",
         status: EntryStatus.PUBLISHED,
         publishedAt: new Date("2026-01-02T00:00:00.000Z"),
       });
@@ -178,7 +179,8 @@ describe("ModerationService", () => {
       .mockResolvedValueOnce(createDecisionEntryPayload())
       .mockResolvedValueOnce({
         id: ids.entry,
-        slug: "snapshot-slug",
+        key: "snapshot-entry",
+        slug: "نمونه-ثبت-شده",
         status: EntryStatus.PUBLISHED,
         publishedAt: new Date("2026-01-02T00:00:00.000Z"),
       });
@@ -221,7 +223,8 @@ describe("ModerationService", () => {
       .mockResolvedValueOnce(createDecisionEntryPayload())
       .mockResolvedValueOnce({
         id: ids.entry,
-        slug: "snapshot-slug",
+        key: "snapshot-entry",
+        slug: "نمونه-ثبت-شده",
         status: EntryStatus.CHANGES_REQUESTED,
         publishedAt: null,
       });
@@ -254,7 +257,8 @@ describe("ModerationService", () => {
       .mockResolvedValueOnce(createDecisionEntryPayload())
       .mockResolvedValueOnce({
         id: ids.entry,
-        slug: "snapshot-slug",
+        key: "snapshot-entry",
+        slug: "نمونه-ثبت-شده",
         status: EntryStatus.REJECTED,
         publishedAt: null,
       });
@@ -361,7 +365,8 @@ function createAuditServiceMock(): AuditServiceMock {
 function createSubmissionPayload() {
   return {
     id: ids.entry,
-    slug: "snapshot-slug",
+    key: "snapshot-entry",
+    slug: "نمونه-ثبت-شده",
     status: EntryStatus.PENDING_REVIEW,
     authorId: ids.author,
     submittedAt: new Date("2026-01-01T00:00:00.000Z"),
@@ -385,7 +390,8 @@ function createDecisionEntryPayload(
 ) {
   return {
     id: ids.entry,
-    slug: "current-slug",
+    key: "snapshot-entry",
+    slug: "نمونه-کنونی",
     status: overrides.status ?? EntryStatus.PENDING_REVIEW,
     authorId: overrides.authorId ?? ids.author,
     publishedAt: null,
@@ -417,7 +423,8 @@ function createContentVersionPayload(
       contentJson: { type: "doc", content: [] },
       plainTextContent: "Snapshot plain text",
       normalizedSearchText: "snapshot plain text",
-      slug: "snapshot-slug",
+      key: "snapshot-entry",
+      slug: "نمونه-ثبت-شده",
       province: { id: ids.province },
       district: null,
       category: { id: ids.category },

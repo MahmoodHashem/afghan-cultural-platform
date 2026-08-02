@@ -1,7 +1,7 @@
 ---
 key: "fakhr-razi"
 title: "فخر رازی"
-slug: "fakhr-razi"
+slug: "فخر-رازی"
 summary: "فخر رازی از متکلمان، فیلسوفان و مفسران برجسته جهان اسلام است که بخشی از زندگی و آرامگاه او با هرات پیوند دارد."
 geographicScope: PROVINCE
 province: "هرات"

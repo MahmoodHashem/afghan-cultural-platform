@@ -1,7 +1,7 @@
 ---
 key: "qala-bost"
 title: "قلعه بست"
-slug: "qala-bost"
+slug: "قلعه-بست"
 summary: "قلعه بست از مکان‌های تاریخی ولایت هلمند است و در حومه لشکرگاه و کنار رود هیرمند شناخته می‌شود."
 geographicScope: PROVINCE
 province: "هلمند"

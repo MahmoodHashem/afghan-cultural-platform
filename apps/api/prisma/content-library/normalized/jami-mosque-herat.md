@@ -1,7 +1,7 @@
 ---
 key: "jami-mosque-herat"
 title: "مسجد جامع هرات"
-slug: "jami-mosque-herat"
+slug: "مسجد-جامع-هرات"
 summary: "مسجد جامع هرات از بناهای مهم تاریخی و مذهبی هرات است و در دوره‌های مختلف بازسازی و مرمت شده است."
 geographicScope: PROVINCE
 province: "هرات"

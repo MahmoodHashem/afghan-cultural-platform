@@ -8,7 +8,7 @@ import { extractInternalEntryReferences } from "@/modules/entries/utils/tiptap-c
 const validMarkdown = `---
 key: "sample-entry"
 title: "نمونه"
-slug: "sample-entry"
+slug: "نمونه"
 summary: "خلاصه نمونه"
 geographicScope: PROVINCE
 province: "هرات"
@@ -78,16 +78,32 @@ describe("normalized content utilities", () => {
         targetKey: "target-entry",
         anchorText: "پیوند داخلی",
         targetEntryId,
-        targetSlug: "target-entry",
+        targetSlug: "هدف",
       },
     ]);
 
     expect(extractInternalEntryReferences(result.contentJson)).toEqual([
       {
         targetEntryId,
-        targetSlug: "target-entry",
+        targetSlug: "هدف",
         anchorText: "پیوند داخلی",
       },
     ]);
+  });
+
+  it("rejects invalid internal keys and non-normalized public slugs", () => {
+    expect(() =>
+      parseNormalizedEntryMarkdown(
+        "invalid-key.md",
+        validMarkdown.replace("sample-entry", "نمونه"),
+      ),
+    ).toThrow("key must be lowercase Latin kebab-case");
+
+    expect(() =>
+      parseNormalizedEntryMarkdown(
+        "invalid-slug.md",
+        validMarkdown.replace('slug: "نمونه"', 'slug: "نمونه آزمایشی"'),
+      ),
+    ).toThrow("slug must be normalized Persian URL text");
   });
 });

@@ -138,7 +138,7 @@ const internalReferenceContentJson = {
               type: "internalEntryLink",
               attrs: {
                 targetEntryId: ids.publishedTarget,
-                targetSlug: "nowruz-kabul",
+                targetSlug: "نوروز-کابل",
               },
             },
           ],
@@ -192,7 +192,8 @@ describe("EntriesService", () => {
         data: expect.objectContaining({
           authorId: user.id,
           status: EntryStatus.DRAFT,
-          slug: "frhng-kabl",
+          key: expect.stringMatching(/^entry-/),
+          slug: "فرهنگ-کابل",
           plainTextContent: "متن فرهنگی معتبر",
         }),
       }),
@@ -459,7 +460,6 @@ describe("EntriesService", () => {
       expect.objectContaining({
         where: {
           status: EntryStatus.PUBLISHED,
-          slug: { not: null },
           publishedAt: { not: null },
         },
         skip: 10,
@@ -472,7 +472,7 @@ describe("EntriesService", () => {
     expect(listSelect).not.toHaveProperty("plainTextContent");
     expect(response.data[0]).toMatchObject({
       id: ids.entry,
-      slug: "frhng-kabl",
+      slug: "فرهنگ-کابل",
       coverImage: {
         thumbnailUrl: "https://res.cloudinary.com/demo/image/upload/thumb/entries/sample.jpg",
       },
@@ -601,12 +601,12 @@ describe("EntriesService", () => {
   it("returns public detail by a published slug", async () => {
     prisma.culturalEntry.findFirst.mockResolvedValue(createPublicEntryDetailPayload());
 
-    const response = await service.getPublishedEntryBySlug("frhng-kabl");
+    const response = await service.getPublishedEntryBySlug(encodeURIComponent("فرهنگ-کابل"));
 
     expect(prisma.culturalEntry.findFirst).toHaveBeenCalledWith(
       expect.objectContaining({
         where: {
-          slug: "frhng-kabl",
+          slug: "فرهنگ-کابل",
           status: EntryStatus.PUBLISHED,
           publishedAt: { not: null },
         },
@@ -633,7 +633,7 @@ describe("EntriesService", () => {
       },
     });
     expect(response.data).toMatchObject({
-      slug: "frhng-kabl",
+      slug: "فرهنگ-کابل",
       contentJson: validContentJson,
       district: {
         slug: "markaz",
@@ -651,7 +651,7 @@ describe("EntriesService", () => {
           targetEntryId: ids.publishedTarget,
           anchorText: "نوروز کابل",
           targetEntry: {
-            slug: "nowruz-kabul",
+            slug: "نوروز-کابل",
           },
         },
       ],
@@ -659,12 +659,12 @@ describe("EntriesService", () => {
         {
           sourceEntryId: ids.publishedTarget,
           sourceEntry: {
-            slug: "published-entry",
+            slug: "نوشته-منتشرشده",
           },
         },
       ],
       seo: {
-        canonicalSlug: "frhng-kabl",
+        canonicalSlug: "فرهنگ-کابل",
         image: "https://res.cloudinary.com/demo/image/upload/thumb/entries/sample.jpg",
       },
     });
@@ -1655,7 +1655,7 @@ describe("EntriesService", () => {
 
   it("searches only published entries for internal-link targets", async () => {
     prisma.culturalEntry.findMany.mockResolvedValue([
-      createReferenceTargetPayload({ title: "نوروز کابل", slug: "nowruz-kabul" }),
+      createReferenceTargetPayload({ title: "نوروز کابل", slug: "نوروز-کابل" }),
     ]);
 
     const response = await service.searchReferenceTargets({
@@ -1672,7 +1672,7 @@ describe("EntriesService", () => {
       }),
     );
     expect(response.data).toEqual([
-      createReferenceTargetPayload({ title: "نوروز کابل", slug: "nowruz-kabul" }),
+      createReferenceTargetPayload({ title: "نوروز کابل", slug: "نوروز-کابل" }),
     ]);
   });
 
@@ -1731,6 +1731,7 @@ describe("EntriesService", () => {
     const dto = plainToInstance(CreateEntryDraftDto, {
       ...createDraftInput,
       authorId: user.id,
+      key: "manual-key",
       status: EntryStatus.PUBLISHED,
       publishedAt: "2026-01-01T00:00:00.000Z",
     });
@@ -1740,7 +1741,7 @@ describe("EntriesService", () => {
     });
 
     expect(errors.map((error) => error.property)).toEqual(
-      expect.arrayContaining(["authorId", "status", "publishedAt"]),
+      expect.arrayContaining(["authorId", "key", "status", "publishedAt"]),
     );
   });
 });
@@ -1859,7 +1860,8 @@ function createEntryPayload(
 ) {
   return {
     id: ids.entry,
-    slug: "frhng-kabl",
+    key: "sample-entry",
+    slug: "فرهنگ-کابل",
     title: createDraftInput.title,
     summary: createDraftInput.summary,
     contentJson: overrides.contentJson ?? validContentJson,
@@ -1895,7 +1897,8 @@ function createEntryPayload(
 function createEntryForChange() {
   return {
     id: ids.entry,
-    slug: "frhng-kabl",
+    key: "sample-entry",
+    slug: "فرهنگ-کابل",
     title: createDraftInput.title,
     summary: createDraftInput.summary,
     contentJson: validContentJson,
@@ -1927,7 +1930,8 @@ function createSubmissionEntryPayload(
 ) {
   return {
     id: ids.entry,
-    slug: "frhng-kabl",
+    key: "sample-entry",
+    slug: "فرهنگ-کابل",
     title: createDraftInput.title,
     summary: createDraftInput.summary,
     contentJson: overrides.contentJson ?? validContentJson,
@@ -1967,7 +1971,7 @@ function createSubmissionEntryPayload(
 function createPublicEntryCardPayload() {
   return {
     id: ids.entry,
-    slug: "frhng-kabl",
+    slug: "فرهنگ-کابل",
     title: createDraftInput.title,
     summary: createDraftInput.summary,
     averageRating: 4.25,
@@ -2011,7 +2015,7 @@ function createPublicEntryDetailPayload() {
         anchorText: "نوروز کابل",
         targetEntry: {
           id: ids.publishedTarget,
-          slug: "nowruz-kabul",
+          slug: "نوروز-کابل",
           title: "نوروز کابل",
         },
       },
@@ -2023,7 +2027,7 @@ function createPublicEntryDetailPayload() {
         anchorText: "فرهنگ کابل",
         sourceEntry: {
           id: ids.publishedTarget,
-          slug: "published-entry",
+          slug: "نوشته-منتشرشده",
           title: "نوشته منتشرشده",
           summary: "خلاصه نوشته منتشرشده",
           publishedAt: new Date("2026-01-01T00:00:00.000Z"),
@@ -2229,7 +2233,7 @@ function createSubmissionReferencePayload(
     anchorText: "نوروز کابل",
     targetEntry: {
       id: ids.publishedTarget,
-      slug: "nowruz-kabul",
+      slug: "نوروز-کابل",
       title: "نوروز کابل",
       status: overrides.targetStatus ?? EntryStatus.PUBLISHED,
       publishedAt: overrides.publishedAt ?? new Date("2026-01-01T00:00:00.000Z"),
@@ -2274,7 +2278,7 @@ function createReferenceTargetPayload(
 ) {
   return {
     id: overrides.id ?? ids.publishedTarget,
-    slug: overrides.slug ?? "published-entry",
+    slug: overrides.slug ?? "نوشته-منتشرشده",
     title: overrides.title ?? "نوشته منتشرشده",
     summary: "خلاصه نوشته منتشرشده",
     publishedAt: new Date("2026-01-01T00:00:00.000Z"),
@@ -2301,7 +2305,7 @@ function createIncomingReferencePayload() {
     createdAt: new Date("2026-01-01T00:00:00.000Z"),
     sourceEntry: {
       id: ids.publishedTarget,
-      slug: "published-entry",
+      slug: "نوشته-منتشرشده",
       title: "نوشته منتشرشده",
     },
   };

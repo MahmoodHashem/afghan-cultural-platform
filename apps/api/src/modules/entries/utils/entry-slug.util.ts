@@ -40,7 +40,11 @@ const PERSIAN_TRANSLITERATION: Record<string, string> = {
   ء: "",
 };
 
-function createEntrySlug(input: string, fallback = "entry"): string {
+const ENTRY_KEY_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const PERSIAN_DIACRITICS_PATTERN = /[\u064B-\u065F\u0670\u06D6-\u06ED]/g;
+const ENTRY_SLUG_UNSUPPORTED_PATTERN = /[^\p{Script=Arabic}a-z0-9۰-۹٠-٩-]+/gu;
+
+function createLatinKebabSlug(input: string, fallback = "entry"): string {
   const transliterated = [...input.trim()]
     .map((character) => PERSIAN_TRANSLITERATION[character] ?? character)
     .join("");
@@ -53,6 +57,42 @@ function createEntrySlug(input: string, fallback = "entry"): string {
     .replace(/^-|-$/g, "");
 
   return slug || fallback;
+}
+
+function createEntryKeyFromId(id: string): string {
+  return `entry-${id.toLowerCase()}`;
+}
+
+function isValidEntryKey(key: string): boolean {
+  return ENTRY_KEY_PATTERN.test(key);
+}
+
+function normalizePersianText(input: string): string {
+  return input
+    .normalize("NFKC")
+    .replaceAll("ي", "ی")
+    .replaceAll("ى", "ی")
+    .replaceAll("ك", "ک")
+    .replace(PERSIAN_DIACRITICS_PATTERN, "");
+}
+
+function createEntrySlug(input: string, fallback = "entry"): string {
+  const slug = normalizePersianText(input)
+    .toLowerCase()
+    .replace(/[‌\s_]+/gu, "-")
+    .replace(ENTRY_SLUG_UNSUPPORTED_PATTERN, "-")
+    .replace(/-{2,}/g, "-")
+    .replace(/^-|-$/g, "");
+
+  return slug || fallback;
+}
+
+function normalizeEntrySlug(input: string): string {
+  return createEntrySlug(input, "");
+}
+
+function isValidEntrySlug(slug: string): boolean {
+  return normalizeEntrySlug(slug) === slug && slug.length > 0;
 }
 
 async function createUniqueEntrySlug(
@@ -82,4 +122,13 @@ function normalizeEntrySearchText(parts: Array<string | null | undefined>): stri
     .toLowerCase();
 }
 
-export { createEntrySlug, createUniqueEntrySlug, normalizeEntrySearchText };
+export {
+  createEntryKeyFromId,
+  createEntrySlug,
+  createLatinKebabSlug,
+  createUniqueEntrySlug,
+  isValidEntryKey,
+  isValidEntrySlug,
+  normalizeEntrySearchText,
+  normalizeEntrySlug,
+};

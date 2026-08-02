@@ -34,6 +34,7 @@ const moderationTaxonomySelect = {
 
 const moderationSubmissionSelect = {
   id: true,
+  key: true,
   slug: true,
   status: true,
   authorId: true,
@@ -65,6 +66,7 @@ const moderationSubmissionSelect = {
 
 const moderationDecisionEntrySelect = {
   id: true,
+  key: true,
   slug: true,
   status: true,
   authorId: true,
@@ -260,6 +262,7 @@ class ModerationService {
         entryId: entry.id,
         metadata: {
           entryId: entry.id,
+          entryKey: entry.key,
           reviewId: review.id,
           versionNumber: contentVersion.versionNumber,
           oldStatus: EntryStatus.PENDING_REVIEW,
@@ -273,6 +276,7 @@ class ModerationService {
         where: { id: entry.id },
         select: {
           id: true,
+          key: true,
           slug: true,
           status: true,
           publishedAt: true,
@@ -328,6 +332,7 @@ class ModerationService {
   private mapSubmission(entry: ModerationSubmissionPayload) {
     return {
       id: entry.id,
+      key: entry.key,
       slug: entry.slug,
       status: entry.status,
       authorId: entry.authorId,

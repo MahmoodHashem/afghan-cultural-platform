@@ -12,7 +12,9 @@ import {
 } from "../src/generated/prisma/enums";
 import { hashPassword } from "../src/modules/auth/utils/password.util";
 import {
-  createEntrySlug,
+  createLatinKebabSlug,
+  isValidEntryKey,
+  isValidEntrySlug,
   normalizeEntrySearchText,
 } from "../src/modules/entries/utils/entry-slug.util";
 import {
@@ -120,6 +122,7 @@ async function main(): Promise<void> {
 
   try {
     const documents = loadNormalizedDocuments();
+    validateUniqueEntryIdentities(documents);
     const approvedDocuments = documents.filter(
       (document) => document.frontMatter.reviewStatus === "APPROVED",
     );
@@ -155,7 +158,7 @@ async function main(): Promise<void> {
       tagsByName,
     });
 
-    await assertDemoSlugsAreSafe(prisma, resolvedEntries);
+    await assertDemoIdentitiesAreSafe(prisma, resolvedEntries);
 
     for (const entry of resolvedEntries) {
       await seedEntry(prisma, entry);
@@ -184,6 +187,32 @@ async function main(): Promise<void> {
     console.table(countsAfter);
   } finally {
     await prisma.$disconnect();
+  }
+}
+
+function validateUniqueEntryIdentities(documents: NormalizedEntryDocument[]): void {
+  const keys = new Set<string>();
+  const slugs = new Set<string>();
+
+  for (const document of documents) {
+    if (!isValidEntryKey(document.frontMatter.key)) {
+      throw new Error(`${document.fileName}: key must be lowercase Latin kebab-case.`);
+    }
+
+    if (!isValidEntrySlug(document.frontMatter.slug)) {
+      throw new Error(`${document.fileName}: slug must be normalized Persian URL text.`);
+    }
+
+    if (keys.has(document.frontMatter.key)) {
+      throw new Error(`${document.fileName}: duplicate key ${document.frontMatter.key}.`);
+    }
+
+    if (slugs.has(document.frontMatter.slug)) {
+      throw new Error(`${document.fileName}: duplicate slug ${document.frontMatter.slug}.`);
+    }
+
+    keys.add(document.frontMatter.key);
+    slugs.add(document.frontMatter.slug);
   }
 }
 
@@ -553,21 +582,35 @@ function resolveInternalLinks(
   });
 }
 
-async function assertDemoSlugsAreSafe(
+async function assertDemoIdentitiesAreSafe(
   prisma: SeedPrismaClient,
   entries: ResolvedEntry[],
 ): Promise<void> {
   const demoEntryIds = new Set(entries.map((entry) => entry.entryId));
 
   for (const entry of entries) {
-    const existingEntry = await prisma.culturalEntry.findUnique({
-      where: { slug: entry.document.frontMatter.slug },
-      select: {
-        id: true,
-      },
-    });
+    const [entryWithKey, entryWithSlug] = await Promise.all([
+      prisma.culturalEntry.findUnique({
+        where: { key: entry.document.frontMatter.key },
+        select: {
+          id: true,
+        },
+      }),
+      prisma.culturalEntry.findUnique({
+        where: { slug: entry.document.frontMatter.slug },
+        select: {
+          id: true,
+        },
+      }),
+    ]);
 
-    if (existingEntry && !demoEntryIds.has(existingEntry.id)) {
+    if (entryWithKey && !demoEntryIds.has(entryWithKey.id)) {
+      throw new Error(
+        `${entry.document.fileName}: key already belongs to a non-demo entry: ${entry.document.frontMatter.key}`,
+      );
+    }
+
+    if (entryWithSlug && !demoEntryIds.has(entryWithSlug.id)) {
       throw new Error(
         `${entry.document.fileName}: slug already belongs to a non-demo entry: ${entry.document.frontMatter.slug}`,
       );
@@ -652,6 +695,7 @@ async function seedEntry(prisma: SeedPrismaClient, entry: ResolvedEntry): Promis
 
 function createEntryData(entry: ResolvedEntry): Prisma.CulturalEntryUncheckedCreateInput {
   return {
+    key: entry.document.frontMatter.key,
     slug: entry.document.frontMatter.slug,
     title: entry.document.frontMatter.title,
     summary: entry.document.frontMatter.summary,
@@ -709,6 +753,7 @@ function createContentSnapshot(entry: ResolvedEntry): Prisma.InputJsonValue {
   return {
     schemaVersion: 1,
     entryId: entry.entryId,
+    key: entry.document.frontMatter.key,
     title: entry.document.frontMatter.title,
     summary: entry.document.frontMatter.summary,
     contentJson: entry.contentJson,
@@ -769,6 +814,7 @@ async function seedSubmissionAudit(
       entryId: entry.entryId,
       metadata: {
         entryId: entry.entryId,
+        entryKey: entry.document.frontMatter.key,
         versionNumber: 1,
         oldStatus: EntryStatus.DRAFT,
         newStatus: EntryStatus.PENDING_REVIEW,
@@ -784,6 +830,7 @@ async function seedSubmissionAudit(
       entryId: entry.entryId,
       metadata: {
         entryId: entry.entryId,
+        entryKey: entry.document.frontMatter.key,
         versionNumber: 1,
         oldStatus: EntryStatus.DRAFT,
         newStatus: EntryStatus.PENDING_REVIEW,
@@ -849,6 +896,7 @@ async function seedModerationDecision(
       entryId: entry.entryId,
       metadata: {
         entryId: entry.entryId,
+        entryKey: entry.document.frontMatter.key,
         versionNumber: 1,
         oldStatus: previousStatus,
         newStatus: nextStatus,
@@ -866,6 +914,7 @@ async function seedModerationDecision(
       entryId: entry.entryId,
       metadata: {
         entryId: entry.entryId,
+        entryKey: entry.document.frontMatter.key,
         versionNumber: 1,
         oldStatus: previousStatus,
         newStatus: nextStatus,
@@ -1077,7 +1126,7 @@ function normalizeLookupKey(value: string): string {
 }
 
 function createTagSlug(name: string): string {
-  const baseSlug = createEntrySlug(name, "tag");
+  const baseSlug = createLatinKebabSlug(name, "tag");
   const suffix = createDeterministicUuid("demo-tag-slug", normalizeLookupKey(name)).slice(0, 8);
 
   return `${baseSlug}-${suffix}`;

@@ -1,3 +1,5 @@
+import { randomUUID } from "node:crypto";
+
 import {
   BadRequestException,
   ConflictException,
@@ -59,8 +61,11 @@ import {
   youtubeVideoSelect,
 } from "@/modules/entries/entries.mapper";
 import {
+  createEntryKeyFromId,
   createUniqueEntrySlug,
+  isValidEntrySlug,
   normalizeEntrySearchText,
+  normalizeEntrySlug,
 } from "@/modules/entries/utils/entry-slug.util";
 import {
   extractInternalEntryReferences,
@@ -127,7 +132,7 @@ const submittableStatuses = new Set<EntryStatus>([
 ]);
 const MAX_REFERENCE_ANCHOR_LENGTH = 180;
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const TAXONOMY_SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const taxonomyReferenceSelect = {
   id: true,
   name: true,
@@ -155,6 +160,7 @@ const submissionImageOrderBy: Prisma.ImageOrderByWithRelationInput[] = [
 ];
 const submissionEntrySelect = {
   id: true,
+  key: true,
   slug: true,
   title: true,
   summary: true,
@@ -294,6 +300,7 @@ class EntriesService {
   }
 
   async createDraft(user: AuthenticatedUser, input: CreateEntryDraftDto) {
+    const entryId = randomUUID();
     const title = this.normalizeTitle(input.title);
     const summary = this.normalizeRequiredText(input.summary, "Summary is required.");
     const contentJson = this.validateContent(input.contentJson);
@@ -314,6 +321,8 @@ class EntriesService {
         const createdEntry = await tx.culturalEntry.create({
           data: {
             title,
+            id: entryId,
+            key: createEntryKeyFromId(entryId),
             summary,
             contentJson: contentJson as Prisma.InputJsonValue,
             plainTextContent,
@@ -1337,9 +1346,6 @@ class EntriesService {
 
     return {
       status: EntryStatus.PUBLISHED,
-      slug: {
-        not: null,
-      },
       publishedAt: {
         not: null,
       },
@@ -1443,7 +1449,7 @@ class EntriesService {
       return undefined;
     }
 
-    if (!SLUG_PATTERN.test(normalizedValue)) {
+    if (!TAXONOMY_SLUG_PATTERN.test(normalizedValue)) {
       throw this.invalidPublicQuery(`${field} must be a valid slug.`);
     }
 
@@ -1451,9 +1457,17 @@ class EntriesService {
   }
 
   private normalizePublicSlug(slug: string): string {
-    const normalizedSlug = slug.trim().toLowerCase();
+    let decodedSlug = slug.trim();
 
-    if (!SLUG_PATTERN.test(normalizedSlug)) {
+    try {
+      decodedSlug = decodeURIComponent(decodedSlug);
+    } catch {
+      throw this.invalidPublicQuery("Entry slug must be a valid slug.");
+    }
+
+    const normalizedSlug = normalizeEntrySlug(decodedSlug);
+
+    if (!isValidEntrySlug(normalizedSlug)) {
       throw this.invalidPublicQuery("Entry slug must be a valid slug.");
     }
 
@@ -2036,6 +2050,7 @@ class EntriesService {
     return {
       schemaVersion: 1,
       entryId: entry.id,
+      key: entry.key,
       title: entry.title,
       summary: entry.summary,
       contentJson: entry.contentJson as Prisma.InputJsonValue,
