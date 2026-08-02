@@ -32,6 +32,8 @@ const authNavigation = read("src/features/auth/components/auth-navigation.tsx");
 const logoutAllButton = read("src/features/auth/components/logout-all-button.tsx");
 const verifiedEmailBanner = read("src/features/auth/components/verified-email-banner.tsx");
 const authQuery = read("src/lib/auth/auth-query.ts");
+const homePage = read("src/app/page.tsx");
+const homeHero = read("src/features/home/components/home-hero.tsx");
 
 test("login page renders required fields and links", () => {
   assert.match(loginPage, /title=" خوش آمدید"/);
@@ -197,4 +199,37 @@ test("auth code never stores tokens in browser storage or frontend cookies", () 
 
   assert.doesNotMatch(authFiles, /localStorage|sessionStorage|IndexedDB|document\.cookie/);
   assert.match(authCoordinator, /credentials: "include"/);
+});
+
+test("homepage keeps the design preview and adds the premium hero first", () => {
+  assert.match(homePage, /<HomeHero \/>/);
+  assert.match(homePage, /id="design-preview"/);
+  assert.match(homePage, /پیش‌نمایش بنیاد طراحی/);
+});
+
+test("homepage hero uses the approved Afghan heritage carousel images", () => {
+  assert.match(homeHero, /\/images\/herat-grand-mosque\.webp/);
+  assert.match(homeHero, /\/images\/arg\.png/);
+  assert.match(homeHero, /\/images\/menar\.png/);
+  assert.match(homeHero, /\/images\/babur\.png/);
+  assert.match(homeHero, /setInterval/);
+});
+
+test("homepage floating header uses solid controls instead of a glass nav pill", () => {
+  assert.match(homeHero, /bg-transparent/);
+  assert.match(homeHero, /bg-white/);
+  assert.match(homeHero, /bg-primary/);
+  assert.match(homeHero, /میراث افغانستان/);
+  assert.match(homeHero, /کاوش محتوا/);
+  assert.match(homeHero, /جست‌وجوی فرهنگ، مکان، روایت/);
+  assert.match(homeHero, /ایجاد محتوا/);
+  assert.match(homeHero, /ورود \/ ثبت‌نام/);
+});
+
+test("homepage header compacts on scroll while preserving logo, search, and actions", () => {
+  assert.match(homeHero, /isHeaderCompact/);
+  assert.match(homeHero, /window\.scrollY > 120/);
+  assert.match(homeHero, /max-w-\[1040px\] gap-2 border border-border bg-card/);
+  assert.match(homeHero, /h-9 min-w-\[240px\] max-w-\[320px\] border-border/);
+  assert.match(homeHero, /<HeroAuthControls isCompact=\{isCompact\} \/>/);
 });
