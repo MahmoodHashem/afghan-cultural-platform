@@ -9,8 +9,19 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,6 +40,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { useLogout } from "@/features/auth/hooks/use-auth-mutations";
 import { cn } from "@/lib/utils";
 import { type SafeUser, useAuthStore } from "@/stores/auth-store";
 
@@ -300,117 +312,157 @@ function HeaderSearch({
 
 function MobileNavigation({ isCompact }: { isCompact: boolean }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
   const status = useAuthStore((state) => state.status);
   const user = useAuthStore((state) => state.user);
+  const logoutMutation = useLogout();
   const isAuthenticated = status === "authenticated" && Boolean(user);
 
   const closeMenu = () => setIsOpen(false);
+  const confirmLogout = () => {
+    logoutMutation.mutate(undefined, {
+      onError: () => {
+        toast.error("خروج انجام نشد. دوباره تلاش کنید.");
+      },
+      onSettled: () => {
+        closeMenu();
+        setIsLogoutDialogOpen(false);
+      },
+    });
+  };
 
   return (
-    <Sheet open={isOpen} onOpenChange={setIsOpen}>
-      <SheetTrigger
-        className={cn(
-          "inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-background text-foreground shadow-[0_8px_24px_rgba(31,41,55,0.14)] outline-none transition-colors hover:bg-background/90 focus-visible:ring-3 lg:hidden",
-          isCompact ? "focus-visible:ring-ring/40" : "focus-visible:ring-white/35",
-        )}
-        aria-label="باز کردن منوی ناوبری"
-      >
-        <Bars3Icon className="size-5" aria-hidden="true" />
-      </SheetTrigger>
-      <SheetContent
-        side="right"
-        className="w-[min(86vw,22rem)] gap-0 border-border bg-background p-0 text-foreground"
-      >
-        <SheetHeader className="border-b border-border px-5 py-5 text-start">
-          <SheetTitle className="flex items-center gap-3 text-[18px] font-bold text-primary">
-            <Image
-              src="/images/small-logo.png"
-              alt=""
-              width={34}
-              height={39}
-              className="h-9 w-auto"
-            />
-            میراث افغانستان
-          </SheetTitle>
-          <SheetDescription className="text-[13px] leading-6">
-            راهنمای سریع برای کاوش میراث فرهنگی افغانستان
-          </SheetDescription>
-        </SheetHeader>
+    <>
+      <Sheet open={isOpen} onOpenChange={setIsOpen}>
+        <SheetTrigger
+          className={cn(
+            "inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-background text-foreground shadow-[0_8px_24px_rgba(31,41,55,0.14)] outline-none transition-colors hover:bg-background/90 focus-visible:ring-3 lg:hidden",
+            isCompact ? "focus-visible:ring-ring/40" : "focus-visible:ring-white/35",
+          )}
+          aria-label="باز کردن منوی ناوبری"
+        >
+          <Bars3Icon className="size-5" aria-hidden="true" />
+        </SheetTrigger>
+        <SheetContent
+          side="right"
+          className="w-[min(86vw,22rem)] gap-0 border-border bg-background p-0 text-foreground"
+        >
+          <SheetHeader className="border-b border-border px-5 py-5 text-start">
+            <SheetTitle className="flex items-center gap-3 text-[18px] font-bold text-primary">
+              <Image
+                src="/images/small-logo.png"
+                alt=""
+                width={34}
+                height={39}
+                className="h-9 w-auto"
+              />
+              میراث افغانستان
+            </SheetTitle>
+            <SheetDescription className="text-[13px] leading-6">
+              راهنمای سریع برای کاوش میراث فرهنگی افغانستان
+            </SheetDescription>
+          </SheetHeader>
 
-        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-5 py-6">
-          <nav className="space-y-2" aria-label="ناوبری موبایل">
-            {navigationItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={closeMenu}
-                className="flex min-h-11 items-center rounded-xl border px-3 text-[15px] font-semibold text-foreground transition-colors hover:bg-card hover:text-primary focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/35"
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
+          <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-5 py-6">
+            <nav className="space-y-2" aria-label="ناوبری موبایل">
+              {navigationItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={closeMenu}
+                  className="flex min-h-11 items-center rounded-xl border px-3 text-[15px] font-semibold text-foreground transition-colors hover:bg-card hover:text-primary focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/35"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
 
-          <div className="mt-auto border-t border-border pt-5">
-            {status === "initializing" ? (
-              <div className="h-10 animate-pulse rounded-full bg-muted" aria-hidden="true" />
-            ) : isAuthenticated && user ? (
-              <div className="space-y-3">
-                <div className="flex items-center gap-3 rounded-2xl bg-card p-3">
-                  <Avatar size="default" className="size-9 bg-primary-light">
-                    <AvatarFallback className="bg-primary-light text-[12px] font-bold text-primary">
-                      {createInitials(user.displayName)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0">
-                    <p className="truncate text-[14px] font-bold text-foreground">
-                      {user.displayName}
-                    </p>
-                    <p className="truncate text-[12px] text-muted-foreground" dir="ltr">
-                      {user.email}
-                    </p>
+            <div className="mt-auto border-t border-border pt-5">
+              {status === "initializing" ? (
+                <div className="h-10 animate-pulse rounded-full bg-muted" aria-hidden="true" />
+              ) : isAuthenticated && user ? (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 rounded-2xl bg-card p-3">
+                    <Avatar size="default" className="size-9 bg-primary-light">
+                      <AvatarFallback className="bg-primary-light text-[12px] font-bold text-primary">
+                        {createInitials(user.displayName)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0">
+                      <p className="truncate text-[14px] font-bold text-foreground">
+                        {user.displayName}
+                      </p>
+                      <p className="truncate text-[12px] text-muted-foreground" dir="ltr">
+                        {user.email}
+                      </p>
+                    </div>
                   </div>
+                  <Link
+                    href="/entries/new"
+                    onClick={closeMenu}
+                    className={cn(
+                      buttonVariants({ variant: "default" }),
+                      "h-11 w-full rounded-full",
+                    )}
+                  >
+                    ایجاد محتوا
+                  </Link>
+                  <Link
+                    href="/account"
+                    onClick={closeMenu}
+                    className={cn(
+                      buttonVariants({ variant: "outline" }),
+                      "h-11 w-full rounded-full",
+                    )}
+                  >
+                    حساب کاربری
+                  </Link>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    disabled={logoutMutation.isPending}
+                    onClick={() => setIsLogoutDialogOpen(true)}
+                    className="h-11 w-full rounded-full text-destructive hover:bg-destructive/10 hover:text-destructive"
+                  >
+                    {logoutMutation.isPending ? "در حال خروج..." : "خروج"}
+                  </Button>
                 </div>
-                <Link
-                  href="/entries/new"
-                  onClick={closeMenu}
-                  className={cn(buttonVariants({ variant: "default" }), "h-11 w-full rounded-full")}
-                >
-                  ایجاد محتوا
-                </Link>
-                <Link
-                  href="/account"
-                  onClick={closeMenu}
-                  className={cn(buttonVariants({ variant: "outline" }), "h-11 w-full rounded-full")}
-                >
-                  حساب کاربری
-                </Link>
-              </div>
-            ) : (
-              <div className="grid gap-3">
-                <Link
-                  href="/login"
-                  onClick={closeMenu}
-                  className={cn(
-                    buttonVariants({ variant: "outline" }),
-                    "h-11 w-full rounded-full text-foreground",
-                  )}
-                >
-                  ورود
-                </Link>
-                <Link
-                  href="/register"
-                  onClick={closeMenu}
-                  className={cn(buttonVariants({ variant: "default" }), "h-11 w-full rounded-full")}
-                >
-                  ثبت‌نام
-                </Link>
-              </div>
-            )}
+              ) : (
+                <div className="grid gap-3">
+                  <Link
+                    href="/login"
+                    onClick={closeMenu}
+                    className={cn(
+                      buttonVariants({ variant: "outline" }),
+                      "h-11 w-full rounded-full text-foreground",
+                    )}
+                  >
+                    ورود
+                  </Link>
+                  <Link
+                    href="/register"
+                    onClick={closeMenu}
+                    className={cn(
+                      buttonVariants({ variant: "default" }),
+                      "h-11 w-full rounded-full",
+                    )}
+                  >
+                    ثبت‌نام
+                  </Link>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      </SheetContent>
-    </Sheet>
+        </SheetContent>
+      </Sheet>
+
+      <LogoutConfirmationDialog
+        open={isLogoutDialogOpen}
+        onOpenChange={setIsLogoutDialogOpen}
+        onConfirm={confirmLogout}
+        isPending={logoutMutation.isPending}
+      />
+    </>
   );
 }
 
@@ -471,6 +523,19 @@ function HeroAuthControls({ isCompact }: { isCompact: boolean }) {
 }
 
 function ProfileMenu({ user }: { user: SafeUser }) {
+  const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
+  const logoutMutation = useLogout();
+  const confirmLogout = () => {
+    logoutMutation.mutate(undefined, {
+      onError: () => {
+        toast.error("خروج انجام نشد. دوباره تلاش کنید.");
+      },
+      onSettled: () => {
+        setIsLogoutDialogOpen(false);
+      },
+    });
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -507,8 +572,61 @@ function ProfileMenu({ user }: { user: SafeUser }) {
         >
           حساب کاربری
         </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          variant="destructive"
+          disabled={logoutMutation.isPending}
+          onClick={() => setIsLogoutDialogOpen(true)}
+          className="rounded-2xl px-3 py-2 text-[14px] focus:bg-destructive/10"
+        >
+          {logoutMutation.isPending ? "در حال خروج..." : "خروج"}
+        </DropdownMenuItem>
       </DropdownMenuContent>
+      <LogoutConfirmationDialog
+        open={isLogoutDialogOpen}
+        onOpenChange={setIsLogoutDialogOpen}
+        onConfirm={confirmLogout}
+        isPending={logoutMutation.isPending}
+      />
     </DropdownMenu>
+  );
+}
+
+function LogoutConfirmationDialog({
+  open,
+  onOpenChange,
+  onConfirm,
+  isPending,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onConfirm: () => void;
+  isPending: boolean;
+}) {
+  return (
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent className="rounded-[24px] border border-border bg-card p-5 text-foreground shadow-[0_24px_70px_rgba(31,41,55,0.16)]">
+        <AlertDialogHeader className="place-items-start text-start">
+          <AlertDialogTitle className="text-[18px] font-bold text-foreground">
+            خروج از حساب کاربری؟
+          </AlertDialogTitle>
+          <AlertDialogDescription className="text-[14px] leading-7 text-muted-foreground">
+            آیا مطمئن هستید که می‌خواهید از حساب کاربری خود خارج شوید?
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter className="-mx-5 -mb-5 border-border bg-muted/40 px-5 py-4 sm:justify-start">
+          <AlertDialogCancel className="rounded-full">انصراف</AlertDialogCancel>
+          <AlertDialogAction
+            type="button"
+            disabled={isPending}
+            onClick={onConfirm}
+            className="rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            {isPending ? "در حال خروج..." : "خروج"}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }
 
