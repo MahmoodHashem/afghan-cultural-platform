@@ -32,11 +32,14 @@ const authNavigation = read("src/features/auth/components/auth-navigation.tsx");
 const logoutAllButton = read("src/features/auth/components/logout-all-button.tsx");
 const verifiedEmailBanner = read("src/features/auth/components/verified-email-banner.tsx");
 const authQuery = read("src/lib/auth/auth-query.ts");
-const entryDetailPage = read("src/app/entries/[slug]/page.tsx");
+const publicLayout = read("src/app/(public)/layout.tsx");
+const entryDetailPage = read("src/app/(public)/entries/[slug]/page.tsx");
 const entryDetailContent = read("src/features/entries/components/entry-detail-content.tsx");
 const entryFeedback = read("src/features/entries/components/reviews/entry-feedback.tsx");
 const communityFeedbackApi = read("src/features/entries/api/community-feedback-api.ts");
-const explorePage = read("src/app/explore/page.tsx");
+const explorePage = read("src/app/(public)/explore/page.tsx");
+const provincesPage = read("src/app/(public)/provinces/page.tsx");
+const categoriesPage = read("src/app/(public)/categories/page.tsx");
 const exploreApi = read("src/features/entries/api/public-entries-api.ts");
 const exploreContent = read("src/features/entries/components/explore-content.tsx");
 const homePage = read("src/app/page.tsx");
@@ -44,6 +47,7 @@ const homeApi = read("src/features/home/api/home-api.ts");
 const homeContent = read("src/features/home/components/home-content.tsx");
 const homeFooter = read("src/features/home/components/home-footer.tsx");
 const homeHero = read("src/features/home/components/home-hero.tsx");
+const publicHeader = read("src/components/layout/public-header.tsx");
 const sheet = read("src/components/ui/sheet.tsx");
 
 test("login page renders required fields and links", () => {
@@ -235,33 +239,42 @@ test("homepage hero uses the approved Afghan heritage carousel images", () => {
 });
 
 test("homepage floating header uses solid controls instead of a glass nav pill", () => {
-  assert.match(homeHero, /bg-transparent/);
-  assert.match(homeHero, /bg-white/);
-  assert.match(homeHero, /bg-primary/);
-  assert.match(homeHero, /میراث افغانستان/);
-  assert.match(homeHero, /کاوش محتوا/);
-  assert.match(homeHero, /جست‌وجوی فرهنگ، مکان، روایت/);
-  assert.match(homeHero, /ایجاد محتوا/);
-  assert.match(homeHero, /ثبت‌نام/);
+  assert.match(homeHero, /<PublicHeader variant="hero" \/>/);
+  assert.match(publicHeader, /bg-transparent/);
+  assert.match(publicHeader, /bg-background/);
+  assert.match(publicHeader, /bg-primary/);
+  assert.match(publicHeader, /میراث افغانستان/);
+  assert.match(publicHeader, /کاوش محتوا/);
+  assert.match(publicHeader, /جست‌وجوی فرهنگ، مکان، روایت/);
+  assert.match(publicHeader, /ایجاد محتوا/);
+  assert.match(publicHeader, /ثبت‌نام/);
 });
 
 test("homepage header compacts on scroll while preserving logo, search, and actions", () => {
-  assert.match(homeHero, /isHeaderCompact/);
-  assert.match(homeHero, /window\.scrollY > 120/);
-  assert.match(homeHero, /max-w-260 gap-2 border border-border bg-card/);
-  assert.match(homeHero, /h-9 min-w-0 border-border bg-card/);
-  assert.match(homeHero, /<HeroAuthControls isCompact=\{isCompact\} \/>/);
+  assert.match(publicHeader, /isHeaderCompact/);
+  assert.match(publicHeader, /window\.scrollY > 120/);
+  assert.match(publicHeader, /max-w-260 gap-2 border border-border bg-card/);
+  assert.match(publicHeader, /h-9 min-w-0 border-border bg-card/);
+  assert.match(publicHeader, /<HeaderAuthControls isCompact=\{isCompact\} \/>/);
 });
 
 test("homepage mobile navigation uses a shadcn Sheet sidebar", () => {
-  assert.match(homeHero, /function MobileNavigation/);
-  assert.match(homeHero, /<Sheet open=\{isOpen\} onOpenChange=\{setIsOpen\}>/);
-  assert.match(homeHero, /side="right"/);
-  assert.match(homeHero, /باز کردن منوی ناوبری/);
-  assert.match(homeHero, /ناوبری موبایل/);
-  assert.match(homeHero, /focus-within:ring-3/);
+  assert.match(publicHeader, /function MobileNavigation/);
+  assert.match(publicHeader, /<Sheet open=\{isOpen\} onOpenChange=\{setIsOpen\}>/);
+  assert.match(publicHeader, /side="right"/);
+  assert.match(publicHeader, /باز کردن منوی ناوبری/);
+  assert.match(publicHeader, /ناوبری موبایل/);
+  assert.match(publicHeader, /focus-within:ring-3/);
   assert.match(sheet, /Dialog as SheetPrimitive/);
   assert.match(sheet, /XMarkIcon/);
+});
+
+test("public shell provides the shared header for header-linked pages", () => {
+  assert.match(publicLayout, /<PublicHeader \/>/);
+  assert.match(explorePage, /getPublishedEntries\(query\)/);
+  assert.match(entryDetailPage, /getPublishedEntryBySlug\(slug\)/);
+  assert.match(provincesPage, /ولایت‌ها/);
+  assert.match(categoriesPage, /دسته‌بندی‌ها/);
 });
 
 test("homepage footer matches the attached full-width footer design", () => {
