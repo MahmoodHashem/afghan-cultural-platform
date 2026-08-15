@@ -78,6 +78,15 @@ async function getPublishedEntries(query: PublicEntryListQuery): Promise<PublicE
   return fetchApi<EntryListResponse>(`/entries?${searchParams.toString()}`, EMPTY_ENTRY_RESPONSE);
 }
 
+async function getPublishedEntryCount(query: Omit<PublicEntryListQuery, "page" | "limit">) {
+  const response = await getPublishedEntries({ ...query, page: 1, limit: 1 });
+
+  return {
+    count: response.meta.total,
+    isUnavailable: response.isUnavailable,
+  };
+}
+
 async function getPublishedEntryBySlug(slug: string): Promise<PublicEntryDetail | null> {
   try {
     const response = await fetch(
@@ -130,6 +139,14 @@ async function getExploreTaxonomyData(): Promise<ExploreTaxonomyData> {
   };
 }
 
+async function getPublicProvinces() {
+  return fetchTaxonomy("/taxonomy/provinces?limit=100");
+}
+
+async function getPublicCategories() {
+  return fetchTaxonomy("/taxonomy/categories?limit=100");
+}
+
 async function fetchTaxonomy(path: string): Promise<TaxonomyResult<TaxonomyItem>> {
   return fetchApi<TaxonomyListResponse<TaxonomyItem>>(path, EMPTY_TAXONOMY_RESPONSE);
 }
@@ -166,7 +183,10 @@ function normalizeSlug(slug: string) {
 export type { GeographicScope, PublicEntryListQuery, PublicEntrySort };
 export {
   getExploreTaxonomyData,
+  getPublicCategories,
   getPublicEntryReviews,
+  getPublicProvinces,
   getPublishedEntries,
   getPublishedEntryBySlug,
+  getPublishedEntryCount,
 };

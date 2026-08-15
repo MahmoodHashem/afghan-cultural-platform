@@ -6,8 +6,6 @@ import {
   getPublishedEntryBySlug,
 } from "@/features/entries/api/public-entries-api";
 import { EntryDetailContent } from "@/features/entries/components/entry-detail-content";
-import { HomeFooter } from "@/features/home/components/home-footer";
-import EntryDetailLoading from "./loading";
 
 type EntryDetailPageProps = {
   params: Promise<{
@@ -50,9 +48,5 @@ export default async function EntryDetailPage({ params }: EntryDetailPageProps) 
 
   const reviews = await getPublicEntryReviews(entry.id);
 
-  return (
-
-    <EntryDetailContent entry={entry} reviews={reviews} />
-
-  );
+  return <EntryDetailContent entry={entry} reviews={reviews} />;
 }

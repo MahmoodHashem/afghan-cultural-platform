@@ -94,7 +94,7 @@ function EntryTableOfContents({ items }: { items: TableOfContentsItem[] }) {
                         "block rounded-xl py-2 text-[14px] leading-7 transition-colors focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/35",
                         item.level === 3 ? "ps-4 pe-2" : "px-2 font-semibold",
                         isActive
-                          ? "border text-primary"
+                          ? "border border-primary/20 bg-primary-light text-primary"
                           : "text-muted-foreground hover:bg-muted hover:text-primary",
                       )}
                     >

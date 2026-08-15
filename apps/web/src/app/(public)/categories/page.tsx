@@ -1,35 +1,55 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import {
+  getPublicCategories,
+  getPublishedEntryCount,
+} from "@/features/entries/api/public-entries-api";
+import { CategoriesIndexContent } from "@/features/entries/components/taxonomy-discovery-pages";
+import type { TaxonomyItem } from "@/features/entries/types/public-entry";
 
 export const metadata: Metadata = {
   title: "دسته‌بندی‌ها | میراث افغانستان",
-  description: "مسیر کاوش محتوای فرهنگی افغانستان بر پایه دسته‌بندی‌های تأییدشده.",
+  description: "کاوش محتوای فرهنگی افغانستان بر اساس موضوع و دسته‌بندی.",
+  openGraph: {
+    title: "دسته‌بندی‌ها | میراث افغانستان",
+    description: "محتوای فرهنگی افغانستان را بر اساس موضوع کشف کنید.",
+    images: ["/images/herat-grand-mosque.webp"],
+  },
 };
 
-export default function CategoriesPage() {
-  return (
-    <main className="min-h-screen bg-background">
-      <section className="content-container pt-32 pb-16 sm:pt-36">
-        <div className="max-w-3xl space-y-5">
-          <p className="text-[14px] font-bold text-primary">دسته‌بندی‌ها</p>
-          <h1 className="text-[38px] font-bold leading-[1.35] text-foreground">
-            کاوش میراث فرهنگی بر پایه دسته‌بندی‌ها
-          </h1>
-          <p className="text-[16px] leading-8 text-muted-foreground">
-            صفحه اختصاصی دسته‌بندی‌ها در گام بعدی تکمیل می‌شود. فعلاً می‌توانید از فیلتر دسته‌بندی در
-            کتابخانه عمومی استفاده کنید.
-          </p>
-          <Link
-            href="/explore"
-            className={cn(buttonVariants({ variant: "default" }), "rounded-full")}
-          >
-            رفتن به کاوش محتوا
-          </Link>
-        </div>
-      </section>
-    </main>
+export default async function CategoriesPage() {
+  const categoriesResponse = await getPublicCategories();
+  const categories = sortTaxonomyItems(categoriesResponse.data);
+  const countedCategories = await Promise.all(
+    categories.map(async (category) => {
+      const { count, isUnavailable } = await getPublishedEntryCount({
+        categorySlug: category.slug,
+      });
+
+      return {
+        ...category,
+        entryCount: count,
+        isUnavailable,
+      };
+    }),
   );
+
+  return (
+    <CategoriesIndexContent
+      categories={countedCategories}
+      isUnavailable={
+        categoriesResponse.isUnavailable ||
+        countedCategories.some((category) => category.isUnavailable)
+      }
+    />
+  );
+}
+
+function sortTaxonomyItems(items: TaxonomyItem[]) {
+  return [...items].sort((first, second) => {
+    const firstOrder = first.sortOrder ?? Number.MAX_SAFE_INTEGER;
+    const secondOrder = second.sortOrder ?? Number.MAX_SAFE_INTEGER;
+
+    return firstOrder - secondOrder || first.name.localeCompare(second.name, "fa");
+  });
 }

@@ -46,10 +46,16 @@ const explorePage = read("src/app/(public)/explore/page.tsx");
 const exploreLoading = read("src/app/(public)/explore/loading.tsx");
 const provincesPage = read("src/app/(public)/provinces/page.tsx");
 const provincesLoading = read("src/app/(public)/provinces/loading.tsx");
+const provinceDetailPage = read("src/app/(public)/provinces/[slug]/page.tsx");
+const provinceDetailLoading = read("src/app/(public)/provinces/[slug]/loading.tsx");
 const categoriesPage = read("src/app/(public)/categories/page.tsx");
 const categoriesLoading = read("src/app/(public)/categories/loading.tsx");
+const categoryDetailPage = read("src/app/(public)/categories/[slug]/page.tsx");
+const categoryDetailLoading = read("src/app/(public)/categories/[slug]/loading.tsx");
 const exploreApi = read("src/features/entries/api/public-entries-api.ts");
 const exploreContent = read("src/features/entries/components/explore-content.tsx");
+const publicEntryCard = read("src/features/entries/components/public-entry-card.tsx");
+const taxonomyDiscoveryPages = read("src/features/entries/components/taxonomy-discovery-pages.tsx");
 const homePage = read("src/app/page.tsx");
 const homeApi = read("src/features/home/api/home-api.ts");
 const homeContent = read("src/features/home/components/home-content.tsx");
@@ -281,8 +287,8 @@ test("public shell provides the shared header for header-linked pages", () => {
   assert.match(publicLayout, /<PublicHeader \/>/);
   assert.match(explorePage, /getPublishedEntries\(query\)/);
   assert.match(entryDetailPage, /getPublishedEntryBySlug\(slug\)/);
-  assert.match(provincesPage, /ولایت‌ها/);
-  assert.match(categoriesPage, /دسته‌بندی‌ها/);
+  assert.match(provincesPage, /ProvinceIndexContent/);
+  assert.match(categoriesPage, /CategoriesIndexContent/);
 });
 
 test("public routes provide skeleton loading and controlled error states", () => {
@@ -297,6 +303,8 @@ test("public routes provide skeleton loading and controlled error states", () =>
   assert.match(entryDetailLoading, /aria-label="در حال بارگذاری مدخل"/);
   assert.match(provincesLoading, /Skeleton/);
   assert.match(categoriesLoading, /Skeleton/);
+  assert.match(provinceDetailLoading, /ProvinceDetailLoading/);
+  assert.match(categoryDetailLoading, /CategoryDetailLoading/);
 });
 
 test("homepage footer matches the attached full-width footer design", () => {
@@ -317,15 +325,55 @@ test("explore page uses public entries and taxonomy APIs with URL filters", () =
   assert.match(explorePage, /getPublishedEntries\(query\)/);
   assert.match(explorePage, /getExploreTaxonomyData\(\)/);
   assert.match(explorePage, /normalizeExploreQuery/);
+  assert.doesNotMatch(explorePage, /console\.log/);
   assert.match(exploreApi, /\/entries\?\$\{searchParams\.toString\(\)\}/);
   assert.match(exploreApi, /\/taxonomy\/provinces\?limit=100/);
   assert.match(exploreApi, /\/taxonomy\/categories\?limit=100/);
   assert.match(exploreApi, /\/taxonomy\/content-types\?limit=100/);
+  assert.match(exploreApi, /function getPublishedEntryCount/);
   assert.match(exploreContent, /action="\/explore"/);
   assert.match(exploreContent, /name="provinceSlug"/);
   assert.match(exploreContent, /name="categorySlug"/);
   assert.match(exploreContent, /name="contentTypeSlug"/);
   assert.match(exploreContent, /name="geographicScope"/);
+  assert.match(exploreContent, /PublicEntryCardView/);
+  assert.match(publicEntryCard, /function PublicEntryCardView/);
+  assert.doesNotMatch(exploreContent, /console\.log/);
+});
+
+test("province and category discovery pages match the approved taxonomy designs", () => {
+  assert.match(provincesPage, /getPublicProvinces/);
+  assert.match(provincesPage, /geographicScope: "PROVINCE"/);
+  assert.match(categoriesPage, /getPublicCategories/);
+  assert.match(taxonomyDiscoveryPages, /فرهنگ افغانستان بر اساس ولایت/);
+  assert.match(taxonomyDiscoveryPages, /افغانستان را از طریق فرهنگ، تاریخ و میراث ولایت‌های آن/);
+  assert.match(taxonomyDiscoveryPages, /کاوش بر اساس موضوع/);
+  assert.match(taxonomyDiscoveryPages, /محتوای فرهنگی افغانستان را بر اساس موضوع کشف کنید/);
+  assert.match(taxonomyDiscoveryPages, /ProvinceCard/);
+  assert.match(taxonomyDiscoveryPages, /CategoryCard/);
+  assert.match(taxonomyDiscoveryPages, /\/images\/star-icon\.png/);
+});
+
+test("province detail filters only provincial entries and reuses entry cards", () => {
+  assert.match(provinceDetailPage, /ProvinceDetailContent/);
+  assert.match(provinceDetailPage, /findTaxonomyItemByRouteSegment/);
+  assert.match(provinceDetailPage, /geographicScope: "PROVINCE"/);
+  assert.match(provinceDetailPage, /provinceSlug: province\.slug/);
+  assert.match(provinceDetailPage, /categorySlug: selectedCategorySlug/);
+  assert.match(taxonomyDiscoveryPages, /کاوش فرهنگ و میراث/);
+  assert.match(taxonomyDiscoveryPages, /PublicEntryCardView/);
+  assert.match(taxonomyDiscoveryPages, /هنوز محتوایی برای این ولایت ثبت نشده است/);
+});
+
+test("category detail supports province and national filters without popularity sort", () => {
+  assert.match(categoryDetailPage, /CategoryDetailContent/);
+  assert.match(categoryDetailPage, /geographicScope: "NATIONAL"/);
+  assert.match(categoryDetailPage, /provinceSlug: province\.slug/);
+  assert.match(categoryDetailPage, /recentlyUpdated/);
+  assert.doesNotMatch(categoryDetailPage, /popular|popularity|محبوب‌ترین/);
+  assert.match(taxonomyDiscoveryPages, /همه افغانستان/);
+  assert.match(taxonomyDiscoveryPages, /سراسری/);
+  assert.match(taxonomyDiscoveryPages, /کاوش بر اساس ولایت/);
 });
 
 test("entry detail page renders published entry data by Persian slug", () => {

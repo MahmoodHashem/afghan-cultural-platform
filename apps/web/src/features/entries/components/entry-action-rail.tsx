@@ -107,8 +107,6 @@ function EntryActionRail({ title, commentCount, ratingCount }: EntryActionRailPr
             />
           </div>
         </div>
-
-
       </div>
     </aside>
   );

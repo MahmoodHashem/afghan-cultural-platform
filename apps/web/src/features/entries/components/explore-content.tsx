@@ -2,22 +2,19 @@ import {
   AdjustmentsHorizontalIcon,
   ArrowLeftIcon,
   ArrowRightIcon,
-  CalendarDaysIcon,
-  MapPinIcon,
 } from "@heroicons/react/24/outline";
-import Image from "next/image";
 import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type {
   GeographicScope,
   PublicEntryListQuery,
   PublicEntrySort,
 } from "../api/public-entries-api";
-import type { EntryListResponse, PublicEntryCard, TaxonomyItem } from "../types/public-entry";
+import type { EntryListResponse, TaxonomyItem } from "../types/public-entry";
+import { PublicEntryCardView } from "./public-entry-card";
 
 type ExploreContentProps = {
   entries: EntryListResponse;
@@ -29,16 +26,9 @@ type ExploreContentProps = {
     isUnavailable: boolean;
   };
   query: Required<Pick<PublicEntryListQuery, "page" | "limit" | "sort">> &
-  Omit<PublicEntryListQuery, "page" | "limit" | "sort">;
+    Omit<PublicEntryListQuery, "page" | "limit" | "sort">;
   isEntriesUnavailable: boolean;
 };
-
-const fallbackImages = [
-  "/images/HERAT02.jpg",
-  "/images/bamyan.jpg",
-  "/images/menaras.jpg",
-  "/images/mazar.jpg",
-] as const;
 
 const sortOptions: Array<{ label: string; value: PublicEntrySort }> = [
   { label: "تازه‌ترین", value: "newest" },
@@ -77,8 +67,6 @@ function ExploreContent({ entries, taxonomy, query, isEntriesUnavailable }: Expl
                 </p>
               </div>
             </div>
-
-
           </div>
         </div>
       </section>
@@ -101,7 +89,7 @@ function ExploreContent({ entries, taxonomy, query, isEntriesUnavailable }: Expl
           {entries.data.length > 0 ? (
             <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
               {entries.data.map((entry, index) => (
-                <ExploreEntryCard key={entry.id} entry={entry} imageIndex={index} />
+                <PublicEntryCardView key={entry.id} entry={entry} imageIndex={index} />
               ))}
             </div>
           ) : (
@@ -220,59 +208,6 @@ function NativeSelect({
         ))}
       </select>
     </label>
-  );
-}
-
-function ExploreEntryCard({ entry, imageIndex }: { entry: PublicEntryCard; imageIndex: number }) {
-  console.log("Entry ", entry);
-  console.log("Publish date ", formatDate(entry.publishedAt))
-  return (
-    <Card className="group overflow-hidden rounded-2xl border-border bg-card p-0 shadow-[0_2px_10px_rgba(0,0,0,.04)]">
-      <Link
-        href={`/entries/${encodeURIComponent(entry.slug)}`}
-        className="block outline-none focus-visible:ring-3 focus-visible:ring-ring/40"
-      >
-        <div className="relative aspect-4/3 overflow-hidden bg-muted">
-          <Image
-            src={
-              entry.coverImage?.thumbnailUrl ??
-              entry.coverImage?.secureUrl ??
-              fallbackImages[imageIndex % fallbackImages.length]
-            }
-            alt={entry.coverImage?.altText ?? entry.title}
-            fill
-            sizes="(min-width: 1280px) 28vw, (min-width: 640px) 45vw, 100vw"
-            className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
-          />
-        </div>
-        <CardContent className="space-y-3 p-4">
-          <div className="flex flex-wrap gap-2">
-            <Badge variant="outline" className="rounded-full text-[12px]">
-              {entry.category.name}
-            </Badge>
-            <Badge className="rounded-full bg-primary-light text-primary">
-              {entry.contentType.name}
-            </Badge>
-          </div>
-          <h2 className="line-clamp-2 text-[20px] font-bold leading-8 text-foreground">
-            {entry.title}
-          </h2>
-          <p className="line-clamp-3 text-[14px] leading-7 text-muted-foreground">
-            {entry.summary}
-          </p>
-          <div className="flex flex-wrap items-center justify-between gap-3 text-[12px] text-muted-foreground">
-            <span className="inline-flex items-center gap-1">
-              <MapPinIcon className="size-4" aria-hidden="true" />
-              {locationLabel(entry)}
-            </span>
-            <span className="inline-flex items-center gap-1">
-              <CalendarDaysIcon className="size-4" aria-hidden="true" />
-              {formatDate(entry.publishedAt)}
-            </span>
-          </div>
-        </CardContent>
-      </Link>
-    </Card>
   );
 }
 
@@ -405,24 +340,6 @@ function toOption(item: TaxonomyItem) {
     label: item.name,
     value: item.slug,
   };
-}
-
-function locationLabel(entry: PublicEntryCard) {
-  if (entry.geographicScope === "NATIONAL") {
-    return "سراسر افغانستان";
-  }
-
-  if (entry.geographicScope === "NONE") {
-    return "بدون وابستگی جغرافیایی";
-  }
-
-  return entry.province?.name ?? "ولایت مشخص";
-}
-
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("fa-AF", {
-    dateStyle: "medium",
-  }).format(new Date(value));
 }
 
 function formatNumber(value: number) {

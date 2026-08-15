@@ -1,35 +1,56 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import {
+  getPublicProvinces,
+  getPublishedEntryCount,
+} from "@/features/entries/api/public-entries-api";
+import { ProvinceIndexContent } from "@/features/entries/components/taxonomy-discovery-pages";
+import type { TaxonomyItem } from "@/features/entries/types/public-entry";
 
 export const metadata: Metadata = {
   title: "ولایت‌ها | میراث افغانستان",
-  description: "مسیر کاوش محتوای فرهنگی افغانستان بر پایه ولایت‌ها.",
+  description: "کاوش میراث فرهنگی افغانستان بر پایه ولایت‌های آن.",
+  openGraph: {
+    title: "ولایت‌ها | میراث افغانستان",
+    description: "افغانستان را از طریق فرهنگ، تاریخ و میراث ولایت‌های آن کاوش کنید.",
+    images: ["/images/HERAT02.jpg"],
+  },
 };
 
-export default function ProvincesPage() {
-  return (
-    <main className="min-h-screen bg-background">
-      <section className="content-container pt-32 pb-16 sm:pt-36">
-        <div className="max-w-3xl space-y-5">
-          <p className="text-[14px] font-bold text-primary">ولایت‌ها</p>
-          <h1 className="text-[38px] font-bold leading-[1.35] text-foreground">
-            کاوش میراث فرهنگی بر پایه ولایت‌ها
-          </h1>
-          <p className="text-[16px] leading-8 text-muted-foreground">
-            صفحه اختصاصی ولایت‌ها در گام بعدی تکمیل می‌شود. فعلاً می‌توانید از فیلتر ولایت در کتابخانه
-            عمومی استفاده کنید.
-          </p>
-          <Link
-            href="/explore"
-            className={cn(buttonVariants({ variant: "default" }), "rounded-full")}
-          >
-            رفتن به کاوش محتوا
-          </Link>
-        </div>
-      </section>
-    </main>
+export default async function ProvincesPage() {
+  const provincesResponse = await getPublicProvinces();
+  const provinces = sortTaxonomyItems(provincesResponse.data);
+  const countedProvinces = await Promise.all(
+    provinces.map(async (province) => {
+      const { count, isUnavailable } = await getPublishedEntryCount({
+        provinceSlug: province.slug,
+        geographicScope: "PROVINCE",
+      });
+
+      return {
+        ...province,
+        entryCount: count,
+        isUnavailable,
+      };
+    }),
   );
+
+  return (
+    <ProvinceIndexContent
+      provinces={countedProvinces}
+      isUnavailable={
+        provincesResponse.isUnavailable ||
+        countedProvinces.some((province) => province.isUnavailable)
+      }
+    />
+  );
+}
+
+function sortTaxonomyItems(items: TaxonomyItem[]) {
+  return [...items].sort((first, second) => {
+    const firstOrder = first.sortOrder ?? Number.MAX_SAFE_INTEGER;
+    const secondOrder = second.sortOrder ?? Number.MAX_SAFE_INTEGER;
+
+    return firstOrder - secondOrder || first.name.localeCompare(second.name, "fa");
+  });
 }
