@@ -32,6 +32,9 @@ const authNavigation = read("src/features/auth/components/auth-navigation.tsx");
 const logoutAllButton = read("src/features/auth/components/logout-all-button.tsx");
 const verifiedEmailBanner = read("src/features/auth/components/verified-email-banner.tsx");
 const authQuery = read("src/lib/auth/auth-query.ts");
+const explorePage = read("src/app/explore/page.tsx");
+const exploreApi = read("src/features/entries/api/public-entries-api.ts");
+const exploreContent = read("src/features/entries/components/explore-content.tsx");
 const homePage = read("src/app/page.tsx");
 const homeApi = read("src/features/home/api/home-api.ts");
 const homeContent = read("src/features/home/components/home-content.tsx");
@@ -269,4 +272,19 @@ test("homepage footer matches the attached full-width footer design", () => {
   assert.match(homeFooter, /siFacebook/);
   assert.match(homeFooter, /siX/);
   assert.match(homeFooter, /siYoutube/);
+});
+
+test("explore page uses public entries and taxonomy APIs with URL filters", () => {
+  assert.match(explorePage, /getPublishedEntries\(query\)/);
+  assert.match(explorePage, /getExploreTaxonomyData\(\)/);
+  assert.match(explorePage, /normalizeExploreQuery/);
+  assert.match(exploreApi, /\/entries\?\$\{searchParams\.toString\(\)\}/);
+  assert.match(exploreApi, /\/taxonomy\/provinces\?limit=100/);
+  assert.match(exploreApi, /\/taxonomy\/categories\?limit=100/);
+  assert.match(exploreApi, /\/taxonomy\/content-types\?limit=100/);
+  assert.match(exploreContent, /action="\/explore"/);
+  assert.match(exploreContent, /name="provinceSlug"/);
+  assert.match(exploreContent, /name="categorySlug"/);
+  assert.match(exploreContent, /name="contentTypeSlug"/);
+  assert.match(exploreContent, /name="geographicScope"/);
 });

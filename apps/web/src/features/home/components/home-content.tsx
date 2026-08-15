@@ -6,8 +6,9 @@ import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import type { PublicEntryCard, TaxonomyItem } from "@/features/entries/types/public-entry";
 import { cn } from "@/lib/utils";
-import type { HomeData, PublicEntryCard, TaxonomyItem } from "../api/home-api";
+import type { HomeData } from "../api/home-api";
 
 const fallbackImages = [
   "/images/HERAT02.jpg",
