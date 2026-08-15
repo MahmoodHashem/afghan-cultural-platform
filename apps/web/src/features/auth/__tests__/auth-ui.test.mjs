@@ -33,7 +33,9 @@ const logoutAllButton = read("src/features/auth/components/logout-all-button.tsx
 const verifiedEmailBanner = read("src/features/auth/components/verified-email-banner.tsx");
 const authQuery = read("src/lib/auth/auth-query.ts");
 const publicLayout = read("src/app/(public)/layout.tsx");
+const publicError = read("src/app/(public)/error.tsx");
 const entryDetailPage = read("src/app/(public)/entries/[slug]/page.tsx");
+const entryDetailLoading = read("src/app/(public)/entries/[slug]/loading.tsx");
 const entryDetailContent = read("src/features/entries/components/entry-detail-content.tsx");
 const entryActionRail = read("src/features/entries/components/entry-action-rail.tsx");
 const entryHeaderContext = read("src/features/entries/components/entry-detail-header-context.tsx");
@@ -41,8 +43,11 @@ const entryTableOfContents = read("src/features/entries/components/entry-table-o
 const entryFeedback = read("src/features/entries/components/reviews/entry-feedback.tsx");
 const communityFeedbackApi = read("src/features/entries/api/community-feedback-api.ts");
 const explorePage = read("src/app/(public)/explore/page.tsx");
+const exploreLoading = read("src/app/(public)/explore/loading.tsx");
 const provincesPage = read("src/app/(public)/provinces/page.tsx");
+const provincesLoading = read("src/app/(public)/provinces/loading.tsx");
 const categoriesPage = read("src/app/(public)/categories/page.tsx");
+const categoriesLoading = read("src/app/(public)/categories/loading.tsx");
 const exploreApi = read("src/features/entries/api/public-entries-api.ts");
 const exploreContent = read("src/features/entries/components/explore-content.tsx");
 const homePage = read("src/app/page.tsx");
@@ -278,6 +283,20 @@ test("public shell provides the shared header for header-linked pages", () => {
   assert.match(entryDetailPage, /getPublishedEntryBySlug\(slug\)/);
   assert.match(provincesPage, /ولایت‌ها/);
   assert.match(categoriesPage, /دسته‌بندی‌ها/);
+});
+
+test("public routes provide skeleton loading and controlled error states", () => {
+  assert.match(publicError, /بارگذاری این صفحه انجام نشد/);
+  assert.match(publicError, /reset/);
+  assert.match(publicError, /بازگشت به خانه/);
+  assert.match(exploreLoading, /ExploreLoading/);
+  assert.match(exploreLoading, /Skeleton/);
+  assert.match(exploreLoading, /lg:grid-cols-\[320px_1fr\]/);
+  assert.match(entryDetailLoading, /EntryDetailLoading/);
+  assert.match(entryDetailLoading, /lg:grid-cols-\[56px_minmax\(0,760px\)_320px\]/);
+  assert.match(entryDetailLoading, /aria-label="در حال بارگذاری مدخل"/);
+  assert.match(provincesLoading, /Skeleton/);
+  assert.match(categoriesLoading, /Skeleton/);
 });
 
 test("homepage footer matches the attached full-width footer design", () => {
