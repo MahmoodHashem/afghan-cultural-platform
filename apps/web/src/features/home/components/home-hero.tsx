@@ -1,6 +1,11 @@
 "use client";
 
-import { ChevronDownIcon, MagnifyingGlassIcon, PlusIcon } from "@heroicons/react/24/outline";
+import {
+  Bars3Icon,
+  ChevronDownIcon,
+  MagnifyingGlassIcon,
+  PlusIcon,
+} from "@heroicons/react/24/outline";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -16,6 +21,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Menubar } from "@/components/ui/menubar";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { type SafeUser, useAuthStore } from "@/stores/auth-store";
 
@@ -28,38 +41,38 @@ type HeroSlide = {
 const heroSlides: HeroSlide[] = [
   {
     src: "/images/gunbads2.jpg",
-    alt: "نمایی از مسجد جامع هرات",
-    eyebrow: "معماری و میراث هرات",
+    alt: "گنبدهای فیروزه‌ای مسجدی در میان خانه‌های کوهپایه‌ای افغانستان",
+    eyebrow: "گنبدهای فیروزه‌ای و زندگی شهری",
   },
   {
     src: "/images/bamyan.jpg",
-    alt: "نمایی از ارگ تاریخی افغانستان",
-    eyebrow: "دژها و روایت‌های تاریخی",
+    alt: "صخره‌ها و جایگاه‌های تاریخی بودا در بامیان با کشتزارهای سبز در پیش‌زمینه",
+    eyebrow: "چشم‌انداز تاریخی بامیان",
   },
   {
     src: "/images/gunbad.jpg",
-    alt: "منار تاریخی در چشم‌انداز افغانستان",
-    eyebrow: "نشانه‌های ماندگار فرهنگ",
+    alt: "نمای نزدیک از گنبد فیروزه‌ای و مناره‌های یک مسجد تاریخی",
+    eyebrow: "معماری اسلامی و کاشی‌کاری",
   },
   {
     src: "/images/HERAT02.jpg",
-    alt: "باغ بابر و چشم‌انداز فرهنگی کابل",
-    eyebrow: "باغ‌ها، کوه‌ها و خاطره‌ها",
+    alt: "حیاط و ایوان کاشی‌کاری‌شده مسجد جامع هرات",
+    eyebrow: "مسجد جامع هرات",
   },
   {
     src: "/images/kabul.jpg",
-    alt: "باغ بابر و چشم‌انداز فرهنگی کابل",
-    eyebrow: "باغ‌ها، کوه‌ها و خاطره‌ها",
+    alt: "نمای مسجدی در کابل با کوه و خانه‌های دامنه‌ای در پس‌زمینه",
+    eyebrow: "کابل؛ شهر، کوه و نیایش",
   },
   {
     src: "/images/mazar.jpg",
-    alt: "باغ بابر و چشم‌انداز فرهنگی کابل",
-    eyebrow: "باغ‌ها، کوه‌ها و خاطره‌ها",
+    alt: "زیارتگاه فیروزه‌ای روضه شریف در مزار شریف با مردم در صحن",
+    eyebrow: "مزار شریف و روضه شریف",
   },
   {
     src: "/images/menaras.jpg",
-    alt: "باغ بابر و چشم‌انداز فرهنگی کابل",
-    eyebrow: "باغ‌ها، کوه‌ها و خاطره‌ها",
+    alt: "مناره‌های تاریخی هرات در چشم‌انداز شهر و کوه‌های پیرامون",
+    eyebrow: "مناره‌های تاریخی هرات",
   },
 ];
 
@@ -118,7 +131,6 @@ function HomeHero() {
 
       <div className="relative z-10 flex min-h-[76svh] items-end">
         <div className="mx-auto w-full max-w-7xl px-5 pb-14 pt-32 sm:px-8 sm:pb-16 lg:px-10 lg:pb-20">
-          <div className="max-w-3xl space-y-6"></div>
           <fieldset className="mt-10 flex items-center gap-2">
             <legend className="sr-only">تصاویر شاخص</legend>
             {heroSlides.map((slide, index) => (
@@ -191,7 +203,7 @@ function LandingHeader({ isCompact }: { isCompact: boolean }) {
             sizes="42px"
             className={cn("w-auto", isCompact ? "h-8" : "h-10 brightness-0 invert")}
           />
-          میراث افغانستان
+          <span className="hidden sm:inline">میراث افغانستان</span>
         </Link>
 
         <Menubar
@@ -219,32 +231,186 @@ function LandingHeader({ isCompact }: { isCompact: boolean }) {
           ))}
         </Menubar>
 
-        <label
-          className={cn(
-            "hidden items-center relative gap-2.5 rounded-full border  text-foreground shadow-[0_8px_24px_rgba(31,41,55,0.12)] transition-all duration-500 lg:flex",
+        <HeaderSearch
+          isCompact={isCompact}
+          className="hidden lg:flex"
+          inputClassName={cn(
             isCompact
-              ? "h-9 min-w-60 max-w-[320px] border-border"
-              : "h-11 min-w-65 flex-1 max-w-95 border-white/70",
+              ? "text-[13px] placeholder:text-foreground text-foreground"
+              : "text-[14px] placeholder:text-background text-background",
           )}
-        >
-          <MagnifyingGlassIcon
-            className={cn("size-5  absolute right-2", isCompact ? "text-muted-foreground" : "text-background")}
-            aria-hidden="true"
-          />
-          <span className="sr-only">جست‌وجو</span>
-          <input
-            type="search"
-            placeholder="جست‌وجوی فرهنگ، مکان، روایت..."
-            className={cn(
-              "h-full min-w-0 flex-1 ps-8  outline-none  rounded-full  ",
-              isCompact ? "text-[13px] placeholder:text-foreground text-foreground" : "text-[14px] placeholder:text-background text-background",
-            )}
-          />
-        </label>
+        />
 
-        <HeroAuthControls isCompact={isCompact} />
+        <HeaderSearch
+          isCompact
+          placeholder="جست‌وجو..."
+          className="flex min-w-0 flex-1 lg:hidden"
+          inputClassName="text-[13px] text-foreground placeholder:text-muted-foreground"
+        />
+
+        <div className="ms-auto hidden lg:block">
+          <HeroAuthControls isCompact={isCompact} />
+        </div>
+        <MobileNavigation isCompact={isCompact} />
       </nav>
     </header>
+  );
+}
+
+function HeaderSearch({
+  isCompact,
+  placeholder = "جست‌وجوی فرهنگ، مکان، روایت...",
+  className,
+  inputClassName,
+}: {
+  isCompact: boolean;
+  placeholder?: string;
+  className?: string;
+  inputClassName?: string;
+}) {
+  return (
+    <label
+      className={cn(
+        "relative items-center gap-2.5 rounded-full border text-foreground shadow-[0_8px_24px_rgba(31,41,55,0.12)] transition-all duration-500 focus-within:border-primary focus-within:ring-3 focus-within:ring-ring/35",
+        isCompact
+          ? "h-9 min-w-0 border-border bg-card"
+          : "h-11 min-w-65 flex-1 max-w-95 border-white/70",
+        className,
+      )}
+    >
+      <MagnifyingGlassIcon
+        className={cn(
+          "absolute right-2 size-5",
+          isCompact ? "text-muted-foreground" : "text-background",
+        )}
+        aria-hidden="true"
+      />
+      <span className="sr-only">جست‌وجو</span>
+      <input
+        type="search"
+        placeholder={placeholder}
+        className={cn(
+          "h-full min-w-0 flex-1 rounded-full bg-transparent ps-8 outline-none",
+          inputClassName,
+        )}
+      />
+    </label>
+  );
+}
+
+function MobileNavigation({ isCompact }: { isCompact: boolean }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const status = useAuthStore((state) => state.status);
+  const user = useAuthStore((state) => state.user);
+  const isAuthenticated = status === "authenticated" && Boolean(user);
+
+  const closeMenu = () => setIsOpen(false);
+
+  return (
+    <Sheet open={isOpen} onOpenChange={setIsOpen}>
+      <SheetTrigger
+        className={cn(
+          "inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-background text-foreground shadow-[0_8px_24px_rgba(31,41,55,0.14)] outline-none transition-colors hover:bg-background/90 focus-visible:ring-3 lg:hidden",
+          isCompact ? "focus-visible:ring-ring/40" : "focus-visible:ring-white/35",
+        )}
+        aria-label="باز کردن منوی ناوبری"
+      >
+        <Bars3Icon className="size-5" aria-hidden="true" />
+      </SheetTrigger>
+      <SheetContent
+        side="right"
+        className="w-[min(86vw,22rem)] gap-0 border-border bg-background p-0 text-foreground"
+      >
+        <SheetHeader className="border-b border-border px-5 py-5 text-start">
+          <SheetTitle className="flex items-center gap-3 text-[18px] font-bold text-primary">
+            <Image
+              src="/images/small-logo.png"
+              alt=""
+              width={34}
+              height={39}
+              className="h-9 w-auto"
+            />
+            میراث افغانستان
+          </SheetTitle>
+          <SheetDescription className="text-[13px] leading-6">
+            راهنمای سریع برای کاوش میراث فرهنگی افغانستان
+          </SheetDescription>
+        </SheetHeader>
+
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-5 py-6">
+          <nav className="space-y-2" aria-label="ناوبری موبایل">
+            {navigationItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={closeMenu}
+                className="flex min-h-11 items-center rounded-xl border px-3 text-[15px] font-semibold text-foreground transition-colors hover:bg-card hover:text-primary focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/35"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+
+          <div className="mt-auto border-t border-border pt-5">
+            {status === "initializing" ? (
+              <div className="h-10 animate-pulse rounded-full bg-muted" aria-hidden="true" />
+            ) : isAuthenticated && user ? (
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 rounded-2xl bg-card p-3">
+                  <Avatar size="default" className="size-9 bg-primary-light">
+                    <AvatarFallback className="bg-primary-light text-[12px] font-bold text-primary">
+                      {createInitials(user.displayName)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0">
+                    <p className="truncate text-[14px] font-bold text-foreground">
+                      {user.displayName}
+                    </p>
+                    <p className="truncate text-[12px] text-muted-foreground" dir="ltr">
+                      {user.email}
+                    </p>
+                  </div>
+                </div>
+                <Link
+                  href="/entries/new"
+                  onClick={closeMenu}
+                  className={cn(buttonVariants({ variant: "default" }), "h-11 w-full rounded-full")}
+                >
+                  ایجاد محتوا
+                </Link>
+                <Link
+                  href="/account"
+                  onClick={closeMenu}
+                  className={cn(buttonVariants({ variant: "outline" }), "h-11 w-full rounded-full")}
+                >
+                  حساب کاربری
+                </Link>
+              </div>
+            ) : (
+              <div className="grid gap-3">
+                <Link
+                  href="/login"
+                  onClick={closeMenu}
+                  className={cn(
+                    buttonVariants({ variant: "outline" }),
+                    "h-11 w-full rounded-full text-foreground",
+                  )}
+                >
+                  ورود
+                </Link>
+                <Link
+                  href="/register"
+                  onClick={closeMenu}
+                  className={cn(buttonVariants({ variant: "default" }), "h-11 w-full rounded-full")}
+                >
+                  ثبت‌نام
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 }
 
@@ -268,11 +434,16 @@ function HeroAuthControls({ isCompact }: { isCompact: boolean }) {
     return (
       <div className="flex shrink-0 items-center gap-3 text-[15px] font-semibold ms-auto">
         <div className="flex items-center gap-2">
-
-          <Link href="/login" className={cn(buttonVariants({ variant: "outline" }), "text-foreground rounded-full")}>
+          <Link
+            href="/login"
+            className={cn(buttonVariants({ variant: "outline" }), "text-foreground rounded-full")}
+          >
             ورود
           </Link>
-          <Link href="/signup" className={cn(buttonVariants({ variant: "default" }), " rounded-full")}>
+          <Link
+            href="/register"
+            className={cn(buttonVariants({ variant: "default" }), " rounded-full")}
+          >
             ثبت‌نام
           </Link>
         </div>

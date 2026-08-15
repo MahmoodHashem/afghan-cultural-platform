@@ -35,6 +35,7 @@ const authQuery = read("src/lib/auth/auth-query.ts");
 const homePage = read("src/app/page.tsx");
 const homeFooter = read("src/features/home/components/home-footer.tsx");
 const homeHero = read("src/features/home/components/home-hero.tsx");
+const sheet = read("src/components/ui/sheet.tsx");
 
 test("login page renders required fields and links", () => {
   assert.match(loginPage, /title=" خوش آمدید"/);
@@ -210,10 +211,10 @@ test("homepage keeps the design preview and adds the premium hero first", () => 
 });
 
 test("homepage hero uses the approved Afghan heritage carousel images", () => {
-  assert.match(homeHero, /\/images\/herat-grand-mosque\.webp/);
-  assert.match(homeHero, /\/images\/arg\.png/);
-  assert.match(homeHero, /\/images\/menar\.png/);
-  assert.match(homeHero, /\/images\/babur\.png/);
+  assert.match(homeHero, /\/images\/gunbads2\.jpg/);
+  assert.match(homeHero, /\/images\/bamyan\.jpg/);
+  assert.match(homeHero, /\/images\/HERAT02\.jpg/);
+  assert.match(homeHero, /\/images\/menaras\.jpg/);
   assert.match(homeHero, /setInterval/);
 });
 
@@ -225,15 +226,26 @@ test("homepage floating header uses solid controls instead of a glass nav pill",
   assert.match(homeHero, /کاوش محتوا/);
   assert.match(homeHero, /جست‌وجوی فرهنگ، مکان، روایت/);
   assert.match(homeHero, /ایجاد محتوا/);
-  assert.match(homeHero, /ورود \/ ثبت‌نام/);
+  assert.match(homeHero, /ثبت‌نام/);
 });
 
 test("homepage header compacts on scroll while preserving logo, search, and actions", () => {
   assert.match(homeHero, /isHeaderCompact/);
   assert.match(homeHero, /window\.scrollY > 120/);
-  assert.match(homeHero, /max-w-\[1040px\] gap-2 border border-border bg-card/);
-  assert.match(homeHero, /h-9 min-w-\[240px\] max-w-\[320px\] border-border/);
+  assert.match(homeHero, /max-w-260 gap-2 border border-border bg-card/);
+  assert.match(homeHero, /h-9 min-w-60 max-w-\[320px\] border-border/);
   assert.match(homeHero, /<HeroAuthControls isCompact=\{isCompact\} \/>/);
+});
+
+test("homepage mobile navigation uses a shadcn Sheet sidebar", () => {
+  assert.match(homeHero, /function MobileNavigation/);
+  assert.match(homeHero, /<Sheet open=\{isOpen\} onOpenChange=\{setIsOpen\}>/);
+  assert.match(homeHero, /side="right"/);
+  assert.match(homeHero, /باز کردن منوی ناوبری/);
+  assert.match(homeHero, /ناوبری موبایل/);
+  assert.match(homeHero, /focus-within:ring-3/);
+  assert.match(sheet, /Dialog as SheetPrimitive/);
+  assert.match(sheet, /XMarkIcon/);
 });
 
 test("homepage footer matches the attached full-width footer design", () => {
