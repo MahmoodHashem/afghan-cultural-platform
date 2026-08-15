@@ -33,6 +33,7 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
     getExploreTaxonomyData(),
   ]);
 
+  console.log("Entries ", entries)
   return (
     <>
       <ExploreContent

@@ -51,9 +51,8 @@ export default async function EntryDetailPage({ params }: EntryDetailPageProps) 
   const reviews = await getPublicEntryReviews(entry.id);
 
   return (
-    <>
-      <EntryDetailContent entry={entry} reviews={reviews} />
-      <HomeFooter />
-    </>
+
+    <EntryDetailContent entry={entry} reviews={reviews} />
+
   );
 }

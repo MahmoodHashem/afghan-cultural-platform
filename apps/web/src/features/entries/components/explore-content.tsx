@@ -29,7 +29,7 @@ type ExploreContentProps = {
     isUnavailable: boolean;
   };
   query: Required<Pick<PublicEntryListQuery, "page" | "limit" | "sort">> &
-    Omit<PublicEntryListQuery, "page" | "limit" | "sort">;
+  Omit<PublicEntryListQuery, "page" | "limit" | "sort">;
   isEntriesUnavailable: boolean;
 };
 
@@ -78,20 +78,7 @@ function ExploreContent({ entries, taxonomy, query, isEntriesUnavailable }: Expl
               </div>
             </div>
 
-            <dl className="grid grid-cols-2 rounded-2xl border border-border bg-background p-2 shadow-[0_2px_10px_rgba(0,0,0,.04)]">
-              <div className="px-4 py-4 text-center">
-                <dt className="text-[12px] text-muted-foreground">نتیجه</dt>
-                <dd className="mt-1 text-[24px] font-bold text-foreground">
-                  {formatNumber(entries.meta.total)}
-                </dd>
-              </div>
-              <div className="px-4 py-4 text-center">
-                <dt className="text-[12px] text-muted-foreground">صفحه</dt>
-                <dd className="mt-1 text-[24px] font-bold text-foreground">
-                  {formatNumber(entries.meta.page)}
-                </dd>
-              </div>
-            </dl>
+
           </div>
         </div>
       </section>
@@ -237,13 +224,15 @@ function NativeSelect({
 }
 
 function ExploreEntryCard({ entry, imageIndex }: { entry: PublicEntryCard; imageIndex: number }) {
+  console.log("Entry ", entry);
+  console.log("Publish date ", formatDate(entry.publishedAt))
   return (
     <Card className="group overflow-hidden rounded-2xl border-border bg-card p-0 shadow-[0_2px_10px_rgba(0,0,0,.04)]">
       <Link
         href={`/entries/${encodeURIComponent(entry.slug)}`}
         className="block outline-none focus-visible:ring-3 focus-visible:ring-ring/40"
       >
-        <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+        <div className="relative aspect-4/3 overflow-hidden bg-muted">
           <Image
             src={
               entry.coverImage?.thumbnailUrl ??

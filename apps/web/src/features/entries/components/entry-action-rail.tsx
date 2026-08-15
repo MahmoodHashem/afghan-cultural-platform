@@ -4,7 +4,6 @@ import {
   BookmarkIcon,
   ChatBubbleOvalLeftEllipsisIcon,
   HeartIcon,
-  ListBulletIcon,
   ShareIcon,
 } from "@heroicons/react/24/outline";
 import type { ReactNode } from "react";
@@ -109,11 +108,7 @@ function EntryActionRail({ title, commentCount, ratingCount }: EntryActionRailPr
           </div>
         </div>
 
-        <ActionButton
-          label="رفتن به فهرست مطالب"
-          onClick={() => scrollToSection("entry-table-of-contents")}
-          icon={<ListBulletIcon className="size-6" aria-hidden="true" />}
-        />
+
       </div>
     </aside>
   );

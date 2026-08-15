@@ -32,7 +32,7 @@ function EntryDetailLoading() {
               </div>
 
               <Card className="overflow-hidden rounded-[28px] border-border bg-background">
-                <Skeleton className="aspect-[4/3] rounded-none" />
+                <Skeleton className="aspect-4/3 rounded-none" />
                 <div className="p-4">
                   <Skeleton className="h-4 w-3/4 rounded-full" />
                 </div>
