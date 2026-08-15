@@ -1,7 +1,14 @@
 import "server-only";
 
 import { getPublicApiBaseUrl } from "@/lib/api/env";
-import type { EntryListResponse, TaxonomyItem, TaxonomyListResponse } from "../types/public-entry";
+import type {
+  EntryDetailResponse,
+  EntryListResponse,
+  PublicEntryDetail,
+  PublicReviewListResponse,
+  TaxonomyItem,
+  TaxonomyListResponse,
+} from "../types/public-entry";
 
 type PublicEntrySort = "newest" | "oldest" | "recentlyUpdated";
 type GeographicScope = "PROVINCE" | "NATIONAL" | "NONE";
@@ -71,6 +78,39 @@ async function getPublishedEntries(query: PublicEntryListQuery): Promise<PublicE
   return fetchApi<EntryListResponse>(`/entries?${searchParams.toString()}`, EMPTY_ENTRY_RESPONSE);
 }
 
+async function getPublishedEntryBySlug(slug: string): Promise<PublicEntryDetail | null> {
+  try {
+    const response = await fetch(
+      `${getPublicApiBaseUrl()}/entries/${encodeURIComponent(normalizeSlug(slug))}`,
+      {
+        next: { revalidate: 120 },
+      },
+    );
+
+    if (response.status === 404) {
+      return null;
+    }
+
+    if (!response.ok) {
+      throw new Error("Published entry request failed.");
+    }
+
+    const parsedResponse = (await response.json()) as EntryDetailResponse;
+
+    return parsedResponse.data;
+  } catch {
+    return null;
+  }
+}
+
+async function getPublicEntryReviews(entryId: string) {
+  const response = await fetchApi<PublicReviewListResponse>(`/entries/${entryId}/reviews`, {
+    data: [],
+  });
+
+  return response.data;
+}
+
 async function getExploreTaxonomyData(): Promise<ExploreTaxonomyData> {
   const [provinces, categories, contentTypes, tags] = await Promise.all([
     fetchTaxonomy("/taxonomy/provinces?limit=100"),
@@ -119,5 +159,14 @@ function setOptionalParam(searchParams: URLSearchParams, key: string, value: str
   }
 }
 
+function normalizeSlug(slug: string) {
+  return decodeURIComponent(slug).trim();
+}
+
 export type { GeographicScope, PublicEntryListQuery, PublicEntrySort };
-export { getExploreTaxonomyData, getPublishedEntries };
+export {
+  getExploreTaxonomyData,
+  getPublicEntryReviews,
+  getPublishedEntries,
+  getPublishedEntryBySlug,
+};

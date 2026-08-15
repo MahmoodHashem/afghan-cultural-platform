@@ -32,6 +32,10 @@ const authNavigation = read("src/features/auth/components/auth-navigation.tsx");
 const logoutAllButton = read("src/features/auth/components/logout-all-button.tsx");
 const verifiedEmailBanner = read("src/features/auth/components/verified-email-banner.tsx");
 const authQuery = read("src/lib/auth/auth-query.ts");
+const entryDetailPage = read("src/app/entries/[slug]/page.tsx");
+const entryDetailContent = read("src/features/entries/components/entry-detail-content.tsx");
+const entryFeedback = read("src/features/entries/components/reviews/entry-feedback.tsx");
+const communityFeedbackApi = read("src/features/entries/api/community-feedback-api.ts");
 const explorePage = read("src/app/explore/page.tsx");
 const exploreApi = read("src/features/entries/api/public-entries-api.ts");
 const exploreContent = read("src/features/entries/components/explore-content.tsx");
@@ -287,4 +291,34 @@ test("explore page uses public entries and taxonomy APIs with URL filters", () =
   assert.match(exploreContent, /name="categorySlug"/);
   assert.match(exploreContent, /name="contentTypeSlug"/);
   assert.match(exploreContent, /name="geographicScope"/);
+});
+
+test("entry detail page renders published entry data by Persian slug", () => {
+  assert.match(entryDetailPage, /getPublishedEntryBySlug\(slug\)/);
+  assert.match(entryDetailPage, /getPublicEntryReviews\(entry\.id\)/);
+  assert.match(entryDetailPage, /notFound\(\)/);
+  assert.match(entryDetailPage, /generateMetadata/);
+  assert.match(exploreApi, /\/entries\/\$\{encodeURIComponent\(normalizeSlug\(slug\)\)\}/);
+  assert.match(exploreApi, /\/entries\/\$\{entryId\}\/reviews/);
+  assert.match(entryDetailContent, /function TiptapDocument/);
+  assert.match(entryDetailContent, /case "paragraph"/);
+  assert.match(entryDetailContent, /case "heading"/);
+  assert.match(entryDetailContent, /case "internalEntryLink"/);
+  assert.match(entryDetailContent, /YouTubeEmbed/);
+  assert.match(entryDetailContent, /SourcesList/);
+  assert.match(entryDetailContent, /OutgoingReferences/);
+  assert.match(entryDetailContent, /IncomingReferences/);
+});
+
+test("entry detail supports public reviews and verified-user feedback", () => {
+  assert.match(entryDetailContent, /EntryFeedback/);
+  assert.match(entryDetailContent, /PublicReviewsList/);
+  assert.match(entryDetailContent, /دیدگاه‌های خوانندگان/);
+  assert.match(entryFeedback, /submitRating\(entryId, value\)/);
+  assert.match(entryFeedback, /submitPublicReview\(entryId, values\.body\)/);
+  assert.match(entryFeedback, /user\?\.emailVerified/);
+  assert.match(entryFeedback, /برای ثبت دیدگاه باید وارد شوید و ایمیل خود را تأیید کنید/);
+  assert.match(communityFeedbackApi, /\/entries\/\$\{entryId\}\/reviews/);
+  assert.match(communityFeedbackApi, /\/entries\/\$\{entryId\}\/rating/);
+  assert.match(communityFeedbackApi, /COMMUNITY_REVIEW_ALREADY_EXISTS/);
 });

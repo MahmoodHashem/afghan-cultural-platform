@@ -49,9 +49,96 @@ type PublicEntryCard = {
   ratingCount: number;
 };
 
+type PublicEntrySource = {
+  id: string;
+  type: string;
+  title: string | null;
+  authorOrProvider: string | null;
+  publicationDate: string | null;
+  websiteUrl: string | null;
+  bookOrArticleDetails: string | null;
+  interviewDate: string | null;
+  explanation: string | null;
+  displayOrder: number;
+};
+
+type PublicEntryYouTubeVideo = {
+  id: string;
+  videoId: string;
+  url: string;
+  title: string | null;
+  description: string | null;
+};
+
+type PublicEntryOutgoingReference = {
+  id: string;
+  targetEntryId: string;
+  anchorText: string;
+  targetEntry: {
+    id: string;
+    slug: string;
+    title: string;
+  };
+};
+
+type PublicEntryIncomingReference = {
+  id: string;
+  sourceEntryId: string;
+  anchorText: string;
+  sourceEntry: {
+    id: string;
+    slug: string;
+    title: string;
+    summary: string;
+    publishedAt: string;
+  };
+};
+
+type PublicEntrySeo = {
+  title: string;
+  summary: string;
+  canonicalSlug: string;
+  image: string | null;
+  author: string;
+  publishedAt: string;
+  modifiedAt: string;
+  taxonomy: TaxonomyItem[];
+  plainTextExcerpt: string;
+};
+
+type PublicReview = {
+  id: string;
+  entryId: string;
+  body: string;
+  author: PublicEntryAuthor;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type PublicEntryDetail = PublicEntryCard & {
+  contentJson: unknown;
+  plainTextContent: string;
+  district: Pick<TaxonomyItem, "id" | "name" | "slug"> | null;
+  villageOrLocation: string | null;
+  images: PublicEntryImage[];
+  sources: PublicEntrySource[];
+  youtubeVideo: PublicEntryYouTubeVideo | null;
+  outgoingReferences: PublicEntryOutgoingReference[];
+  incomingReferences: PublicEntryIncomingReference[];
+  seo: PublicEntrySeo;
+};
+
 type EntryListResponse = {
   data: PublicEntryCard[];
   meta: PaginationMeta;
+};
+
+type EntryDetailResponse = {
+  data: PublicEntryDetail;
+};
+
+type PublicReviewListResponse = {
+  data: PublicReview[];
 };
 
 type TaxonomyListResponse<TItem> = {
@@ -60,9 +147,13 @@ type TaxonomyListResponse<TItem> = {
 };
 
 export type {
+  EntryDetailResponse,
   EntryListResponse,
   PaginationMeta,
   PublicEntryCard,
+  PublicEntryDetail,
+  PublicReview,
+  PublicReviewListResponse,
   TaxonomyItem,
   TaxonomyListResponse,
 };
