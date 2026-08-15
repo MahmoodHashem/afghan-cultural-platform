@@ -5,7 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -28,22 +27,37 @@ type HeroSlide = {
 
 const heroSlides: HeroSlide[] = [
   {
-    src: "/images/herat-grand-mosque.webp",
+    src: "/images/gunbads2.jpg",
     alt: "نمایی از مسجد جامع هرات",
     eyebrow: "معماری و میراث هرات",
   },
   {
-    src: "/images/arg.png",
+    src: "/images/bamyan.jpg",
     alt: "نمایی از ارگ تاریخی افغانستان",
     eyebrow: "دژها و روایت‌های تاریخی",
   },
   {
-    src: "/images/menar.png",
+    src: "/images/gunbad.jpg",
     alt: "منار تاریخی در چشم‌انداز افغانستان",
     eyebrow: "نشانه‌های ماندگار فرهنگ",
   },
   {
-    src: "/images/babur.png",
+    src: "/images/HERAT02.jpg",
+    alt: "باغ بابر و چشم‌انداز فرهنگی کابل",
+    eyebrow: "باغ‌ها، کوه‌ها و خاطره‌ها",
+  },
+  {
+    src: "/images/kabul.jpg",
+    alt: "باغ بابر و چشم‌انداز فرهنگی کابل",
+    eyebrow: "باغ‌ها، کوه‌ها و خاطره‌ها",
+  },
+  {
+    src: "/images/mazar.jpg",
+    alt: "باغ بابر و چشم‌انداز فرهنگی کابل",
+    eyebrow: "باغ‌ها، کوه‌ها و خاطره‌ها",
+  },
+  {
+    src: "/images/menaras.jpg",
     alt: "باغ بابر و چشم‌انداز فرهنگی کابل",
     eyebrow: "باغ‌ها، کوه‌ها و خاطره‌ها",
   },
@@ -94,50 +108,17 @@ function HomeHero() {
   }, []);
 
   return (
-    <section className="relative min-h-[76svh] overflow-hidden bg-foreground text-white">
+    <section className="relative min-h-[90svh] overflow-hidden bg-foreground text-white">
       <HeroCarousel activeSlide={activeSlide} />
       <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/20 to-black/65" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_42%,rgba(214,168,75,0.22),transparent_34%),linear-gradient(90deg,rgba(0,0,0,0.56),transparent_62%)]" />
-      <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent via-background/30 to-background" />
+      <div className="absolute inset-x-0 bottom-0 h-40 bg-linear-to-b from-transparent via-background/30 to-background" />
 
       <LandingHeader isCompact={isHeaderCompact} />
 
       <div className="relative z-10 flex min-h-[76svh] items-end">
-        <div className="mx-auto w-full max-w-[1280px] px-5 pb-14 pt-32 sm:px-8 sm:pb-16 lg:px-10 lg:pb-20">
-          <div className="max-w-3xl space-y-6">
-            <Badge
-              variant="outline"
-              className="border-white/20 bg-white/10 px-4 py-2 text-[14px] font-semibold text-white/88 backdrop-blur-md"
-            >
-              {heroSlides[activeSlide]?.eyebrow}
-            </Badge>
-            <div className="space-y-5">
-              <h1 className="max-w-4xl text-[clamp(2.35rem,6vw,5.4rem)] font-bold leading-[1.08] tracking-normal text-white drop-shadow-[0_3px_28px_rgba(0,0,0,0.35)]">
-                میراث افغانستان را زنده، معتبر و دیدنی روایت کنیم
-              </h1>
-              <p className="max-w-2xl text-[17px] leading-9 text-white/82 sm:text-[19px]">
-                جایی برای گردآوری روایت‌ها، بناها، آیین‌ها و دانش فرهنگی افغانستان؛ با نگاهی آرام،
-                تصویری و شایسته تاریخ این سرزمین.
-              </p>
-            </div>
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <Link
-                href="/explore"
-                className={cn(
-                  buttonVariants({ size: "lg" }),
-                  "h-12 rounded-full px-7 shadow-[0_18px_45px_rgba(15,118,110,0.34)]",
-                )}
-              >
-                کاوش میراث
-              </Link>
-              <Link
-                href="#design-preview"
-                className="inline-flex h-12 items-center justify-center rounded-full border border-white/24 bg-white/10 px-7 text-[15px] font-semibold text-white backdrop-blur-md transition-colors hover:bg-white/18 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-white/35"
-              >
-                دیدن بنیاد طراحی
-              </Link>
-            </div>
-          </div>
+        <div className="mx-auto w-full max-w-7xl px-5 pb-14 pt-32 sm:px-8 sm:pb-16 lg:px-10 lg:pb-20">
+          <div className="max-w-3xl space-y-6"></div>
           <fieldset className="mt-10 flex items-center gap-2">
             <legend className="sr-only">تصاویر شاخص</legend>
             {heroSlides.map((slide, index) => (
@@ -188,8 +169,8 @@ function LandingHeader({ isCompact }: { isCompact: boolean }) {
         className={cn(
           "pointer-events-auto flex items-center rounded-full transition-all duration-500 ease-out",
           isCompact
-            ? "w-full max-w-[1040px] gap-2 border border-border bg-card px-3 py-1.5 text-foreground shadow-[0_12px_32px_rgba(31,41,55,0.1)]"
-            : "w-full max-w-[1240px] gap-3 border border-transparent bg-transparent px-0 py-0 text-white drop-shadow-[0_3px_18px_rgba(0,0,0,0.34)]",
+            ? "w-full max-w-260 gap-2 border border-border bg-card px-3 py-1.5 text-foreground shadow-[0_12px_32px_rgba(31,41,55,0.1)]"
+            : "w-full max-w-310 gap-3 border border-transparent bg-transparent px-0 py-0 text-white drop-shadow-[0_3px_18px_rgba(0,0,0,0.34)]",
         )}
         aria-label="ناوبری اصلی"
       >
@@ -240,20 +221,23 @@ function LandingHeader({ isCompact }: { isCompact: boolean }) {
 
         <label
           className={cn(
-            "hidden items-center gap-2.5 rounded-full border bg-white ps-4 pe-3 text-foreground shadow-[0_8px_24px_rgba(31,41,55,0.12)] transition-all duration-500 lg:flex",
+            "hidden items-center relative gap-2.5 rounded-full border  text-foreground shadow-[0_8px_24px_rgba(31,41,55,0.12)] transition-all duration-500 lg:flex",
             isCompact
-              ? "h-9 min-w-[240px] max-w-[320px] border-border"
-              : "h-11 min-w-[260px] flex-1 max-w-[380px] border-white/70",
+              ? "h-9 min-w-60 max-w-[320px] border-border"
+              : "h-11 min-w-65 flex-1 max-w-95 border-white/70",
           )}
         >
-          <MagnifyingGlassIcon className="size-5 text-muted-foreground" aria-hidden="true" />
+          <MagnifyingGlassIcon
+            className={cn("size-5  absolute right-2", isCompact ? "text-muted-foreground" : "text-background")}
+            aria-hidden="true"
+          />
           <span className="sr-only">جست‌وجو</span>
           <input
             type="search"
             placeholder="جست‌وجوی فرهنگ، مکان، روایت..."
             className={cn(
-              "h-full min-w-0 flex-1 bg-transparent text-foreground outline-none placeholder:text-muted-foreground",
-              isCompact ? "text-[13px]" : "text-[14px]",
+              "h-full min-w-0 flex-1 ps-8  outline-none  rounded-full  ",
+              isCompact ? "text-[13px] placeholder:text-foreground text-foreground" : "text-[14px] placeholder:text-background text-background",
             )}
           />
         </label>
@@ -272,7 +256,7 @@ function HeroAuthControls({ isCompact }: { isCompact: boolean }) {
     return (
       <div
         className={cn(
-          "hidden animate-pulse rounded-full sm:block",
+          "flex shrink-0 items-center gap-3 text-[15px] font-semibold ms-auto rounded-full",
           isCompact ? "h-9 w-24 bg-muted" : "h-11 w-32 bg-white/75",
         )}
         aria-hidden="true"
@@ -282,18 +266,16 @@ function HeroAuthControls({ isCompact }: { isCompact: boolean }) {
 
   if (status !== "authenticated" || !user) {
     return (
-      <div className="flex shrink-0 items-center gap-3 text-[15px] font-semibold">
-        <Link
-          href="/login"
-          className={cn(
-            "inline-flex items-center rounded-xl bg-white text-foreground shadow-[0_8px_24px_rgba(31,41,55,0.14)] transition-colors hover:bg-white/90 focus-visible:outline-none focus-visible:ring-3",
-            isCompact
-              ? "h-9 px-3 text-[13px] focus-visible:ring-ring/40"
-              : "h-11 px-4 text-[14px] focus-visible:ring-white/35",
-          )}
-        >
-          ورود / ثبت‌نام
-        </Link>
+      <div className="flex shrink-0 items-center gap-3 text-[15px] font-semibold ms-auto">
+        <div className="flex items-center gap-2">
+
+          <Link href="/login" className={cn(buttonVariants({ variant: "outline" }), "text-foreground rounded-full")}>
+            ورود
+          </Link>
+          <Link href="/signup" className={cn(buttonVariants({ variant: "default" }), " rounded-full")}>
+            ثبت‌نام
+          </Link>
+        </div>
       </div>
     );
   }
@@ -321,7 +303,7 @@ function ProfileMenu({ user }: { user: SafeUser }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        className="flex h-11 items-center gap-1.5 rounded-full bg-background ps-2 pe-3 text-foreground shadow-[0_8px_24px_rgba(31,41,55,0.14)] outline-none transition-colors hover:bg-background/40 focus-visible:ring-3 focus-visible:ring-white/35"
+        className="flex h-11 items-center gap-1.5 rounded-full bg-background ps-2 pe-3 text-foreground shadow-[0_8px_24px_rgba(31,41,55,0.14)] outline-none transition-colors hover:bg-background/90 focus-visible:ring-3 focus-visible:ring-white/35"
         aria-label="باز کردن منوی حساب"
       >
         <Avatar size="default" className="size-8 bg-primary-light">
