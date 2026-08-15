@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  ArrowRightIcon,
   Bars3Icon,
   ChevronDownIcon,
   MagnifyingGlassIcon,
@@ -50,6 +51,15 @@ type PublicHeaderProps = {
   variant?: "hero" | "solid";
 };
 
+type HeaderContext = {
+  title: string;
+  backHref: string;
+  backLabel: string;
+  visible: boolean;
+};
+
+const PUBLIC_HEADER_CONTEXT_EVENT = "afghan-culture:public-header-context";
+
 const navigationItems = [
   { label: "خانه", href: "/" },
   { label: "کاوش محتوا", href: "/explore" },
@@ -60,7 +70,9 @@ const navigationItems = [
 function PublicHeader({ variant = "solid" }: PublicHeaderProps) {
   const pathname = usePathname();
   const [isHeaderCompact, setIsHeaderCompact] = useState(variant === "solid");
+  const [headerContext, setHeaderContext] = useState<HeaderContext | null>(null);
   const isCompact = variant === "solid" || isHeaderCompact;
+  const shouldShowHeaderContext = variant === "solid" && Boolean(headerContext?.visible);
 
   useEffect(() => {
     if (variant === "solid") {
@@ -86,6 +98,20 @@ function PublicHeader({ variant = "solid" }: PublicHeaderProps) {
     };
   }, [variant]);
 
+  useEffect(() => {
+    const updateHeaderContext = (event: Event) => {
+      if (event instanceof CustomEvent && isHeaderContext(event.detail)) {
+        setHeaderContext(event.detail);
+      }
+    };
+
+    window.addEventListener(PUBLIC_HEADER_CONTEXT_EVENT, updateHeaderContext);
+
+    return () => {
+      window.removeEventListener(PUBLIC_HEADER_CONTEXT_EVENT, updateHeaderContext);
+    };
+  }, []);
+
   return (
     <header className="pointer-events-none fixed inset-x-0 top-4 z-30 flex justify-center px-4 sm:top-5">
       <nav
@@ -97,80 +123,124 @@ function PublicHeader({ variant = "solid" }: PublicHeaderProps) {
         )}
         aria-label="ناوبری اصلی"
       >
-        <Link
-          href="/"
-          className={cn(
-            "flex shrink-0 items-center rounded-full font-bold tracking-normal outline-none transition-all duration-500 focus-visible:ring-3",
-            isCompact
-              ? "gap-2 px-2 py-1.5 text-[16px] text-foreground hover:text-primary focus-visible:ring-ring/40"
-              : "gap-3 px-2 py-2 text-[18px] text-white hover:text-white/88 focus-visible:ring-white/35",
-          )}
-        >
-          <Image
-            src="/images/small-logo.png"
-            alt=""
-            width={42}
-            height={48}
-            sizes="42px"
-            className={cn("w-auto", isCompact ? "h-8" : "h-10 brightness-0 invert")}
-          />
-          <span className="hidden sm:inline">میراث افغانستان</span>
-        </Link>
+        <div className="relative grid min-w-0 flex-1">
+          <div
+            className={cn(
+              "col-start-1 row-start-1 flex min-w-0 items-center gap-2 transition-all duration-300 ease-out",
+              shouldShowHeaderContext
+                ? "pointer-events-none -translate-y-1 opacity-0"
+                : "translate-y-0 opacity-100",
+            )}
+            aria-hidden={shouldShowHeaderContext}
+            inert={shouldShowHeaderContext}
+          >
+            <Link
+              href="/"
+              className={cn(
+                "flex shrink-0 items-center rounded-full font-bold tracking-normal outline-none transition-all duration-500 focus-visible:ring-3",
+                isCompact
+                  ? "gap-2 px-2 py-1.5 text-[16px] text-foreground hover:text-primary focus-visible:ring-ring/40"
+                  : "gap-3 px-2 py-2 text-[18px] text-white hover:text-white/88 focus-visible:ring-white/35",
+              )}
+            >
+              <Image
+                src="/images/small-logo.png"
+                alt=""
+                width={42}
+                height={48}
+                sizes="42px"
+                className={cn("w-auto", isCompact ? "h-8" : "h-10 brightness-0 invert")}
+              />
+              <span className="hidden sm:inline">میراث افغانستان</span>
+            </Link>
 
-        <Menubar
-          className={cn(
-            "hidden h-auto border-0 bg-transparent p-0 shadow-none transition-all duration-500 lg:flex",
-            isCompact ? "gap-0" : "gap-4 xl:gap-6",
-          )}
-        >
-          {navigationItems.map((item) => {
-            const isActive = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+            <Menubar
+              className={cn(
+                "hidden h-auto border-0 bg-transparent p-0 shadow-none transition-all duration-500 lg:flex",
+                isCompact ? "gap-0" : "gap-4 xl:gap-6",
+              )}
+            >
+              {navigationItems.map((item) => {
+                const isActive =
+                  item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
 
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                aria-current={isActive ? "page" : undefined}
-                className={cn(
-                  "relative h-auto rounded-full font-semibold transition-colors focus-visible:outline-none focus-visible:ring-3",
-                  isCompact
-                    ? "px-3 py-1.5 text-[13px] text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-ring/40"
-                    : "px-3 py-2 text-[14px] text-white/84 hover:bg-transparent hover:text-white focus-visible:ring-white/35",
-                  isActive && isCompact ? "bg-muted text-foreground" : null,
-                )}
-              >
-                {item.label}
-                {isActive && !isCompact ? (
-                  <span className="absolute inset-x-5 -bottom-1 h-0.5 rounded-full bg-white/72" />
-                ) : null}
-              </Link>
-            );
-          })}
-        </Menubar>
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    aria-current={isActive ? "page" : undefined}
+                    className={cn(
+                      "relative h-auto rounded-full font-semibold transition-colors focus-visible:outline-none focus-visible:ring-3",
+                      isCompact
+                        ? "px-3 py-1.5 text-[13px] text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-ring/40"
+                        : "px-3 py-2 text-[14px] text-white/84 hover:bg-transparent hover:text-white focus-visible:ring-white/35",
+                      isActive && isCompact ? "bg-muted text-foreground" : null,
+                    )}
+                  >
+                    {item.label}
+                    {isActive && !isCompact ? (
+                      <span className="absolute inset-x-5 -bottom-1 h-0.5 rounded-full bg-white/72" />
+                    ) : null}
+                  </Link>
+                );
+              })}
+            </Menubar>
 
-        <HeaderSearch
-          isCompact={isCompact}
-          className="hidden lg:flex"
-          inputClassName={cn(
-            isCompact
-              ? "text-[13px] text-foreground placeholder:text-foreground"
-              : "text-[14px] text-background placeholder:text-background",
-          )}
-        />
+            <HeaderSearch
+              isCompact={isCompact}
+              className="hidden lg:flex"
+              inputClassName={cn(
+                isCompact
+                  ? "text-[13px] text-foreground placeholder:text-foreground"
+                  : "text-[14px] text-background placeholder:text-background",
+              )}
+            />
 
-        <HeaderSearch
-          isCompact
-          placeholder="جست‌وجو..."
-          className="flex min-w-0 flex-1 lg:hidden"
-          inputClassName="text-[13px] text-foreground placeholder:text-muted-foreground"
-        />
+            <HeaderSearch
+              isCompact
+              placeholder="جست‌وجو..."
+              className="flex min-w-0 flex-1 lg:hidden"
+              inputClassName="text-[13px] text-foreground placeholder:text-muted-foreground"
+            />
 
-        <div className="ms-auto hidden lg:block">
-          <HeaderAuthControls isCompact={isCompact} />
+            <div className="ms-auto hidden lg:block">
+              <HeaderAuthControls isCompact={isCompact} />
+            </div>
+            <MobileNavigation isCompact={isCompact} />
+          </div>
+
+          <div
+            className={cn(
+              "col-start-1 row-start-1 flex min-w-0 items-center transition-all duration-300 ease-out",
+              shouldShowHeaderContext
+                ? "translate-y-0 opacity-100"
+                : "pointer-events-none translate-y-1 opacity-0",
+            )}
+            aria-hidden={!shouldShowHeaderContext}
+            inert={!shouldShowHeaderContext}
+          >
+            {headerContext ? <HeaderContextContent context={headerContext} /> : null}
+          </div>
         </div>
-        <MobileNavigation isCompact={isCompact} />
       </nav>
     </header>
+  );
+}
+
+function HeaderContextContent({ context }: { context: HeaderContext }) {
+  return (
+    <div className="flex min-w-0 flex-1 items-center gap-3">
+      <Link
+        href={context.backHref}
+        className="inline-flex size-8 shrink-0 items-center justify-center rounded-full text-primary transition-colors hover:bg-primary-light focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/40"
+        aria-label={context.backLabel}
+      >
+        <ArrowRightIcon className="size-4" aria-hidden="true" />
+      </Link>
+      <p className="min-w-0 truncate text-[14px] font-bold text-foreground sm:text-[15px]">
+        {context.title}
+      </p>
+    </div>
   );
 }
 
@@ -554,4 +624,20 @@ function createInitials(displayName: string) {
     .join("");
 }
 
-export { PublicHeader };
+function isHeaderContext(value: unknown): value is HeaderContext {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "title" in value &&
+    "backHref" in value &&
+    "backLabel" in value &&
+    "visible" in value &&
+    typeof value.title === "string" &&
+    typeof value.backHref === "string" &&
+    typeof value.backLabel === "string" &&
+    typeof value.visible === "boolean"
+  );
+}
+
+export type { HeaderContext };
+export { PUBLIC_HEADER_CONTEXT_EVENT, PublicHeader };

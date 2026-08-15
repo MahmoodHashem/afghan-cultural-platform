@@ -11,6 +11,12 @@ import type { ReactNode } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { EntryActionRail } from "@/features/entries/components/entry-action-rail";
+import { EntryDetailHeaderContext } from "@/features/entries/components/entry-detail-header-context";
+import {
+  EntryTableOfContents,
+  type TableOfContentsItem,
+} from "@/features/entries/components/entry-table-of-contents";
 import { EntryFeedback } from "@/features/entries/components/reviews/entry-feedback";
 import { cn } from "@/lib/utils";
 import type { PublicEntryDetail, PublicReview } from "../types/public-entry";
@@ -36,9 +42,11 @@ function EntryDetailContent({
   reviews: PublicReview[];
 }) {
   const heroImage = entry.images[0] ?? entry.coverImage;
+  const tableOfContents = createTableOfContents(entry.contentJson);
 
   return (
     <main className="min-h-screen bg-background">
+      <EntryDetailHeaderContext title={entry.title} backHref="/explore" />
       <article>
         <section className="border-b border-border bg-card pt-24 pb-10 sm:pt-28">
           <div className="content-container">
@@ -97,23 +105,32 @@ function EntryDetailContent({
           </div>
         </section>
 
-        <section className="content-container grid gap-10 py-10 lg:grid-cols-[minmax(0,760px)_320px] lg:items-start lg:justify-between">
+        <section className="content-container grid gap-8 py-10 lg:grid-cols-[56px_minmax(0,760px)_320px] lg:items-start lg:justify-between">
+          <EntryActionRail
+            title={entry.title}
+            commentCount={reviews.length}
+            ratingCount={entry.ratingCount}
+          />
+
           <div className="min-w-0 space-y-10">
             <TiptapDocument content={entry.contentJson} />
 
             {entry.images.length > 1 ? <ImageGallery images={entry.images.slice(1)} /> : null}
             {entry.youtubeVideo ? <YouTubeEmbed entry={entry} /> : null}
             {entry.sources.length > 0 ? <SourcesList entry={entry} /> : null}
-            <EntryFeedback
-              entryId={entry.id}
-              entryTitle={entry.title}
-              averageRating={entry.averageRating}
-              ratingCount={entry.ratingCount}
-            />
+            <div id="entry-feedback" className="scroll-mt-32">
+              <EntryFeedback
+                entryId={entry.id}
+                entryTitle={entry.title}
+                averageRating={entry.averageRating}
+                ratingCount={entry.ratingCount}
+              />
+            </div>
             <PublicReviewsList reviews={reviews} />
           </div>
 
           <aside className="space-y-5 lg:sticky lg:top-24">
+            {tableOfContents.length > 0 ? <EntryTableOfContents items={tableOfContents} /> : null}
             <TaxonomyCard entry={entry} />
             {entry.tags.length > 0 ? <TagsCard entry={entry} /> : null}
             {entry.outgoingReferences.length > 0 ? <OutgoingReferences entry={entry} /> : null}
@@ -127,7 +144,7 @@ function EntryDetailContent({
 
 function PublicReviewsList({ reviews }: { reviews: PublicReview[] }) {
   return (
-    <section className="space-y-4">
+    <section id="entry-comments" className="scroll-mt-32 space-y-4">
       <div className="flex items-center justify-between gap-4">
         <h2 className="text-[26px] font-bold text-foreground">دیدگاه‌های خوانندگان</h2>
         <span className="rounded-full bg-muted px-3 py-1 text-[13px] font-semibold text-muted-foreground">
@@ -215,18 +232,20 @@ function renderNode(node: TiptapNode, key: number | string): ReactNode {
       );
     case "heading": {
       const level = node.attrs?.level === 3 ? 3 : 2;
+      const headingText = getNodeText(node);
+      const headingId = createHeadingId(headingText, key);
       const className = cn(
-        "pt-4 font-bold leading-[1.45] text-foreground",
+        "scroll-mt-32 pt-4 font-bold leading-[1.45] text-foreground",
         level === 3 ? "text-[24px]" : "text-[30px]",
         textAlign,
       );
 
       return level === 3 ? (
-        <h3 key={key} dir={getDirection(node.attrs)} className={className}>
+        <h3 key={key} id={headingId} dir={getDirection(node.attrs)} className={className}>
           {children}
         </h3>
       ) : (
-        <h2 key={key} dir={getDirection(node.attrs)} className={className}>
+        <h2 key={key} id={headingId} dir={getDirection(node.attrs)} className={className}>
           {children}
         </h2>
       );
@@ -536,6 +555,53 @@ function ReferenceCard({ title, children }: { title: string; children: ReactNode
 
 function isTiptapNode(value: unknown): value is TiptapNode {
   return typeof value === "object" && value !== null && "type" in value;
+}
+
+function createTableOfContents(content: unknown): TableOfContentsItem[] {
+  const root = isTiptapNode(content) ? content : undefined;
+
+  return (root?.content ?? []).flatMap((node, index) => {
+    if (node.type !== "heading") {
+      return [];
+    }
+
+    const title = getNodeText(node).trim();
+
+    if (!title) {
+      return [];
+    }
+
+    return [
+      {
+        id: createHeadingId(title, index),
+        title,
+        level: node.attrs?.level === 3 ? 3 : 2,
+      },
+    ];
+  });
+}
+
+function getNodeText(node: TiptapNode): string {
+  if (node.type === "text") {
+    return node.text ?? "";
+  }
+
+  return (node.content ?? []).map(getNodeText).join("");
+}
+
+function createHeadingId(title: string, key: number | string) {
+  const normalizedTitle = title
+    .trim()
+    .replace(/[ي]/g, "ی")
+    .replace(/[ك]/g, "ک")
+    .replace(/[\u064B-\u065F\u0670]/g, "")
+    .replace(/[^\p{L}\p{N}\s-]/gu, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+    .toLowerCase();
+
+  return `section-${key}-${normalizedTitle || "heading"}`;
 }
 
 function getDirection(attrs: Record<string, unknown> | undefined) {

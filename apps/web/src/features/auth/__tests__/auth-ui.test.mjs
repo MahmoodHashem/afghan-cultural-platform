@@ -35,6 +35,9 @@ const authQuery = read("src/lib/auth/auth-query.ts");
 const publicLayout = read("src/app/(public)/layout.tsx");
 const entryDetailPage = read("src/app/(public)/entries/[slug]/page.tsx");
 const entryDetailContent = read("src/features/entries/components/entry-detail-content.tsx");
+const entryActionRail = read("src/features/entries/components/entry-action-rail.tsx");
+const entryHeaderContext = read("src/features/entries/components/entry-detail-header-context.tsx");
+const entryTableOfContents = read("src/features/entries/components/entry-table-of-contents.tsx");
 const entryFeedback = read("src/features/entries/components/reviews/entry-feedback.tsx");
 const communityFeedbackApi = read("src/features/entries/api/community-feedback-api.ts");
 const explorePage = read("src/app/(public)/explore/page.tsx");
@@ -321,6 +324,38 @@ test("entry detail page renders published entry data by Persian slug", () => {
   assert.match(entryDetailContent, /SourcesList/);
   assert.match(entryDetailContent, /OutgoingReferences/);
   assert.match(entryDetailContent, /IncomingReferences/);
+});
+
+test("entry detail includes reading navigation and sticky article tools", () => {
+  assert.match(entryDetailContent, /createTableOfContents\(entry\.contentJson\)/);
+  assert.match(entryDetailContent, /EntryTableOfContents/);
+  assert.match(entryTableOfContents, /فهرست مطالب/);
+  assert.match(entryTableOfContents, /IntersectionObserver/);
+  assert.match(entryTableOfContents, /aria-expanded=\{isExpanded\}/);
+  assert.match(entryTableOfContents, /max-h-80/);
+  assert.match(entryTableOfContents, /overflow-y-auto/);
+  assert.match(entryTableOfContents, /aria-current=\{isActive \? "location" : undefined\}/);
+  assert.match(entryTableOfContents, /bg-primary-light text-primary/);
+  assert.match(entryDetailContent, /createHeadingId\(headingText, key\)/);
+  assert.match(entryDetailContent, /id=\{headingId\}/);
+  assert.match(
+    entryDetailContent,
+    /<EntryDetailHeaderContext title=\{entry\.title\} backHref="\/explore" \/>/,
+  );
+  assert.match(entryHeaderContext, /window\.scrollY > 420/);
+  assert.match(entryHeaderContext, /PUBLIC_HEADER_CONTEXT_EVENT/);
+  assert.match(entryHeaderContext, /بازگشت به کاوش محتوا/);
+  assert.match(publicHeader, /HeaderContextContent/);
+  assert.match(publicHeader, /transition-all duration-300 ease-out/);
+  assert.match(publicHeader, /inert=\{shouldShowHeaderContext\}/);
+  assert.match(entryDetailContent, /EntryActionRail/);
+  assert.match(entryActionRail, /lg:sticky lg:top-32/);
+  assert.match(entryActionRail, /ChatBubbleOvalLeftEllipsisIcon/);
+  assert.match(entryActionRail, /HeartIcon/);
+  assert.match(entryActionRail, /BookmarkIcon/);
+  assert.match(entryActionRail, /ShareIcon/);
+  assert.match(entryActionRail, /navigator\.share/);
+  assert.match(entryActionRail, /scrollHeight - window\.innerHeight/);
 });
 
 test("entry detail supports public reviews and verified-user feedback", () => {
