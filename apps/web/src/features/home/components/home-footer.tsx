@@ -64,7 +64,7 @@ function Footer() {
         </div>
 
         <p className="mt-8 text-center text-[14px] text-muted-foreground">
-          © {currentYear} میراث افغانستان. تمامی حقوق محفوظ است.
+          © {currentYear} میراث افغانستان. تمام حقوق محفوظ است.
         </p>
       </div>
     </footer>
@@ -143,9 +143,9 @@ function NewsletterColumn() {
   return (
     <section className="space-y-5 lg:border-s lg:border-border lg:ps-12">
       <div className="space-y-3">
-        <h2 className="text-[19px] font-bold text-foreground">در خبرنامه ما عضو شوید</h2>
+        <h2 className="text-[19px] font-bold text-foreground">تازه‌های میراث افغانستان</h2>
         <p className="max-w-md text-[15px] leading-8 text-muted-foreground">
-          تازه‌ترین نوشته‌ها را از دست ندهید.
+          تازه‌ترین نوشته‌ها را در ایمیل خود دریافت کنید.
         </p>
       </div>
 

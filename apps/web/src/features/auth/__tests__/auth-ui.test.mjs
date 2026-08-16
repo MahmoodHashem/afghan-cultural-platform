@@ -259,7 +259,7 @@ test("homepage floating header uses solid controls instead of a glass nav pill",
   assert.match(publicHeader, /bg-primary/);
   assert.match(publicHeader, /میراث افغانستان/);
   assert.match(publicHeader, /مطالب/);
-  assert.match(publicHeader, /جست‌وجوی فرهنگ، مکان، روایت/);
+  assert.match(publicHeader, /جست‌وجو در فرهنگ افغانستان/);
   assert.match(publicHeader, /افزودن مطلب/);
   assert.match(publicHeader, /ثبت‌نام/);
 });
@@ -313,7 +313,7 @@ test("homepage footer matches the attached full-width footer design", () => {
   assert.match(homeFooter, /فرهنگ، تاریخ، هویت ما/);
   assert.match(homeFooter, /دسترسی سریع/);
   assert.match(homeFooter, /منابع/);
-  assert.match(homeFooter, /در خبرنامه ما عضو شوید/);
+  assert.match(homeFooter, /تازه‌های میراث افغانستان/);
   assert.match(homeFooter, /ایمیل شما/);
   assert.match(homeFooter, /siInstagram/);
   assert.match(homeFooter, /siFacebook/);

@@ -625,10 +625,10 @@ function locationLabel(entry: PublicEntryDetail) {
   }
 
   if (entry.geographicScope === "NONE") {
-    return "بدون وابستگی جغرافیایی";
+    return "بدون وابستگی به مکان";
   }
 
-  return entry.province?.name ?? "ولایت مشخص";
+  return entry.province?.name ?? "وابسته به یک ولایت";
 }
 
 function sourceTypeLabel(type: string) {

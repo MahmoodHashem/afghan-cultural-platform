@@ -35,14 +35,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Menubar } from "@/components/ui/menubar";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useLogout } from "@/features/auth/hooks/use-auth-mutations";
 import { cn } from "@/lib/utils";
 import { type SafeUser, useAuthStore } from "@/stores/auth-store";
@@ -246,7 +239,7 @@ function HeaderContextContent({ context }: { context: HeaderContext }) {
 
 function HeaderSearch({
   isCompact,
-  placeholder = "جست‌وجوی فرهنگ، مکان، روایت...",
+  placeholder = "جست‌وجو در فرهنگ افغانستان...",
   className,
   inputClassName,
 }: {
@@ -334,9 +327,6 @@ function MobileNavigation({ isCompact }: { isCompact: boolean }) {
               />
               میراث افغانستان
             </SheetTitle>
-            <SheetDescription className="text-[13px] leading-6">
-              راهی ساده برای دیدن فرهنگ افغانستان
-            </SheetDescription>
           </SheetHeader>
 
           <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-5 py-6">
@@ -593,10 +583,10 @@ function LogoutConfirmationDialog({
       <AlertDialogContent className="rounded-[24px] border border-border bg-card p-5 text-foreground shadow-[0_24px_70px_rgba(31,41,55,0.16)]">
         <AlertDialogHeader className="place-items-start text-start">
           <AlertDialogTitle className="text-[18px] font-bold text-foreground">
-            خروج از حساب کاربری؟
+            از حساب خارج می‌شوید؟
           </AlertDialogTitle>
           <AlertDialogDescription className="text-[14px] leading-7 text-muted-foreground">
-            آیا مطمئن هستید که می‌خواهید از حساب کاربری خود خارج شوید؟
+            هر وقت خواستید می‌توانید دوباره وارد شوید.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="-mx-5 -mb-5 border-border bg-muted/40 px-5 py-4 sm:justify-start">

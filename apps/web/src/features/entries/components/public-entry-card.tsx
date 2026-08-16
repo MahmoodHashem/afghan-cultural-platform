@@ -81,10 +81,10 @@ function locationLabel(entry: Pick<PublicEntryCard, "geographicScope" | "provinc
   }
 
   if (entry.geographicScope === "NONE") {
-    return "بدون وابستگی جغرافیایی";
+    return "بدون وابستگی به مکان";
   }
 
-  return entry.province?.name ?? "ولایت مشخص";
+  return entry.province?.name ?? "وابسته به یک ولایت";
 }
 
 function formatPersianDate(value: string) {

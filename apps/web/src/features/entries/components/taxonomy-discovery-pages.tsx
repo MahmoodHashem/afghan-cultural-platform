@@ -96,21 +96,20 @@ const provinceFallbackImages = [
 ] as const;
 
 const categoryDescriptions: Record<string, string> = {
-  "historical-places":
-    "بناها، شهرها، آرامگاه‌ها و مکان‌هایی که حافظه تاریخی افغانستان را زنده نگه می‌دارند.",
-  "traditions-and-customs": "آیین‌ها، رسم‌ها و رفتارهای اجتماعی که زندگی فرهنگی مردم را شکل داده‌اند.",
-  food: "خوراک‌ها، شیوه‌های پخت و روایت‌های محلی پیرامون سفره افغانستان.",
-  clothing: "پوشاک محلی، دوخت‌ها، نمادها و هنرهای وابسته به لباس.",
-  handicrafts: "هنرهای دستی، ابزارها و مهارت‌هایی که از نسل به نسل منتقل شده‌اند.",
-  music: "سازها، نغمه‌ها و روایت‌های موسیقی محلی و شهری افغانستان.",
-  "poetry-and-literature": "شاعران، نویسندگان، آثار ادبی و سنت‌های فارسی، پشتو و زبان‌های محلی.",
-  "oral-stories": "قصه‌ها، روایت‌های شفاهی و حافظه مردمی که در گفت‌وگوها زنده مانده‌اند.",
-  "festivals-and-ceremonies": "جشن‌ها، آیین‌ها و مناسبت‌هایی که جامعه را گرد هم می‌آورند.",
-  "languages-and-expressions": "زبان‌ها، گویش‌ها، اصطلاحات و تعبیرهایی که هویت محلی را نشان می‌دهند.",
-  architecture: "شیوه‌های ساخت، الگوهای فضایی و جزئیات معماری بومی و تاریخی.",
-  "cultural-objects": "اشیا، ابزارها و نشانه‌هایی که معنا و کارکرد فرهنگی دارند.",
-  "local-games": "بازی‌ها و سرگرمی‌های محلی که بخشی از زندگی اجتماعی بوده‌اند.",
-  "traditional-occupations": "پیشه‌ها و مهارت‌های سنتی که با اقتصاد و فرهنگ محلی پیوند دارند.",
+  "historical-places": "بناها، شهرها، آرامگاه‌ها و دیگر مکان‌های تاریخی افغانستان.",
+  "traditions-and-customs": "رسم‌ها، آیین‌ها و شیوه‌های زندگی در بخش‌های مختلف افغانستان.",
+  food: "خوراک‌های محلی، شیوه‌های پخت و رسم‌های مربوط به غذا و سفره.",
+  clothing: "پوشاک محلی، شیوه‌های دوخت و هنرهای وابسته به لباس.",
+  handicrafts: "هنرها و مهارت‌های دستی رایج در بخش‌های مختلف افغانستان.",
+  music: "سازها، آوازها و موسیقی محلی و شهری افغانستان.",
+  "poetry-and-literature": "شاعران، نویسندگان، آثار ادبی و ادبیات زبان‌های مختلف افغانستان.",
+  "oral-stories": "قصه‌ها، خاطره‌ها و روایت‌هایی که سینه‌به‌سینه نقل شده‌اند.",
+  "festivals-and-ceremonies": "جشن‌ها، مراسم و آیین‌های جمعی در بخش‌های مختلف افغانستان.",
+  "languages-and-expressions": "زبان‌ها، گویش‌ها، اصطلاحات و تعبیرهای رایج در مناطق مختلف افغانستان.",
+  architecture: "سبک‌های معماری، شیوه‌های ساخت و جزئیات بناهای بومی و تاریخی.",
+  "cultural-objects": "اشیا و ابزارهایی که در زندگی و فرهنگ مردم کاربرد یا معنای ویژه دارند.",
+  "local-games": "بازی‌ها و سرگرمی‌های محلی در مناطق مختلف افغانستان.",
+  "traditional-occupations": "پیشه‌ها و مهارت‌های سنتی که بخشی از زندگی و اقتصاد محلی بوده‌اند.",
 };
 
 const categoryIconBySlug: Record<string, ComponentType<{ className?: string }>> = {
@@ -191,7 +190,7 @@ function ProvinceDetailContent({
 
         <div className="mt-7 grid gap-7 rounded-[28px] border border-border bg-card p-5 shadow-[0_2px_10px_rgba(0,0,0,.04)] sm:p-7 lg:grid-cols-[1fr_420px] lg:items-center">
           <div className="space-y-5">
-            <Badge className="rounded-full bg-primary-light text-primary">ولایت مشخص</Badge>
+            <Badge className="rounded-full bg-primary-light text-primary">وابسته به یک ولایت</Badge>
             <div className="space-y-3">
               <h1 className="text-[38px] font-bold leading-[1.35] text-primary sm:text-[44px]">
                 {province.name}
@@ -736,7 +735,7 @@ function EmptyState({
 function ApiNotice() {
   return (
     <div className="mt-8 rounded-2xl border border-warning/30 bg-warning/10 px-4 py-3 text-[14px] leading-7 text-warning">
-      بخشی از داده‌های عمومی در دسترس نیست. لطفاً وضعیت API را بررسی کنید.
+      فعلاً بخشی از مطالب در دسترس نیست. کمی بعد دوباره تلاش کنید.
     </div>
   );
 }

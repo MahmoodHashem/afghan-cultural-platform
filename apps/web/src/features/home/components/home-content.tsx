@@ -189,7 +189,7 @@ function LatestEntriesSection({ entries }: { entries: PublicEntryCard[] }) {
     <section className="content-container space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <SectionIntro
-          eyebrow="تازه‌های ویرایش‌شده"
+          eyebrow="تازه‌ها"
           title="تازه‌ترین نوشته‌ها"
           description="نگاهی به تازه‌ترین مطالب سایت"
         />
@@ -335,7 +335,7 @@ function NationalScopeSection({
             ))
           ) : (
             <div className="rounded-[28px] border border-border bg-card p-7">
-              <h3 className="text-[22px] font-bold text-foreground">موضوع‌های آماده برای دیدن</h3>
+              <h3 className="text-[22px] font-bold text-foreground">موضوع‌های پیشنهادی</h3>
               <div className="mt-5 flex flex-wrap gap-3">
                 {contentTypes.map((contentType) => (
                   <Link
@@ -374,7 +374,7 @@ function ContributionCallout() {
             href="/about"
             className={cn(buttonVariants({ variant: "outline" }), "rounded-full")}
           >
-            درباره این پلتفرم
+            درباره میراث افغانستان
           </Link>
         </div>
       </div>
@@ -463,10 +463,10 @@ function locationLabel(entry: PublicEntryCard) {
   }
 
   if (entry.geographicScope === "NONE") {
-    return "بدون وابستگی جغرافیایی";
+    return "بدون وابستگی به مکان";
   }
 
-  return entry.province?.name ?? "ولایت مشخص";
+  return entry.province?.name ?? "وابسته به یک ولایت";
 }
 
 function formatDate(value: string) {

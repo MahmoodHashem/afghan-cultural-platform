@@ -33,13 +33,13 @@ type ExploreContentProps = {
 const sortOptions: Array<{ label: string; value: PublicEntrySort }> = [
   { label: "تازه‌ترین", value: "newest" },
   { label: "قدیمی‌ترین", value: "oldest" },
-  { label: "به‌روزترین", value: "recentlyUpdated" },
+  { label: "آخرین ویرایش", value: "recentlyUpdated" },
 ];
 
 const geographicScopeOptions: Array<{ label: string; value: GeographicScope }> = [
-  { label: "ولایت مشخص", value: "PROVINCE" },
+  { label: "وابسته به یک ولایت", value: "PROVINCE" },
   { label: "سراسر افغانستان", value: "NATIONAL" },
-  { label: "بدون وابستگی جغرافیایی", value: "NONE" },
+  { label: "بدون وابستگی به مکان", value: "NONE" },
 ];
 
 function ExploreContent({ entries, taxonomy, query, isEntriesUnavailable }: ExploreContentProps) {
@@ -80,7 +80,7 @@ function ExploreContent({ entries, taxonomy, query, isEntriesUnavailable }: Expl
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-[14px] text-muted-foreground">
-              {formatNumber(entries.meta.total)} مطلب پیدا شد.
+              {formatNumber(entries.meta.total)} مطلب
             </p>
             <ActiveFilterSummary query={query} />
           </div>
@@ -129,7 +129,7 @@ function ExploreFilters({
       <div className="mt-5 space-y-4">
         <NativeSelect label="ترتیب نمایش" name="sort" value={query.sort} options={sortOptions} />
         <NativeSelect
-          label="گستره جغرافیایی"
+          label="محدوده جغرافیایی"
           name="geographicScope"
           value={query.geographicScope}
           options={geographicScopeOptions}
@@ -167,13 +167,13 @@ function ExploreFilters({
 
       <div className="mt-5 grid gap-3">
         <button type="submit" className={cn(buttonVariants(), "rounded-full")}>
-          اعمال فیلتر
+          نمایش نتایج
         </button>
         <Link
           href="/explore"
           className={cn(buttonVariants({ variant: "outline" }), "rounded-full")}
         >
-          پاک کردن فیلترها
+          حذف همه فیلترها
         </Link>
       </div>
     </form>
@@ -287,7 +287,7 @@ function Pagination({
 function ApiNotice() {
   return (
     <div className="rounded-2xl border border-warning/30 bg-warning/10 px-4 py-3 text-[14px] leading-7 text-warning">
-      بخشی از داده‌های عمومی در دسترس نیست. لطفاً وضعیت API را بررسی کنید.
+      فعلاً بخشی از مطالب در دسترس نیست. کمی بعد دوباره تلاش کنید.
     </div>
   );
 }
