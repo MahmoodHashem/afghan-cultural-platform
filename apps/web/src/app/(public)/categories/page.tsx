@@ -9,10 +9,10 @@ import type { TaxonomyItem } from "@/features/entries/types/public-entry";
 
 export const metadata: Metadata = {
   title: "دسته‌بندی‌ها | میراث افغانستان",
-  description: "کاوش محتوای فرهنگی افغانستان بر اساس موضوع و دسته‌بندی.",
+  description: "مطالب فرهنگی افغانستان را بر اساس موضوع ببینید.",
   openGraph: {
     title: "دسته‌بندی‌ها | میراث افغانستان",
-    description: "محتوای فرهنگی افغانستان را بر اساس موضوع کشف کنید.",
+    description: "مطالب فرهنگی افغانستان را بر اساس موضوع ببینید.",
     images: ["/images/herat-grand-mosque.webp"],
   },
 };

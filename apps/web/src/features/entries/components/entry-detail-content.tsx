@@ -55,7 +55,7 @@ function EntryDetailContent({
               className="inline-flex items-center gap-2 text-[14px] font-semibold text-primary transition-colors hover:text-primary-hover"
             >
               <ArrowRightIcon className="size-4" aria-hidden="true" />
-              بازگشت به کاوش محتوا
+              بازگشت به مطالب
             </Link>
 
             <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_420px] lg:items-end">
@@ -170,7 +170,7 @@ function PublicReviewsList({ reviews }: { reviews: PublicReview[] }) {
         </div>
       ) : (
         <div className="rounded-2xl border border-dashed border-border bg-card p-5 text-[14px] leading-7 text-muted-foreground">
-          هنوز دیدگاهی برای این مدخل ثبت نشده است. اگر این محتوا برایتان مفید بود، نخستین دیدگاه را
+          هنوز دیدگاهی برای این مطلب ثبت نشده است. اگر این مطلب برایتان مفید بود، نخستین دیدگاه را
           بنویسید.
         </div>
       )}
@@ -207,7 +207,7 @@ function TiptapDocument({ content }: { content: unknown }) {
   if (children.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-border bg-card p-6 text-muted-foreground">
-        متن کامل این مدخل هنوز برای نمایش آماده نیست.
+        متن کامل این مطلب هنوز برای نمایش آماده نیست.
       </div>
     );
   }
@@ -469,7 +469,7 @@ function TaxonomyCard({ entry }: { entry: PublicEntryDetail }) {
   return (
     <Card className="rounded-2xl border-border bg-card">
       <CardContent className="space-y-4 p-4">
-        <h2 className="text-[18px] font-bold text-foreground">جزئیات مدخل</h2>
+        <h2 className="text-[18px] font-bold text-foreground">جزئیات مطلب</h2>
         <dl className="space-y-3">
           {items.map(([label, value]) => (
             <div key={label} className="flex items-start justify-between gap-4 text-[14px]">
@@ -523,7 +523,7 @@ function OutgoingReferences({ entry }: { entry: PublicEntryDetail }) {
 
 function IncomingReferences({ entry }: { entry: PublicEntryDetail }) {
   return (
-    <ReferenceCard title="مدخل‌های مرتبط">
+    <ReferenceCard title="مطالب مرتبط">
       {entry.incomingReferences.map((reference) => (
         <Link
           key={reference.id}

@@ -60,7 +60,7 @@ function EntryActionRail({ title, commentCount, ratingCount }: EntryActionRailPr
 
     try {
       await navigator.clipboard.writeText(url);
-      toast.success("پیوند مدخل کپی شد.");
+      toast.success("پیوند مطلب کپی شد.");
     } catch {
       toast.error("کپی کردن پیوند انجام نشد.");
     }
@@ -82,8 +82,8 @@ function EntryActionRail({ title, commentCount, ratingCount }: EntryActionRailPr
           icon={<HeartIcon className="size-6" aria-hidden="true" />}
         />
         <ActionButton
-          label="ذخیره مدخل"
-          onClick={() => toast.message("ذخیره مدخل در گام بعدی به حساب کاربری وصل می‌شود.")}
+          label="ذخیره مطلب"
+          onClick={() => toast.message("ذخیره مطلب در گام بعدی به حساب کاربری وصل می‌شود.")}
           icon={<BookmarkIcon className="size-6" aria-hidden="true" />}
         />
         <ActionButton

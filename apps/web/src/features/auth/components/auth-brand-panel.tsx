@@ -75,11 +75,9 @@ function LoginMessage() {
           aria-hidden="true"
         />
 
-        <h2 className="text-[22px] font-bold leading-9 text-primary">
-          جایی برای دانستن، یادگیری و پاسداشت
-        </h2>
+        <h2 className="text-[22px] font-bold leading-9 text-primary">فرهنگ افغانستان، یک‌جا</h2>
         <p className="max-w-95 text-[15px] leading-8 text-muted-foreground">
-          با هم، میراث فرهنگی افغانستان را زنده نگه می‌داریم و به نسل‌های آینده منتقل می‌کنیم.
+          فرهنگ و روایت‌های افغانستان را با هم ثبت می‌کنیم.
         </p>
       </div>
     </div>

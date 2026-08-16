@@ -44,10 +44,10 @@ export async function generateMetadata({ params }: CategoryDetailPageProps): Pro
 
   return {
     title: `${category.name} | دسته‌بندی‌ها | میراث افغانستان`,
-    description: `کاوش محتوای فرهنگی افغانستان در دسته‌بندی ${category.name}.`,
+    description: `مطالب منتشرشده در دسته‌بندی ${category.name}.`,
     openGraph: {
       title: `${category.name} | میراث افغانستان`,
-      description: `مدخل‌های منتشرشده درباره ${category.name}.`,
+      description: `مطالب منتشرشده درباره ${category.name}.`,
       images: ["/images/herat-grand-mosque.webp"],
     },
   };

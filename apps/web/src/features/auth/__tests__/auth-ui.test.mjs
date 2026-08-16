@@ -65,7 +65,7 @@ const publicHeader = read("src/components/layout/public-header.tsx");
 const sheet = read("src/components/ui/sheet.tsx");
 
 test("login page renders required fields and links", () => {
-  assert.match(loginPage, /title=" خوش آمدید"/);
+  assert.match(loginPage, /title="خوش آمدید"/);
   assert.match(loginPage, /LOGIN_BACKGROUND_SRC/);
   assert.match(loginForm, /ایمیل/);
   assert.match(loginForm, /رمز عبور/);
@@ -258,9 +258,9 @@ test("homepage floating header uses solid controls instead of a glass nav pill",
   assert.match(publicHeader, /bg-background/);
   assert.match(publicHeader, /bg-primary/);
   assert.match(publicHeader, /میراث افغانستان/);
-  assert.match(publicHeader, /کاوش محتوا/);
+  assert.match(publicHeader, /مطالب/);
   assert.match(publicHeader, /جست‌وجوی فرهنگ، مکان، روایت/);
-  assert.match(publicHeader, /ایجاد محتوا/);
+  assert.match(publicHeader, /افزودن مطلب/);
   assert.match(publicHeader, /ثبت‌نام/);
 });
 
@@ -300,7 +300,7 @@ test("public routes provide skeleton loading and controlled error states", () =>
   assert.match(exploreLoading, /lg:grid-cols-\[320px_1fr\]/);
   assert.match(entryDetailLoading, /EntryDetailLoading/);
   assert.match(entryDetailLoading, /lg:grid-cols-\[56px_minmax\(0,760px\)_320px\]/);
-  assert.match(entryDetailLoading, /aria-label="در حال بارگذاری مدخل"/);
+  assert.match(entryDetailLoading, /aria-label="در حال بارگذاری مطلب"/);
   assert.match(provincesLoading, /Skeleton/);
   assert.match(categoriesLoading, /Skeleton/);
   assert.match(provinceDetailLoading, /ProvinceDetailLoading/);
@@ -346,9 +346,9 @@ test("province and category discovery pages match the approved taxonomy designs"
   assert.match(provincesPage, /geographicScope: "PROVINCE"/);
   assert.match(categoriesPage, /getPublicCategories/);
   assert.match(taxonomyDiscoveryPages, /فرهنگ افغانستان بر اساس ولایت/);
-  assert.match(taxonomyDiscoveryPages, /افغانستان را از طریق فرهنگ، تاریخ و میراث ولایت‌های آن/);
+  assert.match(taxonomyDiscoveryPages, /با فرهنگ و میراث ولایت‌های افغانستان آشنا شوید/);
   assert.match(taxonomyDiscoveryPages, /کاوش بر اساس موضوع/);
-  assert.match(taxonomyDiscoveryPages, /محتوای فرهنگی افغانستان را بر اساس موضوع کشف کنید/);
+  assert.match(taxonomyDiscoveryPages, /مطالب فرهنگی افغانستان را بر اساس موضوع ببینید/);
   assert.match(taxonomyDiscoveryPages, /ProvinceCard/);
   assert.match(taxonomyDiscoveryPages, /CategoryCard/);
   assert.match(taxonomyDiscoveryPages, /\/images\/star-icon\.png/);
@@ -360,9 +360,9 @@ test("province detail filters only provincial entries and reuses entry cards", (
   assert.match(provinceDetailPage, /geographicScope: "PROVINCE"/);
   assert.match(provinceDetailPage, /provinceSlug: province\.slug/);
   assert.match(provinceDetailPage, /categorySlug: selectedCategorySlug/);
-  assert.match(taxonomyDiscoveryPages, /کاوش فرهنگ و میراث/);
+  assert.match(taxonomyDiscoveryPages, /فرهنگ و میراث/);
   assert.match(taxonomyDiscoveryPages, /PublicEntryCardView/);
-  assert.match(taxonomyDiscoveryPages, /هنوز محتوایی برای این ولایت ثبت نشده است/);
+  assert.match(taxonomyDiscoveryPages, /هنوز مطلبی برای این ولایت منتشر نشده است/);
 });
 
 test("category detail supports province and national filters without popularity sort", () => {
@@ -373,7 +373,7 @@ test("category detail supports province and national filters without popularity 
   assert.doesNotMatch(categoryDetailPage, /popular|popularity|محبوب‌ترین/);
   assert.match(taxonomyDiscoveryPages, /همه افغانستان/);
   assert.match(taxonomyDiscoveryPages, /سراسری/);
-  assert.match(taxonomyDiscoveryPages, /کاوش بر اساس ولایت/);
+  assert.match(taxonomyDiscoveryPages, /بر اساس ولایت/);
 });
 
 test("entry detail page renders published entry data by Persian slug", () => {
@@ -411,7 +411,7 @@ test("entry detail includes reading navigation and sticky article tools", () => 
   );
   assert.match(entryHeaderContext, /window\.scrollY > 420/);
   assert.match(entryHeaderContext, /PUBLIC_HEADER_CONTEXT_EVENT/);
-  assert.match(entryHeaderContext, /بازگشت به کاوش محتوا/);
+  assert.match(entryHeaderContext, /بازگشت به مطالب/);
   assert.match(publicHeader, /HeaderContextContent/);
   assert.match(publicHeader, /transition-all duration-300 ease-out/);
   assert.match(publicHeader, /inert=\{shouldShowHeaderContext\}/);

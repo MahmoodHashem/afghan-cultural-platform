@@ -8,7 +8,7 @@ import { LOGIN_BACKGROUND_SRC } from "@/features/auth/constants/auth-assets";
 
 export const metadata: Metadata = {
   title: "ورود به حساب | میراث افغانستان",
-  description: "ورود به حساب کاربری میراث افغانستان برای ادامه یادگیری و مشارکت فرهنگی.",
+  description: "ورود به حساب کاربری میراث افغانستان.",
   robots: {
     index: false,
     follow: false,
@@ -18,10 +18,7 @@ export const metadata: Metadata = {
 export default function LoginPage() {
   return (
     <AuthLayout backgroundSrc={LOGIN_BACKGROUND_SRC} variant="login">
-      <AuthCard
-        title=" خوش آمدید"
-        description="برای ادامه مسیر یادگیری و کاوش در میراث افغانستان، وارد شوید."
-      >
+      <AuthCard title="خوش آمدید" description="برای ادامه، وارد حساب خود شوید.">
         <Suspense fallback={null}>
           <LoginForm />
         </Suspense>

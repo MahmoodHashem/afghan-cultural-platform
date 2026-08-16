@@ -29,9 +29,9 @@ function HomeContent({ data }: { data: HomeData }) {
         <section className="content-container">
           <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
             <SectionIntro
-              eyebrow="کاوش میراث"
-              title="داستان‌های فرهنگی تازه از سراسر افغانستان"
-              description="محتوای منتشرشده این بخش از داده‌های عمومی سامانه خوانده می‌شود و فقط آثار تأییدشده را نمایش می‌دهد."
+              eyebrow="فرهنگ افغانستان"
+              title="تازه‌ترین نوشته‌های فرهنگی از گوشه‌وکنار افغانستان"
+              description="تازه‌ترین مطالب منتشرشده را اینجا ببینید."
             />
             <StatsStrip data={data} />
           </div>
@@ -52,8 +52,8 @@ function HomeContent({ data }: { data: HomeData }) {
         </section>
 
         <ExploreTaxonomySection
-          title="کاوش بر پایه ولایت"
-          description="مسیرهای محلی برای یافتن روایت‌ها، بناها، چهره‌ها و آیین‌های وابسته به ولایت‌های افغانستان."
+          title="فرهنگ افغانستان بر اساس ولایت"
+          description="فرهنگ افغانستان را ولایت به ولایت ببینید."
           items={data.provinces}
           basePath="/explore"
           queryName="provinceSlug"
@@ -64,7 +64,7 @@ function HomeContent({ data }: { data: HomeData }) {
 
         <ExploreTaxonomySection
           title="دسته‌بندی‌های فرهنگی"
-          description="از ادبیات و شخصیت‌ها تا بناهای تاریخی و آیین‌ها، محتوا را از مسیر موضوعی دنبال کنید."
+          description="از ادبیات و شخصیت‌ها تا بناهای تاریخی و آیین‌ها، مطالب را بر اساس موضوع دنبال کنید."
           items={data.categories}
           basePath="/explore"
           queryName="categorySlug"
@@ -101,7 +101,7 @@ function SectionIntro({
 
 function StatsStrip({ data }: { data: HomeData }) {
   const stats = [
-    { label: "اثر منتشرشده", value: data.stats.publishedEntries },
+    { label: "مطلب منتشرشده", value: data.stats.publishedEntries },
     { label: "ولایت", value: data.stats.provinces },
     { label: "دسته‌بندی", value: data.stats.categories },
   ];
@@ -190,8 +190,8 @@ function LatestEntriesSection({ entries }: { entries: PublicEntryCard[] }) {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <SectionIntro
           eyebrow="تازه‌های ویرایش‌شده"
-          title="آخرین روایت‌هایی که به‌روزرسانی شده‌اند"
-          description="این بخش برای مرور سریع محتوای زنده و آماده خواندن طراحی شده است."
+          title="تازه‌ترین نوشته‌ها"
+          description="نگاهی به تازه‌ترین مطالب سایت"
         />
         <Link
           href="/explore?sort=recentlyUpdated"
@@ -316,18 +316,15 @@ function NationalScopeSection({
       <div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
         <div className="rounded-[28px] border border-border bg-foreground p-7 text-white shadow-[0_2px_10px_rgba(0,0,0,.05)]">
           <SparklesIcon className="size-9 text-gold" aria-hidden="true" />
-          <h2 className="mt-5 text-[30px] font-bold leading-[1.35]">
-            میراثی که به سراسر افغانستان تعلق دارد
-          </h2>
+          <h2 className="mt-5 text-[30px] font-bold leading-[1.35]">فرهنگ مشترک افغانستان</h2>
           <p className="mt-4 text-[15px] leading-8 text-white/72">
-            برخی روایت‌ها، چهره‌ها و سنت‌ها محدود به یک ولایت نیستند. این بخش برای محتوای ملی و
-            افغانستان‌شمول آماده شده است.
+            بعضی از رسم‌ها، چهره‌ها و روایت‌ها در بخش‌های مختلف افغانستان شناخته شده‌اند.
           </p>
           <Link
             href="/explore?geographicScope=NATIONAL"
             className={cn(buttonVariants(), "mt-6 rounded-full")}
           >
-            کاوش محتوای ملی
+            دیدن مطالب سراسری
           </Link>
         </div>
 
@@ -338,7 +335,7 @@ function NationalScopeSection({
             ))
           ) : (
             <div className="rounded-[28px] border border-border bg-card p-7">
-              <h3 className="text-[22px] font-bold text-foreground">مسیرهای آماده کاوش</h3>
+              <h3 className="text-[22px] font-bold text-foreground">موضوع‌های آماده برای دیدن</h3>
               <div className="mt-5 flex flex-wrap gap-3">
                 {contentTypes.map((contentType) => (
                   <Link
@@ -364,14 +361,14 @@ function ContributionCallout() {
       <div className="rounded-[28px] border border-border bg-card px-5 py-8 text-center shadow-[0_2px_10px_rgba(0,0,0,.04)] sm:px-8 sm:py-10">
         <p className="text-[14px] font-bold text-primary">مشارکت فرهنگی</p>
         <h2 className="mx-auto mt-3 max-w-2xl text-[30px] font-bold leading-[1.35] text-foreground">
-          اگر روایت، منبع یا دانشی دارید، آن را برای نسل‌های آینده ثبت کنید.
+          اگر چیزی از فرهنگ و تاریخ محل‌تان می‌دانید، با دیگران شریک کنید.
         </h2>
         <p className="mx-auto mt-4 max-w-2xl text-[15px] leading-8 text-muted-foreground">
-          مشارکت‌ها پس از ثبت و بررسی، بخشی از کتابخانه عمومی میراث افغانستان می‌شوند.
+          مطالب پس از ثبت و بررسی، در سایت منتشر می‌شوند.
         </p>
         <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
           <Link href="/entries/new" className={cn(buttonVariants(), "rounded-full")}>
-            ایجاد محتوا
+            افزودن مطلب
           </Link>
           <Link
             href="/about"
@@ -431,10 +428,10 @@ function FeaturedEmptyState() {
     <div className="rounded-[28px] border border-border bg-card p-8 shadow-[0_2px_10px_rgba(0,0,0,.04)]">
       <p className="text-[14px] font-bold text-primary">کتابخانه در حال آماده‌سازی است</p>
       <h2 className="mt-3 text-[30px] font-bold leading-[1.35] text-foreground">
-        هنوز محتوای منتشرشده‌ای برای نمایش در صفحه اصلی وجود ندارد.
+        هنوز مطلب منتشرشده‌ای برای نمایش در صفحه اصلی وجود ندارد.
       </h2>
       <p className="mt-4 text-[15px] leading-8 text-muted-foreground">
-        پس از تأیید و انتشار نخستین مدخل‌های فرهنگی، این بخش به‌صورت خودکار با داده واقعی پر می‌شود.
+        پس از تأیید و انتشار نخستین مطالب فرهنگی، این بخش به‌صورت خودکار با داده واقعی پر می‌شود.
       </p>
     </div>
   );
@@ -443,7 +440,7 @@ function FeaturedEmptyState() {
 function SideEmptyState() {
   return (
     <div className="rounded-2xl border border-dashed border-border bg-card p-6 text-[14px] leading-7 text-muted-foreground sm:col-span-2 lg:col-span-1">
-      مدخل‌های بیشتری پس از انتشار اینجا نمایش داده می‌شوند.
+      مطالب بیشتری پس از انتشار اینجا نمایش داده می‌شوند.
     </div>
   );
 }

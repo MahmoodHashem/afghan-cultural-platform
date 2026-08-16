@@ -145,7 +145,7 @@ function ProvinceIndexContent({ provinces, isUnavailable }: ProvinceIndexContent
         <PageIntro
           eyebrow="ولایت‌ها"
           title="فرهنگ افغانستان بر اساس ولایت"
-          subtitle="افغانستان را از طریق فرهنگ، تاریخ و میراث ولایت‌های آن کاوش کنید."
+          subtitle="با فرهنگ و میراث ولایت‌های افغانستان آشنا شوید."
         />
 
         {isUnavailable ? <ApiNotice /> : null}
@@ -161,7 +161,7 @@ function ProvinceIndexContent({ provinces, isUnavailable }: ProvinceIndexContent
             title="هنوز ولایتی برای نمایش در دسترس نیست."
             description="پس از آماده شدن داده‌های عمومی، ولایت‌ها در این صفحه نمایش داده می‌شوند."
             actionHref="/explore"
-            actionLabel="رفتن به کاوش محتوا"
+            actionLabel="دیدن مطالب"
           />
         )}
       </section>
@@ -197,12 +197,12 @@ function ProvinceDetailContent({
                 {province.name}
               </h1>
               <p className="max-w-2xl text-[16px] leading-8 text-muted-foreground">
-                فرهنگ، تاریخ، شخصیت‌ها، مکان‌ها و روایت‌های مرتبط با ولایت {province.name} را کشف کنید.
+                نوشته‌ها و روایت‌های مربوط به {province.name} را ببینید.
               </p>
             </div>
             <StatsCards
               items={[
-                { label: "محتوا", value: entries.meta.total },
+                { label: "مطلب", value: entries.meta.total },
                 { label: "دسته‌بندی فعال", value: categoryFilters.length },
               ]}
             />
@@ -214,7 +214,7 @@ function ProvinceDetailContent({
         <section className="mt-10 space-y-6">
           <div className="text-center">
             <h2 className="text-[24px] font-bold text-foreground sm:text-[28px]">
-              کاوش فرهنگ و میراث {province.name}
+              فرهنگ و میراث {province.name}
             </h2>
           </div>
 
@@ -248,7 +248,7 @@ function CategoriesIndexContent({ categories, isUnavailable }: CategoriesIndexCo
         <PageIntro
           eyebrow="دسته‌بندی‌ها"
           title="کاوش بر اساس موضوع"
-          subtitle="محتوای فرهنگی افغانستان را بر اساس موضوع کشف کنید."
+          subtitle="مطالب فرهنگی افغانستان را بر اساس موضوع ببینید."
         />
 
         {isUnavailable ? <ApiNotice /> : null}
@@ -264,7 +264,7 @@ function CategoriesIndexContent({ categories, isUnavailable }: CategoriesIndexCo
             title="هنوز دسته‌بندی‌ای برای نمایش در دسترس نیست."
             description="پس از آماده شدن داده‌های عمومی، دسته‌بندی‌ها در این صفحه نمایش داده می‌شوند."
             actionHref="/explore"
-            actionLabel="رفتن به کاوش محتوا"
+            actionLabel="دیدن مطالب"
           />
         )}
       </section>
@@ -308,7 +308,7 @@ function CategoryDetailContent({
               </p>
             </div>
             <p className="text-[14px] font-semibold text-primary">
-              {formatPersianNumber(category.entryCount)} محتوای منتشرشده
+              {formatPersianNumber(category.entryCount)} مطلب منتشرشده
             </p>
           </div>
 
@@ -316,7 +316,7 @@ function CategoryDetailContent({
             <DecorativeMark className="-end-8 -top-8 opacity-[0.08]" />
             <CategoryIcon category={category} toneIndex={0} className="size-7" />
             <p className="mt-5 text-[15px] leading-8 text-muted-foreground">
-              این صفحه فقط مدخل‌های منتشرشده همین موضوع را از سراسر افغانستان نمایش می‌دهد.
+              مطالب این موضوع از سراسر افغانستان
             </p>
           </div>
         </div>
@@ -324,9 +324,9 @@ function CategoryDetailContent({
         <section className="mt-10 space-y-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div className="space-y-2">
-              <h2 className="text-[22px] font-bold text-foreground">کاوش بر اساس ولایت</h2>
+              <h2 className="text-[22px] font-bold text-foreground">بر اساس ولایت</h2>
               <p className="text-[14px] leading-7 text-muted-foreground">
-                سراسری برای محتوایی است که به یک ولایت خاص محدود نیست.
+                «سراسری» یعنی این مطلب به ولایت خاصی وابسته نیست.
               </p>
             </div>
             <SortLinks options={sortOptions} />
@@ -414,7 +414,7 @@ function ProvinceCard({
               <MapPinIcon className="size-4" aria-hidden="true" />
             </span>
             <Badge className="rounded-full bg-primary/90 text-white">
-              {formatPersianNumber(province.entryCount)} محتوا
+              {formatPersianNumber(province.entryCount)} مطلب
             </Badge>
           </div>
         </div>
@@ -422,7 +422,7 @@ function ProvinceCard({
           <h2 className="text-[20px] font-bold text-foreground">{province.name}</h2>
           <p className="flex items-center gap-1 text-[13px] text-muted-foreground">
             <MapPinIcon className="size-4" aria-hidden="true" />
-            کاوش میراث ولایت {province.name}
+            دیدن میراث ولایت {province.name}
           </p>
         </CardContent>
       </Link>
@@ -450,7 +450,7 @@ function CategoryCard({
             {getCategoryDescription(category)}
           </p>
           <p className="mt-auto pt-5 text-[13px] font-semibold text-primary">
-            {formatPersianNumber(category.entryCount)} محتوا
+            {formatPersianNumber(category.entryCount)} مطلب
           </p>
         </CardContent>
       </Link>
@@ -527,12 +527,12 @@ function EntryGrid({
       <EmptyState
         title={
           emptyKind === "province"
-            ? "هنوز محتوایی برای این ولایت ثبت نشده است."
-            : "هنوز محتوایی برای این انتخاب ثبت نشده است."
+            ? "هنوز مطلبی برای این ولایت منتشر نشده است."
+            : "هنوز مطلبی در این بخش منتشر نشده است."
         }
-        description="پس از انتشار مدخل‌های تأییدشده، آن‌ها در این بخش نمایش داده می‌شوند."
+        description="هنوز مطلبی در این بخش منتشر نشده است."
         actionHref="/entries/new"
-        actionLabel="افزودن محتوا"
+        actionLabel="افزودن مطلب"
       />
     );
   }
@@ -771,7 +771,7 @@ function getProvinceImage(province: Pick<TaxonomyItem, "name" | "slug">, index: 
 }
 
 function getCategoryDescription(category: Pick<TaxonomyItem, "name" | "slug">) {
-  return categoryDescriptions[category.slug] ?? `مدخل‌های فرهنگی مرتبط با ${category.name}.`;
+  return categoryDescriptions[category.slug] ?? `مطالب فرهنگی مرتبط با ${category.name}.`;
 }
 
 function taxonomyItemHref(basePath: "/provinces" | "/categories", item: TaxonomyItem) {

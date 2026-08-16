@@ -62,7 +62,7 @@ const PUBLIC_HEADER_CONTEXT_EVENT = "afghan-culture:public-header-context";
 
 const navigationItems = [
   { label: "خانه", href: "/" },
-  { label: "کاوش محتوا", href: "/explore" },
+  { label: "مطالب", href: "/explore" },
   { label: "ولایت‌ها", href: "/provinces" },
   { label: "دسته‌بندی‌ها", href: "/categories" },
 ];
@@ -335,7 +335,7 @@ function MobileNavigation({ isCompact }: { isCompact: boolean }) {
               میراث افغانستان
             </SheetTitle>
             <SheetDescription className="text-[13px] leading-6">
-              راهنمای سریع برای کاوش میراث فرهنگی افغانستان
+              راهی ساده برای دیدن فرهنگ افغانستان
             </SheetDescription>
           </SheetHeader>
 
@@ -390,7 +390,7 @@ function MobileNavigation({ isCompact }: { isCompact: boolean }) {
                       "h-11 w-full rounded-full",
                     )}
                   >
-                    ایجاد محتوا
+                    افزودن مطلب
                   </Link>
                   <Link
                     href="/account"
@@ -500,7 +500,7 @@ function HeaderAuthControls({ isCompact }: { isCompact: boolean }) {
         )}
       >
         <PlusIcon className="size-4" aria-hidden="true" />
-        ایجاد محتوا
+        افزودن مطلب
       </Link>
       <ProfileMenu user={user} />
     </div>

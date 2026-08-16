@@ -33,7 +33,7 @@ type ExploreContentProps = {
 const sortOptions: Array<{ label: string; value: PublicEntrySort }> = [
   { label: "تازه‌ترین", value: "newest" },
   { label: "قدیمی‌ترین", value: "oldest" },
-  { label: "اخیراً به‌روزرسانی‌شده", value: "recentlyUpdated" },
+  { label: "به‌روزترین", value: "recentlyUpdated" },
 ];
 
 const geographicScopeOptions: Array<{ label: string; value: GeographicScope }> = [
@@ -57,13 +57,12 @@ function ExploreContent({ entries, taxonomy, query, isEntriesUnavailable }: Expl
                 بازگشت به خانه
               </Link>
               <div className="space-y-3">
-                <p className="text-[14px] font-bold text-primary">کاوش محتوا</p>
+                <p className="text-[14px] font-bold text-primary">مطالب فرهنگی</p>
                 <h1 className="text-[36px] font-bold leading-[1.35] text-foreground sm:text-[44px]">
-                  کتابخانه عمومی میراث افغانستان
+                  فرهنگ افغانستان
                 </h1>
                 <p className="max-w-3xl text-[16px] leading-8 text-muted-foreground">
-                  مدخل‌های منتشرشده و تأییدشده را بر پایه ولایت، دسته‌بندی، نوع محتوا، برچسب و گستره
-                  جغرافیایی مرور کنید.
+                  مطالب را بر اساس ولایت، موضوع و نوع محتوا پیدا کنید.
                 </p>
               </div>
             </div>
@@ -81,7 +80,7 @@ function ExploreContent({ entries, taxonomy, query, isEntriesUnavailable }: Expl
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-[14px] text-muted-foreground">
-              {formatNumber(entries.meta.total)} مدخل منتشرشده پیدا شد.
+              {formatNumber(entries.meta.total)} مطلب پیدا شد.
             </p>
             <ActiveFilterSummary query={query} />
           </div>
@@ -121,7 +120,9 @@ function ExploreFilters({
         </span>
         <div>
           <h2 className="text-[18px] font-bold text-foreground">فیلترها</h2>
-          <p className="text-[13px] text-muted-foreground">نتایج را دقیق‌تر کنید.</p>
+          <p className="text-[13px] text-muted-foreground">
+            موضوع، ولایت و نوع محتوا را انتخاب کنید.
+          </p>
         </div>
       </div>
 
@@ -296,14 +297,13 @@ function EmptyState() {
     <div className="rounded-[28px] border border-dashed border-border bg-card p-8 text-center">
       <p className="text-[20px] font-bold text-foreground">نتیجه‌ای پیدا نشد</p>
       <p className="mx-auto mt-3 max-w-xl text-[15px] leading-8 text-muted-foreground">
-        فیلترها را تغییر دهید یا بعداً دوباره بررسی کنید؛ فقط مدخل‌های منتشرشده در این صفحه نمایش داده
-        می‌شوند.
+        با این فیلترها چیزی پیدا نشد. فیلترها را تغییر دهید.
       </p>
       <Link
         href="/explore"
         className={cn(buttonVariants({ variant: "outline" }), "mt-5 rounded-full")}
       >
-        نمایش همه محتوا
+        نمایش همه مطالب
       </Link>
     </div>
   );

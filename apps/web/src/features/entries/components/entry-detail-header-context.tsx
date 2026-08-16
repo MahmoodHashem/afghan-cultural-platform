@@ -17,7 +17,7 @@ function EntryDetailHeaderContext({ title, backHref }: EntryDetailHeaderContextP
       const detail: HeaderContext = {
         title,
         backHref,
-        backLabel: "بازگشت به کاوش محتوا",
+        backLabel: "بازگشت به مطالب",
         visible,
       };
 

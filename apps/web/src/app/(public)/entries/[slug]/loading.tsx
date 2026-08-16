@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 function EntryDetailLoading() {
   return (
-    <main className="min-h-screen bg-background" aria-busy="true" aria-label="در حال بارگذاری مدخل">
+    <main className="min-h-screen bg-background" aria-busy="true" aria-label="در حال بارگذاری مطلب">
       <article>
         <section className="border-b border-border bg-card pt-24 pb-10 sm:pt-28">
           <div className="content-container">

@@ -6,13 +6,12 @@ import { HomeFooter } from "@/features/home/components/home-footer";
 import { HomeHero } from "@/features/home/components/home-hero";
 
 export const metadata: Metadata = {
-  title: "میراث افغانستان | کتابخانه فرهنگ و تاریخ افغانستان",
+  title: "میراث افغانستان | فرهنگ و تاریخ افغانستان",
   description:
-    "کاوش و ثبت میراث فرهنگی افغانستان؛ روایت‌ها، ولایت‌ها، شخصیت‌ها، بناها و دانش محلی در یک کتابخانه عمومی و تأییدشده.",
+    "جایی برای خواندن و ثبت مطالبی درباره فرهنگ، تاریخ، ولایت‌ها، شخصیت‌ها و دانش محلی افغانستان.",
   openGraph: {
     title: "میراث افغانستان",
-    description:
-      "کتابخانه عمومی برای حفظ و کاوش میراث فرهنگی افغانستان با محتوای منتشرشده و تأییدشده.",
+    description: "جایی برای گردآوری و شناخت فرهنگ افغانستان.",
     images: ["/images/HERAT02.jpg"],
   },
 };

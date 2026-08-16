@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: EntryDetailPageProps): Promis
 
   if (!entry) {
     return {
-      title: "مدخل پیدا نشد | میراث افغانستان",
+      title: "مطلب پیدا نشد | میراث افغانستان",
       robots: { index: false, follow: false },
     };
   }

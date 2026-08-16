@@ -8,7 +8,7 @@ import { REGISTER_BACKGROUND_SRC } from "@/features/auth/constants/auth-assets";
 
 export const metadata: Metadata = {
   title: "ایجاد حساب کاربری | میراث افغانستان",
-  description: "ایجاد حساب کاربری در میراث افغانستان برای همراهی با جامعه فرهنگی فارسی‌زبان.",
+  description: "ایجاد حساب کاربری در میراث افغانستان.",
   robots: {
     index: false,
     follow: false,
@@ -20,7 +20,7 @@ export default function RegisterPage() {
     <AuthLayout backgroundSrc={REGISTER_BACKGROUND_SRC} variant="register">
       <AuthCard
         title="ایجاد حساب کاربری"
-        description="به جمع علاقه‌مندان فرهنگ و دانش افغانستان بپیوندید."
+        description="حساب بسازید و در گردآوری فرهنگ افغانستان سهم بگیرید."
       >
         <Suspense fallback={null}>
           <RegisterForm />

@@ -25,9 +25,9 @@ type SocialIconDefinition = {
 const quickLinks: FooterLinkGroup = {
   title: "دسترسی سریع",
   links: [
-    { label: "فرهنگ‌ها", href: "/categories" },
+    { label: "موضوع‌ها", href: "/categories" },
     { label: "ولایت‌ها", href: "/provinces" },
-    { label: "داستان‌ها", href: "/explore" },
+    { label: "مطالب", href: "/explore" },
     { label: "درباره ما", href: "/about" },
     { label: "تماس با ما", href: "/contact" },
   ],
@@ -96,7 +96,7 @@ function BrandColumn() {
       </Link>
 
       <p className="max-w-md text-[16px] leading-9 text-muted-foreground">
-        ما در حفظ و ترویج میراث فرهنگی غنی افغانستان برای نسل‌های آینده تلاش می‌کنیم.
+        جایی برای گردآوری و شناخت فرهنگ افغانستان
       </p>
 
       <fieldset className="flex items-center gap-4">
@@ -145,7 +145,7 @@ function NewsletterColumn() {
       <div className="space-y-3">
         <h2 className="text-[19px] font-bold text-foreground">در خبرنامه ما عضو شوید</h2>
         <p className="max-w-md text-[15px] leading-8 text-muted-foreground">
-          برای دریافت آخرین مقالات و داستان‌های فرهنگی در خبرنامه ما عضو شوید.
+          تازه‌ترین نوشته‌ها را از دست ندهید.
         </p>
       </div>
 

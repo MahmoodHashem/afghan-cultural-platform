@@ -9,10 +9,10 @@ import type { TaxonomyItem } from "@/features/entries/types/public-entry";
 
 export const metadata: Metadata = {
   title: "ولایت‌ها | میراث افغانستان",
-  description: "کاوش میراث فرهنگی افغانستان بر پایه ولایت‌های آن.",
+  description: "با فرهنگ و میراث ولایت‌های افغانستان آشنا شوید.",
   openGraph: {
     title: "ولایت‌ها | میراث افغانستان",
-    description: "افغانستان را از طریق فرهنگ، تاریخ و میراث ولایت‌های آن کاوش کنید.",
+    description: "با فرهنگ و میراث ولایت‌های افغانستان آشنا شوید.",
     images: ["/images/HERAT02.jpg"],
   },
 };
