@@ -39,10 +39,10 @@ function FilterTabs({ ariaLabel, items }: FilterTabsProps) {
             aria-selected={item.isActive}
             aria-current={item.isActive ? "page" : undefined}
             className={cn(
-              "relative inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-full px-4 text-[13px] font-semibold outline-none transition-colors focus-visible:ring-3 focus-visible:ring-ring/40",
+              "relative inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-full  px-4 text-[13px] font-semibold outline-none transition-all focus-visible:ring-3 focus-visible:ring-ring/40",
               item.isActive
-                ? "text-primary-foreground"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                ? "border border-primary/40 text-primary-foreground shadow-[0_6px_16px_rgba(15,118,110,0.12)]"
+                : " text-muted-foreground  hover:bg-muted hover:text-foreground",
             )}
           >
             {item.isActive ? (
