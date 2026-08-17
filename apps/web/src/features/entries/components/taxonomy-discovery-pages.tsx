@@ -25,8 +25,10 @@ import { cn } from "@/lib/utils";
 import type { EntryListResponse, TaxonomyItem } from "../types/public-entry";
 import type { EntryBreadcrumbContext } from "../utils/entry-breadcrumb";
 import { getProvinceImage } from "../utils/province-images";
+import { AnimatedEntryGrid } from "./animated-entry-grid";
+import { FilterTabs } from "./filter-tabs";
 import { ProvinceSearchGrid } from "./province-search-grid";
-import { formatPersianNumber, PublicEntryCardView } from "./public-entry-card";
+import { formatPersianNumber } from "./public-entry-card";
 
 type CountedTaxonomyItem = TaxonomyItem & {
   entryCount: number;
@@ -201,18 +203,24 @@ function ProvinceDetailContent({
             </h2>
           </div>
 
-          <ScrollableChips ariaLabel="فیلتر موضوع‌های ولایت">
-            <FilterChip href={allCategoriesHref} isActive={isAllCategoriesActive} label="همه" />
-            {categoryFilters.map((category) => (
-              <FilterChip
-                key={category.id}
-                href={category.href}
-                isActive={category.isActive}
-                label={category.name}
-                count={category.entryCount}
-              />
-            ))}
-          </ScrollableChips>
+          <FilterTabs
+            ariaLabel="فیلتر موضوع‌های ولایت"
+            items={[
+              {
+                value: "all",
+                href: allCategoriesHref,
+                isActive: isAllCategoriesActive,
+                label: "همه",
+              },
+              ...categoryFilters.map((category) => ({
+                value: category.slug,
+                href: category.href,
+                isActive: category.isActive,
+                label: category.name,
+                count: category.entryCount,
+              })),
+            ]}
+          />
 
           {isUnavailable ? <ApiNotice /> : null}
 
@@ -328,28 +336,31 @@ function CategoryDetailContent({
             <SortLinks options={sortOptions} />
           </div>
 
-          <ScrollableChips ariaLabel="فیلتر ولایت‌های موضوع">
-            <FilterChip
-              href={allAfghanistanHref}
-              isActive={isAllAfghanistanActive}
-              label="همه افغانستان"
-            />
-            <FilterChip
-              href={nationalHref}
-              isActive={isNationalActive}
-              label="سراسری"
-              count={nationalCount}
-            />
-            {provinceFilters.map((province) => (
-              <FilterChip
-                key={province.id}
-                href={province.href}
-                isActive={province.isActive}
-                label={province.name}
-                count={province.entryCount}
-              />
-            ))}
-          </ScrollableChips>
+          <FilterTabs
+            ariaLabel="فیلتر ولایت‌های موضوع"
+            items={[
+              {
+                value: "all",
+                href: allAfghanistanHref,
+                isActive: isAllAfghanistanActive,
+                label: "همه افغانستان",
+              },
+              {
+                value: "national",
+                href: nationalHref,
+                isActive: isNationalActive,
+                label: "سراسری",
+                count: nationalCount,
+              },
+              ...provinceFilters.map((province) => ({
+                value: province.slug,
+                href: province.href,
+                isActive: province.isActive,
+                label: province.name,
+                count: province.entryCount,
+              })),
+            ]}
+          />
 
           {isUnavailable ? <ApiNotice /> : null}
 
@@ -505,66 +516,9 @@ function EntryGrid({
 
   return (
     <>
-      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-        {entries.data.map((entry, index) => (
-          <PublicEntryCardView
-            key={entry.id}
-            entry={entry}
-            imageIndex={index}
-            breadcrumbParent={breadcrumbParent}
-          />
-        ))}
-      </div>
+      <AnimatedEntryGrid entries={entries.data} breadcrumbParent={breadcrumbParent} />
       <Pagination meta={entries.meta} createPageHref={createPageHref} />
     </>
-  );
-}
-
-function ScrollableChips({ children, ariaLabel }: { children: ReactNode; ariaLabel: string }) {
-  return (
-    <nav
-      className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0"
-      aria-label={ariaLabel}
-    >
-      {children}
-    </nav>
-  );
-}
-
-function FilterChip({
-  href,
-  isActive,
-  label,
-  count,
-}: {
-  href: string;
-  isActive: boolean;
-  label: string;
-  count?: number;
-}) {
-  return (
-    <Link
-      href={href}
-      aria-current={isActive ? "page" : undefined}
-      className={cn(
-        "inline-flex h-10 shrink-0 items-center gap-2 rounded-full border px-4 text-[13px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/40",
-        isActive
-          ? "border-primary bg-primary text-primary-foreground"
-          : "border-border bg-card text-foreground hover:border-primary/35 hover:bg-primary-light hover:text-primary",
-      )}
-    >
-      {label}
-      {typeof count === "number" ? (
-        <span
-          className={cn(
-            "rounded-full px-2 py-0.5 text-[11px]",
-            isActive ? "bg-white/18 text-white" : "bg-muted text-muted-foreground",
-          )}
-        >
-          {formatPersianNumber(count)}
-        </span>
-      ) : null}
-    </Link>
   );
 }
 
@@ -575,6 +529,7 @@ function SortLinks({ options }: { options: SortOption[] }) {
         <Link
           key={option.value}
           href={option.href}
+          scroll={false}
           aria-current={option.isActive ? "page" : undefined}
           className={cn(
             "rounded-full border px-3 py-2 text-[12px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/40",
@@ -641,6 +596,7 @@ function PageRelativeLink({
   return (
     <Link
       href={href}
+      scroll={false}
       aria-disabled={disabled}
       className={cn(
         buttonVariants({ variant: "outline" }),
