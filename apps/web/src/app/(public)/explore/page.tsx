@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-
+import { PageTransition } from "@/components/layout/page-transition";
 import {
   type GeographicScope,
   getExploreTaxonomyData,
@@ -8,7 +8,6 @@ import {
   type PublicEntrySort,
 } from "@/features/entries/api/public-entries-api";
 import { ExploreContent } from "@/features/entries/components/explore-content";
-import { HomeFooter } from "@/features/home/components/home-footer";
 
 type ExplorePageProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
@@ -33,12 +32,14 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
   ]);
 
   return (
-    <ExploreContent
-      entries={entries}
-      taxonomy={taxonomy}
-      query={query}
-      isEntriesUnavailable={entries.isUnavailable}
-    />
+    <PageTransition>
+      <ExploreContent
+        entries={entries}
+        taxonomy={taxonomy}
+        query={query}
+        isEntriesUnavailable={entries.isUnavailable}
+      />
+    </PageTransition>
   );
 }
 

@@ -26,6 +26,7 @@ const apiClient = read("src/lib/api/api-client.ts");
 const authCoordinator = read("src/lib/auth/auth-coordinator.ts");
 const authProvider = read("src/providers/auth-provider.tsx");
 const appProviders = read("src/providers/app-providers.tsx");
+const pageTransition = read("src/components/layout/page-transition.tsx");
 const authStore = read("src/stores/auth-store.ts");
 const routeGates = read("src/features/auth/components/route-gates.tsx");
 const authNavigation = read("src/features/auth/components/auth-navigation.tsx");
@@ -161,10 +162,21 @@ test("OAuth errors use controlled Persian messages", () => {
 test("auth bootstrap restores the refresh-cookie session globally", () => {
   assert.match(authStore, /status: "initializing"/);
   assert.match(authProvider, /bootstrapAuthSession/);
-  assert.match(appProviders, /<AuthProvider>\{children\}<\/AuthProvider>/);
+  assert.match(appProviders, /<AuthProvider>/);
   assert.match(authCoordinator, /credentials: "include"/);
   assert.match(authCoordinator, /setAuthenticated\(session\)/);
   assert.match(authCoordinator, /setUnauthenticated\(\)/);
+});
+
+test("page transitions use Motion with reduced-motion support", () => {
+  assert.match(appProviders, /MotionConfig/);
+  assert.match(appProviders, /reducedMotion="user"/);
+  assert.match(appProviders, /<PageTransition>\{children\}<\/PageTransition>/);
+  assert.match(pageTransition, /AnimatePresence/);
+  assert.match(pageTransition, /motion\.div/);
+  assert.match(pageTransition, /usePathname/);
+  assert.match(pageTransition, /useReducedMotion/);
+  assert.match(pageTransition, /mode="wait"/);
 });
 
 test("single-flight refresh coordinates concurrent expired requests", () => {
@@ -194,7 +206,7 @@ test("verified-email and role gates are opt-in frontend UX gates", () => {
   assert.match(routeGates, /!user\?\.emailVerified/);
   assert.match(routeGates, /function RequireRole/);
   assert.match(routeGates, /roles\.includes\(user\.role\)/);
-  assert.match(verifiedEmailBanner, /ورود به حساب مجاز است/);
+  assert.match(verifiedEmailBanner, /می‌توانید وارد حساب شوید/);
 });
 
 test("role-aware navigation reflects auth state without becoming authorization", () => {

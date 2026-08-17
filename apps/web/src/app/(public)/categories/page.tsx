@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-
+import { PageTransition } from "@/components/layout/page-transition";
 import {
   getPublicCategories,
   getPublishedEntryCount,
@@ -35,13 +35,15 @@ export default async function CategoriesPage() {
   );
 
   return (
-    <CategoriesIndexContent
-      categories={countedCategories}
-      isUnavailable={
-        categoriesResponse.isUnavailable ||
-        countedCategories.some((category) => category.isUnavailable)
-      }
-    />
+    <PageTransition>
+      <CategoriesIndexContent
+        categories={countedCategories}
+        isUnavailable={
+          categoriesResponse.isUnavailable ||
+          countedCategories.some((category) => category.isUnavailable)
+        }
+      />
+    </PageTransition>
   );
 }
 

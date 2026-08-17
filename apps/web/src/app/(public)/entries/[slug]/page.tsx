@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-
+import { PageTransition } from "@/components/layout/page-transition";
 import {
   getPublicEntryReviews,
   getPublishedEntryBySlug,
@@ -48,5 +48,9 @@ export default async function EntryDetailPage({ params }: EntryDetailPageProps) 
 
   const reviews = await getPublicEntryReviews(entry.id);
 
-  return <EntryDetailContent entry={entry} reviews={reviews} />;
+  return (
+    <PageTransition>
+      <EntryDetailContent entry={entry} reviews={reviews} />
+    </PageTransition>
+  );
 }

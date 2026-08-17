@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-
+import { PageTransition } from "@/components/layout/page-transition";
 import {
   getPublicCategories,
   getPublicProvinces,
@@ -96,25 +96,27 @@ export default async function ProvinceDetailPage({
   const categoryFilters = categoryCounts.filter((category) => category.entryCount > 0);
 
   return (
-    <ProvinceDetailContent
-      province={province}
-      entries={entries}
-      categoryFilters={categoryFilters}
-      allCategoriesHref={baseHref}
-      isAllCategoriesActive={!selectedCategorySlug}
-      createPageHref={(nextPage) =>
-        createProvinceHref(baseHref, {
-          categorySlug: selectedCategorySlug,
-          page: nextPage,
-        })
-      }
-      isUnavailable={
-        provincesResponse.isUnavailable ||
-        categoriesResponse.isUnavailable ||
-        entries.isUnavailable ||
-        categoryCounts.some((category) => category.isUnavailable)
-      }
-    />
+    <PageTransition>
+      <ProvinceDetailContent
+        province={province}
+        entries={entries}
+        categoryFilters={categoryFilters}
+        allCategoriesHref={baseHref}
+        isAllCategoriesActive={!selectedCategorySlug}
+        createPageHref={(nextPage) =>
+          createProvinceHref(baseHref, {
+            categorySlug: selectedCategorySlug,
+            page: nextPage,
+          })
+        }
+        isUnavailable={
+          provincesResponse.isUnavailable ||
+          categoriesResponse.isUnavailable ||
+          entries.isUnavailable ||
+          categoryCounts.some((category) => category.isUnavailable)
+        }
+      />
+    </PageTransition>
   );
 }
 

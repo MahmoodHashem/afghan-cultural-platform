@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-
+import { PageTransition } from "@/components/layout/page-transition";
 import {
   getPublicProvinces,
   getPublishedEntryCount,
@@ -36,13 +36,15 @@ export default async function ProvincesPage() {
   );
 
   return (
-    <ProvinceIndexContent
-      provinces={countedProvinces}
-      isUnavailable={
-        provincesResponse.isUnavailable ||
-        countedProvinces.some((province) => province.isUnavailable)
-      }
-    />
+    <PageTransition>
+      <ProvinceIndexContent
+        provinces={countedProvinces}
+        isUnavailable={
+          provincesResponse.isUnavailable ||
+          countedProvinces.some((province) => province.isUnavailable)
+        }
+      />
+    </PageTransition>
   );
 }
 

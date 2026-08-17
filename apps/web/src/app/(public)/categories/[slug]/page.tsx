@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-
+import { PageTransition } from "@/components/layout/page-transition";
 import {
   type GeographicScope,
   getPublicCategories,
@@ -117,45 +117,47 @@ export default async function CategoryDetailPage({
   const provinceFilters = provinceCounts.filter((province) => province.entryCount > 0);
 
   return (
-    <CategoryDetailContent
-      category={{
-        ...category,
-        entryCount: categoryTotal.count,
-      }}
-      entries={entries}
-      provinceFilters={provinceFilters}
-      allAfghanistanHref={createCategoryHref(baseHref, { sort })}
-      nationalHref={createCategoryHref(baseHref, { geographicScope: "NATIONAL", sort })}
-      isAllAfghanistanActive={!effectiveProvinceSlug && !selectedGeographicScope}
-      isNationalActive={selectedGeographicScope === "NATIONAL"}
-      nationalCount={nationalCountResult.count}
-      sortOptions={Object.entries(sortLabels).map(([value, label]) => ({
-        label,
-        value: value as PublicEntrySort,
-        href: createCategoryHref(baseHref, {
-          provinceSlug: effectiveProvinceSlug,
-          geographicScope: effectiveGeographicScope,
-          sort: value as PublicEntrySort,
-        }),
-        isActive: sort === value,
-      }))}
-      createPageHref={(nextPage) =>
-        createCategoryHref(baseHref, {
-          provinceSlug: effectiveProvinceSlug,
-          geographicScope: effectiveGeographicScope,
-          sort,
-          page: nextPage,
-        })
-      }
-      isUnavailable={
-        categoriesResponse.isUnavailable ||
-        provincesResponse.isUnavailable ||
-        entries.isUnavailable ||
-        categoryTotal.isUnavailable ||
-        nationalCountResult.isUnavailable ||
-        provinceCounts.some((province) => province.isUnavailable)
-      }
-    />
+    <PageTransition>
+      <CategoryDetailContent
+        category={{
+          ...category,
+          entryCount: categoryTotal.count,
+        }}
+        entries={entries}
+        provinceFilters={provinceFilters}
+        allAfghanistanHref={createCategoryHref(baseHref, { sort })}
+        nationalHref={createCategoryHref(baseHref, { geographicScope: "NATIONAL", sort })}
+        isAllAfghanistanActive={!effectiveProvinceSlug && !selectedGeographicScope}
+        isNationalActive={selectedGeographicScope === "NATIONAL"}
+        nationalCount={nationalCountResult.count}
+        sortOptions={Object.entries(sortLabels).map(([value, label]) => ({
+          label,
+          value: value as PublicEntrySort,
+          href: createCategoryHref(baseHref, {
+            provinceSlug: effectiveProvinceSlug,
+            geographicScope: effectiveGeographicScope,
+            sort: value as PublicEntrySort,
+          }),
+          isActive: sort === value,
+        }))}
+        createPageHref={(nextPage) =>
+          createCategoryHref(baseHref, {
+            provinceSlug: effectiveProvinceSlug,
+            geographicScope: effectiveGeographicScope,
+            sort,
+            page: nextPage,
+          })
+        }
+        isUnavailable={
+          categoriesResponse.isUnavailable ||
+          provincesResponse.isUnavailable ||
+          entries.isUnavailable ||
+          categoryTotal.isUnavailable ||
+          nationalCountResult.isUnavailable ||
+          provinceCounts.some((province) => province.isUnavailable)
+        }
+      />
+    </PageTransition>
   );
 }
 
