@@ -79,23 +79,32 @@ type CategoryDetailContentProps = {
 };
 
 const provinceImageBySlug: Record<string, string> = {
-  herat: "/images/HERAT02.jpg",
-  kabul: "/images/kabul.jpg",
-  balkh: "/images/mazar.jpg",
-  bamyan: "/images/bamyan.jpg",
-  kandahar: "/images/arg.png",
-  nangarhar: "/images/montains.jpg",
-  takhar: "/images/montains.jpg",
-  badakhshan: "/images/montains.jpg",
-  nuristan: "/images/نمای-زیبا-از-ولایت-نورستان.webp",
+  badakhshan: "/images/provinces/badakhshan.jpg",
+  badghis: "/images/provinces/badghis.jpg",
+  balkh: "/images/provinces/balkh.jpg",
+  bamyan: "/images/provinces/bamyan.webp",
+  daykundi: "/images/provinces/daikundi.jpg",
+  farah: "/images/provinces/farah.jpg",
+  faryab: "/images/provinces/faryab.jpeg",
+  ghazni: "/images/provinces/ghazni.jpg",
+  ghor: "/images/provinces/ghour.jpg",
+  helmand: "/images/provinces/helmand.webp",
+  herat: "/images/provinces/herat.jpg",
+  jowzjan: "/images/provinces/jawzjan.jpeg",
+  kabul: "/images/provinces/kabul.jpg",
+  kandahar: "/images/provinces/kandahar.jpg",
+  nimroz: "/images/provinces/nimroz.jpg",
+  paktia: "/images/provinces/paktia.jpg",
+  paktika: "/images/provinces/paktika.jpg",
+  parwan: "/images/provinces/parwan.jpeg",
+  samangan: "/images/provinces/samangan.jpg",
+  "sar-e-pol": "/images/provinces/saripul.jpg",
+  uruzgan: "/images/provinces/urzgan.jpg",
+  wardak: "/images/provinces/wardak.jpg",
+  zabul: "/images/provinces/zabul.jpg",
 };
 
-const provinceFallbackImages = [
-  "/images/herat-grand-mosque.webp",
-  "/images/bamyan.jpg",
-  "/images/menaras.jpg",
-  "/images/gunbads2.jpg",
-] as const;
+const provincePlaceholderImage = "/images/province-placeholder.png";
 
 const categoryDescriptions: Record<string, string> = {
   "historical-places": "بناها، شهرها، آرامگاه‌ها و دیگر مکان‌های تاریخی افغانستان.",
@@ -423,12 +432,12 @@ function ProvinceCard({
   const image = getProvinceImage(province, imageIndex);
 
   return (
-    <Card className="group overflow-hidden rounded-2xl border-border bg-card p-0 shadow-[0_2px_10px_rgba(0,0,0,.04)] transition-all duration-200 hover:-translate-y-1 hover:border-primary/25 hover:shadow-[0_14px_34px_rgba(31,41,55,0.09)]">
+    <Card className="group overflow-hidden rounded-2xl border-border bg-card p-0 shadow-[0_2px_10px_rgba(0,0,0,.04)] transition-all duration-200 hover:-translate-y-1 hover:border-primary/25 hover:shadow-[0_18px_42px_rgba(31,41,55,0.16)]">
       <Link
         href={taxonomyItemHref("/provinces", province)}
         className="block outline-none focus-visible:ring-3 focus-visible:ring-ring/40"
       >
-        <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+        <div className="relative aspect-[4/5] overflow-hidden bg-muted sm:aspect-[5/6] lg:aspect-[4/5]">
           <Image
             src={image.src}
             alt={image.alt}
@@ -436,22 +445,28 @@ function ProvinceCard({
             sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
             className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
           />
-          <div className="absolute inset-x-0 bottom-0 flex justify-between bg-linear-to-t from-black/45 to-transparent p-3">
-            <span className="inline-flex size-8 items-center justify-center rounded-full bg-primary text-white shadow-sm">
-              <MapPinIcon className="size-4" aria-hidden="true" />
-            </span>
-            <Badge className="rounded-full bg-primary/90 text-white">
-              {formatPersianNumber(province.entryCount)} مطلب
-            </Badge>
+          <div className="absolute inset-0 bg-linear-to-t from-black/78 via-black/20 to-black/10 transition-colors group-hover:from-black/82" />
+          <div className="absolute inset-x-0 bottom-0 space-y-4 p-4 text-white sm:p-5">
+            <div className="flex items-center justify-between gap-3">
+              <span className="inline-flex size-9 items-center justify-center rounded-full border border-white/20 bg-white/16 text-white shadow-sm backdrop-blur-md">
+                <MapPinIcon className="size-4" aria-hidden="true" />
+              </span>
+              <Badge className="rounded-full border border-white/20 bg-white/16 text-white shadow-sm backdrop-blur-md">
+                {formatPersianNumber(province.entryCount)} مطلب
+              </Badge>
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-[24px] font-bold leading-8 text-white">{province.name}</h2>
+              <p className="inline-flex items-center gap-1 text-[13px] font-semibold text-white/78 transition-colors group-hover:text-white">
+                دیدن مطالب
+                <ArrowLeftIcon
+                  className="size-4 transition-transform group-hover:-translate-x-1"
+                  aria-hidden="true"
+                />
+              </p>
+            </div>
           </div>
         </div>
-        <CardContent className="space-y-2 p-4">
-          <h2 className="text-[20px] font-bold text-foreground">{province.name}</h2>
-          <p className="flex items-center gap-1 text-[13px] text-muted-foreground">
-            <MapPinIcon className="size-4" aria-hidden="true" />
-            دیدن مطالب
-          </p>
-        </CardContent>
       </Link>
     </Card>
   );
@@ -768,7 +783,7 @@ function DecorativeMark({ className }: { className?: string }) {
   );
 }
 
-function getProvinceImage(province: Pick<TaxonomyItem, "name" | "slug">, index: number) {
+function getProvinceImage(province: Pick<TaxonomyItem, "name" | "slug">, _index: number) {
   const mappedImage = provinceImageBySlug[province.slug];
 
   if (mappedImage) {
@@ -779,7 +794,7 @@ function getProvinceImage(province: Pick<TaxonomyItem, "name" | "slug">, index: 
   }
 
   return {
-    src: provinceFallbackImages[index % provinceFallbackImages.length],
+    src: provincePlaceholderImage,
     alt: "نمایی از میراث فرهنگی افغانستان",
   };
 }

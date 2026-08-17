@@ -389,8 +389,16 @@ test("province and category discovery pages match the approved taxonomy designs"
   assert.match(taxonomyDiscoveryPages, /مطالب بر اساس موضوع/);
   assert.match(taxonomyDiscoveryPages, /مطالب فرهنگی افغانستان را بر اساس موضوع ببینید/);
   assert.match(taxonomyDiscoveryPages, /ProvinceCard/);
+  assert.match(taxonomyDiscoveryPages, /aspect-\[4\/5\]/);
+  assert.match(taxonomyDiscoveryPages, /from-black\/78/);
+  assert.match(taxonomyDiscoveryPages, /bg-white\/16/);
   assert.match(taxonomyDiscoveryPages, /CategoryCard/);
   assert.match(taxonomyDiscoveryPages, /\/images\/star-icon\.png/);
+  assert.match(taxonomyDiscoveryPages, /\/images\/provinces\/herat\.jpg/);
+  assert.match(taxonomyDiscoveryPages, /\/images\/provinces\/bamyan\.webp/);
+  assert.match(taxonomyDiscoveryPages, /\/images\/provinces\/jawzjan\.jpeg/);
+  assert.match(taxonomyDiscoveryPages, /\/images\/provinces\/saripul\.jpg/);
+  assert.match(taxonomyDiscoveryPages, /\/images\/province-placeholder\.png/);
 });
 
 test("province detail filters only provincial entries and reuses entry cards", () => {
