@@ -62,6 +62,7 @@ const homeApi = read("src/features/home/api/home-api.ts");
 const homeContent = read("src/features/home/components/home-content.tsx");
 const homeFooter = read("src/features/home/components/home-footer.tsx");
 const homeHero = read("src/features/home/components/home-hero.tsx");
+const homeScrollReveal = read("src/features/home/components/scroll-reveal.tsx");
 const publicHeader = read("src/components/layout/public-header.tsx");
 const sheet = read("src/components/ui/sheet.tsx");
 
@@ -171,7 +172,7 @@ test("auth bootstrap restores the refresh-cookie session globally", () => {
 test("page transitions use Motion with reduced-motion support", () => {
   assert.match(appProviders, /MotionConfig/);
   assert.match(appProviders, /reducedMotion="user"/);
-  assert.match(appProviders, /<PageTransition>\{children\}<\/PageTransition>/);
+  assert.match(explorePage, /<PageTransition>/);
   assert.match(pageTransition, /AnimatePresence/);
   assert.match(pageTransition, /motion\.div/);
   assert.match(pageTransition, /usePathname/);
@@ -262,6 +263,16 @@ test("homepage hero uses the approved Afghan heritage carousel images", () => {
   assert.match(homeHero, /\/images\/HERAT02\.jpg/);
   assert.match(homeHero, /\/images\/menaras\.jpg/);
   assert.match(homeHero, /setInterval/);
+});
+
+test("homepage uses Motion scroll reveals with reduced-motion support", () => {
+  assert.match(homeContent, /ScrollReveal/);
+  assert.match(homeScrollReveal, /"use client"/);
+  assert.match(homeScrollReveal, /motion\.section/);
+  assert.match(homeScrollReveal, /whileInView/);
+  assert.match(homeScrollReveal, /viewport=\{\{ once: true, amount \}\}/);
+  assert.match(homeScrollReveal, /useReducedMotion/);
+  assert.match(homeScrollReveal, /prefersReducedMotion/);
 });
 
 test("homepage floating header uses solid controls instead of a glass nav pill", () => {

@@ -9,15 +9,15 @@ function PageTransition({ children }: { children: ReactNode }) {
   const prefersReducedMotion = useReducedMotion();
   const motionProps = prefersReducedMotion
     ? {
-      initial: false,
-      animate: { opacity: 1 },
-      exit: { opacity: 1 },
-    }
+        initial: false,
+        animate: { opacity: 1 },
+        exit: { opacity: 1 },
+      }
     : {
-      initial: { opacity: 0, y: 10, filter: "blur(2px)" },
-      animate: { opacity: 1, y: 0, filter: "blur(0px)" },
-      exit: { opacity: 0, y: -6, filter: "blur(1px)" },
-    };
+        initial: { opacity: 0, y: 10, filter: "blur(2px)" },
+        animate: { opacity: 1, y: 0, filter: "blur(0px)" },
+        exit: { opacity: 0, y: -6, filter: "blur(1px)" },
+      };
 
   return (
     <AnimatePresence mode="wait" initial={true}>

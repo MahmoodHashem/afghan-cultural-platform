@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import type { PublicEntryCard, TaxonomyItem } from "@/features/entries/types/public-entry";
 import { cn } from "@/lib/utils";
 import type { HomeData } from "../api/home-api";
+import { ScrollReveal } from "./scroll-reveal";
 
 const fallbackImages = [
   "/images/HERAT02.jpg",
@@ -26,7 +27,7 @@ function HomeContent({ data }: { data: HomeData }) {
       <div className="space-y-20 pb-16 sm:space-y-24 sm:pb-20">
         {data.isApiUnavailable ? <ApiUnavailableNotice /> : null}
 
-        <section className="content-container">
+        <ScrollReveal as="section" className="content-container">
           <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
             <SectionIntro
               eyebrow="فرهنگ افغانستان"
@@ -42,14 +43,16 @@ function HomeContent({ data }: { data: HomeData }) {
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
               {secondaryEntries.length > 0 ? (
                 secondaryEntries.map((entry, index) => (
-                  <CompactEntryCard key={entry.id} entry={entry} imageIndex={index + 1} />
+                  <ScrollReveal key={entry.id} delay={0.08 + index * 0.04}>
+                    <CompactEntryCard entry={entry} imageIndex={index + 1} />
+                  </ScrollReveal>
                 ))
               ) : (
                 <SideEmptyState />
               )}
             </div>
           </div>
-        </section>
+        </ScrollReveal>
 
         <ExploreTaxonomySection
           title="فرهنگ افغانستان بر اساس ولایت"
@@ -186,7 +189,7 @@ function CompactEntryCard({ entry, imageIndex }: { entry: PublicEntryCard; image
 
 function LatestEntriesSection({ entries }: { entries: PublicEntryCard[] }) {
   return (
-    <section className="content-container space-y-8">
+    <ScrollReveal as="section" className="content-container space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <SectionIntro
           eyebrow="تازه‌ها"
@@ -205,13 +208,15 @@ function LatestEntriesSection({ entries }: { entries: PublicEntryCard[] }) {
       {entries.length > 0 ? (
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {entries.map((entry, index) => (
-            <EntryCard key={entry.id} entry={entry} imageIndex={index} />
+            <ScrollReveal key={entry.id} delay={index * 0.04}>
+              <EntryCard entry={entry} imageIndex={index} />
+            </ScrollReveal>
           ))}
         </div>
       ) : (
         <WideEmptyState />
       )}
-    </section>
+    </ScrollReveal>
   );
 }
 
@@ -268,7 +273,7 @@ function ExploreTaxonomySection({
   icon: ReactNode;
 }) {
   return (
-    <section className="content-container">
+    <ScrollReveal as="section" className="content-container">
       <div className="rounded-[28px] border border-border bg-card p-5 shadow-[0_2px_10px_rgba(0,0,0,.04)] sm:p-7">
         <div className="grid gap-6 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
           <div className="space-y-4">
@@ -300,7 +305,7 @@ function ExploreTaxonomySection({
           )}
         </div>
       </div>
-    </section>
+    </ScrollReveal>
   );
 }
 
@@ -312,7 +317,7 @@ function NationalScopeSection({
   contentTypes: TaxonomyItem[];
 }) {
   return (
-    <section className="content-container">
+    <ScrollReveal as="section" className="content-container">
       <div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
         <div className="rounded-[28px] border border-border bg-foreground p-7 text-white shadow-[0_2px_10px_rgba(0,0,0,.05)]">
           <SparklesIcon className="size-9 text-gold" aria-hidden="true" />
@@ -351,13 +356,13 @@ function NationalScopeSection({
           )}
         </div>
       </div>
-    </section>
+    </ScrollReveal>
   );
 }
 
 function ContributionCallout() {
   return (
-    <section className="content-container">
+    <ScrollReveal as="section" className="content-container">
       <div className="rounded-[28px] border border-border bg-card px-5 py-8 text-center shadow-[0_2px_10px_rgba(0,0,0,.04)] sm:px-8 sm:py-10">
         <p className="text-[14px] font-bold text-primary">مشارکت فرهنگی</p>
         <h2 className="mx-auto mt-3 max-w-2xl text-[30px] font-bold leading-[1.35] text-foreground">
@@ -378,7 +383,7 @@ function ContributionCallout() {
           </Link>
         </div>
       </div>
-    </section>
+    </ScrollReveal>
   );
 }
 
