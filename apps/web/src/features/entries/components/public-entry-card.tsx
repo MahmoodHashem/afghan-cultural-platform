@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import type { PublicEntryCard } from "../types/public-entry";
+import { createEntryHref, type EntryBreadcrumbContext } from "../utils/entry-breadcrumb";
 
 const fallbackImages = [
   "/images/HERAT02.jpg",
@@ -16,13 +17,18 @@ const fallbackImages = [
 type PublicEntryCardViewProps = {
   entry: PublicEntryCard;
   imageIndex?: number;
+  breadcrumbParent?: EntryBreadcrumbContext;
 };
 
-function PublicEntryCardView({ entry, imageIndex = 0 }: PublicEntryCardViewProps) {
+function PublicEntryCardView({
+  entry,
+  imageIndex = 0,
+  breadcrumbParent,
+}: PublicEntryCardViewProps) {
   return (
     <Card className="group overflow-hidden rounded-2xl border-border bg-card p-0 shadow-[0_2px_10px_rgba(0,0,0,.04)] transition-all duration-200 hover:-translate-y-1 hover:border-primary/25 hover:shadow-[0_14px_34px_rgba(31,41,55,0.09)]">
       <Link
-        href={entryHref(entry)}
+        href={entryHref(entry, breadcrumbParent)}
         className="block outline-none focus-visible:ring-3 focus-visible:ring-ring/40"
       >
         <div className="relative aspect-4/3 overflow-hidden bg-muted">
@@ -71,8 +77,11 @@ function PublicEntryCardView({ entry, imageIndex = 0 }: PublicEntryCardViewProps
   );
 }
 
-function entryHref(entry: Pick<PublicEntryCard, "slug">) {
-  return `/entries/${encodeURIComponent(entry.slug)}`;
+function entryHref(
+  entry: Pick<PublicEntryCard, "slug">,
+  breadcrumbParent?: EntryBreadcrumbContext,
+) {
+  return createEntryHref(entry, breadcrumbParent);
 }
 
 function locationLabel(entry: Pick<PublicEntryCard, "geographicScope" | "province">) {

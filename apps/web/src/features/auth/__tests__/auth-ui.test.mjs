@@ -27,6 +27,8 @@ const authCoordinator = read("src/lib/auth/auth-coordinator.ts");
 const authProvider = read("src/providers/auth-provider.tsx");
 const appProviders = read("src/providers/app-providers.tsx");
 const pageTransition = read("src/components/layout/page-transition.tsx");
+const pageBreadcrumb = read("src/components/layout/page-breadcrumb.tsx");
+const shadcnBreadcrumb = read("src/components/ui/breadcrumb.tsx");
 const authStore = read("src/stores/auth-store.ts");
 const routeGates = read("src/features/auth/components/route-gates.tsx");
 const authNavigation = read("src/features/auth/components/auth-navigation.tsx");
@@ -57,6 +59,7 @@ const exploreApi = read("src/features/entries/api/public-entries-api.ts");
 const exploreContent = read("src/features/entries/components/explore-content.tsx");
 const publicEntryCard = read("src/features/entries/components/public-entry-card.tsx");
 const taxonomyDiscoveryPages = read("src/features/entries/components/taxonomy-discovery-pages.tsx");
+const entryBreadcrumb = read("src/features/entries/utils/entry-breadcrumb.ts");
 const homePage = read("src/app/page.tsx");
 const homeApi = read("src/features/home/api/home-api.ts");
 const homeContent = read("src/features/home/components/home-content.tsx");
@@ -314,6 +317,19 @@ test("public shell provides the shared header for header-linked pages", () => {
   assert.match(categoriesPage, /CategoriesIndexContent/);
 });
 
+test("public content pages use the shared shadcn breadcrumb pattern", () => {
+  assert.match(shadcnBreadcrumb, /function Breadcrumb/);
+  assert.match(shadcnBreadcrumb, /function BreadcrumbList/);
+  assert.match(shadcnBreadcrumb, /function BreadcrumbPage/);
+  assert.match(pageBreadcrumb, /BreadcrumbList/);
+  assert.match(pageBreadcrumb, /aria-label="مسیر صفحه"/);
+  assert.match(exploreContent, /<PageBreadcrumb items=\{\[/);
+  assert.match(entryDetailContent, /<PageBreadcrumb/);
+  assert.match(taxonomyDiscoveryPages, /<PageBreadcrumb/);
+  assert.doesNotMatch(exploreContent, /بازگشت به خانه/);
+  assert.doesNotMatch(entryDetailContent, /بازگشت به مطالب/);
+});
+
 test("public routes provide skeleton loading and controlled error states", () => {
   assert.match(publicError, /این صفحه بارگذاری نشد/);
   assert.match(publicError, /reset/);
@@ -402,6 +418,10 @@ test("category detail supports province and national filters without popularity 
 test("entry detail page renders published entry data by Persian slug", () => {
   assert.match(entryDetailPage, /getPublishedEntryBySlug\(slug\)/);
   assert.match(entryDetailPage, /getPublicEntryReviews\(entry\.id\)/);
+  assert.match(entryDetailPage, /searchParams/);
+  assert.match(entryDetailPage, /createEntryDetailBreadcrumbItems/);
+  assert.match(entryDetailContent, /breadcrumbItems: PageBreadcrumbItem\[\]/);
+  assert.match(entryDetailContent, /<PageBreadcrumb items=\{breadcrumbItems\} \/>/);
   assert.match(entryDetailPage, /notFound\(\)/);
   assert.match(entryDetailPage, /generateMetadata/);
   assert.match(exploreApi, /\/entries\/\$\{encodeURIComponent\(normalizeSlug\(slug\)\)\}/);
@@ -414,6 +434,23 @@ test("entry detail page renders published entry data by Persian slug", () => {
   assert.match(entryDetailContent, /SourcesList/);
   assert.match(entryDetailContent, /OutgoingReferences/);
   assert.match(entryDetailContent, /IncomingReferences/);
+});
+
+test("entry cards preserve safe breadcrumb context from their source page", () => {
+  assert.match(publicEntryCard, /breadcrumbParent\?: EntryBreadcrumbContext/);
+  assert.match(publicEntryCard, /createEntryHref\(entry, breadcrumbParent\)/);
+  assert.match(entryBreadcrumb, /breadcrumbLabel/);
+  assert.match(entryBreadcrumb, /breadcrumbHref/);
+  assert.match(entryBreadcrumb, /searchParams\.append\(breadcrumbLabelParam, parent\.label\)/);
+  assert.match(entryBreadcrumb, /zipSearchParams/);
+  assert.match(entryBreadcrumb, /isSafeInternalHref/);
+  assert.match(entryBreadcrumb, /!href\.startsWith\("\/\/"\)/);
+  assert.match(entryBreadcrumb, /label: "مطالب"/);
+  assert.match(exploreContent, /href: createExploreHref\(query, \{\}\)/);
+  assert.match(taxonomyDiscoveryPages, /label: "ولایت‌ها", href: "\/provinces"/);
+  assert.match(taxonomyDiscoveryPages, /label: province\.name, href: provinceHref/);
+  assert.match(taxonomyDiscoveryPages, /label: "موضوع‌ها", href: "\/categories"/);
+  assert.match(taxonomyDiscoveryPages, /label: category\.name, href: categoryHref/);
 });
 
 test("entry detail includes reading navigation and sticky article tools", () => {

@@ -6,11 +6,16 @@ import {
   getPublishedEntryBySlug,
 } from "@/features/entries/api/public-entries-api";
 import { EntryDetailContent } from "@/features/entries/components/entry-detail-content";
+import {
+  createEntryDetailBreadcrumbItems,
+  type EntryBreadcrumbSearchParams,
+} from "@/features/entries/utils/entry-breadcrumb";
 
 type EntryDetailPageProps = {
   params: Promise<{
     slug: string;
   }>;
+  searchParams?: Promise<EntryBreadcrumbSearchParams>;
 };
 
 export async function generateMetadata({ params }: EntryDetailPageProps): Promise<Metadata> {
@@ -38,8 +43,9 @@ export async function generateMetadata({ params }: EntryDetailPageProps): Promis
   };
 }
 
-export default async function EntryDetailPage({ params }: EntryDetailPageProps) {
+export default async function EntryDetailPage({ params, searchParams }: EntryDetailPageProps) {
   const { slug } = await params;
+  const resolvedSearchParams = searchParams ? await searchParams : {};
   const entry = await getPublishedEntryBySlug(slug);
 
   if (!entry) {
@@ -47,10 +53,11 @@ export default async function EntryDetailPage({ params }: EntryDetailPageProps) 
   }
 
   const reviews = await getPublicEntryReviews(entry.id);
+  const breadcrumbItems = createEntryDetailBreadcrumbItems(entry.title, resolvedSearchParams);
 
   return (
     <PageTransition>
-      <EntryDetailContent entry={entry} reviews={reviews} />
+      <EntryDetailContent entry={entry} reviews={reviews} breadcrumbItems={breadcrumbItems} />
     </PageTransition>
   );
 }

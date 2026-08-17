@@ -19,11 +19,13 @@ import Image from "next/image";
 import Link from "next/link";
 import type { ComponentType, ReactNode } from "react";
 
+import { PageBreadcrumb } from "@/components/layout/page-breadcrumb";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { EntryListResponse, TaxonomyItem } from "../types/public-entry";
+import type { EntryBreadcrumbContext } from "../utils/entry-breadcrumb";
 import { formatPersianNumber, PublicEntryCardView } from "./public-entry-card";
 
 type CountedTaxonomyItem = TaxonomyItem & {
@@ -141,6 +143,10 @@ function ProvinceIndexContent({ provinces, isUnavailable }: ProvinceIndexContent
     <main className="min-h-screen bg-background">
       <section className="content-container relative overflow-hidden pt-32 pb-16 sm:pt-36">
         <DecorativeMark className="-start-10 top-24" />
+        <PageBreadcrumb
+          className="relative z-10 mb-8"
+          items={[{ label: "خانه", href: "/" }, { label: "ولایت‌ها" }]}
+        />
         <PageIntro
           eyebrow="ولایت‌ها"
           title="فرهنگ افغانستان بر اساس ولایت"
@@ -177,10 +183,12 @@ function ProvinceDetailContent({
   createPageHref,
   isUnavailable,
 }: ProvinceDetailContentProps) {
+  const provinceHref = taxonomyItemHref("/provinces", province);
+
   return (
     <main className="min-h-screen bg-background">
       <section className="content-container pt-30 pb-16 sm:pt-34">
-        <Breadcrumb
+        <PageBreadcrumb
           items={[
             { label: "خانه", href: "/" },
             { label: "ولایت‌ها", href: "/provinces" },
@@ -231,7 +239,15 @@ function ProvinceDetailContent({
 
           {isUnavailable ? <ApiNotice /> : null}
 
-          <EntryGrid entries={entries} emptyKind="province" createPageHref={createPageHref} />
+          <EntryGrid
+            entries={entries}
+            emptyKind="province"
+            createPageHref={createPageHref}
+            breadcrumbParent={[
+              { label: "ولایت‌ها", href: "/provinces" },
+              { label: province.name, href: provinceHref },
+            ]}
+          />
         </section>
       </section>
     </main>
@@ -243,6 +259,10 @@ function CategoriesIndexContent({ categories, isUnavailable }: CategoriesIndexCo
     <main className="min-h-screen bg-background">
       <section className="content-container relative overflow-hidden pt-32 pb-16 sm:pt-36">
         <DecorativeMark className="-end-10 top-24" />
+        <PageBreadcrumb
+          className="relative z-10 mb-8"
+          items={[{ label: "خانه", href: "/" }, { label: "موضوع‌ها" }]}
+        />
         <PageIntro
           eyebrow="موضوع‌ها"
           title="مطالب بر اساس موضوع"
@@ -283,10 +303,12 @@ function CategoryDetailContent({
   createPageHref,
   isUnavailable,
 }: CategoryDetailContentProps) {
+  const categoryHref = taxonomyItemHref("/categories", category);
+
   return (
     <main className="min-h-screen bg-background">
       <section className="content-container pt-30 pb-16 sm:pt-34">
-        <Breadcrumb
+        <PageBreadcrumb
           items={[
             { label: "خانه", href: "/" },
             { label: "موضوع‌ها", href: "/categories" },
@@ -354,7 +376,15 @@ function CategoryDetailContent({
 
           {isUnavailable ? <ApiNotice /> : null}
 
-          <EntryGrid entries={entries} emptyKind="category" createPageHref={createPageHref} />
+          <EntryGrid
+            entries={entries}
+            emptyKind="category"
+            createPageHref={createPageHref}
+            breadcrumbParent={[
+              { label: "موضوع‌ها", href: "/categories" },
+              { label: category.name, href: categoryHref },
+            ]}
+          />
         </section>
       </section>
     </main>
@@ -514,10 +544,12 @@ function EntryGrid({
   entries,
   emptyKind,
   createPageHref,
+  breadcrumbParent,
 }: {
   entries: EntryListResponse;
   emptyKind: "province" | "category";
   createPageHref: (page: number) => string;
+  breadcrumbParent: EntryBreadcrumbContext;
 }) {
   if (entries.data.length === 0) {
     return (
@@ -542,7 +574,12 @@ function EntryGrid({
     <>
       <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
         {entries.data.map((entry, index) => (
-          <PublicEntryCardView key={entry.id} entry={entry} imageIndex={index} />
+          <PublicEntryCardView
+            key={entry.id}
+            entry={entry}
+            imageIndex={index}
+            breadcrumbParent={breadcrumbParent}
+          />
         ))}
       </div>
       <Pagination meta={entries.meta} createPageHref={createPageHref} />
@@ -680,30 +717,6 @@ function PageRelativeLink({
     >
       {children}
     </Link>
-  );
-}
-
-function Breadcrumb({ items }: { items: Array<{ label: string; href?: string }> }) {
-  return (
-    <nav className="text-[13px] font-medium text-muted-foreground" aria-label="مسیر صفحه">
-      <ol className="flex flex-wrap items-center gap-2">
-        {items.map((item, index) => (
-          <li key={item.label} className="flex items-center gap-2">
-            {item.href ? (
-              <Link
-                href={item.href}
-                className="transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/40"
-              >
-                {item.label}
-              </Link>
-            ) : (
-              <span className="text-foreground">{item.label}</span>
-            )}
-            {index < items.length - 1 ? <span aria-hidden="true">/</span> : null}
-          </li>
-        ))}
-      </ol>
-    </nav>
   );
 }
 

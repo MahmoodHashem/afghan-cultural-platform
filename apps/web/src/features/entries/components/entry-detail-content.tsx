@@ -1,5 +1,4 @@
 import {
-  ArrowRightIcon,
   CalendarDaysIcon,
   LinkIcon,
   MapPinIcon,
@@ -9,6 +8,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { PageBreadcrumb, type PageBreadcrumbItem } from "@/components/layout/page-breadcrumb";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { EntryActionRail } from "@/features/entries/components/entry-action-rail";
@@ -37,9 +37,11 @@ type TiptapMark = {
 function EntryDetailContent({
   entry,
   reviews,
+  breadcrumbItems,
 }: {
   entry: PublicEntryDetail;
   reviews: PublicReview[];
+  breadcrumbItems: PageBreadcrumbItem[];
 }) {
   const heroImage = entry.images[0] ?? entry.coverImage;
   const tableOfContents = createTableOfContents(entry.contentJson);
@@ -50,13 +52,7 @@ function EntryDetailContent({
       <article>
         <section className="border-b border-border bg-card pt-24 pb-10 sm:pt-28">
           <div className="content-container">
-            <Link
-              href="/explore"
-              className="inline-flex items-center gap-2 text-[14px] font-semibold text-primary transition-colors hover:text-primary-hover"
-            >
-              <ArrowRightIcon className="size-4" aria-hidden="true" />
-              بازگشت به مطالب
-            </Link>
+            <PageBreadcrumb items={breadcrumbItems} />
 
             <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_420px] lg:items-end">
               <div className="space-y-5">

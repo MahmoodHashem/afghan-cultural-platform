@@ -5,6 +5,7 @@ import {
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
 
+import { PageBreadcrumb } from "@/components/layout/page-breadcrumb";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -43,19 +44,18 @@ const geographicScopeOptions: Array<{ label: string; value: GeographicScope }> =
 ];
 
 function ExploreContent({ entries, taxonomy, query, isEntriesUnavailable }: ExploreContentProps) {
+  const breadcrumbParent = {
+    label: "مطالب",
+    href: createExploreHref(query, {}),
+  };
+
   return (
     <main className="min-h-screen bg-background">
       <section className="border-b border-border bg-card pt-24 pb-10 sm:pt-28">
         <div className="content-container">
           <div className="grid gap-8 lg:grid-cols-[1fr_360px] lg:items-end">
             <div className="space-y-4">
-              <Link
-                href="/"
-                className="inline-flex items-center gap-2 text-[14px] font-semibold text-primary transition-colors hover:text-primary-hover"
-              >
-                <ArrowRightIcon className="size-4" aria-hidden="true" />
-                بازگشت به خانه
-              </Link>
+              <PageBreadcrumb items={[{ label: "خانه", href: "/" }, { label: "مطالب" }]} />
               <div className="space-y-3">
                 <p className="text-[14px] font-bold text-primary">مطالب فرهنگی</p>
                 <h1 className="text-[36px] font-bold leading-[1.35] text-foreground sm:text-[44px]">
@@ -88,7 +88,12 @@ function ExploreContent({ entries, taxonomy, query, isEntriesUnavailable }: Expl
           {entries.data.length > 0 ? (
             <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
               {entries.data.map((entry, index) => (
-                <PublicEntryCardView key={entry.id} entry={entry} imageIndex={index} />
+                <PublicEntryCardView
+                  key={entry.id}
+                  entry={entry}
+                  imageIndex={index}
+                  breadcrumbParent={breadcrumbParent}
+                />
               ))}
             </div>
           ) : (
