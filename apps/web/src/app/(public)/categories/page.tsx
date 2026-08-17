@@ -8,10 +8,10 @@ import { CategoriesIndexContent } from "@/features/entries/components/taxonomy-d
 import type { TaxonomyItem } from "@/features/entries/types/public-entry";
 
 export const metadata: Metadata = {
-  title: "دسته‌بندی‌ها | میراث افغانستان",
+  title: "موضوع‌ها | میراث افغانستان",
   description: "مطالب فرهنگی افغانستان را بر اساس موضوع ببینید.",
   openGraph: {
-    title: "دسته‌بندی‌ها | میراث افغانستان",
+    title: "موضوع‌ها | میراث افغانستان",
     description: "مطالب فرهنگی افغانستان را بر اساس موضوع ببینید.",
     images: ["/images/herat-grand-mosque.webp"],
   },

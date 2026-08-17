@@ -101,7 +101,7 @@ test("register schema covers password confirmation mismatch", () => {
 
 test("register schema requires the terms checkbox", () => {
   assert.match(authSchemas, /acceptedTerms: z\.boolean\(\)\.refine\(\(value\) => value/);
-  assert.match(authSchemas, /پذیرش شرایط استفاده و سیاست حریم خصوصی الزامی است/);
+  assert.match(authSchemas, /برای ثبت‌نام باید شرایط استفاده و سیاست حفظ حریم خصوصی را بپذیرید/);
 });
 
 test("password visibility controls are accessible", () => {
@@ -292,7 +292,7 @@ test("public shell provides the shared header for header-linked pages", () => {
 });
 
 test("public routes provide skeleton loading and controlled error states", () => {
-  assert.match(publicError, /بارگذاری این صفحه انجام نشد/);
+  assert.match(publicError, /این صفحه بارگذاری نشد/);
   assert.match(publicError, /reset/);
   assert.match(publicError, /بازگشت به خانه/);
   assert.match(exploreLoading, /ExploreLoading/);
@@ -347,7 +347,7 @@ test("province and category discovery pages match the approved taxonomy designs"
   assert.match(categoriesPage, /getPublicCategories/);
   assert.match(taxonomyDiscoveryPages, /فرهنگ افغانستان بر اساس ولایت/);
   assert.match(taxonomyDiscoveryPages, /با فرهنگ و میراث ولایت‌های افغانستان آشنا شوید/);
-  assert.match(taxonomyDiscoveryPages, /کاوش بر اساس موضوع/);
+  assert.match(taxonomyDiscoveryPages, /مطالب بر اساس موضوع/);
   assert.match(taxonomyDiscoveryPages, /مطالب فرهنگی افغانستان را بر اساس موضوع ببینید/);
   assert.match(taxonomyDiscoveryPages, /ProvinceCard/);
   assert.match(taxonomyDiscoveryPages, /CategoryCard/);

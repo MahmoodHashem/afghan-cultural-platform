@@ -5,7 +5,7 @@ type ForbiddenStateProps = {
 
 function ForbiddenState({
   title = "دسترسی مجاز نیست",
-  description = "حساب شما اجازه دسترسی به این بخش را ندارد.",
+  description = "شما به این بخش دسترسی ندارید.",
 }: ForbiddenStateProps) {
   return (
     <section className="mx-auto flex min-h-70 w-full max-w-lg items-center justify-center px-6 py-10">

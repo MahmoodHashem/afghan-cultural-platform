@@ -6,7 +6,7 @@ function ProvinceDetailLoading() {
     <main
       className="min-h-screen bg-background"
       aria-busy="true"
-      aria-label="در حال بارگذاری جزئیات ولایت"
+      aria-label="در حال بارگذاری صفحه ولایت"
     >
       <section className="content-container pt-30 pb-16 sm:pt-34">
         <Skeleton className="h-4 w-44 rounded-full" />

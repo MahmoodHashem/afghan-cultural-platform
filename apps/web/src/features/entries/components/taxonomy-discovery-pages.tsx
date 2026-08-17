@@ -157,10 +157,10 @@ function ProvinceIndexContent({ provinces, isUnavailable }: ProvinceIndexContent
           </div>
         ) : (
           <EmptyState
-            title="هنوز ولایتی برای نمایش در دسترس نیست."
-            description="پس از آماده شدن داده‌های عمومی، ولایت‌ها در این صفحه نمایش داده می‌شوند."
-            actionHref="/explore"
-            actionLabel="دیدن مطالب"
+            title="نمایش ولایت‌ها ممکن نشد"
+            description="کمی بعد دوباره تلاش کنید."
+            actionHref="/"
+            actionLabel="بازگشت به خانه"
           />
         )}
       </section>
@@ -190,19 +190,18 @@ function ProvinceDetailContent({
 
         <div className="mt-7 grid gap-7 rounded-[28px] border border-border bg-card p-5 shadow-[0_2px_10px_rgba(0,0,0,.04)] sm:p-7 lg:grid-cols-[1fr_420px] lg:items-center">
           <div className="space-y-5">
-            <Badge className="rounded-full bg-primary-light text-primary">وابسته به یک ولایت</Badge>
             <div className="space-y-3">
               <h1 className="text-[38px] font-bold leading-[1.35] text-primary sm:text-[44px]">
                 {province.name}
               </h1>
               <p className="max-w-2xl text-[16px] leading-8 text-muted-foreground">
-                نوشته‌ها و روایت‌های مربوط به {province.name} را ببینید.
+                مطالب مربوط به {province.name} را ببینید.
               </p>
             </div>
             <StatsCards
               items={[
                 { label: "مطلب", value: entries.meta.total },
-                { label: "دسته‌بندی فعال", value: categoryFilters.length },
+                { label: "موضوع فعال", value: categoryFilters.length },
               ]}
             />
           </div>
@@ -217,7 +216,7 @@ function ProvinceDetailContent({
             </h2>
           </div>
 
-          <ScrollableChips ariaLabel="فیلتر دسته‌بندی‌های ولایت">
+          <ScrollableChips ariaLabel="فیلتر موضوع‌های ولایت">
             <FilterChip href={allCategoriesHref} isActive={isAllCategoriesActive} label="همه" />
             {categoryFilters.map((category) => (
               <FilterChip
@@ -245,8 +244,8 @@ function CategoriesIndexContent({ categories, isUnavailable }: CategoriesIndexCo
       <section className="content-container relative overflow-hidden pt-32 pb-16 sm:pt-36">
         <DecorativeMark className="-end-10 top-24" />
         <PageIntro
-          eyebrow="دسته‌بندی‌ها"
-          title="کاوش بر اساس موضوع"
+          eyebrow="موضوع‌ها"
+          title="مطالب بر اساس موضوع"
           subtitle="مطالب فرهنگی افغانستان را بر اساس موضوع ببینید."
         />
 
@@ -260,8 +259,8 @@ function CategoriesIndexContent({ categories, isUnavailable }: CategoriesIndexCo
           </div>
         ) : (
           <EmptyState
-            title="هنوز دسته‌بندی‌ای برای نمایش در دسترس نیست."
-            description="پس از آماده شدن داده‌های عمومی، دسته‌بندی‌ها در این صفحه نمایش داده می‌شوند."
+            title="هنوز موضوعی برای نمایش در دسترس نیست."
+            description="کمی بعد دوباره تلاش کنید."
             actionHref="/explore"
             actionLabel="دیدن مطالب"
           />
@@ -290,14 +289,13 @@ function CategoryDetailContent({
         <Breadcrumb
           items={[
             { label: "خانه", href: "/" },
-            { label: "دسته‌بندی‌ها", href: "/categories" },
+            { label: "موضوع‌ها", href: "/categories" },
             { label: category.name },
           ]}
         />
 
         <div className="mt-7 grid gap-7 rounded-[28px] border border-border bg-card p-5 shadow-[0_2px_10px_rgba(0,0,0,.04)] sm:p-7 lg:grid-cols-[1fr_320px] lg:items-center">
           <div className="space-y-4">
-            <Badge className="w-fit rounded-full bg-primary-light text-primary">موضوع فرهنگی</Badge>
             <div className="space-y-3">
               <h1 className="text-[36px] font-bold leading-[1.35] text-foreground sm:text-[42px]">
                 {category.name}
@@ -307,7 +305,7 @@ function CategoryDetailContent({
               </p>
             </div>
             <p className="text-[14px] font-semibold text-primary">
-              {formatPersianNumber(category.entryCount)} مطلب منتشرشده
+              {formatPersianNumber(category.entryCount)} مطلب
             </p>
           </div>
 
@@ -325,13 +323,13 @@ function CategoryDetailContent({
             <div className="space-y-2">
               <h2 className="text-[22px] font-bold text-foreground">بر اساس ولایت</h2>
               <p className="text-[14px] leading-7 text-muted-foreground">
-                «سراسری» یعنی این مطلب به ولایت خاصی وابسته نیست.
+                «سراسری» شامل مطالبی است که به ولایت خاصی وابسته نیستند.
               </p>
             </div>
             <SortLinks options={sortOptions} />
           </div>
 
-          <ScrollableChips ariaLabel="فیلتر ولایت‌های دسته‌بندی">
+          <ScrollableChips ariaLabel="فیلتر ولایت‌های موضوع">
             <FilterChip
               href={allAfghanistanHref}
               isActive={isAllAfghanistanActive}
@@ -421,7 +419,7 @@ function ProvinceCard({
           <h2 className="text-[20px] font-bold text-foreground">{province.name}</h2>
           <p className="flex items-center gap-1 text-[13px] text-muted-foreground">
             <MapPinIcon className="size-4" aria-hidden="true" />
-            دیدن میراث ولایت {province.name}
+            دیدن مطالب
           </p>
         </CardContent>
       </Link>
@@ -529,7 +527,11 @@ function EntryGrid({
             ? "هنوز مطلبی برای این ولایت منتشر نشده است."
             : "هنوز مطلبی در این بخش منتشر نشده است."
         }
-        description="هنوز مطلبی در این بخش منتشر نشده است."
+        description={
+          emptyKind === "province"
+            ? "اگر درباره فرهنگ و تاریخ این ولایت چیزی می‌دانید، می‌توانید آن را ثبت کنید."
+            : "اگر درباره این موضوع چیزی می‌دانید، می‌توانید آن را ثبت کنید."
+        }
         actionHref="/entries/new"
         actionLabel="افزودن مطلب"
       />

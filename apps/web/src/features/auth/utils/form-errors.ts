@@ -43,7 +43,7 @@ function getPersianFieldErrorMessage(field: string, message: string) {
   }
 
   if (field === "displayName") {
-    return "نام و نام خانوادگی باید بین ۲ تا ۸۰ نویسه باشد.";
+    return "نام و نام خانوادگی باید بین ۲ تا ۸۰ حرف باشد.";
   }
 
   if (field === "password") {

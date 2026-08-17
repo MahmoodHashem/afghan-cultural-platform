@@ -28,8 +28,8 @@ const reviewSchema = z.object({
   body: z
     .string()
     .trim()
-    .min(10, "دیدگاه باید حداقل ۱۰ نویسه باشد.")
-    .max(1200, "دیدگاه نباید بیشتر از ۱۲۰۰ نویسه باشد."),
+    .min(10, "دیدگاه باید حداقل ۱۰ حرف باشد.")
+    .max(1200, "دیدگاه نباید بیشتر از ۱۲۰۰ حرف باشد."),
 });
 
 function EntryFeedback({ entryId, entryTitle, averageRating, ratingCount }: EntryFeedbackProps) {
@@ -90,8 +90,8 @@ function EntryFeedback({ entryId, entryTitle, averageRating, ratingCount }: Entr
       <div className="space-y-2">
         <h2 className="text-[22px] font-bold text-foreground">امتیاز و دیدگاه</h2>
         <p className="text-[14px] leading-7 text-muted-foreground">
-          امتیازها میزان مفید بودن محتوا را نشان می‌دهند و دیدگاه‌ها جایگزین اصلاح رسمی اطلاعات
-          نیستند.
+          امتیازها نشان می‌دهند این مطلب چقدر برای خوانندگان مفید بوده است. برای اصلاح اطلاعات، از
+          «پیشنهاد اصلاح» استفاده کنید.
         </p>
       </div>
 

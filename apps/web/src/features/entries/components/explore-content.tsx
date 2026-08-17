@@ -133,7 +133,7 @@ function ExploreFilters({
           name="geographicScope"
           value={query.geographicScope}
           options={geographicScopeOptions}
-          placeholder="همه گستره‌ها"
+          placeholder="همه محدوده‌ها"
         />
         <NativeSelect
           label="ولایت"
@@ -143,11 +143,11 @@ function ExploreFilters({
           placeholder="همه ولایت‌ها"
         />
         <NativeSelect
-          label="دسته‌بندی"
+          label="موضوع"
           name="categorySlug"
           value={query.categorySlug}
           options={taxonomy.categories.map(toOption)}
-          placeholder="همه دسته‌بندی‌ها"
+          placeholder="همه موضوع‌ها"
         />
         <NativeSelect
           label="نوع محتوا"

@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 const passwordMessage =
-  "رمز عبور باید ۱۰ تا ۱۲۸ نویسه باشد و حداقل یک حرف کوچک، یک حرف بزرگ و یک عدد داشته باشد.";
+  "رمز عبور باید بین ۱۰ تا ۱۲۸ کاراکتر باشد و دست‌کم یک حرف کوچک انگلیسی، یک حرف بزرگ انگلیسی و یک عدد داشته باشد.";
 
 const passwordSchema = z
   .string()
@@ -20,13 +20,13 @@ const registerSchema = z
     displayName: z
       .string()
       .trim()
-      .min(2, "نام و نام خانوادگی باید حداقل ۲ نویسه باشد.")
-      .max(80, "نام و نام خانوادگی نمی‌تواند بیشتر از ۸۰ نویسه باشد."),
+      .min(2, "نام و نام خانوادگی باید حداقل ۲ حرف باشد.")
+      .max(80, "نام و نام خانوادگی نمی‌تواند بیشتر از ۸۰ حرف باشد."),
     email: z.string().trim().email("ایمیل معتبر وارد کنید."),
     password: passwordSchema,
     confirmPassword: z.string().min(1, "تکرار رمز عبور را وارد کنید."),
     acceptedTerms: z.boolean().refine((value) => value, {
-      message: "پذیرش شرایط استفاده و سیاست حریم خصوصی الزامی است.",
+      message: "برای ثبت‌نام باید شرایط استفاده و سیاست حفظ حریم خصوصی را بپذیرید.",
     }),
   })
   .refine((values) => values.password === values.confirmPassword, {

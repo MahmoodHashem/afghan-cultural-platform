@@ -36,10 +36,10 @@ export async function generateMetadata({ params }: ProvinceDetailPageProps): Pro
 
   return {
     title: `${province.name} | ولایت‌ها | میراث افغانستان`,
-    description: `نوشته‌ها و روایت‌های مربوط به ${province.name}.`,
+    description: `مطالب مربوط به ${province.name}.`,
     openGraph: {
       title: `${province.name} | میراث افغانستان`,
-      description: `نوشته‌ها و روایت‌های مربوط به ${province.name}.`,
+      description: `مطالب مربوط به ${province.name}.`,
       images: ["/images/HERAT02.jpg"],
     },
   };

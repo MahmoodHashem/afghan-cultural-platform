@@ -37,14 +37,14 @@ export async function generateMetadata({ params }: CategoryDetailPageProps): Pro
 
   if (!category) {
     return {
-      title: "دسته‌بندی پیدا نشد | میراث افغانستان",
+      title: "موضوع پیدا نشد | میراث افغانستان",
       robots: { index: false, follow: false },
     };
   }
 
   return {
-    title: `${category.name} | دسته‌بندی‌ها | میراث افغانستان`,
-    description: `مطالب منتشرشده در دسته‌بندی ${category.name}.`,
+    title: `${category.name} | موضوع‌ها | میراث افغانستان`,
+    description: `مطالب منتشرشده در موضوع ${category.name}.`,
     openGraph: {
       title: `${category.name} | میراث افغانستان`,
       description: `مطالب منتشرشده درباره ${category.name}.`,

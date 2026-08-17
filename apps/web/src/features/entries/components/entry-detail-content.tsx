@@ -170,8 +170,7 @@ function PublicReviewsList({ reviews }: { reviews: PublicReview[] }) {
         </div>
       ) : (
         <div className="rounded-2xl border border-dashed border-border bg-card p-5 text-[14px] leading-7 text-muted-foreground">
-          هنوز دیدگاهی برای این مطلب ثبت نشده است. اگر این مطلب برایتان مفید بود، نخستین دیدگاه را
-          بنویسید.
+          هنوز دیدگاهی نوشته نشده است. شما اولین نفر باشید.
         </div>
       )}
     </section>
@@ -207,7 +206,7 @@ function TiptapDocument({ content }: { content: unknown }) {
   if (children.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-border bg-card p-6 text-muted-foreground">
-        متن کامل این مطلب هنوز برای نمایش آماده نیست.
+        متن این مطلب در دسترس نیست.
       </div>
     );
   }
@@ -458,11 +457,11 @@ function SourcesList({ entry }: { entry: PublicEntryDetail }) {
 
 function TaxonomyCard({ entry }: { entry: PublicEntryDetail }) {
   const items = [
-    ["گستره", locationLabel(entry)],
+    ["محدوده جغرافیایی", locationLabel(entry)],
     ["ولایت", entry.province?.name],
     ["ولسوالی", entry.district?.name],
     ["موقعیت", entry.villageOrLocation],
-    ["دسته‌بندی", entry.category.name],
+    ["موضوع", entry.category.name],
     ["نوع محتوا", entry.contentType.name],
   ].filter(([, value]) => Boolean(value));
 
@@ -506,7 +505,7 @@ function TagsCard({ entry }: { entry: PublicEntryDetail }) {
 
 function OutgoingReferences({ entry }: { entry: PublicEntryDetail }) {
   return (
-    <ReferenceCard title="پیوندهای درون‌متنی">
+    <ReferenceCard title="مطالب اشاره‌شده در متن">
       {entry.outgoingReferences.map((reference) => (
         <Link
           key={reference.id}

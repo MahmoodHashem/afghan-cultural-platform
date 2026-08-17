@@ -57,7 +57,7 @@ const navigationItems = [
   { label: "خانه", href: "/" },
   { label: "مطالب", href: "/explore" },
   { label: "ولایت‌ها", href: "/provinces" },
-  { label: "دسته‌بندی‌ها", href: "/categories" },
+  { label: "موضوع‌ها", href: "/categories" },
 ];
 
 function PublicHeader({ variant = "solid" }: PublicHeaderProps) {

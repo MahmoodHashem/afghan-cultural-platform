@@ -17,7 +17,7 @@ function PublicRouteError({ reset }: { error: Error & { digest?: string }; reset
               <ArrowPathIcon className="size-7" aria-hidden="true" />
             </div>
             <div className="space-y-3">
-              <h1 className="text-[28px] font-bold text-foreground">بارگذاری این صفحه انجام نشد</h1>
+              <h1 className="text-[28px] font-bold text-foreground">این صفحه بارگذاری نشد</h1>
               <p className="mx-auto max-w-md text-[15px] leading-8 text-muted-foreground">
                 ممکن است ارتباط با سرور موقتاً قطع شده باشد. دوباره تلاش کنید یا به صفحه اصلی
                 برگردید.

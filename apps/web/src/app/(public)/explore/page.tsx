@@ -33,15 +33,12 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
   ]);
 
   return (
-
     <ExploreContent
       entries={entries}
       taxonomy={taxonomy}
       query={query}
       isEntriesUnavailable={entries.isUnavailable}
     />
-
-
   );
 }
 

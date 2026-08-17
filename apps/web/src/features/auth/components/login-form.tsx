@@ -129,11 +129,11 @@ function LoginForm() {
         disabled={loginMutation.isPending}
         aria-busy={loginMutation.isPending}
       >
-        <span>{loginMutation.isPending ? "در حال ورود..." : "ورود به حساب کاربری"}</span>
+        <span>{loginMutation.isPending ? "در حال ورود..." : "ورود"}</span>
         <ArrowLeftIcon className="size-5" aria-hidden="true" />
       </Button>
 
-      <AuthDivider label="یا" />
+      <AuthDivider label="یا از یکی از این روش‌ها استفاده کنید" />
 
       <OAuthButtons
         googleLabel="ورود با گوگل"

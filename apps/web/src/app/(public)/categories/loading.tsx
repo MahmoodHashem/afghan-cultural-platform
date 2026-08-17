@@ -6,7 +6,7 @@ function CategoriesLoading() {
     <main
       className="min-h-screen bg-background"
       aria-busy="true"
-      aria-label="در حال بارگذاری دسته‌بندی‌ها"
+      aria-label="در حال بارگذاری موضوع‌ها"
     >
       <section className="content-container pt-32 pb-16 sm:pt-36">
         <div className="mx-auto max-w-3xl space-y-4 text-center">

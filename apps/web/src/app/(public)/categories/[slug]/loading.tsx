@@ -6,7 +6,7 @@ function CategoryDetailLoading() {
     <main
       className="min-h-screen bg-background"
       aria-busy="true"
-      aria-label="در حال بارگذاری جزئیات دسته‌بندی"
+      aria-label="در حال بارگذاری صفحه موضوع"
     >
       <section className="content-container pt-30 pb-16 sm:pt-34">
         <Skeleton className="h-4 w-56 rounded-full" />

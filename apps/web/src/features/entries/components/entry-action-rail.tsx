@@ -62,7 +62,7 @@ function EntryActionRail({ title, commentCount, ratingCount }: EntryActionRailPr
       await navigator.clipboard.writeText(url);
       toast.success("پیوند مطلب کپی شد.");
     } catch {
-      toast.error("کپی کردن پیوند انجام نشد.");
+      toast.error("پیوند کپی نشد. دوباره تلاش کنید.");
     }
   }
 
@@ -70,20 +70,20 @@ function EntryActionRail({ title, commentCount, ratingCount }: EntryActionRailPr
     <aside className="hidden self-start lg:sticky lg:top-32 lg:block lg:h-fit">
       <div className="flex flex-col items-center gap-4">
         <ActionButton
-          label="رفتن به دیدگاه‌ها"
+          label="دیدگاه‌ها"
           count={commentCount}
           onClick={() => scrollToSection("entry-comments")}
           icon={<ChatBubbleOvalLeftEllipsisIcon className="size-6" aria-hidden="true" />}
         />
         <ActionButton
-          label="رفتن به امتیازدهی"
+          label="امتیازدهی"
           count={ratingCount}
           onClick={() => scrollToSection("entry-feedback")}
           icon={<HeartIcon className="size-6" aria-hidden="true" />}
         />
         <ActionButton
           label="ذخیره مطلب"
-          onClick={() => toast.message("ذخیره مطلب در گام بعدی به حساب کاربری وصل می‌شود.")}
+          onClick={() => toast.message("این امکان هنوز فعال نشده است.")}
           icon={<BookmarkIcon className="size-6" aria-hidden="true" />}
         />
         <ActionButton

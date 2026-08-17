@@ -178,9 +178,6 @@ function RegisterForm() {
             {...register("acceptedTerms")}
           />
           <span>
-            <label htmlFor="accepted-terms" className="cursor-pointer">
-              من با
-            </label>{" "}
             <Link href="/terms" className="font-medium text-primary hover:text-primary-hover">
               شرایط استفاده
             </Link>{" "}
@@ -188,10 +185,10 @@ function RegisterForm() {
               و
             </label>{" "}
             <Link href="/privacy" className="font-medium text-primary hover:text-primary-hover">
-              سیاست حریم خصوصی
+              سیاست حفظ حریم خصوصی
             </Link>{" "}
             <label htmlFor="accepted-terms" className="cursor-pointer">
-              موافقم.
+              را می‌پذیرم.
             </label>
           </span>
         </div>
@@ -205,7 +202,7 @@ function RegisterForm() {
         disabled={registerMutation.isPending}
         aria-busy={registerMutation.isPending}
       >
-        <span>{registerMutation.isPending ? "در حال ثبت‌نام" : "ثبت‌نام"}</span>
+        <span>{registerMutation.isPending ? "در حال ثبت‌نام..." : "ثبت‌نام"}</span>
         {registerMutation.isPending ? (
           <ArrowPathIcon className="animate-spin" />
         ) : (
@@ -213,7 +210,7 @@ function RegisterForm() {
         )}
       </Button>
 
-      <AuthDivider label="یا با حساب خود ادامه دهید" />
+      <AuthDivider label="یا از یکی از این روش‌ها استفاده کنید" />
 
       <OAuthButtons
         googleLabel="ثبت‌نام با گوگل"

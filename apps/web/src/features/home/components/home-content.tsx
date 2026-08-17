@@ -63,7 +63,7 @@ function HomeContent({ data }: { data: HomeData }) {
         <LatestEntriesSection entries={data.recentlyUpdatedEntries} />
 
         <ExploreTaxonomySection
-          title="دسته‌بندی‌های فرهنگی"
+          title="موضوع‌های فرهنگی"
           description="از ادبیات و شخصیت‌ها تا بناهای تاریخی و آیین‌ها، مطالب را بر اساس موضوع دنبال کنید."
           items={data.categories}
           basePath="/explore"
@@ -103,7 +103,7 @@ function StatsStrip({ data }: { data: HomeData }) {
   const stats = [
     { label: "مطلب منتشرشده", value: data.stats.publishedEntries },
     { label: "ولایت", value: data.stats.provinces },
-    { label: "دسته‌بندی", value: data.stats.categories },
+    { label: "موضوع", value: data.stats.categories },
   ];
 
   return (

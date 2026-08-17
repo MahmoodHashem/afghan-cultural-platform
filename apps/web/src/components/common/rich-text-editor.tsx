@@ -258,7 +258,7 @@ function RichTextEditor({
       </div>
       <EditorContent editor={editor} />
       <div className="border-t border-border px-4 py-2 text-small text-muted-foreground">
-        {characters.toLocaleString("fa-AF")} / {characterLimit.toLocaleString("fa-AF")} نویسه
+        {characters.toLocaleString("fa-AF")} / {characterLimit.toLocaleString("fa-AF")} کاراکتر
       </div>
     </div>
   );

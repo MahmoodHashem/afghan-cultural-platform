@@ -1,411 +1,639 @@
-# Frontend Copy Review
+I reviewed the entire copy file, not just the earlier lines, and compared its tone with current Persian content interfaces such as **طاقچه، گنجور، کتابراه، دیجی‌کالا** and Afghan Persian editorial sites such as **اطلاعات روز، طلوع‌نیوز و افغانستان اینترنشنال**. A useful pattern is that the strongest interfaces use short, concrete labels such as «تازه‌ترین مطالب»، «مشاهده همه»، «جست‌وجو»، «ورود و ثبت‌نام» and avoid explaining backend/system behavior to the reader. ([طاقچه][1])
 
-این فایل برای بازبینی متن‌های فارسی رابط کاربری فرانت‌اند است. هدف این است که پیش از ادامه‌ی توسعه، لحن سایت یک‌دست، طبیعی و مناسب مخاطب فارسی‌زبان باشد.
+## Implementation status
 
-قاعده‌ی واژگان فعلی:
+Status: implemented in the frontend UI.
 
-- `محتوا`: فقط برای زمینه‌های عمومی، فنی، ساختاری یا مدیریتی مثل `نوع محتوا`.
-- `مطلب`: واژه‌ی پیش‌فرض برای یک آیتم منتشرشده در رابط عمومی.
-- `نوشته`: برای بخش‌های گرم‌تر و editorial، مثل صفحه اصلی.
-- `روایت`: فقط وقتی واقعاً جنس محتوا داستان، خاطره یا روایت شفاهی است.
-- `اثر`: فقط برای اثر هنری یا ادبی واقعی.
-- `کاوش`: کم‌استفاده و فقط جایی که حس برند یا صفحه‌ی موضوعی را بهتر می‌کند.
+Updated areas:
 
-## Metadata
+- Header search, mobile menu, logout confirmation, and public navigation wording.
+- Footer newsletter and copyright wording.
+- Homepage section labels, topic wording, and contribution links.
+- Explore filters, sorting, geographic-scope labels, buttons, count text, and API-unavailable message.
+- Province and topic pages, including empty states, badges, breadcrumbs, metadata, loading labels, and category descriptions.
+- Cultural Entry detail page labels, empty states, internal-reference heading, action rail labels, bookmark placeholder, share error, rating/review guidance, and taxonomy labels.
+- Authentication form copy, OAuth divider copy, terms copy, validation messages, forbidden state, unverified-email notices, and normalized auth error messages.
 
-| مسیر | محل | متن |
-| --- | --- | --- |
-| `apps/web/src/app/layout.tsx` | عنوان پیش‌فرض | `میراث افغانستان` |
-| `apps/web/src/app/page.tsx` | عنوان صفحه اصلی | `میراث افغانستان \| فرهنگ و تاریخ افغانستان` |
-| `apps/web/src/app/page.tsx` | توضیح صفحه اصلی | `جایی برای خواندن و ثبت مطالبی درباره فرهنگ، تاریخ، ولایت‌ها، شخصیت‌ها و دانش محلی افغانستان.` |
-| `apps/web/src/app/page.tsx` | Open Graph title | `میراث افغانستان` |
-| `apps/web/src/app/page.tsx` | Open Graph description | `جایی برای گردآوری و شناخت فرهنگ افغانستان.` |
-| `apps/web/src/app/(public)/explore/page.tsx` | عنوان | `مطالب فرهنگی \| میراث افغانستان` |
-| `apps/web/src/app/(public)/explore/page.tsx` | توضیح | `مطالب فرهنگی افغانستان را بر اساس ولایت، موضوع و نوع محتوا پیدا کنید.` |
-| `apps/web/src/app/(public)/explore/page.tsx` | Open Graph title | `مطالب فرهنگی \| میراث افغانستان` |
-| `apps/web/src/app/(public)/explore/page.tsx` | Open Graph description | `مطالب منتشرشده درباره فرهنگ افغانستان.` |
-| `apps/web/src/app/(public)/provinces/page.tsx` | عنوان | `ولایت‌ها \| میراث افغانستان` |
-| `apps/web/src/app/(public)/provinces/page.tsx` | توضیح | `با فرهنگ و میراث ولایت‌های افغانستان آشنا شوید.` |
-| `apps/web/src/app/(public)/categories/page.tsx` | عنوان | `دسته‌بندی‌ها \| میراث افغانستان` |
-| `apps/web/src/app/(public)/categories/page.tsx` | توضیح | `مطالب فرهنگی افغانستان را بر اساس موضوع ببینید.` |
-| `apps/web/src/app/(auth)/login/page.tsx` | عنوان | `ورود به حساب \| میراث افغانستان` |
-| `apps/web/src/app/(auth)/login/page.tsx` | توضیح | `ورود به حساب کاربری میراث افغانستان.` |
-| `apps/web/src/app/(auth)/register/page.tsx` | عنوان | `ایجاد حساب کاربری \| میراث افغانستان` |
-| `apps/web/src/app/(auth)/register/page.tsx` | توضیح | `ایجاد حساب کاربری در میراث افغانستان.` |
+Remaining by design:
 
-## Header
+- Code, API, and database names such as `Category`, `CulturalEntry`, and `contentType` remain unchanged.
+- Admin or technical contexts may still use `محتوا` or `دسته‌بندی` where those words describe management concepts rather than public reading UI.
+- `مقاله` remains where it is a real source type, such as `ARTICLE`.
 
-| مسیر | محل | متن |
-| --- | --- | --- |
-| `apps/web/src/components/layout/public-header.tsx` | لوگو | `میراث افغانستان` |
-| `apps/web/src/components/layout/public-header.tsx` | لینک ناوبری | `خانه` |
-| `apps/web/src/components/layout/public-header.tsx` | لینک ناوبری | `مطالب` |
-| `apps/web/src/components/layout/public-header.tsx` | لینک ناوبری | `ولایت‌ها` |
-| `apps/web/src/components/layout/public-header.tsx` | لینک ناوبری | `دسته‌بندی‌ها` |
-| `apps/web/src/components/layout/public-header.tsx` | جست‌وجوی دسکتاپ | `جست‌وجو در فرهنگ افغانستان...` |
-| `apps/web/src/components/layout/public-header.tsx` | جست‌وجوی موبایل | `جست‌وجو...` |
-| `apps/web/src/components/layout/public-header.tsx` | CTA کاربر واردشده | `افزودن مطلب` |
-| `apps/web/src/components/layout/public-header.tsx` | Auth link | `ورود` |
-| `apps/web/src/components/layout/public-header.tsx` | Auth link | `ثبت‌نام` |
-| `apps/web/src/components/layout/public-header.tsx` | منوی موبایل، account | `حساب کاربری` |
-| `apps/web/src/components/layout/public-header.tsx` | خروج | `خروج` |
-| `apps/web/src/components/layout/public-header.tsx` | خروج pending | `در حال خروج...` |
-| `apps/web/src/components/layout/public-header.tsx` | خطای خروج | `خروج انجام نشد. دوباره تلاش کنید.` |
-| `apps/web/src/components/layout/public-header.tsx` | تأیید خروج، عنوان | `از حساب خارج می‌شوید؟` |
-| `apps/web/src/components/layout/public-header.tsx` | تأیید خروج، توضیح | `هر وقت خواستید می‌توانید دوباره وارد شوید.` |
-| `apps/web/src/components/layout/public-header.tsx` | تأیید خروج، cancel | `انصراف` |
-| `apps/web/src/components/layout/public-header.tsx` | تأیید خروج، action | `خروج از حساب` |
+Your copy is **much better now**. I would not rewrite everything again. Most of it already reads naturally. The remaining problems fall mainly into four groups: technical language leaking into public UI, a few overly polished sentences, unnecessary explanations, and some inconsistent terminology. Your current vocabulary rules are already a good foundation.
 
-## Footer
+## Changes I would still make
 
-| مسیر | محل | متن |
-| --- | --- | --- |
-| `apps/web/src/features/home/components/home-footer.tsx` | برند | `میراث افغانستان` |
-| `apps/web/src/features/home/components/home-footer.tsx` | زیرعنوان برند | `فرهنگ، تاریخ، هویت ما` |
-| `apps/web/src/features/home/components/home-footer.tsx` | توضیح برند | `جایی برای گردآوری و شناخت فرهنگ افغانستان` |
-| `apps/web/src/features/home/components/home-footer.tsx` | گروه لینک | `دسترسی سریع` |
-| `apps/web/src/features/home/components/home-footer.tsx` | لینک | `موضوع‌ها` |
-| `apps/web/src/features/home/components/home-footer.tsx` | لینک | `ولایت‌ها` |
-| `apps/web/src/features/home/components/home-footer.tsx` | لینک | `مطالب` |
-| `apps/web/src/features/home/components/home-footer.tsx` | لینک | `درباره ما` |
-| `apps/web/src/features/home/components/home-footer.tsx` | لینک | `تماس با ما` |
-| `apps/web/src/features/home/components/home-footer.tsx` | گروه لینک | `منابع` |
-| `apps/web/src/features/home/components/home-footer.tsx` | لینک | `راهنما` |
-| `apps/web/src/features/home/components/home-footer.tsx` | لینک | `سؤالات متداول` |
-| `apps/web/src/features/home/components/home-footer.tsx` | لینک | `شرایط استفاده` |
-| `apps/web/src/features/home/components/home-footer.tsx` | لینک | `حریم خصوصی` |
-| `apps/web/src/features/home/components/home-footer.tsx` | شبکه اجتماعی | `اینستاگرام` |
-| `apps/web/src/features/home/components/home-footer.tsx` | شبکه اجتماعی | `فیسبوک` |
-| `apps/web/src/features/home/components/home-footer.tsx` | شبکه اجتماعی | `ایکس` |
-| `apps/web/src/features/home/components/home-footer.tsx` | شبکه اجتماعی | `یوتیوب` |
-| `apps/web/src/features/home/components/home-footer.tsx` | خبرنامه title | `تازه‌های میراث افغانستان` |
-| `apps/web/src/features/home/components/home-footer.tsx` | خبرنامه description | `تازه‌ترین نوشته‌ها را در ایمیل خود دریافت کنید.` |
-| `apps/web/src/features/home/components/home-footer.tsx` | input | `ایمیل شما` |
-| `apps/web/src/features/home/components/home-footer.tsx` | button | `عضویت` |
-| `apps/web/src/features/home/components/home-footer.tsx` | copyright | `© {سال} میراث افغانستان. تمام حقوق محفوظ است.` |
+| Current                                                                                                                                 | Recommended                                                                                          | Why                                                                                                                                                    |
+| --------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `جست‌وجوی فرهنگ، مکان، روایت...`                                                                              | **`جست‌وجو در فرهنگ افغانستان...`**                                   | More natural as a search placeholder. Ganjoor similarly uses the simple construction «جستجو در شعر فارسی». ([Ganjoor][2])             |
+| `راهی ساده برای دیدن فرهنگ افغانستان`                                                                   | **remove it**                                                                                  | Mobile menus normally do not need marketing copy.                                                                                                      |
+| `از حساب خارج شوید؟`                                                                                                   | **`از حساب خارج می‌شوید؟`**                                                | Sounds more like natural confirmation dialogue.                                                                                                        |
+| `نشست فعلی شما پایان می‌یابد. هر زمان خواستید می‌توانید دوباره وارد شوید.` | **`هر وقت خواستید می‌توانید دوباره وارد شوید.`**          | `نشست فعلی` is technical language.                                                                                                           |
+| `در خبرنامه ما عضو شوید`                                                                                            | **`تازه‌های میراث افغانستان`**                                         | Less template-like.                                                                                                                                    |
+| `تازه‌ترین نوشته‌ها را از دست ندهید.`                                                                    | **`تازه‌ترین نوشته‌ها را در ایمیل خود دریافت کنید.`** | Explains what the newsletter actually does. Afghan news sites also use direct wording around receiving material by email. ([اطلاعات روز][3]) |
+| `تمامی حقوق محفوظ است.`                                                                                              | **`تمام حقوق محفوظ است.`**                                                   | Simpler.                                                                                                                                               |
+| `تازه‌های ویرایش‌شده`                                                                                               | **`تازه‌ها`**                                                                         | Current wording sounds like CMS terminology.                                                                                                           |
+| `موضوع‌های آماده برای دیدن`                                                                                     | **`موضوع‌های پیشنهادی`**                                                    | Much more natural.                                                                                                                                     |
+| `درباره این پلتفرم`                                                                                                    | **`درباره میراث افغانستان`**                                             | `پلتفرم` breaks the cultural/editorial tone.                                                                                                   |
 
-## صفحه اصلی
+These affect the header/footer/home copy around the sections shown in your review file.
 
-| مسیر | محل | متن |
-| --- | --- | --- |
-| `apps/web/src/features/home/components/home-hero.tsx` | برند | `میراث افغانستان` |
-| `apps/web/src/features/home/components/home-hero.tsx` | headline | `فرهنگ افغانستان را از دل روایت‌ها ببینید` |
-| `apps/web/src/features/home/components/home-hero.tsx` | supporting text | `جایی برای خواندن، ثبت و شناخت میراث فرهنگی افغانستان؛ از بناهای تاریخی و آیین‌ها تا چهره‌ها و دانش محلی.` |
-| `apps/web/src/features/home/components/home-hero.tsx` | CTA اصلی | `دیدن مطالب` |
-| `apps/web/src/features/home/components/home-hero.tsx` | CTA دوم | `افزودن مطلب` |
-| `apps/web/src/features/home/components/home-content.tsx` | eyebrow | `فرهنگ افغانستان` |
-| `apps/web/src/features/home/components/home-content.tsx` | title | `تازه‌ترین نوشته‌های فرهنگی از گوشه‌وکنار افغانستان` |
-| `apps/web/src/features/home/components/home-content.tsx` | description | `تازه‌ترین مطالب منتشرشده را اینجا ببینید.` |
-| `apps/web/src/features/home/components/home-content.tsx` | آمار | `مطلب منتشرشده` |
-| `apps/web/src/features/home/components/home-content.tsx` | آمار | `ولایت` |
-| `apps/web/src/features/home/components/home-content.tsx` | آمار | `دسته‌بندی` |
-| `apps/web/src/features/home/components/home-content.tsx` | بخش ولایت title | `فرهنگ افغانستان بر اساس ولایت` |
-| `apps/web/src/features/home/components/home-content.tsx` | بخش ولایت description | `فرهنگ افغانستان را ولایت به ولایت ببینید.` |
-| `apps/web/src/features/home/components/home-content.tsx` | بخش تازه‌ها eyebrow | `تازه‌ها` |
-| `apps/web/src/features/home/components/home-content.tsx` | بخش تازه‌ها title | `تازه‌ترین نوشته‌ها` |
-| `apps/web/src/features/home/components/home-content.tsx` | بخش تازه‌ها description | `نگاهی به تازه‌ترین مطالب سایت` |
-| `apps/web/src/features/home/components/home-content.tsx` | لینک | `دیدن همه` |
-| `apps/web/src/features/home/components/home-content.tsx` | دسته‌بندی title | `دسته‌بندی‌های فرهنگی` |
-| `apps/web/src/features/home/components/home-content.tsx` | دسته‌بندی description | `از ادبیات و شخصیت‌ها تا بناهای تاریخی و آیین‌ها، مطالب را بر اساس موضوع دنبال کنید.` |
-| `apps/web/src/features/home/components/home-content.tsx` | بخش ملی title | `فرهنگ مشترک افغانستان` |
-| `apps/web/src/features/home/components/home-content.tsx` | بخش ملی description | `بعضی از رسم‌ها، چهره‌ها و روایت‌ها در بخش‌های مختلف افغانستان شناخته شده‌اند.` |
-| `apps/web/src/features/home/components/home-content.tsx` | بخش ملی CTA | `دیدن مطالب سراسری` |
-| `apps/web/src/features/home/components/home-content.tsx` | fallback title | `موضوع‌های پیشنهادی` |
-| `apps/web/src/features/home/components/home-content.tsx` | مشارکت eyebrow | `مشارکت فرهنگی` |
-| `apps/web/src/features/home/components/home-content.tsx` | مشارکت title | `اگر چیزی از فرهنگ و تاریخ محل‌تان می‌دانید، با دیگران شریک کنید.` |
-| `apps/web/src/features/home/components/home-content.tsx` | مشارکت description | `مطالب پس از ثبت و بررسی، در سایت منتشر می‌شوند.` |
-| `apps/web/src/features/home/components/home-content.tsx` | مشارکت CTA | `افزودن مطلب` |
-| `apps/web/src/features/home/components/home-content.tsx` | مشارکت link | `درباره میراث افغانستان` |
+### Explore
 
-## Explore / مطالب
+The Explore page is already substantially better. I would make only these changes:
 
-| مسیر | محل | متن |
-| --- | --- | --- |
-| `apps/web/src/features/entries/components/explore-content.tsx` | برگشت | `بازگشت به خانه` |
-| `apps/web/src/features/entries/components/explore-content.tsx` | eyebrow | `مطالب فرهنگی` |
-| `apps/web/src/features/entries/components/explore-content.tsx` | title | `فرهنگ افغانستان` |
-| `apps/web/src/features/entries/components/explore-content.tsx` | description | `مطالب را بر اساس ولایت، موضوع و نوع محتوا پیدا کنید.` |
-| `apps/web/src/features/entries/components/explore-content.tsx` | نتیجه | `{عدد} مطلب` |
-| `apps/web/src/features/entries/components/explore-content.tsx` | فیلتر title | `فیلترها` |
-| `apps/web/src/features/entries/components/explore-content.tsx` | فیلتر description | `موضوع، ولایت و نوع محتوا را انتخاب کنید.` |
-| `apps/web/src/features/entries/components/explore-content.tsx` | select | `ترتیب نمایش` |
-| `apps/web/src/features/entries/components/explore-content.tsx` | sort | `تازه‌ترین` |
-| `apps/web/src/features/entries/components/explore-content.tsx` | sort | `قدیمی‌ترین` |
-| `apps/web/src/features/entries/components/explore-content.tsx` | sort | `آخرین ویرایش` |
-| `apps/web/src/features/entries/components/explore-content.tsx` | select | `محدوده جغرافیایی` |
-| `apps/web/src/features/entries/components/explore-content.tsx` | option | `وابسته به یک ولایت` |
-| `apps/web/src/features/entries/components/explore-content.tsx` | option | `سراسر افغانستان` |
-| `apps/web/src/features/entries/components/explore-content.tsx` | option | `بدون وابستگی به مکان` |
-| `apps/web/src/features/entries/components/explore-content.tsx` | select | `ولایت` |
-| `apps/web/src/features/entries/components/explore-content.tsx` | select | `دسته‌بندی` |
-| `apps/web/src/features/entries/components/explore-content.tsx` | select | `نوع محتوا` |
-| `apps/web/src/features/entries/components/explore-content.tsx` | select | `برچسب` |
-| `apps/web/src/features/entries/components/explore-content.tsx` | button | `نمایش نتایج` |
-| `apps/web/src/features/entries/components/explore-content.tsx` | button | `حذف همه فیلترها` |
-| `apps/web/src/features/entries/components/explore-content.tsx` | badge | `{عدد} فیلتر فعال` |
-| `apps/web/src/features/entries/components/explore-content.tsx` | empty title | `نتیجه‌ای پیدا نشد` |
-| `apps/web/src/features/entries/components/explore-content.tsx` | empty description | `با این فیلترها چیزی پیدا نشد. فیلترها را تغییر دهید.` |
-| `apps/web/src/features/entries/components/explore-content.tsx` | empty action | `نمایش همه مطالب` |
-| `apps/web/src/features/entries/components/explore-content.tsx` | API notice | `فعلاً بخشی از مطالب در دسترس نیست. کمی بعد دوباره تلاش کنید.` |
+| Current                                                                                                                     | Recommended                                                                                                               |
+| --------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `{عدد} مطلب پیدا شد.`                                                                                        | **`{عدد} مطلب`**                                                                                           |
+| `به‌روزترین`                                                                                                    | **`آخرین ویرایش`**                                                                                     |
+| `گستره جغرافیایی`                                                                                           | **`محدوده جغرافیایی`**                                                                             |
+| `ولایت مشخص`                                                                                                     | **`وابسته به یک ولایت`**                                                                           |
+| `بدون وابستگی جغرافیایی`                                                                              | **`بدون وابستگی به مکان`**                                                                       |
+| `اعمال فیلتر`                                                                                                   | **`نمایش نتایج`**                                                                                       |
+| `پاک کردن فیلترها`                                                                                          | **`حذف همه فیلترها`**                                                                                |
+| `بخشی از داده‌های عمومی در دسترس نیست. لطفاً وضعیت API را بررسی کنید.` | **`فعلاً بخشی از مطالب در دسترس نیست. کمی بعد دوباره تلاش کنید.`** |
 
-## ولایت‌ها
+The last one is especially important. **A normal visitor should never see the word API.** That is a developer-facing diagnostic, not interface copy.
 
-| مسیر | محل | متن |
-| --- | --- | --- |
-| `apps/web/src/features/entries/components/taxonomy-discovery-pages.tsx` | index eyebrow | `ولایت‌ها` |
-| `apps/web/src/features/entries/components/taxonomy-discovery-pages.tsx` | index title | `فرهنگ افغانستان بر اساس ولایت` |
-| `apps/web/src/features/entries/components/taxonomy-discovery-pages.tsx` | index subtitle | `با فرهنگ و میراث ولایت‌های افغانستان آشنا شوید.` |
-| `apps/web/src/features/entries/components/taxonomy-discovery-pages.tsx` | empty title | `هنوز ولایتی برای نمایش در دسترس نیست.` |
-| `apps/web/src/features/entries/components/taxonomy-discovery-pages.tsx` | empty description | `پس از آماده شدن داده‌های عمومی، ولایت‌ها در این صفحه نمایش داده می‌شوند.` |
-| `apps/web/src/features/entries/components/taxonomy-discovery-pages.tsx` | empty action | `دیدن مطالب` |
-| `apps/web/src/features/entries/components/taxonomy-discovery-pages.tsx` | breadcrumb | `خانه / ولایت‌ها / {نام ولایت}` |
-| `apps/web/src/features/entries/components/taxonomy-discovery-pages.tsx` | badge | `وابسته به یک ولایت` |
-| `apps/web/src/features/entries/components/taxonomy-discovery-pages.tsx` | detail description | `نوشته‌ها و روایت‌های مربوط به {نام ولایت} را ببینید.` |
-| `apps/web/src/features/entries/components/taxonomy-discovery-pages.tsx` | stat | `مطلب` |
-| `apps/web/src/features/entries/components/taxonomy-discovery-pages.tsx` | stat | `دسته‌بندی فعال` |
-| `apps/web/src/features/entries/components/taxonomy-discovery-pages.tsx` | section title | `فرهنگ و میراث {نام ولایت}` |
-| `apps/web/src/features/entries/components/taxonomy-discovery-pages.tsx` | chip | `همه` |
-| `apps/web/src/features/entries/components/taxonomy-discovery-pages.tsx` | province card count | `{عدد} مطلب` |
-| `apps/web/src/features/entries/components/taxonomy-discovery-pages.tsx` | province card text | `دیدن میراث ولایت {نام ولایت}` |
-| `apps/web/src/features/entries/components/taxonomy-discovery-pages.tsx` | empty province title | `هنوز مطلبی برای این ولایت منتشر نشده است.` |
-| `apps/web/src/features/entries/components/taxonomy-discovery-pages.tsx` | empty province description | `هنوز مطلبی در این بخش منتشر نشده است.` |
-| `apps/web/src/features/entries/components/taxonomy-discovery-pages.tsx` | empty action | `افزودن مطلب` |
+Your Explore copy is here.
 
-## دسته‌بندی‌ها
+I also like **`نمایش نتایج`** better than `اعمال فیلتر`, because mature Persian sites generally frame actions around what the user is trying to accomplish rather than the implementation operation. Digikala, for example, uses direct constructions such as searching for a desired item or selecting a topic/category. ([Digikala][4])
 
-| مسیر | محل | متن |
-| --- | --- | --- |
-| `apps/web/src/features/entries/components/taxonomy-discovery-pages.tsx` | index eyebrow | `دسته‌بندی‌ها` |
-| `apps/web/src/features/entries/components/taxonomy-discovery-pages.tsx` | index title | `کاوش بر اساس موضوع` |
-| `apps/web/src/features/entries/components/taxonomy-discovery-pages.tsx` | index subtitle | `مطالب فرهنگی افغانستان را بر اساس موضوع ببینید.` |
-| `apps/web/src/features/entries/components/taxonomy-discovery-pages.tsx` | empty title | `هنوز دسته‌بندی‌ای برای نمایش در دسترس نیست.` |
-| `apps/web/src/features/entries/components/taxonomy-discovery-pages.tsx` | empty description | `پس از آماده شدن داده‌های عمومی، دسته‌بندی‌ها در این صفحه نمایش داده می‌شوند.` |
-| `apps/web/src/features/entries/components/taxonomy-discovery-pages.tsx` | empty action | `دیدن مطالب` |
-| `apps/web/src/features/entries/components/taxonomy-discovery-pages.tsx` | breadcrumb | `خانه / دسته‌بندی‌ها / {نام دسته‌بندی}` |
-| `apps/web/src/features/entries/components/taxonomy-discovery-pages.tsx` | badge | `موضوع فرهنگی` |
-| `apps/web/src/features/entries/components/taxonomy-discovery-pages.tsx` | count | `{عدد} مطلب منتشرشده` |
-| `apps/web/src/features/entries/components/taxonomy-discovery-pages.tsx` | detail note | `مطالب این موضوع از سراسر افغانستان` |
-| `apps/web/src/features/entries/components/taxonomy-discovery-pages.tsx` | filter title | `بر اساس ولایت` |
-| `apps/web/src/features/entries/components/taxonomy-discovery-pages.tsx` | filter description | `«سراسری» یعنی این مطلب به ولایت خاصی وابسته نیست.` |
-| `apps/web/src/features/entries/components/taxonomy-discovery-pages.tsx` | chip | `همه افغانستان` |
-| `apps/web/src/features/entries/components/taxonomy-discovery-pages.tsx` | chip | `سراسری` |
-| `apps/web/src/features/entries/components/taxonomy-discovery-pages.tsx` | category card count | `{عدد} مطلب` |
-| `apps/web/src/features/entries/components/taxonomy-discovery-pages.tsx` | empty category title | `هنوز مطلبی در این بخش منتشر نشده است.` |
-| `apps/web/src/features/entries/components/taxonomy-discovery-pages.tsx` | empty action | `افزودن مطلب` |
+---
 
-### توضیح‌های دسته‌بندی
+# Province pages
 
-| slug | متن |
-| --- | --- |
-| `historical-places` | `بناها، شهرها، آرامگاه‌ها و دیگر مکان‌های تاریخی افغانستان.` |
-| `traditions-and-customs` | `رسم‌ها، آیین‌ها و شیوه‌های زندگی در بخش‌های مختلف افغانستان.` |
-| `food` | `خوراک‌های محلی، شیوه‌های پخت و رسم‌های مربوط به غذا و سفره.` |
-| `clothing` | `پوشاک محلی، شیوه‌های دوخت و هنرهای وابسته به لباس.` |
-| `handicrafts` | `هنرها و مهارت‌های دستی رایج در بخش‌های مختلف افغانستان.` |
-| `music` | `سازها، آوازها و موسیقی محلی و شهری افغانستان.` |
-| `poetry-and-literature` | `شاعران، نویسندگان، آثار ادبی و ادبیات زبان‌های مختلف افغانستان.` |
-| `oral-stories` | `قصه‌ها، خاطره‌ها و روایت‌هایی که سینه‌به‌سینه نقل شده‌اند.` |
-| `festivals-and-ceremonies` | `جشن‌ها، مراسم و آیین‌های جمعی در بخش‌های مختلف افغانستان.` |
-| `languages-and-expressions` | `زبان‌ها، گویش‌ها، اصطلاحات و تعبیرهای رایج در مناطق مختلف افغانستان.` |
-| `architecture` | `سبک‌های معماری، شیوه‌های ساخت و جزئیات بناهای بومی و تاریخی.` |
-| `cultural-objects` | `اشیا و ابزارهایی که در زندگی و فرهنگ مردم کاربرد یا معنای ویژه دارند.` |
-| `local-games` | `بازی‌ها و سرگرمی‌های محلی در مناطق مختلف افغانستان.` |
-| `traditional-occupations` | `پیشه‌ها و مهارت‌های سنتی که بخشی از زندگی و اقتصاد محلی بوده‌اند.` |
-| fallback | `مطالب فرهنگی مرتبط با {نام دسته‌بندی}.` |
+There are several remaining pieces of system-like copy.
 
-## جزئیات مطلب
+### Province index
 
-| مسیر | محل | متن |
-| --- | --- | --- |
-| `apps/web/src/features/entries/components/entry-detail-content.tsx` | برگشت | `بازگشت به مطالب` |
-| `apps/web/src/features/entries/components/entry-detail-content.tsx` | metadata label | `نویسنده` |
-| `apps/web/src/features/entries/components/entry-detail-content.tsx` | metadata label | `تاریخ انتشار` |
-| `apps/web/src/features/entries/components/entry-detail-content.tsx` | metadata label | `موقعیت` |
-| `apps/web/src/features/entries/components/entry-detail-content.tsx` | empty body | `متن کامل این مطلب هنوز برای نمایش آماده نیست.` |
-| `apps/web/src/features/entries/components/entry-detail-content.tsx` | more images | `تصاویر بیشتر` |
-| `apps/web/src/features/entries/components/entry-detail-content.tsx` | video | `ویدیوی مرتبط` |
-| `apps/web/src/features/entries/components/entry-detail-content.tsx` | sources | `منابع` |
-| `apps/web/src/features/entries/components/entry-detail-content.tsx` | fallback source | `منبع بدون عنوان` |
-| `apps/web/src/features/entries/components/entry-detail-content.tsx` | taxonomy card | `جزئیات مطلب` |
-| `apps/web/src/features/entries/components/entry-detail-content.tsx` | taxonomy label | `گستره` |
-| `apps/web/src/features/entries/components/entry-detail-content.tsx` | taxonomy label | `ولایت` |
-| `apps/web/src/features/entries/components/entry-detail-content.tsx` | taxonomy label | `ولسوالی` |
-| `apps/web/src/features/entries/components/entry-detail-content.tsx` | taxonomy label | `موقعیت` |
-| `apps/web/src/features/entries/components/entry-detail-content.tsx` | taxonomy label | `دسته‌بندی` |
-| `apps/web/src/features/entries/components/entry-detail-content.tsx` | taxonomy label | `نوع محتوا` |
-| `apps/web/src/features/entries/components/entry-detail-content.tsx` | tags card | `برچسب‌ها` |
-| `apps/web/src/features/entries/components/entry-detail-content.tsx` | references | `پیوندهای درون‌متنی` |
-| `apps/web/src/features/entries/components/entry-detail-content.tsx` | related | `مطالب مرتبط` |
-| `apps/web/src/features/entries/components/entry-detail-content.tsx` | comments title | `دیدگاه‌های خوانندگان` |
-| `apps/web/src/features/entries/components/entry-detail-content.tsx` | comments count | `{عدد} دیدگاه` |
-| `apps/web/src/features/entries/components/entry-detail-content.tsx` | comments empty | `هنوز دیدگاهی برای این مطلب ثبت نشده است. اگر این مطلب برایتان مفید بود، نخستین دیدگاه را بنویسید.` |
-| `apps/web/src/features/entries/components/entry-detail-content.tsx` | location label | `سراسر افغانستان` |
-| `apps/web/src/features/entries/components/entry-detail-content.tsx` | location label | `بدون وابستگی به مکان` |
-| `apps/web/src/features/entries/components/entry-detail-content.tsx` | location fallback | `وابسته به یک ولایت` |
-| `apps/web/src/features/entries/components/entry-detail-content.tsx` | source type | `کتاب` |
-| `apps/web/src/features/entries/components/entry-detail-content.tsx` | source type | `مقاله` |
-| `apps/web/src/features/entries/components/entry-detail-content.tsx` | source type | `وب‌سایت` |
-| `apps/web/src/features/entries/components/entry-detail-content.tsx` | source type | `مصاحبه` |
-| `apps/web/src/features/entries/components/entry-detail-content.tsx` | source type | `روایت شفاهی` |
-| `apps/web/src/features/entries/components/entry-detail-content.tsx` | source type | `تجربه شخصی` |
-| `apps/web/src/features/entries/components/entry-detail-content.tsx` | source type | `دیگر` |
-| `apps/web/src/features/entries/components/entry-detail-content.tsx` | source fallback | `منبع` |
-| `apps/web/src/features/entries/components/entry-action-rail.tsx` | action | `رفتن به دیدگاه‌ها` |
-| `apps/web/src/features/entries/components/entry-action-rail.tsx` | action | `رفتن به امتیازدهی` |
-| `apps/web/src/features/entries/components/entry-action-rail.tsx` | action | `ذخیره مطلب` |
-| `apps/web/src/features/entries/components/entry-action-rail.tsx` | toast | `ذخیره مطلب در گام بعدی به حساب کاربری وصل می‌شود.` |
-| `apps/web/src/features/entries/components/entry-action-rail.tsx` | action | `اشتراک‌گذاری` |
-| `apps/web/src/features/entries/components/entry-action-rail.tsx` | progress | `پیشرفت مطالعه` |
-| `apps/web/src/features/entries/components/entry-action-rail.tsx` | toast | `پیوند مطلب کپی شد.` |
-| `apps/web/src/features/entries/components/entry-action-rail.tsx` | toast error | `کپی کردن پیوند انجام نشد.` |
-| `apps/web/src/features/entries/components/entry-table-of-contents.tsx` | title | `فهرست مطالب` |
+Current:
 
-## دیدگاه و امتیازدهی
+> `هنوز ولایتی برای نمایش در دسترس نیست.`
 
-| مسیر | محل | متن |
-| --- | --- | --- |
-| `apps/web/src/features/entries/components/reviews/entry-feedback.tsx` | توضیح امتیاز | `امتیازها میزان مفید بودن محتوا را نشان می‌دهند و دیدگاه‌ها جایگزین اصلاح رسمی اطلاعات نیستند.` |
-| `apps/web/src/features/entries/components/reviews/entry-feedback.tsx` | نیاز به ورود | `برای ثبت دیدگاه باید وارد شوید و ایمیل خود را تأیید کنید.` |
+and:
 
-## Auth Pages
+> `پس از آماده شدن داده‌های عمومی، ولایت‌ها در این صفحه نمایش داده می‌شوند.`
 
-| مسیر | محل | متن |
-| --- | --- | --- |
-| `apps/web/src/features/auth/components/auth-brand-panel.tsx` | login brand title | `فرهنگ افغانستان، یک‌جا` |
-| `apps/web/src/features/auth/components/auth-brand-panel.tsx` | login brand text | `فرهنگ و روایت‌های افغانستان را با هم ثبت می‌کنیم.` |
-| `apps/web/src/app/(auth)/login/page.tsx` | card title | `خوش آمدید` |
-| `apps/web/src/app/(auth)/login/page.tsx` | card description | `برای ادامه، وارد حساب خود شوید.` |
-| `apps/web/src/features/auth/components/login-form.tsx` | label | `ایمیل` |
-| `apps/web/src/features/auth/components/login-form.tsx` | label | `رمز عبور` |
-| `apps/web/src/features/auth/components/login-form.tsx` | checkbox | `مرا به خاطر بسپار` |
-| `apps/web/src/features/auth/components/login-form.tsx` | link | `رمز عبور را فراموش کرده‌اید؟` |
-| `apps/web/src/features/auth/components/login-form.tsx` | button | `ورود` |
-| `apps/web/src/features/auth/components/login-form.tsx` | pending | `در حال ورود` |
-| `apps/web/src/features/auth/components/login-form.tsx` | divider | `یا با حساب خود ادامه دهید` |
-| `apps/web/src/features/auth/components/login-form.tsx` | OAuth | `ورود با گوگل` |
-| `apps/web/src/features/auth/components/login-form.tsx` | OAuth | `ورود با فیسبوک` |
-| `apps/web/src/features/auth/components/login-form.tsx` | bottom text | `حساب کاربری ندارید؟` |
-| `apps/web/src/features/auth/components/login-form.tsx` | bottom link | `ثبت‌نام کنید` |
-| `apps/web/src/app/(auth)/register/page.tsx` | card title | `ایجاد حساب کاربری` |
-| `apps/web/src/app/(auth)/register/page.tsx` | card description | `حساب بسازید و در گردآوری فرهنگ افغانستان سهم بگیرید.` |
-| `apps/web/src/features/auth/components/register-form.tsx` | label | `نام و نام خانوادگی` |
-| `apps/web/src/features/auth/components/register-form.tsx` | placeholder | `نام و نام خانوادگی خود را وارد کنید` |
-| `apps/web/src/features/auth/components/register-form.tsx` | label | `ایمیل` |
-| `apps/web/src/features/auth/components/register-form.tsx` | label | `رمز عبور` |
-| `apps/web/src/features/auth/components/register-form.tsx` | placeholder | `رمز عبور خود را وارد کنید` |
-| `apps/web/src/features/auth/components/register-form.tsx` | label | `تکرار رمز عبور` |
-| `apps/web/src/features/auth/components/register-form.tsx` | placeholder | `رمز عبور را دوباره وارد کنید` |
-| `apps/web/src/features/auth/components/register-form.tsx` | terms | `من با شرایط استفاده و سیاست حریم خصوصی موافقم.` |
-| `apps/web/src/features/auth/components/register-form.tsx` | button | `ثبت‌نام` |
-| `apps/web/src/features/auth/components/register-form.tsx` | pending | `در حال ثبت‌نام` |
-| `apps/web/src/features/auth/components/register-form.tsx` | divider | `یا با حساب خود ادامه دهید` |
-| `apps/web/src/features/auth/components/register-form.tsx` | OAuth | `ثبت‌نام با گوگل` |
-| `apps/web/src/features/auth/components/register-form.tsx` | OAuth | `ثبت‌نام با فیسبوک` |
-| `apps/web/src/features/auth/components/register-form.tsx` | bottom text | `قبلاً حساب کاربری دارید؟` |
-| `apps/web/src/features/auth/components/register-form.tsx` | bottom link | `ورود به حساب` |
-| `apps/web/src/features/auth/components/password-field.tsx` | a11y | `نمایش رمز عبور` |
-| `apps/web/src/features/auth/components/password-field.tsx` | a11y | `پنهان کردن رمز عبور` |
+I would **not show either**.
 
-## Auth State, Guards, And Navigation
+If provinces fail to load, that is an error rather than a meaningful empty state:
 
-| مسیر | محل | متن |
-| --- | --- | --- |
-| `apps/web/src/features/auth/components/auth-navigation.tsx` | unverified badge | `ایمیل تأیید نشده` |
-| `apps/web/src/features/auth/components/auth-navigation.tsx` | content management | `مدیریت محتوا` |
-| `apps/web/src/features/auth/components/logout-all-button.tsx` | button | `خروج از همه دستگاه‌ها` |
-| `apps/web/src/features/auth/components/unverified-email-notice.tsx` | notice | `ایمیل شما هنوز تأیید نشده است. ورود انجام شد، اما برای برخی کارهای مشارکتی مانند ثبت محتوا، باید ایمیل خود را تأیید کنید.` |
-| `apps/web/src/features/auth/components/verified-email-banner.tsx` | notice | `ورود به حساب مجاز است، اما برای مشارکت‌هایی مانند ثبت محتوا، گزارش، امتیازدهی و نظر عمومی باید ایمیل خود را تأیید کنید.` |
-| `apps/web/src/features/auth/components/forbidden-state.tsx` | forbidden | `حساب شما اجازه دسترسی به این بخش را ندارد.` |
-| `apps/web/src/features/auth/components/auth-loading-state.tsx` | loading | `در حال بررسی وضعیت ورود...` |
+**Title**
 
-## Auth Error Messages
+> `نمایش ولایت‌ها ممکن نشد`
 
-| مسیر | code | متن |
-| --- | --- | --- |
-| `apps/web/src/features/auth/utils/auth-error-messages.ts` | `AUTH_INVALID_CREDENTIALS` | `اطلاعات ورود نادرست است.` |
-| `apps/web/src/features/auth/utils/auth-error-messages.ts` | `AUTH_PASSWORD_NOT_CONFIGURED` | `برای این حساب رمز عبور تنظیم نشده است.` |
-| `apps/web/src/features/auth/utils/auth-error-messages.ts` | `AUTH_ACCOUNT_SUSPENDED` | `این حساب موقتاً تعلیق شده است.` |
-| `apps/web/src/features/auth/utils/auth-error-messages.ts` | `AUTH_UNAUTHORIZED` | `برای ادامه باید وارد حساب شوید.` |
-| `apps/web/src/features/auth/utils/auth-error-messages.ts` | `AUTH_INSUFFICIENT_ROLE` | `حساب شما اجازه دسترسی به این بخش را ندارد.` |
-| `apps/web/src/features/auth/utils/auth-error-messages.ts` | `AUTH_EMAIL_VERIFICATION_REQUIRED` | `برای این کار باید ایمیل خود را تأیید کنید.` |
-| `apps/web/src/features/auth/utils/auth-error-messages.ts` | `AUTH_EMAIL_ALREADY_REGISTERED` | `این ایمیل قبلاً ثبت شده است.` |
-| `apps/web/src/features/auth/utils/auth-error-messages.ts` | `AUTH_PASSWORD_TOO_WEAK` | `رمز عبور شرایط امنیتی لازم را ندارد.` |
-| `apps/web/src/features/auth/utils/auth-error-messages.ts` | `AUTH_GOOGLE_EMAIL_NOT_VERIFIED` | `ایمیل حساب گوگل شما تأیید نشده است.` |
-| `apps/web/src/features/auth/utils/auth-error-messages.ts` | `AUTH_GOOGLE_ACCOUNT_ALREADY_LINKED` | `این حساب گوگل قبلاً به حساب دیگری وصل شده است.` |
-| `apps/web/src/features/auth/utils/auth-error-messages.ts` | `AUTH_GOOGLE_AUTH_FAILED` | `ورود با گوگل کامل نشد. دوباره تلاش کنید.` |
-| `apps/web/src/features/auth/utils/auth-error-messages.ts` | `AUTH_FACEBOOK_EMAIL_REQUIRED` | `فیسبوک ایمیل حساب شما را در اختیار ما قرار نداد.` |
-| `apps/web/src/features/auth/utils/auth-error-messages.ts` | `AUTH_FACEBOOK_EMAIL_LINKING_NOT_ALLOWED` | `این ایمیل قبلاً با روش دیگری ثبت شده و فیسبوک امکان اتصال امن آن را تأیید نکرده است.` |
-| `apps/web/src/features/auth/utils/auth-error-messages.ts` | `AUTH_FACEBOOK_ACCOUNT_ALREADY_LINKED` | `این حساب فیسبوک قبلاً به حساب دیگری وصل شده است.` |
-| `apps/web/src/features/auth/utils/auth-error-messages.ts` | `AUTH_FACEBOOK_AUTH_FAILED` | `ورود با فیسبوک کامل نشد. دوباره تلاش کنید.` |
-| `apps/web/src/features/auth/utils/auth-error-messages.ts` | `AUTH_OAUTH_FAILED` | `ورود اجتماعی کامل نشد. دوباره تلاش کنید.` |
-| `apps/web/src/features/auth/utils/auth-error-messages.ts` | `AUTH_REFRESH_TOKEN_MISSING` | `نشست ورود شما پیدا نشد. دوباره وارد شوید.` |
-| `apps/web/src/features/auth/utils/auth-error-messages.ts` | `AUTH_REFRESH_TOKEN_INVALID` | `نشست ورود معتبر نیست. دوباره وارد شوید.` |
-| `apps/web/src/features/auth/utils/auth-error-messages.ts` | `AUTH_REFRESH_TOKEN_EXPIRED` | `نشست ورود شما منقضی شده است. دوباره وارد شوید.` |
-| `apps/web/src/features/auth/utils/auth-error-messages.ts` | `AUTH_REFRESH_TOKEN_REVOKED` | `نشست ورود شما پایان یافته است. دوباره وارد شوید.` |
-| `apps/web/src/features/auth/utils/auth-error-messages.ts` | `AUTH_SESSION_NOT_FOUND` | `نشست ورود شما پیدا نشد. دوباره وارد شوید.` |
-| `apps/web/src/features/auth/utils/auth-error-messages.ts` | `OAUTH_CANCELLED` | `ورود لغو شد.` |
-| `apps/web/src/features/auth/utils/auth-error-messages.ts` | `BAD_REQUEST` | `لطفاً اطلاعات واردشده را بررسی کنید.` |
-| `apps/web/src/features/auth/utils/auth-error-messages.ts` | `TOO_MANY_REQUESTS` | `تعداد درخواست‌ها زیاد است؛ کمی بعد دوباره تلاش کنید.` |
-| `apps/web/src/features/auth/utils/auth-error-messages.ts` | `NETWORK_ERROR` | `ارتباط با سرور برقرار نشد.` |
-| `apps/web/src/features/auth/utils/auth-error-messages.ts` | fallback | `خطایی رخ داد.` |
-| `apps/web/src/features/auth/utils/auth-error-messages.ts` | fallback with no request ID | `خطایی رخ داد. کمی بعد دوباره تلاش کنید.` |
+**Description**
 
-## Validation Messages
+> `کمی بعد دوباره تلاش کنید.`
 
-| مسیر | محل | متن |
-| --- | --- | --- |
-| `apps/web/src/features/auth/schemas/auth-schemas.ts` | password rule | `رمز عبور باید ۱۰ تا ۱۲۸ نویسه باشد و حداقل یک حرف کوچک، یک حرف بزرگ و یک عدد داشته باشد.` |
-| `apps/web/src/features/auth/schemas/auth-schemas.ts` | login email | `ایمیل معتبر وارد کنید.` |
-| `apps/web/src/features/auth/schemas/auth-schemas.ts` | login password | `رمز عبور را وارد کنید.` |
-| `apps/web/src/features/auth/schemas/auth-schemas.ts` | name min | `نام و نام خانوادگی باید حداقل ۲ نویسه باشد.` |
-| `apps/web/src/features/auth/schemas/auth-schemas.ts` | name max | `نام و نام خانوادگی نمی‌تواند بیشتر از ۸۰ نویسه باشد.` |
-| `apps/web/src/features/auth/schemas/auth-schemas.ts` | confirm password | `تکرار رمز عبور را وارد کنید.` |
-| `apps/web/src/features/auth/schemas/auth-schemas.ts` | terms | `پذیرش شرایط استفاده و سیاست حریم خصوصی الزامی است.` |
-| `apps/web/src/features/auth/schemas/auth-schemas.ts` | password mismatch | `رمز عبور و تکرار آن یکسان نیستند.` |
-| `apps/web/src/lib/validation/example-schema.ts` | demo name | `نام باید حداقل دو حرف باشد.` |
-| `apps/web/src/lib/validation/example-schema.ts` | demo email | `ایمیل معتبر وارد کنید.` |
+All Afghanistan provinces should normally exist in your taxonomy, so saying "there are no provinces yet" makes the product sound unfinished.
 
-## Loading And Error States
+### Province detail
 
-| مسیر | محل | متن |
-| --- | --- | --- |
-| `apps/web/src/app/(public)/error.tsx` | title | `بارگذاری این صفحه انجام نشد` |
-| `apps/web/src/app/(public)/error.tsx` | action | `بازگشت به خانه` |
-| `apps/web/src/app/(public)/explore/loading.tsx` | aria label | `در حال بارگذاری محتوا` |
-| `apps/web/src/app/(public)/entries/[slug]/loading.tsx` | aria label | `در حال بارگذاری مطلب` |
-| `apps/web/src/app/(public)/provinces/loading.tsx` | aria label | `در حال بارگذاری ولایت‌ها` |
-| `apps/web/src/app/(public)/provinces/[slug]/loading.tsx` | aria label | `در حال بارگذاری جزئیات ولایت` |
-| `apps/web/src/app/(public)/categories/[slug]/loading.tsx` | aria label | `در حال بارگذاری جزئیات دسته‌بندی` |
-| `apps/web/src/app/(public)/entries/[slug]/page.tsx` | not found title | `مطلب پیدا نشد \| میراث افغانستان` |
-| `apps/web/src/app/(public)/provinces/[slug]/page.tsx` | not found title | `ولایت پیدا نشد \| میراث افغانستان` |
-| `apps/web/src/app/(public)/categories/[slug]/page.tsx` | not found title | `دسته‌بندی پیدا نشد \| میراث افغانستان` |
+Change:
 
-## Design Preview / Temporary Components
+`ولایت مشخص` → **remove the badge entirely** or simply `ولایت`
 
-این متن‌ها مربوط به کامپوننت‌های نمونه یا preview هستند و احتمالاً قبل از production باید حذف یا بازنویسی شوند.
+`نوشته‌ها و روایت‌های مربوط به {ولایت} را ببینید.` → **`مطالب مربوط به {ولایت} را ببینید.`**
 
-| مسیر | محل | متن |
-| --- | --- | --- |
-| `apps/web/src/components/common/example-form-preview.tsx` | toast | `فرم نمونه با موفقیت بررسی شد.` |
-| `apps/web/src/components/common/example-form-preview.tsx` | toast description | `{نام}، هیچ درخواستی به سرور ارسال نشد.` |
-| `apps/web/src/components/common/example-form-preview.tsx` | label | `نام` |
-| `apps/web/src/components/common/example-form-preview.tsx` | placeholder | `نام شما` |
-| `apps/web/src/components/common/example-form-preview.tsx` | label | `ایمیل` |
-| `apps/web/src/components/common/example-form-preview.tsx` | button | `بررسی فرم` |
-| `apps/web/src/components/common/example-form-preview.tsx` | success | `اعتبارسنجی نمونه موفق بود.` |
-| `apps/web/src/components/common/rich-text-preview.tsx` | editor sample | `این یک متن نمونه برای بررسی ویرایشگر فارسی راست‌به‌چپ است.` |
-| `apps/web/src/components/common/ui-state-preview.tsx` | state | `منوی موبایل: باز/بسته` |
-| `apps/web/src/components/common/ui-state-preview.tsx` | state | `نوار کناری: باز/بسته` |
-| `apps/web/src/components/common/ui-state-preview.tsx` | button | `تغییر منوی موبایل` |
-| `apps/web/src/components/common/ui-state-preview.tsx` | button | `تغییر نوار کناری` |
-| `apps/web/src/components/common/theme-toggle.tsx` | aria | `تغییر به حالت روشن` |
-| `apps/web/src/components/common/theme-toggle.tsx` | aria | `تغییر به حالت تاریک` |
-| `apps/web/src/components/common/theme-toggle.tsx` | label | `روشن` |
-| `apps/web/src/components/common/theme-toggle.tsx` | label | `تاریک` |
+The original is not wrong, but not every Cultural Entry is a روایت.
 
-## Notes For Review
+Change the card CTA:
 
-- اگر متنی عمومی است و به یک آیتم منتشرشده اشاره دارد، بهتر است `مطلب` بماند.
-- اگر متنی به سیستم، فیلتر فنی، نوع محتوا، یا مدیریت اشاره دارد، `محتوا` قابل قبول است.
-- `مقاله` فعلاً فقط در نوع منبع `ARTICLE` باقی مانده و معنای دقیق خودش را دارد.
-- `کاوش بر اساس موضوع` تنها استفاده‌ی باقی‌مانده از `کاوش` در UI اصلی است. اگر بخواهیم کاملاً عملی‌ترش کنیم، گزینه‌ی پیشنهادی: `بر اساس موضوع ببینید`.
+`دیدن میراث ولایت {نام}`
+
+to:
+
+**`دیدن مطالب`**
+
+The province name is already visible on the card, so repeating it inside the CTA feels generated.
+
+And your empty state currently repeats itself:
+
+> هنوز مطلبی برای این ولایت منتشر نشده است.
+> هنوز مطلبی در این بخش منتشر نشده است.
+
+Instead:
+
+**Title**
+
+> `هنوز مطلبی برای این ولایت منتشر نشده است.`
+
+**Description**
+
+> `اگر درباره فرهنگ و تاریخ این ولایت چیزی می‌دانید، می‌توانید آن را ثبت کنید.`
+
+**CTA**
+
+> `افزودن مطلب`
+
+That turns an empty state into a useful crowdsourcing opportunity without sounding like marketing.
+
+---
+
+# Category pages
+
+Here I recommend one broader vocabulary change.
+
+For **public UI**, I prefer:
+
+**موضوع / موضوع‌ها**
+
+For **technical/admin UI**, keep:
+
+**دسته‌بندی**
+
+Persian content websites commonly organize items «بر اساس موضوع» even when the underlying structure is technically a category. Taaghche itself uses both «دسته‌بندی» and the reader-oriented expression «براساس موضوع». ([طاقچه][5])
+
+That means your header could eventually be:
+
+`خانه | مطالب | ولایت‌ها | موضوع‌ها`
+
+while your admin dashboard can continue saying:
+
+`مدیریت دسته‌بندی‌ها`
+
+### Specifically
+
+Current:
+
+> `کاوش بر اساس موضوع`
+
+I would now change this final remaining `کاوش` to:
+
+> **`مطالب بر اساس موضوع`**
+
+Subtitle:
+
+> `مطالب فرهنگی افغانستان را بر اساس موضوع ببینید.`
+
+can remain.
+
+Change:
+
+`موضوع فرهنگی` badge → **remove it** unless the badge has actual informational value.
+
+`{عدد} مطلب منتشرشده` → **`{عدد} مطلب`**
+
+`«سراسری» یعنی این مطلب به ولایت خاصی وابسته نیست.`
+
+→
+
+**`«سراسری» شامل مطالبی است که به ولایت خاصی وابسته نیستند.`**
+
+More natural because the filter applies to a collection rather than one item.
+
+---
+
+# Category descriptions
+
+This is probably the area that still sounds **most AI-written**.
+
+For example:
+
+> `بناها، شهرها، آرامگاه‌ها و مکان‌هایی که حافظه تاریخی افغانستان را زنده نگه می‌دارند.`
+
+The phrase «حافظه تاریخی افغانستان را زنده نگه می‌دارند» is polished, but it sounds like generated cultural-project copy.
+
+I would make all descriptions factual and plain:
+
+| Category                | Recommended description                                                                                                                      |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Historical places       | **`بناها، شهرها، آرامگاه‌ها و دیگر مکان‌های تاریخی افغانستان.`**                   |
+| Traditions and customs  | **`رسم‌ها، آیین‌ها و شیوه‌های زندگی در بخش‌های مختلف افغانستان.`**                |
+| Food                    | **`خوراک‌های محلی، شیوه‌های پخت و رسم‌های مربوط به غذا و سفره.`**                    |
+| Clothing                | **`پوشاک محلی، شیوه‌های دوخت و هنرهای وابسته به لباس.`**                                    |
+| Handicrafts             | **`هنرها و مهارت‌های دستی رایج در بخش‌های مختلف افغانستان.`**                          |
+| Music                   | **`سازها، آوازها و موسیقی محلی و شهری افغانستان.`**                                             |
+| Poetry and literature   | **`شاعران، نویسندگان، آثار ادبی و ادبیات زبان‌های مختلف افغانستان.`**          |
+| Oral stories            | **`قصه‌ها، خاطره‌ها و روایت‌هایی که سینه‌به‌سینه نقل شده‌اند.`**                   |
+| Festivals               | **`جشن‌ها، مراسم و آیین‌های جمعی در بخش‌های مختلف افغانستان.`**                      |
+| Languages               | **`زبان‌ها، گویش‌ها، اصطلاحات و تعبیرهای رایج در مناطق مختلف افغانستان.`** |
+| Architecture            | **`سبک‌های معماری، شیوه‌های ساخت و جزئیات بناهای بومی و تاریخی.`**                 |
+| Cultural objects        | **`اشیا و ابزارهایی که در زندگی و فرهنگ مردم کاربرد یا معنای ویژه دارند.`**   |
+| Local games             | **`بازی‌ها و سرگرمی‌های محلی در مناطق مختلف افغانستان.`**                                 |
+| Traditional occupations | **`پیشه‌ها و مهارت‌های سنتی که بخشی از زندگی و اقتصاد محلی بوده‌اند.`**         |
+
+The original descriptions are at .
+
+This simpler approach also matches sites such as Ganjoor and Taaghche better: their category/navigation text is usually descriptive rather than promotional. ([Ganjoor][6])
+
+---
+
+# Cultural Entry page
+
+This section is generally good, but I found several things I would definitely change.
+
+### 1. `گستره`
+
+This is too abstract when standing alone.
+
+Use:
+
+**`محدوده جغرافیایی`**
+
+### 2. `پیوندهای درون‌متنی`
+
+This sounds like documentation for an editor.
+
+Because these are your Wikipedia-style links to other Cultural Entries, use:
+
+> **`مطالب اشاره‌شده در متن`**
+
+Then keep:
+
+> `مطالب مرتبط`
+
+as the algorithmic/editorial related-content section.
+
+This also creates a useful semantic distinction.
+
+### 3. Empty content
+
+Current:
+
+> `متن کامل این مطلب هنوز برای نمایش آماده نیست.`
+
+Use:
+
+> **`متن این مطلب در دسترس نیست.`**
+
+A published page should not talk about being "ready for display."
+
+### 4. Comment empty state
+
+Current:
+
+> `هنوز دیدگاهی برای این مطلب ثبت نشده است. اگر این مطلب برایتان مفید بود، نخستین دیدگاه را بنویسید.`
+
+Better:
+
+> **`هنوز دیدگاهی نوشته نشده است. شما اولین نفر باشید.`**
+
+Shorter and more human.
+
+### 5. Action rail
+
+Change:
+
+`رفتن به دیدگاه‌ها` → **`دیدگاه‌ها`**
+
+`رفتن به امتیازدهی` → **`امتیازدهی`**
+
+Buttons do not need to narrate navigation.
+
+### 6. Bookmark placeholder
+
+This is one of the most important ones to remove:
+
+> `ذخیره مطلب در گام بعدی به حساب کاربری وصل می‌شود.`
+
+That is development commentary.
+
+Either implement it or temporarily remove/disable the action. If you absolutely need a message:
+
+> **`این امکان هنوز فعال نشده است.`**
+
+But removing unfinished public controls is preferable.
+
+### 7. Copy failure
+
+Current:
+
+> `کپی کردن پیوند انجام نشد.`
+
+Better:
+
+> **`پیوند کپی نشد. دوباره تلاش کنید.`**
+
+All of these appear in the detail-page copy.
+
+---
+
+# Ratings and reviews
+
+This sentence is accurate but sounds like policy documentation:
+
+> `امتیازها میزان مفید بودن محتوا را نشان می‌دهند و دیدگاه‌ها جایگزین اصلاح رسمی اطلاعات نیستند.`
+
+I recommend:
+
+> **`امتیازها نشان می‌دهند این مطلب چقدر برای خوانندگان مفید بوده است. برای اصلاح اطلاعات، از «پیشنهاد اصلاح» استفاده کنید.`**
+
+That explains the distinction to the reader rather than stating a rule.
+
+---
+
+# Authentication
+
+Most Auth copy is now good. I would **keep**:
+
+* `خوش آمدید`
+* `برای ادامه، وارد حساب خود شوید.`
+* `حساب بسازید و در گردآوری فرهنگ افغانستان سهم بگیرید.`
+* `ایمیل`
+* `رمز عبور`
+* `مرا به خاطر بسپار`
+* `رمز عبور را فراموش کرده‌اید؟`
+* `ورود با گوگل`
+* `ورود با فیسبوک`
+* `حساب کاربری ندارید؟`
+* `ثبت‌نام کنید`
+
+These are direct and familiar. Current Persian services similarly rely on simple «ورود» / «ثبت‌نام» terminology rather than creative alternatives. ([fidibo.com][7])
+
+I would make only these changes:
+
+`در حال ورود` → **`در حال ورود...`**
+
+`در حال ثبت‌نام` → **`در حال ثبت‌نام...`**
+
+And:
+
+> `یا با حساب خود ادامه دهید`
+
+→
+
+> **`یا از یکی از این روش‌ها استفاده کنید`**
+
+because Google/Facebook are *methods of authentication*, not necessarily "your account" in the way the sentence implies.
+
+For Terms:
+
+> `من با شرایط استفاده و سیاست حریم خصوصی موافقم.`
+
+I prefer:
+
+> **`شرایط استفاده و سیاست حفظ حریم خصوصی را می‌پذیرم.`**
+
+---
+
+# Auth-state messages
+
+These still have several backend-like sentences.
+
+### Unverified email
+
+Current:
+
+> `ایمیل شما هنوز تأیید نشده است. ورود انجام شد، اما برای برخی کارهای مشارکتی مانند ثبت محتوا، باید ایمیل خود را تأیید کنید.`
+
+Replace with:
+
+> **`ایمیل شما هنوز تأیید نشده است. برای افزودن مطلب و برخی فعالیت‌ها باید ایمیل خود را تأیید کنید.`**
+
+No need to say «ورود انجام شد».
+
+### The other verification banner
+
+Current:
+
+> `ورود به حساب مجاز است، اما برای مشارکت‌هایی مانند ثبت محتوا، گزارش، امتیازدهی و نظر عمومی باید ایمیل خود را تأیید کنید.`
+
+This sounds like a terms-of-service document.
+
+Use:
+
+> **`می‌توانید وارد حساب شوید؛ اما برای افزودن مطلب، گزارش، امتیازدهی و نوشتن دیدگاه باید ایمیل خود را تأیید کنید.`**
+
+### Forbidden
+
+`حساب شما اجازه دسترسی به این بخش را ندارد.`
+
+→
+
+**`شما به این بخش دسترسی ندارید.`**
+
+Much better.
+
+---
+
+# Authentication errors
+
+This is another place where I would make substantial changes.
+
+### Invalid credentials
+
+`اطلاعات ورود نادرست است.`
+
+→
+
+**`ایمیل یا رمز عبور نادرست است.`**
+
+More useful.
+
+### Password not configured
+
+`برای این حساب رمز عبور تنظیم نشده است.`
+
+→
+
+**`برای این حساب رمز عبور ندارید. از روش ورود قبلی خود استفاده کنید.`**
+
+### Facebook linking
+
+Current:
+
+> `این ایمیل قبلاً با روش دیگری ثبت شده و فیسبوک امکان اتصال امن آن را تأیید نکرده است.`
+
+Definitely too technical.
+
+Use:
+
+> **`این ایمیل قبلاً با روش دیگری ثبت شده است. لطفاً با همان روش وارد شوید.`**
+
+### Generic OAuth
+
+`ورود اجتماعی کامل نشد.`
+
+Never use **«ورود اجتماعی»** publicly.
+
+Use:
+
+> **`ورود با این حساب کامل نشد. دوباره تلاش کنید.`**
+
+---
+
+## Remove `نشست ورود` completely from public Persian
+
+You currently have:
+
+* `نشست ورود شما پیدا نشد`
+* `نشست ورود معتبر نیست`
+* `نشست ورود شما منقضی شده است`
+* `نشست ورود شما پایان یافته است`
+
+These are translations of *session*, but humans normally do not think in terms of login sessions.
+
+Map them to simple messages:
+
+| Error             | Public message                                                                               |
+| ----------------- | -------------------------------------------------------------------------------------------- |
+| missing           | **`برای ادامه دوباره وارد شوید.`**                            |
+| invalid           | **`برای ادامه دوباره وارد شوید.`**                            |
+| expired           | **`مدت ورود شما تمام شده است. دوباره وارد شوید.`** |
+| revoked           | **`از حساب خارج شده‌اید. دوباره وارد شوید.`**         |
+| session not found | **`برای ادامه دوباره وارد شوید.`**                            |
+
+The backend can still keep distinct error codes.
+
+That distinction—**precise technical codes internally, simple messages externally**—is exactly what you want.
+
+Your current errors appear here.
+
+---
+
+# Validation messages
+
+The main thing I would change is **`نویسه`**.
+
+It is correct Persian, but it reads like formal technical localization.
+
+Current:
+
+> `رمز عبور باید ۱۰ تا ۱۲۸ نویسه باشد...`
+
+Use:
+
+> **`رمز عبور باید بین ۱۰ تا ۱۲۸ کاراکتر باشد و دست‌کم یک حرف کوچک انگلیسی، یک حرف بزرگ انگلیسی و یک عدد داشته باشد.`**
+
+If the backend specifically requires Latin upper/lowercase characters, saying **انگلیسی** matters; otherwise a Persian-speaking user may reasonably wonder how uppercase Persian is supposed to work.
+
+For names:
+
+`حداقل ۲ نویسه` → **`حداقل ۲ حرف`**
+
+`بیشتر از ۸۰ نویسه` → **`بیشتر از ۸۰ حرف`**
+
+Terms validation:
+
+`پذیرش شرایط استفاده و سیاست حریم خصوصی الزامی است.`
+
+→
+
+**`برای ثبت‌نام باید شرایط استفاده و سیاست حفظ حریم خصوصی را بپذیرید.`**
+
+---
+
+# Error/loading states
+
+Current:
+
+> `بارگذاری این صفحه انجام نشد`
+
+→
+
+> **`این صفحه بارگذاری نشد.`**
+
+If there is room for another button, I would actually use:
+
+**Title:** `این صفحه بارگذاری نشد`
+**Primary action:** `تلاش دوباره`
+**Secondary:** `بازگشت به خانه`
+
+For ARIA:
+
+`در حال بارگذاری جزئیات ولایت`
+
+→ **`در حال بارگذاری صفحه ولایت`**
+
+`در حال بارگذاری جزئیات دسته‌بندی`
+
+→ **`در حال بارگذاری صفحه موضوع`**
+
+The existing states are listed here.
+
+---
+
+# Three terminology decisions I would now lock
+
+### 1. Public `Category` → **موضوع**
+
+Not everywhere in code—only user-facing text.
+
+So:
+
+**Header:** `موضوع‌ها`
+**Index:** `مطالب بر اساس موضوع`
+**Filter:** `موضوع`
+**Entry metadata:** `موضوع`
+
+But:
+
+**Admin:** `دسته‌بندی‌ها`
+**Database/code:** `Category`
+
+This is warmer while remaining clear. Persian book/content sites commonly expose content by subject while retaining category structures underneath. ([طاقچه][5])
+
+### 2. `مطلب` remains your default CulturalEntry name
+
+I strongly agree with the convention you established.
+
+Use:
+
+* `مطلب`
+* `مطالب`
+* `افزودن مطلب`
+* `مطالب مرتبط`
+* `۲۴ مطلب`
+
+Use `نوشته` only for warmer editorial headings.
+
+Use `روایت` only for genuinely narrative content.
+
+### 3. Keep Afghan Persian where it matters
+
+Do **not** make the site Iranian just because we looked at Iranian websites.
+
+Keep:
+
+* **ولایت**
+* **ولسوالی**
+* **فیسبوک**
+* Afghanistan-specific geographic terminology
+* local cultural vocabulary
+
+Afghan Persian media naturally uses vocabulary specific to Afghanistan alongside broadly standard written Persian. ([TOLOnews][8])
+
+The goal should be:
+
+> **natural Persian understandable across the Persian-speaking world, with Afghan vocabulary where the subject requires it.**
+
+---
+
+## What I would *not* change
+
+A lot of your current copy should now stay exactly as it is. For example:
+
+> `فرهنگ افغانستان را ولایت به ولایت ببینید.`
+
+> `فرهنگ مشترک افغانستان`
+
+> `اگر چیزی از فرهنگ و تاریخ محل‌تان می‌دانید، با دیگران شریک کنید.`
+
+> `مطالب را بر اساس ولایت، موضوع و نوع محتوا پیدا کنید.`
+
+> `با این فیلترها چیزی پیدا نشد. فیلترها را تغییر دهید.`
+
+> `برای ادامه، وارد حساب خود شوید.`
+
+> `حساب بسازید و در گردآوری فرهنگ افغانستان سهم بگیرید.`
+
+Those already sound substantially more human than the original version.
+
+My overall target for **میراث افغانستان** would now be:
+
+**clear, calm, educated Afghan Persian — not literary, not bureaucratic, not NGO-like, and not software documentation.**
+
+The biggest remaining cleanup is not the homepage anymore; it is **category descriptions, auth/session errors, empty states, and a few developer-facing strings leaking into the public UI.**
+
+[1]: https://taaghche.com/category/%DA%A9%D8%AA%D8%A7%D8%A8-%D8%B1%D8%A7%DB%8C%DA%AF%D8%A7%D9%86?utm_source=chatgpt.com
+[2]: https://ganjoor.net/?utm_source=chatgpt.com
+[3]: https://www.etilaatroz.com/category/news/page/1674/?utm_source=chatgpt.com
+[4]: https://www.digikala.com/faq/?utm_source=chatgpt.com
+[5]: https://taaghche.com/categories?utm_source=chatgpt.com
+[6]: https://ganjoor.net/bidel/ghazalbi?utm_source=chatgpt.com
+[7]: https://fidibo.com/faq/instructions-login-signup?utm_source=chatgpt.com
+[8]: https://tolonews.com/fa/front?Itemid=3&id=2&layout=blog&option=com_content&page=30%2C1%2C29%2C40%2C27&view=category&utm_source=chatgpt.com

@@ -5,7 +5,7 @@ import { OAuthCallbackCompletion } from "@/features/auth/components/oauth-callba
 
 export const metadata: Metadata = {
   title: "تکمیل ورود | میراث افغانستان",
-  description: "تکمیل ورود اجتماعی به میراث افغانستان.",
+  description: "تکمیل ورود به میراث افغانستان.",
   robots: {
     index: false,
     follow: false,
