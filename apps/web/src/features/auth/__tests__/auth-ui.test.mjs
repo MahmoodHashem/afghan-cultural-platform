@@ -60,6 +60,7 @@ const exploreContent = read("src/features/entries/components/explore-content.tsx
 const publicEntryCard = read("src/features/entries/components/public-entry-card.tsx");
 const animatedEntryGrid = read("src/features/entries/components/animated-entry-grid.tsx");
 const taxonomyDiscoveryPages = read("src/features/entries/components/taxonomy-discovery-pages.tsx");
+const filterableEntryResults = read("src/features/entries/components/filterable-entry-results.tsx");
 const filterTabs = read("src/features/entries/components/filter-tabs.tsx");
 const shadcnTabs = read("src/components/ui/tabs.tsx");
 const entryBreadcrumb = read("src/features/entries/utils/entry-breadcrumb.ts");
@@ -394,7 +395,7 @@ test("province and category discovery pages match the approved taxonomy designs"
   assert.match(taxonomyDiscoveryPages, /مطالب بر اساس موضوع/);
   assert.match(taxonomyDiscoveryPages, /مطالب فرهنگی افغانستان را بر اساس موضوع ببینید/);
   assert.match(taxonomyDiscoveryPages, /ProvinceSearchGrid/);
-  assert.match(taxonomyDiscoveryPages, /FilterTabs/);
+  assert.match(taxonomyDiscoveryPages, /FilterableEntryResults/);
   assert.match(provinceSearchGrid, /function ProvinceCard/);
   assert.match(provinceSearchGrid, /aspect-\[4\/5\]/);
   assert.match(provinceSearchGrid, /from-black\/78/);
@@ -426,10 +427,15 @@ test("province detail filters only provincial entries and reuses entry cards", (
   assert.match(provinceDetailPage, /provinceSlug: province\.slug/);
   assert.match(provinceDetailPage, /categorySlug: selectedCategorySlug/);
   assert.match(taxonomyDiscoveryPages, /فرهنگ و میراث/);
-  assert.match(taxonomyDiscoveryPages, /AnimatedEntryGrid/);
+  assert.match(taxonomyDiscoveryPages, /FilterableEntryResults/);
   assert.match(animatedEntryGrid, /PublicEntryCardView/);
   assert.match(animatedEntryGrid, /AnimatePresence/);
   assert.match(animatedEntryGrid, /motion\.div layout/);
+  assert.match(filterableEntryResults, /FilterTabs/);
+  assert.match(filterableEntryResults, /type="search"/);
+  assert.match(filterableEntryResults, /جست‌وجو در نتایج/);
+  assert.match(filterableEntryResults, /filteredEntries/);
+  assert.match(filterableEntryResults, /AnimatedEntryGrid entries=\{filteredEntries\}/);
   assert.match(filterTabs, /TabsList/);
   assert.match(filterTabs, /role="tab"/);
   assert.match(filterTabs, /scroll=\{false\}/);

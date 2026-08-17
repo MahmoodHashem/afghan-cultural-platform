@@ -18,13 +18,17 @@ type FilterTabItem = {
 type FilterTabsProps = {
   ariaLabel: string;
   items: FilterTabItem[];
+  className?: string;
 };
 
-function FilterTabs({ ariaLabel, items }: FilterTabsProps) {
+function FilterTabs({ ariaLabel, items, className }: FilterTabsProps) {
   const activeValue = items.find((item) => item.isActive)?.value ?? items[0]?.value ?? "";
 
   return (
-    <Tabs value={activeValue} className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+    <Tabs
+      value={activeValue}
+      className={cn("-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0", className)}
+    >
       <TabsList
         variant="default"
         className="relative h-auto min-h-11 w-max justify-start gap-1 rounded-full border border-border bg-card p-1 shadow-[0_2px_10px_rgba(0,0,0,.04)]"

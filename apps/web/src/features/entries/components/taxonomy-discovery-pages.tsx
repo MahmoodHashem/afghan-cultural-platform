@@ -25,8 +25,8 @@ import { cn } from "@/lib/utils";
 import type { EntryListResponse, TaxonomyItem } from "../types/public-entry";
 import type { EntryBreadcrumbContext } from "../utils/entry-breadcrumb";
 import { getProvinceImage } from "../utils/province-images";
-import { AnimatedEntryGrid } from "./animated-entry-grid";
-import { FilterTabs } from "./filter-tabs";
+import type { FilterTabItem } from "./filter-tabs";
+import { FilterableEntryResults } from "./filterable-entry-results";
 import { ProvinceSearchGrid } from "./province-search-grid";
 import { formatPersianNumber } from "./public-entry-card";
 
@@ -203,9 +203,11 @@ function ProvinceDetailContent({
             </h2>
           </div>
 
-          <FilterTabs
-            ariaLabel="فیلتر موضوع‌های ولایت"
-            items={[
+          {isUnavailable ? <ApiNotice /> : null}
+
+          <EntryResults
+            tabsAriaLabel="فیلتر موضوع‌های ولایت"
+            tabs={[
               {
                 value: "all",
                 href: allCategoriesHref,
@@ -220,11 +222,6 @@ function ProvinceDetailContent({
                 count: category.entryCount,
               })),
             ]}
-          />
-
-          {isUnavailable ? <ApiNotice /> : null}
-
-          <EntryGrid
             entries={entries}
             emptyKind="province"
             createPageHref={createPageHref}
@@ -336,9 +333,11 @@ function CategoryDetailContent({
             <SortLinks options={sortOptions} />
           </div>
 
-          <FilterTabs
-            ariaLabel="فیلتر ولایت‌های موضوع"
-            items={[
+          {isUnavailable ? <ApiNotice /> : null}
+
+          <EntryResults
+            tabsAriaLabel="فیلتر ولایت‌های موضوع"
+            tabs={[
               {
                 value: "all",
                 href: allAfghanistanHref,
@@ -360,11 +359,6 @@ function CategoryDetailContent({
                 count: province.entryCount,
               })),
             ]}
-          />
-
-          {isUnavailable ? <ApiNotice /> : null}
-
-          <EntryGrid
             entries={entries}
             emptyKind="category"
             createPageHref={createPageHref}
@@ -484,41 +478,41 @@ function StatsCards({ items }: { items: Array<{ label: string; value: number }> 
   );
 }
 
-function EntryGrid({
+function EntryResults({
+  tabsAriaLabel,
+  tabs,
   entries,
   emptyKind,
   createPageHref,
   breadcrumbParent,
 }: {
+  tabsAriaLabel: string;
+  tabs: FilterTabItem[];
   entries: EntryListResponse;
   emptyKind: "province" | "category";
   createPageHref: (page: number) => string;
   breadcrumbParent: EntryBreadcrumbContext;
 }) {
-  if (entries.data.length === 0) {
-    return (
-      <EmptyState
-        title={
+  return (
+    <FilterableEntryResults
+      tabsAriaLabel={tabsAriaLabel}
+      tabs={tabs}
+      entries={entries.data}
+      emptyState={{
+        title:
           emptyKind === "province"
             ? "هنوز مطلبی برای این ولایت منتشر نشده است."
-            : "هنوز مطلبی در این بخش منتشر نشده است."
-        }
-        description={
+            : "هنوز مطلبی در این بخش منتشر نشده است.",
+        description:
           emptyKind === "province"
             ? "اگر درباره فرهنگ و تاریخ این ولایت چیزی می‌دانید، می‌توانید آن را ثبت کنید."
-            : "اگر درباره این موضوع چیزی می‌دانید، می‌توانید آن را ثبت کنید."
-        }
-        actionHref="/entries/new"
-        actionLabel="افزودن مطلب"
-      />
-    );
-  }
-
-  return (
-    <>
-      <AnimatedEntryGrid entries={entries.data} breadcrumbParent={breadcrumbParent} />
-      <Pagination meta={entries.meta} createPageHref={createPageHref} />
-    </>
+            : "اگر درباره این موضوع چیزی می‌دانید، می‌توانید آن را ثبت کنید.",
+        actionHref: "/entries/new",
+        actionLabel: "افزودن مطلب",
+      }}
+      breadcrumbParent={breadcrumbParent}
+      pagination={<Pagination meta={entries.meta} createPageHref={createPageHref} />}
+    />
   );
 }
 
