@@ -60,6 +60,8 @@ const exploreContent = read("src/features/entries/components/explore-content.tsx
 const publicEntryCard = read("src/features/entries/components/public-entry-card.tsx");
 const taxonomyDiscoveryPages = read("src/features/entries/components/taxonomy-discovery-pages.tsx");
 const entryBreadcrumb = read("src/features/entries/utils/entry-breadcrumb.ts");
+const provinceSearchGrid = read("src/features/entries/components/province-search-grid.tsx");
+const provinceImages = read("src/features/entries/utils/province-images.ts");
 const homePage = read("src/app/page.tsx");
 const homeApi = read("src/features/home/api/home-api.ts");
 const homeContent = read("src/features/home/components/home-content.tsx");
@@ -388,17 +390,29 @@ test("province and category discovery pages match the approved taxonomy designs"
   assert.match(taxonomyDiscoveryPages, /با فرهنگ و میراث ولایت‌های افغانستان آشنا شوید/);
   assert.match(taxonomyDiscoveryPages, /مطالب بر اساس موضوع/);
   assert.match(taxonomyDiscoveryPages, /مطالب فرهنگی افغانستان را بر اساس موضوع ببینید/);
-  assert.match(taxonomyDiscoveryPages, /ProvinceCard/);
-  assert.match(taxonomyDiscoveryPages, /aspect-\[4\/5\]/);
-  assert.match(taxonomyDiscoveryPages, /from-black\/78/);
-  assert.match(taxonomyDiscoveryPages, /bg-white\/16/);
+  assert.match(taxonomyDiscoveryPages, /ProvinceSearchGrid/);
+  assert.match(provinceSearchGrid, /function ProvinceCard/);
+  assert.match(provinceSearchGrid, /aspect-\[4\/5\]/);
+  assert.match(provinceSearchGrid, /from-black\/78/);
+  assert.match(provinceSearchGrid, /bg-white\/16/);
   assert.match(taxonomyDiscoveryPages, /CategoryCard/);
   assert.match(taxonomyDiscoveryPages, /\/images\/star-icon\.png/);
-  assert.match(taxonomyDiscoveryPages, /\/images\/provinces\/herat\.jpg/);
-  assert.match(taxonomyDiscoveryPages, /\/images\/provinces\/bamyan\.webp/);
-  assert.match(taxonomyDiscoveryPages, /\/images\/provinces\/jawzjan\.jpeg/);
-  assert.match(taxonomyDiscoveryPages, /\/images\/provinces\/saripul\.jpg/);
-  assert.match(taxonomyDiscoveryPages, /\/images\/province-placeholder\.png/);
+  assert.match(provinceImages, /\/images\/provinces\/herat\.jpg/);
+  assert.match(provinceImages, /\/images\/provinces\/bamyan\.webp/);
+  assert.match(provinceImages, /\/images\/provinces\/jawzjan\.jpeg/);
+  assert.match(provinceImages, /\/images\/provinces\/saripul\.jpg/);
+  assert.match(provinceImages, /\/images\/province-placeholder\.png/);
+});
+
+test("province index supports local search with Motion layout animation", () => {
+  assert.match(provinceSearchGrid, /"use client"/);
+  assert.match(provinceSearchGrid, /type="search"/);
+  assert.match(provinceSearchGrid, /جست‌وجوی ولایت/);
+  assert.match(provinceSearchGrid, /filteredProvinces/);
+  assert.match(provinceSearchGrid, /AnimatePresence/);
+  assert.match(provinceSearchGrid, /motion\.div layout/);
+  assert.match(provinceSearchGrid, /mode="popLayout"/);
+  assert.match(provinceSearchGrid, /ولایتی پیدا نشد/);
 });
 
 test("province detail filters only provincial entries and reuses entry cards", () => {

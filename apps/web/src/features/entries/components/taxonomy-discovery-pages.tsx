@@ -7,7 +7,6 @@ import {
   BuildingStorefrontIcon,
   CakeIcon,
   ChatBubbleLeftRightIcon,
-  MapPinIcon,
   PaintBrushIcon,
   PuzzlePieceIcon,
   SparklesIcon,
@@ -20,12 +19,13 @@ import Link from "next/link";
 import type { ComponentType, ReactNode } from "react";
 
 import { PageBreadcrumb } from "@/components/layout/page-breadcrumb";
-import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { EntryListResponse, TaxonomyItem } from "../types/public-entry";
 import type { EntryBreadcrumbContext } from "../utils/entry-breadcrumb";
+import { getProvinceImage } from "../utils/province-images";
+import { ProvinceSearchGrid } from "./province-search-grid";
 import { formatPersianNumber, PublicEntryCardView } from "./public-entry-card";
 
 type CountedTaxonomyItem = TaxonomyItem & {
@@ -77,34 +77,6 @@ type CategoryDetailContentProps = {
   createPageHref: (page: number) => string;
   isUnavailable: boolean;
 };
-
-const provinceImageBySlug: Record<string, string> = {
-  badakhshan: "/images/provinces/badakhshan.jpg",
-  badghis: "/images/provinces/badghis.jpg",
-  balkh: "/images/provinces/balkh.jpg",
-  bamyan: "/images/provinces/bamyan.webp",
-  daykundi: "/images/provinces/daikundi.jpg",
-  farah: "/images/provinces/farah.jpg",
-  faryab: "/images/provinces/faryab.jpeg",
-  ghazni: "/images/provinces/ghazni.jpg",
-  ghor: "/images/provinces/ghour.jpg",
-  helmand: "/images/provinces/helmand.webp",
-  herat: "/images/provinces/herat.jpg",
-  jowzjan: "/images/provinces/jawzjan.jpeg",
-  kabul: "/images/provinces/kabul.jpg",
-  kandahar: "/images/provinces/kandahar.jpg",
-  nimroz: "/images/provinces/nimroz.jpg",
-  paktia: "/images/provinces/paktia.jpg",
-  paktika: "/images/provinces/paktika.jpg",
-  parwan: "/images/provinces/parwan.jpeg",
-  samangan: "/images/provinces/samangan.jpg",
-  "sar-e-pol": "/images/provinces/saripul.jpg",
-  uruzgan: "/images/provinces/urzgan.jpg",
-  wardak: "/images/provinces/wardak.jpg",
-  zabul: "/images/provinces/zabul.jpg",
-};
-
-const provincePlaceholderImage = "/images/province-placeholder.png";
 
 const categoryDescriptions: Record<string, string> = {
   "historical-places": "بناها، شهرها، آرامگاه‌ها و دیگر مکان‌های تاریخی افغانستان.",
@@ -165,11 +137,7 @@ function ProvinceIndexContent({ provinces, isUnavailable }: ProvinceIndexContent
         {isUnavailable ? <ApiNotice /> : null}
 
         {provinces.length > 0 ? (
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {provinces.map((province, index) => (
-              <ProvinceCard key={province.id} province={province} imageIndex={index} />
-            ))}
-          </div>
+          <ProvinceSearchGrid provinces={provinces} />
         ) : (
           <EmptyState
             title="نمایش ولایت‌ها ممکن نشد"
@@ -422,56 +390,6 @@ function PageIntro({
   );
 }
 
-function ProvinceCard({
-  province,
-  imageIndex,
-}: {
-  province: CountedTaxonomyItem;
-  imageIndex: number;
-}) {
-  const image = getProvinceImage(province, imageIndex);
-
-  return (
-    <Card className="group overflow-hidden rounded-2xl border-border bg-card p-0 shadow-[0_2px_10px_rgba(0,0,0,.04)] transition-all duration-200 hover:-translate-y-1 hover:border-primary/25 hover:shadow-[0_18px_42px_rgba(31,41,55,0.16)]">
-      <Link
-        href={taxonomyItemHref("/provinces", province)}
-        className="block outline-none focus-visible:ring-3 focus-visible:ring-ring/40"
-      >
-        <div className="relative aspect-[4/5] overflow-hidden bg-muted sm:aspect-[5/6] lg:aspect-[4/5]">
-          <Image
-            src={image.src}
-            alt={image.alt}
-            fill
-            sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
-            className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
-          />
-          <div className="absolute inset-0 bg-linear-to-t from-black/78 via-black/20 to-black/10 transition-colors group-hover:from-black/82" />
-          <div className="absolute inset-x-0 bottom-0 space-y-4 p-4 text-white sm:p-5">
-            <div className="flex items-center justify-between gap-3">
-              <span className="inline-flex size-9 items-center justify-center rounded-full border border-white/20 bg-white/16 text-white shadow-sm backdrop-blur-md">
-                <MapPinIcon className="size-4" aria-hidden="true" />
-              </span>
-              <Badge className="rounded-full border border-white/20 bg-white/16 text-white shadow-sm backdrop-blur-md">
-                {formatPersianNumber(province.entryCount)} مطلب
-              </Badge>
-            </div>
-            <div className="space-y-2">
-              <h2 className="text-[24px] font-bold leading-8 text-white">{province.name}</h2>
-              <p className="inline-flex items-center gap-1 text-[13px] font-semibold text-white/78 transition-colors group-hover:text-white">
-                دیدن مطالب
-                <ArrowLeftIcon
-                  className="size-4 transition-transform group-hover:-translate-x-1"
-                  aria-hidden="true"
-                />
-              </p>
-            </div>
-          </div>
-        </div>
-      </Link>
-    </Card>
-  );
-}
-
 function CategoryCard({
   category,
   toneIndex,
@@ -520,7 +438,7 @@ function CategoryIcon({
 }
 
 function ProvinceHeroImage({ province }: { province: TaxonomyItem }) {
-  const image = getProvinceImage(province, 0);
+  const image = getProvinceImage(province);
 
   return (
     <div className="relative min-h-[220px] overflow-hidden rounded-[24px] bg-muted lg:min-h-[260px]">
@@ -781,22 +699,6 @@ function DecorativeMark({ className }: { className?: string }) {
       className={cn("pointer-events-none absolute opacity-[0.06]", className)}
     />
   );
-}
-
-function getProvinceImage(province: Pick<TaxonomyItem, "name" | "slug">, _index: number) {
-  const mappedImage = provinceImageBySlug[province.slug];
-
-  if (mappedImage) {
-    return {
-      src: mappedImage,
-      alt: `نمای فرهنگی ولایت ${province.name}`,
-    };
-  }
-
-  return {
-    src: provincePlaceholderImage,
-    alt: "نمایی از میراث فرهنگی افغانستان",
-  };
 }
 
 function getCategoryDescription(category: Pick<TaxonomyItem, "name" | "slug">) {
