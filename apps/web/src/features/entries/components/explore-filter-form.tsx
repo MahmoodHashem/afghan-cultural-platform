@@ -188,10 +188,6 @@ function ExploreFilterForm({
   );
 }
 
-type SelectOption = {
-  label: string;
-  value: string;
-};
 
 function SelectField({
   icon,
@@ -227,34 +223,7 @@ function SelectField({
     );
   }, [isSearchable, options, searchValue]);
 
-  const displayedOptions = useMemo<SelectOption[]>(() => {
-    // Search mode
-    if (searchValue.trim()) {
-      return filteredOptions;
-    }
-
-    // Nothing selected
-    if (!value) {
-      return [
-        { label: placeholder, value: ALL_VALUE },
-        ...filteredOptions,
-      ];
-    }
-
-    const selectedOption = filteredOptions.find(
-      (option) => option.value === value,
-    );
-
-    const remainingOptions = filteredOptions.filter(
-      (option) => option.value !== value,
-    );
-
-    return [
-      ...(selectedOption ? [selectedOption] : []),
-      { label: placeholder, value: ALL_VALUE },
-      ...remainingOptions,
-    ];
-  }, [filteredOptions, placeholder, searchValue, value]);
+  
   return (
     <Select
       name={name}
@@ -332,18 +301,11 @@ function SelectField({
         ) : null}
 
         <SelectGroup>
-          <SelectItem className="data-[selected]:bg-primary/10
-          data-[selected]:font-semibold
-          data-[selected]:text-primary
-  " value={ALL_VALUE}>{placeholder}</SelectItem>
+          <SelectItem value={ALL_VALUE}>{placeholder}</SelectItem>
 
           {filteredOptions.length > 0 ? (
             filteredOptions.map((option) => (
               <SelectItem
-                className="data-[selected]:bg-primary/10
-          data-[selected]:font-semibold
-          data-[selected]:text-primary
-  "
                 key={option.value}
                 value={option.value}
               >
