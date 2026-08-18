@@ -19,7 +19,7 @@ type ExploreContentProps = {
     isUnavailable: boolean;
   };
   query: Required<Pick<PublicEntryListQuery, "page" | "limit" | "sort">> &
-  Omit<PublicEntryListQuery, "page" | "limit" | "sort">;
+    Omit<PublicEntryListQuery, "page" | "limit" | "sort">;
   isEntriesUnavailable: boolean;
 };
 
@@ -30,7 +30,7 @@ function ExploreContent({ entries, taxonomy, query, isEntriesUnavailable }: Expl
   };
 
   return (
-    <main className="min-h-screen bg-background">
+    <main className="min-h-screen bg-background ">
       <section className="border-b border-border bg-card pt-22 pb-7 sm:pt-26 sm:pb-8">
         <div className="content-container">
           <div className="max-w-3xl space-y-4">
@@ -40,8 +40,6 @@ function ExploreContent({ entries, taxonomy, query, isEntriesUnavailable }: Expl
       </section>
 
       <section className="content-container  gap-6 py-6 sm:py-7">
-
-
         <div className="space-y-6">
           {isEntriesUnavailable || taxonomy.isUnavailable ? <ApiNotice /> : null}
           <ExploreResultsPanel

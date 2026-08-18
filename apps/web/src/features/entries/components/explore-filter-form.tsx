@@ -1,10 +1,22 @@
 "use client";
 
-import { MapPinIcon, Squares2X2Icon, TagIcon } from "@heroicons/react/24/outline";
+import {
+  MagnifyingGlassIcon,
+  MapPinIcon,
+  Squares2X2Icon,
+  TagIcon,
+} from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
-import { type ReactNode, type SubmitEvent, useEffect, useState, useTransition } from "react";
-
+import {
+  type ReactNode,
+  type SubmitEvent,
+  useEffect,
+  useMemo,
+  useState,
+  useTransition,
+} from "react";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -194,6 +206,21 @@ function SelectField({
   placeholder?: string;
 }) {
   const selectOptions = [{ label: placeholder, value: ALL_VALUE }, ...options];
+  const [searchValue, setSearchValue] = useState("");
+
+  const isSearchable = options.length > 10;
+
+  const filteredOptions = useMemo(() => {
+    if (!isSearchable || !searchValue.trim()) {
+      return options;
+    }
+
+    const normalizedSearch = normalizeOptionSearch(searchValue);
+
+    return options.filter((option) =>
+      normalizeOptionSearch(option.label).includes(normalizedSearch),
+    );
+  }, [isSearchable, options, searchValue]);
 
   return (
     <Select
@@ -201,11 +228,9 @@ function SelectField({
       items={selectOptions}
       value={value ?? ALL_VALUE}
       onValueChange={(nextValue) => {
-        onValueChange(
-          nextValue === ALL_VALUE || nextValue === null
-            ? undefined
-            : nextValue,
-        );
+        onValueChange(nextValue === ALL_VALUE || nextValue === null ? undefined : nextValue);
+
+        setSearchValue("");
       }}
     >
       <SelectTrigger
@@ -233,9 +258,7 @@ function SelectField({
           </span>
 
           <div className="min-w-0">
-            <p className="text-[13px] font-semibold text-foreground">
-              {label}
-            </p>
+            <p className="text-[13px] font-semibold text-foreground">{label}</p>
 
             <p
               className={cn(
@@ -251,21 +274,70 @@ function SelectField({
         <SelectValue className="sr-only" />
       </SelectTrigger>
 
-      <SelectContent
-        align="end"
-        alignItemWithTrigger={false}
-        className="min-w-56"
-      >
+      <SelectContent align="end" alignItemWithTrigger={false} className="min-w-64">
+        {isSearchable ? (
+          <form
+            className="sticky top-0 z-10 border-b border-border bg-popover p-2"
+            onKeyDown={(event) => event.stopPropagation()}
+          >
+            <div className="relative">
+              <MagnifyingGlassIcon
+                className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+                aria-hidden="true"
+              />
+
+              <Input
+                value={searchValue}
+                onChange={(event) => setSearchValue(event.target.value)}
+                placeholder={`جست‌وجوی ${label}...`}
+                className="   h-9 rounded-lgborder-border bg-background  pr-9 text-[13px] shadow-none
+            focus-visible:ring-2
+            focus-visible:ring-primary/20
+          "
+                autoComplete="off"
+              />
+            </div>
+          </form>
+        ) : null}
+
         <SelectGroup>
-          {selectOptions.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
-              {option.label}
-            </SelectItem>
-          ))}
+          <SelectItem value={ALL_VALUE}>{placeholder}</SelectItem>
+
+          {filteredOptions.length > 0 ? (
+            filteredOptions.map((option) => (
+              <SelectItem
+                className="rounded-lg data-selected:bg-primary/10 data-selected:font-semibold
+              data-selected:text-primary
+              data-highlighted:bg-muted
+              data-highlighted:text-foreground
+              data-selected:data-highlighted:bg-primary/15
+              data-selected:data-highlighted:text-primary
+  "
+                key={option.value}
+                value={option.value}
+              >
+                {option.label}
+              </SelectItem>
+            ))
+          ) : (
+            <div className="px-3 py-6 text-center text-[13px] text-muted-foreground">
+              نتیجه‌ای پیدا نشد
+            </div>
+          )}
         </SelectGroup>
       </SelectContent>
     </Select>
   );
+}
+
+function normalizeOptionSearch(value: string) {
+  return value
+    .trim()
+    .toLocaleLowerCase("fa-AF")
+    .replaceAll("ي", "ی")
+    .replaceAll("ك", "ک")
+    .replace(/\u200c/g, " ")
+    .replace(/\s+/g, " ");
 }
 
 function getInitialFilters(query: ExploreFilterFormProps["query"]): FilterState {

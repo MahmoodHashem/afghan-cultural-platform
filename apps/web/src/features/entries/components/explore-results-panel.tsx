@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { geographicScopeOptions, sortOptions } from "../constants/explore-options";
+import { sortOptions } from "../constants/explore-options";
 import type { EntryListResponse, TaxonomyItem } from "../types/public-entry";
 import type { EntryBreadcrumbContext } from "../utils/entry-breadcrumb";
 import { createExploreHref, type NormalizedExploreQuery } from "../utils/explore-query";
@@ -66,12 +66,7 @@ function ExploreResultsPanel({
       />
       <div className="sticky top-20 z-30 hidden md:block">
         <div className="bg-background/90 py-2 backdrop-blur-md supports-backdrop-filter:bg-background/80">
-          <ExploreFilterForm
-            taxonomy={taxonomy}
-            query={query}
-            variant="bar"
-            autoApply
-          />
+          <ExploreFilterForm taxonomy={taxonomy} query={query} variant="bar" autoApply />
         </div>
       </div>
 
@@ -164,12 +159,14 @@ function ExploreToolbar({
   total: number;
 }) {
   return (
-    <div className="
+    <div
+      className="
     flex flex-col gap-3
     border-b border-border
     px-1 pb-3 pt-1
-    lg:flex-row lg:items-center lg:justify-between
-  ">
+    sm:flex-row sm:items-center sm:justify-between
+  "
+    >
       <div className="flex items-center gap-3">
         <SortSelect query={query} />
         <ActiveFilterChips query={query} taxonomy={taxonomy} />
@@ -181,7 +178,6 @@ function ExploreToolbar({
             ? `${formatNumber(filteredCount)} از ${formatNumber(total)} مطلب`
             : `${formatNumber(total)} مطلب`}
         </p>
-
       </div>
     </div>
   );
@@ -207,7 +203,7 @@ function SortSelect({ query }: { query: NormalizedExploreQuery }) {
           });
         }}
       >
-        <SelectTrigger className="h-9 rounded-full border-border bg-background px-3">
+        <SelectTrigger className="h-9 rounded-full border-border bg-background px-3  ">
           <SelectValue />
         </SelectTrigger>
         <SelectContent align="end" alignItemWithTrigger={false}>
@@ -224,11 +220,7 @@ function SortSelect({ query }: { query: NormalizedExploreQuery }) {
   );
 }
 
-type ActiveFilterKey =
-  | "provinceSlug"
-  | "categorySlug"
-  | "contentTypeSlug"
-  | "tagSlug";
+type ActiveFilterKey = "provinceSlug" | "categorySlug" | "contentTypeSlug" | "tagSlug";
 
 type ActiveFilter = {
   key: ActiveFilterKey;
@@ -285,12 +277,8 @@ function ActiveFilterChips({
   );
 }
 
-function getRemoveFilterHref(
-  query: NormalizedExploreQuery,
-  key: ActiveFilterKey,
-) {
+function getRemoveFilterHref(query: NormalizedExploreQuery, key: ActiveFilterKey) {
   switch (key) {
-
     case "provinceSlug":
       return createExploreHref(query, {
         page: 1,
@@ -320,11 +308,11 @@ function getRemoveFilterHref(
 function ClearFiltersLink({ query }: { query: NormalizedExploreQuery }) {
   const hasFilters = Boolean(
     query.provinceSlug ||
-    query.categorySlug ||
-    query.contentTypeSlug ||
-    query.tagSlug ||
-    query.geographicScope ||
-    query.sort !== "newest",
+      query.categorySlug ||
+      query.contentTypeSlug ||
+      query.tagSlug ||
+      query.geographicScope ||
+      query.sort !== "newest",
   );
 
   if (!hasFilters) {
@@ -430,10 +418,6 @@ function addActiveFilter(
 
 function findTaxonomyName(items: TaxonomyItem[], slug: string) {
   return items.find((item) => item.slug === slug)?.name;
-}
-
-function findOptionLabel(options: Array<{ label: string; value: string }>, value: string) {
-  return options.find((option) => option.value === value)?.label;
 }
 
 function formatNumber(value: number) {

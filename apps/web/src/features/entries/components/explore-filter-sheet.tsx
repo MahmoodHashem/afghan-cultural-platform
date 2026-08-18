@@ -23,7 +23,7 @@ type ExploreFilterSheetProps = {
     tags: TaxonomyItem[];
   };
   query: Required<Pick<PublicEntryListQuery, "page" | "limit" | "sort">> &
-  Omit<PublicEntryListQuery, "page" | "limit" | "sort">;
+    Omit<PublicEntryListQuery, "page" | "limit" | "sort">;
 };
 
 function ExploreFilterSheet({ taxonomy, query }: ExploreFilterSheetProps) {
