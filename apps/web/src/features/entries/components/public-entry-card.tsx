@@ -26,12 +26,12 @@ function PublicEntryCardView({
   breadcrumbParent,
 }: PublicEntryCardViewProps) {
   return (
-    <Card className="group overflow-hidden rounded-2xl border-border bg-card p-0 shadow-[0_2px_10px_rgba(0,0,0,.04)] transition-all duration-200 hover:-translate-y-1 hover:border-primary/25 hover:shadow-[0_14px_34px_rgba(31,41,55,0.09)]">
+    <Card className="group overflow-hidden rounded-2xl border-border bg-card p-0 shadow-[0_2px_10px_rgba(0,0,0,.035)] transition-all duration-200 hover:-translate-y-1 hover:border-primary/25 hover:shadow-[0_14px_34px_rgba(31,41,55,0.085)]">
       <Link
         href={entryHref(entry, breadcrumbParent)}
         className="block outline-none focus-visible:ring-3 focus-visible:ring-ring/40"
       >
-        <div className="relative aspect-4/3 overflow-hidden bg-muted">
+        <div className="relative aspect-[16/10] overflow-hidden bg-muted">
           <Image
             src={
               entry.coverImage?.thumbnailUrl ??
@@ -44,24 +44,19 @@ function PublicEntryCardView({
             className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
           />
           <div className="absolute inset-x-0 bottom-0 flex justify-end bg-linear-to-t from-black/45 to-transparent p-3">
-            <Badge className="rounded-full bg-primary text-primary-foreground shadow-sm">
+            <Badge className="rounded-full bg-primary/95 text-primary-foreground shadow-sm">
               {entry.category.name}
             </Badge>
           </div>
         </div>
-        <CardContent className="space-y-3 p-4">
-          <div className="flex flex-wrap gap-2">
-            <Badge variant="outline" className="rounded-full text-[12px]">
-              {entry.contentType.name}
-            </Badge>
-          </div>
-          <h2 className="line-clamp-2 text-[20px] font-bold leading-8 text-foreground">
+        <CardContent className="space-y-3 p-4 pt-4">
+          <h2 className="line-clamp-2 text-[19px] font-bold leading-8 text-foreground">
             {entry.title}
           </h2>
-          <p className="line-clamp-3 text-[14px] leading-7 text-muted-foreground">
+          <p className="line-clamp-2 text-[14px] leading-7 text-muted-foreground">
             {entry.summary}
           </p>
-          <div className="flex flex-wrap items-center justify-between gap-3 text-[12px] text-muted-foreground">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border/70 pt-3 text-[12px] text-muted-foreground">
             <span className="inline-flex items-center gap-1">
               <MapPinIcon className="size-4" aria-hidden="true" />
               {locationLabel(entry)}
