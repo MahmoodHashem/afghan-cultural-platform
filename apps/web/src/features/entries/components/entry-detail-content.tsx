@@ -80,7 +80,7 @@ function EntryDetailContent({
 
               {heroImage ? (
                 <figure className="overflow-hidden rounded-[28px] border border-border bg-background shadow-[0_2px_10px_rgba(0,0,0,.05)]">
-                  <div className="relative aspect-[4/3]">
+                  <div className="relative aspect-4/3">
                     <Image
                       src={heroImage.secureUrl}
                       alt={heroImage.altText}
@@ -125,11 +125,10 @@ function EntryDetailContent({
             <PublicReviewsList reviews={reviews} />
           </div>
 
-          <aside className="space-y-5 lg:sticky lg:top-24">
+          <aside className="space-y-5 lg:sticky lg:top-24 bg-card p-3 rounded-lg divide-y divide-border">
             {tableOfContents.length > 0 ? <EntryTableOfContents items={tableOfContents} /> : null}
             <TaxonomyCard entry={entry} />
             {entry.tags.length > 0 ? <TagsCard entry={entry} /> : null}
-            {entry.outgoingReferences.length > 0 ? <OutgoingReferences entry={entry} /> : null}
             {entry.incomingReferences.length > 0 ? <IncomingReferences entry={entry} /> : null}
           </aside>
         </section>
@@ -462,57 +461,36 @@ function TaxonomyCard({ entry }: { entry: PublicEntryDetail }) {
   ].filter(([, value]) => Boolean(value));
 
   return (
-    <Card className="rounded-2xl border-border bg-card">
-      <CardContent className="space-y-4 p-4">
-        <h2 className="text-[18px] font-bold text-foreground">جزئیات مطلب</h2>
-        <dl className="space-y-3">
-          {items.map(([label, value]) => (
-            <div key={label} className="flex items-start justify-between gap-4 text-[14px]">
-              <dt className="text-muted-foreground">{label}</dt>
-              <dd className="text-start font-semibold text-foreground">{value}</dd>
-            </div>
-          ))}
-        </dl>
-      </CardContent>
-    </Card>
+    <article className="space-y-4 p-4">
+      <h2 className="text-[18px] font-bold text-foreground">جزئیات مطلب</h2>
+      <dl className="space-y-3">
+        {items.map(([label, value]) => (
+          <div key={label} className="flex items-start justify-between gap-4 text-[14px]">
+            <dt className="text-muted-foreground">{label}</dt>
+            <dd className="text-start font-semibold text-foreground">{value}</dd>
+          </div>
+        ))}
+      </dl>
+    </article>
   );
 }
 
 function TagsCard({ entry }: { entry: PublicEntryDetail }) {
   return (
-    <Card className="rounded-2xl border-border bg-card">
-      <CardContent className="space-y-4 p-4">
-        <h2 className="text-[18px] font-bold text-foreground">برچسب‌ها</h2>
-        <div className="flex flex-wrap gap-2">
-          {entry.tags.map((tag) => (
-            <Link
-              key={tag.id}
-              href={`/explore?tagSlug=${encodeURIComponent(tag.slug)}`}
-              className="rounded-full bg-muted px-3 py-1.5 text-[13px] font-semibold text-muted-foreground transition-colors hover:bg-primary-light hover:text-primary"
-            >
-              {tag.name}
-            </Link>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function OutgoingReferences({ entry }: { entry: PublicEntryDetail }) {
-  return (
-    <ReferenceCard title="مطالب اشاره‌شده در متن">
-      {entry.outgoingReferences.map((reference) => (
-        <Link
-          key={reference.id}
-          href={`/entries/${encodeURIComponent(reference.targetEntry.slug)}`}
-          className="flex items-start gap-2 rounded-xl px-2 py-2 text-[14px] leading-7 text-muted-foreground transition-colors hover:bg-muted hover:text-primary"
-        >
-          <LinkIcon className="mt-1 size-4 shrink-0" aria-hidden="true" />
-          <span>{reference.anchorText || reference.targetEntry.title}</span>
-        </Link>
-      ))}
-    </ReferenceCard>
+    <article className=" space-y-4 p-4">
+      <h2 className="text-[18px] font-bold text-foreground">برچسب‌ها</h2>
+      <div className="flex flex-wrap gap-2">
+        {entry.tags.map((tag) => (
+          <Link
+            key={tag.id}
+            href={`/explore?tagSlug=${encodeURIComponent(tag.slug)}`}
+            className="rounded-full bg-muted px-3 py-1.5 text-[13px] font-semibold text-muted-foreground transition-colors hover:bg-primary-light hover:text-primary"
+          >
+            {tag.name}
+          </Link>
+        ))}
+      </div>
+    </article>
   );
 }
 
@@ -539,12 +517,10 @@ function IncomingReferences({ entry }: { entry: PublicEntryDetail }) {
 
 function ReferenceCard({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <Card className="rounded-2xl border-border bg-card">
-      <CardContent className="space-y-3 p-4">
-        <h2 className="text-[18px] font-bold text-foreground">{title}</h2>
-        <div className="space-y-1">{children}</div>
-      </CardContent>
-    </Card>
+    <div className=" space-y-3 p-4">
+      <h2 className="text-[18px] font-bold text-foreground">{title}</h2>
+      <div className="space-y-1">{children}</div>
+    </div>
   );
 }
 

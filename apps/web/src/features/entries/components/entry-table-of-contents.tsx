@@ -15,7 +15,7 @@ type TableOfContentsItem = {
 
 function EntryTableOfContents({ items }: { items: TableOfContentsItem[] }) {
   const [activeId, setActiveId] = useState(items[0]?.id ?? "");
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   useEffect(() => {
     const headings = items
@@ -50,23 +50,24 @@ function EntryTableOfContents({ items }: { items: TableOfContentsItem[] }) {
   }, [items]);
 
   return (
-    <Card id="entry-table-of-contents" className="scroll-mt-32 rounded-2xl border-border bg-card">
-      <CardContent className="space-y-3 p-4">
+    <article id="entry-table-of-contents" className="scroll-mt-32">
+      <div className="space-y-3 p-4">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-[18px] font-bold text-foreground">فهرست مطالب</h2>
           <Button
             type="button"
-            variant="ghost"
-            size="icon-sm"
+            variant="outline"
             aria-expanded={isExpanded}
             aria-controls="entry-table-of-contents-list"
             onClick={() => setIsExpanded((current) => !current)}
-            className="rounded-full"
+            className="rounded-full w-full flex items-center justify-between"
           >
+            <h2 className="text-[18px] font-bold text-foreground">فهرست مطالب</h2>
+
             <ChevronDownIcon
               className={cn("size-4 transition-transform", isExpanded ? "rotate-180" : null)}
               aria-hidden="true"
             />
+
             <span className="sr-only">
               {isExpanded ? "بستن فهرست مطالب" : "باز کردن فهرست مطالب"}
             </span>
@@ -94,7 +95,7 @@ function EntryTableOfContents({ items }: { items: TableOfContentsItem[] }) {
                         "block rounded-xl py-2 text-[14px] leading-7 transition-colors focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/35",
                         item.level === 3 ? "ps-4 pe-2" : "px-2 font-semibold",
                         isActive
-                          ? "border border-primary/20 bg-primary-light text-primary"
+                          ? "border border-primary/20  text-primary"
                           : "text-muted-foreground hover:bg-muted hover:text-primary",
                       )}
                     >
@@ -106,8 +107,8 @@ function EntryTableOfContents({ items }: { items: TableOfContentsItem[] }) {
             </ol>
           </div>
         </nav>
-      </CardContent>
-    </Card>
+      </div>
+    </article>
   );
 }
 

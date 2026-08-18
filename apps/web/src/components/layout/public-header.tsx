@@ -222,7 +222,7 @@ function PublicHeader({ variant = "solid" }: PublicHeaderProps) {
 
 function HeaderContextContent({ context }: { context: HeaderContext }) {
   return (
-    <div className="flex min-w-0 flex-1 items-center gap-3">
+    <div className="flex min-w-0 flex-1 items-center gap-3 text-center">
       <Link
         href={context.backHref}
         className="inline-flex size-8 shrink-0 items-center justify-center rounded-full text-primary transition-colors hover:bg-primary-light focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/40"
@@ -230,7 +230,7 @@ function HeaderContextContent({ context }: { context: HeaderContext }) {
       >
         <ArrowRightIcon className="size-4" aria-hidden="true" />
       </Link>
-      <p className="min-w-0 truncate text-[14px] font-bold text-foreground sm:text-[15px]">
+      <p className="w-full truncate text-[14px] font-bold text-foreground sm:text-[15px] text-center">
         {context.title}
       </p>
     </div>
