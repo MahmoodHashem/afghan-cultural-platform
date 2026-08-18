@@ -386,7 +386,7 @@ test("explore page uses public entries and taxonomy APIs with URL filters", () =
   assert.match(exploreFilterForm, /name="geographicScope"/);
   assert.match(exploreFilterForm, /<Select/);
   assert.match(exploreFilterSheet, /SheetContent side="right"/);
-  assert.match(exploreResultsPanel, /جست‌وجوی مکان، شخصیت، رسم یا موضوع/);
+  assert.match(exploreResultsPanel, /جست‌وجوی مکان، مشاهیر، رسم یا موضوع/);
   assert.match(exploreResultsPanel, /PublicEntryCardView/);
   assert.match(exploreResultsPanel, /motion\.div/);
   assert.match(publicEntryCard, /function PublicEntryCardView/);

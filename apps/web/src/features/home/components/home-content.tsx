@@ -67,7 +67,7 @@ function HomeContent({ data }: { data: HomeData }) {
 
         <ExploreTaxonomySection
           title="موضوع‌های فرهنگی"
-          description="از ادبیات و شخصیت‌ها تا بناهای تاریخی و آیین‌ها، مطالب را بر اساس موضوع دنبال کنید."
+          description="از ادبیات و مشاهیر تا بناهای تاریخی و آیین‌ها، مطالب را بر اساس موضوع دنبال کنید."
           items={data.categories}
           basePath="/explore"
           queryName="categorySlug"

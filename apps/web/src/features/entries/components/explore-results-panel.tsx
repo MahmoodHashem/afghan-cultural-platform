@@ -134,7 +134,7 @@ function ExploreSearchBar({
           id={searchInputId}
           value={searchValue}
           onChange={(event) => onSearchChange(event.target.value)}
-          placeholder="جست‌وجوی مکان، شخصیت، رسم یا موضوع..."
+          placeholder="جست‌وجوی مکان، مشاهیر، رسم یا موضوع..."
           className="h-10 border-0 bg-transparent px-0 text-[14px] shadow-none focus-visible:border-transparent focus-visible:ring-0"
         />
       </label>
