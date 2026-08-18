@@ -196,57 +196,75 @@ function SelectField({
   const selectOptions = [{ label: placeholder, value: ALL_VALUE }, ...options];
 
   return (
-    <div
-      className={cn(
-        "flex min-w-0 items-center justify-between gap-3 rounded-xl px-3 py-2.5",
-        "transition-colors hover:bg-muted/50",
-        value && "bg-primary-light/30",
-      )}
+    <Select
+      name={name}
+      items={selectOptions}
+      value={value ?? ALL_VALUE}
+      onValueChange={(nextValue) => {
+        onValueChange(
+          nextValue === ALL_VALUE || nextValue === null
+            ? undefined
+            : nextValue,
+        );
+      }}
     >
-      <div className="flex min-w-0 items-center gap-3">
-        <span className={cn("shrink-0 text-muted-foreground", value && "text-primary")}>
-          {icon}
-        </span>
-
-        <div className="min-w-0 text-right">
-          <p className="text-[13px] font-semibold text-foreground">{label}</p>
-
-          <p
-            className={cn(
-              "mt-0.5 truncate text-[12px] text-muted-foreground",
-              value && "font-medium text-primary",
-            )}
-          >
-            {findOptionLabel(options, value) ?? placeholder}
-          </p>
-        </div>
-      </div>
-
-      <Select
-        name={name}
-        items={selectOptions}
-        value={value ?? ALL_VALUE}
-        onValueChange={(nextValue) => {
-          onValueChange(nextValue === ALL_VALUE || nextValue === null ? undefined : nextValue);
-        }}
+      <SelectTrigger
+        aria-label={label}
+        className="
+        group h-auto w-full min-w-0
+        rounded-xl border-0 bg-transparent
+        px-3 py-3 shadow-none
+        transition-colors
+        hover:bg-muted/50
+        focus-visible:ring-2 focus-visible:ring-primary/20
+        data-[state=open]:bg-muted/60
+      "
       >
-        <SelectTrigger
-          aria-label={label}
-          className="size-9 shrink-0 rounded-lg border-border bg-background p-0 text-muted-foreground hover:border-primary/30 hover:text-primary flex items-center justify-center data-placeholder:text-muted-foreground"
-        >
-          <SelectValue className="sr-only" />
-        </SelectTrigger>
-        <SelectContent align="end" alignItemWithTrigger={false} className="min-w-56">
-          <SelectGroup>
-            {selectOptions.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectGroup>
-        </SelectContent>
-      </Select>
-    </div>
+        <div className="flex min-w-0 flex-1 items-center gap-3 text-right">
+          <span
+            className="
+            shrink-0 text-muted-foreground
+            transition-colors
+            group-hover:text-primary
+            group-data-[state=open]:text-primary
+          "
+          >
+            {icon}
+          </span>
+
+          <div className="min-w-0">
+            <p className="text-[13px] font-semibold text-foreground">
+              {label}
+            </p>
+
+            <p
+              className={cn(
+                "mt-0.5 truncate text-[12px] text-muted-foreground",
+                value && "font-medium text-primary",
+              )}
+            >
+              {findOptionLabel(options, value) ?? placeholder}
+            </p>
+          </div>
+        </div>
+
+        <SelectValue className="sr-only" />
+      </SelectTrigger>
+
+      <SelectContent
+        align="end"
+        alignItemWithTrigger={false}
+        className="min-w-56"
+      >
+        <SelectGroup>
+          {selectOptions.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectGroup>
+      </SelectContent>
+    </Select>
   );
 }
 
