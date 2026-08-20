@@ -50,7 +50,15 @@ const communityFeedbackApi = read("src/features/entries/api/community-feedback-a
 const contributionTaxonomyApi = read("src/features/entries/api/contribution-taxonomy-api.ts");
 const entryDraftsApi = read("src/features/entries/api/entry-drafts-api.ts");
 const createEntryForm = read("src/features/entries/components/create-entry-form.tsx");
+const createEntryEditorLayout = read(
+  "src/features/entries/components/create-entry-editor-layout.tsx",
+);
+const createEntrySections = read("src/features/entries/components/create-entry-sections.tsx");
 const createEntrySelect = read("src/features/entries/components/create-entry-select.tsx");
+const createEntryWritingSurface = read(
+  "src/features/entries/components/create-entry-writing-surface.tsx",
+);
+const stagedEntryImagesHook = read("src/features/entries/hooks/use-staged-entry-images.ts");
 const createEntrySchema = read("src/features/entries/schemas/create-entry-schema.ts");
 const tiptapContentUtils = read("src/features/entries/utils/tiptap-content.ts");
 const richTextEditor = read("src/components/common/rich-text-editor.tsx");
@@ -243,12 +251,12 @@ test("create entry route is private, verified-email gated, and noindexed", () =>
 });
 
 test("create entry editor keeps writing first with contextual Tiptap tools", () => {
-  assert.match(createEntryForm, /مطلب جدید/);
-  assert.match(createEntryForm, /عنوان مطلب/);
-  assert.match(createEntryForm, /خلاصه/);
-  assert.match(createEntryForm, /متن مطلب را بنویسید/);
-  assert.match(createEntryForm, /toolbarMode="bubble"/);
-  assert.match(createEntryForm, /min-h-\[45vh\]/);
+  assert.match(createEntryEditorLayout, /مطلب جدید/);
+  assert.match(createEntryWritingSurface, /عنوان مطلب/);
+  assert.match(createEntryWritingSurface, /خلاصه/);
+  assert.match(createEntryWritingSurface, /متن مطلب را بنویسید/);
+  assert.match(createEntryWritingSurface, /toolbarMode="bubble"/);
+  assert.match(createEntryWritingSurface, /min-h-\[45vh\]/);
   assert.match(richTextEditor, /toolbarMode\?: "always" \| "toggle" \| "bubble" \| "hidden"/);
   assert.match(richTextEditor, /BubbleMenu/);
   assert.match(richTextEditor, /EditorBubbleToolbar/);
@@ -257,13 +265,13 @@ test("create entry editor keeps writing first with contextual Tiptap tools", () 
 });
 
 test("create entry secondary sections are collapsed and editorial", () => {
-  assert.match(createEntryForm, /function EditorSection/);
-  assert.match(createEntryForm, /useState\(false\)/);
+  assert.match(createEntryEditorLayout, /function CreateEntryEditorSection/);
+  assert.match(createEntryEditorLayout, /useState\(false\)/);
   assert.match(createEntryForm, /جزئیات مطلب/);
   assert.match(createEntryForm, /تصاویر/);
   assert.match(createEntryForm, /منابع/);
   assert.match(createEntryForm, /ویدیوی مرتبط/);
-  assert.match(createEntryForm, /AnimatePresence/);
+  assert.match(createEntryEditorLayout, /AnimatePresence/);
   assert.match(createEntryForm, /LazyMotion/);
 });
 
@@ -302,13 +310,13 @@ test("create entry API integration uses existing backend draft contracts", () =>
 
 test("create entry supports sources, image staging, and unsaved-change warning", () => {
   assert.match(createEntryForm, /useFieldArray/);
-  assert.match(createEntryForm, /function SourceFields/);
-  assert.match(createEntryForm, /handleImageSelection/);
-  assert.match(createEntryForm, /moveImage/);
-  assert.match(createEntryForm, /sourceFields\.move/);
-  assert.match(createEntryForm, /uploadEntryImage/);
+  assert.match(createEntrySections, /function SourceFields/);
+  assert.match(stagedEntryImagesHook, /selectImages/);
+  assert.match(stagedEntryImagesHook, /moveImage/);
+  assert.match(createEntrySections, /sourceFields\.move/);
+  assert.match(stagedEntryImagesHook, /uploadEntryImage/);
   assert.match(createEntryForm, /beforeunload/);
-  assert.match(createEntryForm, /permissionConfirmed/);
+  assert.match(createEntrySections, /permissionConfirmed/);
 });
 
 test("role-aware navigation reflects auth state without becoming authorization", () => {

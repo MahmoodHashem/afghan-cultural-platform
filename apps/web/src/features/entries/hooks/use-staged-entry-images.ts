@@ -1,0 +1,177 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
+
+import { deleteEntryImage, uploadEntryImage } from "@/features/entries/api/entry-drafts-api";
+import type { StagedImage } from "@/features/entries/types/create-entry-form";
+import { getEntryFormErrorMessage } from "@/features/entries/utils/create-entry-errors";
+import { emptyToUndefined } from "@/features/entries/utils/create-entry-form-utils";
+
+const maxImagesPerEntry = 6;
+
+type UseStagedEntryImagesOptions = {
+  draftId: string | null;
+  getTitle: () => string;
+  onDirty: () => void;
+};
+
+export function useStagedEntryImages({ draftId, getTitle, onDirty }: UseStagedEntryImagesOptions) {
+  const [images, setImages] = useState<StagedImage[]>([]);
+  const imageInputRef = useRef<HTMLInputElement | null>(null);
+  const imagesRef = useRef<StagedImage[]>([]);
+  const hasPendingImages = images.some(
+    (image) => image.status === "pending" || image.status === "error",
+  );
+
+  useEffect(() => {
+    imagesRef.current = images;
+  }, [images]);
+
+  useEffect(() => {
+    return () => {
+      for (const image of imagesRef.current) {
+        URL.revokeObjectURL(image.previewUrl);
+      }
+    };
+  }, []);
+
+  function selectImages(files: FileList | null) {
+    if (!files?.length) {
+      return;
+    }
+
+    const remainingSlots = Math.max(0, maxImagesPerEntry - images.length);
+    const selectedFiles = Array.from(files).slice(0, remainingSlots);
+
+    if (selectedFiles.length < files.length) {
+      toast.error("برای هر مطلب حداکثر ۶ تصویر می‌توانید اضافه کنید.");
+    }
+
+    const title = getTitle();
+    const nextImages = selectedFiles.map((file) => ({
+      clientId: crypto.randomUUID(),
+      file,
+      previewUrl: URL.createObjectURL(file),
+      altText: title ? `تصویر مربوط به ${title}` : "",
+      caption: "",
+      photographerOrSource: "",
+      permissionConfirmed: false,
+      status: "pending" as const,
+    }));
+
+    setImages((currentImages) => [...currentImages, ...nextImages]);
+    onDirty();
+  }
+
+  async function removeImage(image: StagedImage) {
+    if (draftId && image.uploadedImage) {
+      try {
+        await deleteEntryImage(draftId, image.uploadedImage.id);
+      } catch (error) {
+        toast.error(getEntryFormErrorMessage(error));
+        return;
+      }
+    }
+
+    URL.revokeObjectURL(image.previewUrl);
+    setImages((currentImages) =>
+      currentImages.filter((currentImage) => currentImage.clientId !== image.clientId),
+    );
+    onDirty();
+  }
+
+  function updateImage(clientId: string, patch: Partial<StagedImage>) {
+    setImages((currentImages) =>
+      currentImages.map((image) => (image.clientId === clientId ? { ...image, ...patch } : image)),
+    );
+    onDirty();
+  }
+
+  function moveImage(clientId: string, direction: "up" | "down") {
+    setImages((currentImages) => {
+      const currentIndex = currentImages.findIndex((image) => image.clientId === clientId);
+      const nextIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
+
+      if (currentIndex < 0 || nextIndex < 0 || nextIndex >= currentImages.length) {
+        return currentImages;
+      }
+
+      const nextImages = [...currentImages];
+      const [image] = nextImages.splice(currentIndex, 1);
+
+      if (!image) {
+        return currentImages;
+      }
+
+      nextImages.splice(nextIndex, 0, image);
+
+      return nextImages;
+    });
+    onDirty();
+  }
+
+  async function syncPendingImages(entryId: string) {
+    for (const [index, image] of images.entries()) {
+      if (image.status === "uploaded" || image.status === "uploading") {
+        continue;
+      }
+
+      if (!image.altText.trim()) {
+        patchImageWithoutDirty(image.clientId, {
+          status: "error",
+          error: "متن جایگزین تصویر را بنویسید.",
+        });
+        continue;
+      }
+
+      if (!image.permissionConfirmed) {
+        patchImageWithoutDirty(image.clientId, {
+          status: "error",
+          error: "اجازه استفاده از تصویر را تأیید کنید.",
+        });
+        continue;
+      }
+
+      try {
+        patchImageWithoutDirty(image.clientId, { status: "uploading", error: undefined });
+        const uploadedImage = await uploadEntryImage(entryId, {
+          file: image.file,
+          altText: image.altText.trim(),
+          caption: emptyToUndefined(image.caption),
+          photographerOrSource: emptyToUndefined(image.photographerOrSource),
+          permissionConfirmed: image.permissionConfirmed,
+          displayOrder: index,
+        });
+        patchImageWithoutDirty(image.clientId, {
+          status: "uploaded",
+          error: undefined,
+          uploadedImage,
+        });
+      } catch (error) {
+        patchImageWithoutDirty(image.clientId, {
+          status: "error",
+          error: getEntryFormErrorMessage(error),
+        });
+        toast.error("پیش‌نویس ذخیره شد، اما یک تصویر بارگذاری نشد.");
+      }
+    }
+  }
+
+  function patchImageWithoutDirty(clientId: string, patch: Partial<StagedImage>) {
+    setImages((currentImages) =>
+      currentImages.map((image) => (image.clientId === clientId ? { ...image, ...patch } : image)),
+    );
+  }
+
+  return {
+    hasPendingImages,
+    imageInputRef,
+    images,
+    moveImage,
+    removeImage,
+    selectImages,
+    syncPendingImages,
+    updateImage,
+  };
+}

@@ -230,9 +230,8 @@ function EditorBubbleToolbar({ editor }: Pick<EditorToolbarProps, "editor">) {
       shouldShow={({ editor: currentEditor, state }) =>
         isEditingLink || (currentEditor.isEditable && !state.selection.empty)
       }
-      tippyOptions={{
-        duration: 160,
-        offset: [0, 10],
+      options={{
+        offset: 10,
         placement: "top",
       }}
     >
