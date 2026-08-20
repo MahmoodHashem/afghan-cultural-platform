@@ -1,9 +1,4 @@
-import {
-  CalendarDaysIcon,
-  LinkIcon,
-  MapPinIcon,
-  UserCircleIcon,
-} from "@heroicons/react/24/outline";
+import { CalendarDaysIcon, MapPinIcon, UserCircleIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";

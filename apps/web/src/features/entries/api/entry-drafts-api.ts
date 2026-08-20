@@ -62,11 +62,19 @@ type EntryDraftPayload = {
   villageOrLocation?: string | null;
 };
 
-type EntryTag = {
-  id: string;
-  tagId: string;
-  entryId: string;
-  tag: TaxonomyItem;
+type EntryTag = TaxonomyItem;
+
+type OwnEntriesSortBy = "createdAt" | "updatedAt";
+type SortDirection = "asc" | "desc";
+
+type OwnEntriesQuery = {
+  page?: number;
+  limit?: number;
+  status?: EntryStatus;
+  categoryId?: string;
+  contentTypeId?: string;
+  sortBy?: OwnEntriesSortBy;
+  sortDirection?: SortDirection;
 };
 
 type EntrySource = EntrySourceInput & {
@@ -118,7 +126,7 @@ type OwnEntry = EntryDraftPayload & {
   district?: TaxonomyItem | null;
   category?: TaxonomyItem | null;
   contentType?: TaxonomyItem | null;
-  tags?: EntryTag[];
+  tags?: TaxonomyItem[];
   sources?: EntrySource[];
   images?: EntryImage[];
   youtubeVideo?: EntryYouTubeVideo | null;
@@ -128,6 +136,16 @@ type OwnEntry = EntryDraftPayload & {
 
 type EntryResponse = {
   data: OwnEntry;
+};
+
+type OwnEntryListResponse = {
+  data: OwnEntry[];
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 };
 
 type EntryTagsResponse = {
@@ -163,6 +181,44 @@ async function createEntryDraft(input: EntryDraftPayload) {
   });
 
   return response.data;
+}
+
+async function listOwnEntries(query: OwnEntriesQuery = {}, signal?: AbortSignal) {
+  const searchParams = new URLSearchParams();
+
+  setOptionalParam(searchParams, "page", query.page);
+  setOptionalParam(searchParams, "limit", query.limit);
+  setOptionalParam(searchParams, "status", query.status);
+  setOptionalParam(searchParams, "categoryId", query.categoryId);
+  setOptionalParam(searchParams, "contentTypeId", query.contentTypeId);
+  setOptionalParam(searchParams, "sortBy", query.sortBy);
+  setOptionalParam(searchParams, "sortDirection", query.sortDirection);
+
+  const queryString = searchParams.toString();
+  const response = await apiRequest<OwnEntryListResponse>(
+    `/me/entries${queryString ? `?${queryString}` : ""}`,
+    {
+      method: "GET",
+      signal,
+    },
+  );
+
+  return response;
+}
+
+async function getOwnEntry(entryId: string, signal?: AbortSignal) {
+  const response = await apiRequest<EntryResponse>(`/me/entries/${entryId}`, {
+    method: "GET",
+    signal,
+  });
+
+  return response.data;
+}
+
+async function deleteOwnDraft(entryId: string) {
+  await apiRequest(`/me/entries/${entryId}`, {
+    method: "DELETE",
+  });
 }
 
 async function updateEntryDraft(entryId: string, input: EntryDraftPayload) {
@@ -262,6 +318,16 @@ async function deleteEntryImage(entryId: string, imageId: string) {
   });
 }
 
+function setOptionalParam(
+  searchParams: URLSearchParams,
+  key: string,
+  value: number | string | undefined,
+) {
+  if (value !== undefined && value !== "") {
+    searchParams.set(key, String(value));
+  }
+}
+
 export type {
   EntryDraftPayload,
   EntryImage,
@@ -273,7 +339,11 @@ export type {
   EntryYouTubeVideo,
   EntryYouTubeVideoInput,
   GeographicScope,
+  OwnEntriesQuery,
+  OwnEntriesSortBy,
   OwnEntry,
+  OwnEntryListResponse,
+  SortDirection,
   SourceType,
 };
 export {
@@ -281,6 +351,9 @@ export {
   createEntrySource,
   deleteEntryImage,
   deleteEntrySource,
+  deleteOwnDraft,
+  getOwnEntry,
+  listOwnEntries,
   replaceEntryTags,
   submitEntryForReview,
   updateEntryDraft,

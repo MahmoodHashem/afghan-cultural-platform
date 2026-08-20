@@ -94,6 +94,14 @@ const homeHero = read("src/features/home/components/home-hero.tsx");
 const homeScrollReveal = read("src/features/home/components/scroll-reveal.tsx");
 const publicHeader = read("src/components/layout/public-header.tsx");
 const sheet = read("src/components/ui/sheet.tsx");
+const profilePage = read("src/app/(profile)/profile/page.tsx");
+const profileLayout = read("src/app/(profile)/layout.tsx");
+const profileLoading = read("src/app/(profile)/profile/loading.tsx");
+const ownerProfilePage = read("src/features/profile/components/owner-profile-page.tsx");
+const profileSkeleton = read("src/features/profile/components/profile-page-skeleton.tsx");
+const profileEntryStatus = read("src/features/profile/constants/entry-status.ts");
+const profileEntryHooks = read("src/features/profile/hooks/use-owner-entries.ts");
+const profileQueryUtils = read("src/features/profile/utils/profile-query.ts");
 
 test("login page renders required fields and links", () => {
   assert.match(loginPage, /title="خوش آمدید"/);
@@ -231,6 +239,81 @@ test("protected route gates preserve safe next paths and enforce auth states", (
   assert.match(routeGates, /getSafeRedirectPath\(pathname\)/);
 });
 
+test("owner profile route is authenticated and noindexed", () => {
+  assert.match(profilePage, /robots: \{/);
+  assert.match(profilePage, /index: false/);
+  assert.match(profilePage, /RequireAuth/);
+  assert.match(profilePage, /OwnerProfilePage/);
+  assert.match(profileLayout, /PublicHeader/);
+  assert.match(profileLayout, /HomeFooter/);
+  assert.match(profileLoading, /ProfilePageSkeleton/);
+  assert.match(profileSkeleton, /در حال بارگذاری پروفایل/);
+});
+
+test("profile links replace stale account and dashboard destinations", () => {
+  assert.match(publicHeader, /href="\/profile"/);
+  assert.match(authNavigation, /href="\/profile"/);
+  assert.doesNotMatch(publicHeader, /href="\/account"/);
+  assert.doesNotMatch(authNavigation, /href="\/dashboard"/);
+});
+
+test("owner profile uses safe authenticated user data", () => {
+  assert.match(ownerProfilePage, /useAuthStore/);
+  assert.match(ownerProfilePage, /user\.displayName/);
+  assert.match(ownerProfilePage, /user\.emailVerified/);
+  assert.match(ownerProfilePage, /createInitials\(user\.displayName\)/);
+  assert.doesNotMatch(ownerProfilePage, /passwordHash|refreshToken|tokenHash/);
+});
+
+test("owner profile entries integrate the existing private entry endpoints", () => {
+  assert.match(entryDraftsApi, /async function listOwnEntries/);
+  assert.match(entryDraftsApi, /\/me\/entries/);
+  assert.match(entryDraftsApi, /async function getOwnEntry/);
+  assert.match(entryDraftsApi, /async function deleteOwnDraft/);
+  assert.match(profileEntryHooks, /useOwnerEntries/);
+  assert.match(profileEntryHooks, /PROFILE_ENTRIES_PAGE_SIZE = 8/);
+  assert.match(profileEntryHooks, /sortBy: "updatedAt"/);
+  assert.match(profileEntryHooks, /sortDirection: "desc"/);
+});
+
+test("profile tabs and filters are owned by URL search params", () => {
+  assert.match(profileQueryUtils, /type ProfileTab = "entries" \| "reviews" \| "bookmarks"/);
+  assert.match(profileQueryUtils, /status\?: EntryStatus/);
+  assert.match(profileQueryUtils, /createProfileHref/);
+  assert.match(profileQueryUtils, /\/profile/);
+  assert.match(ownerProfilePage, /useSearchParams/);
+  assert.match(ownerProfilePage, /router\.push\(createProfileHref/);
+  assert.match(ownerProfilePage, /scroll: false/);
+});
+
+test("profile status labels use approved Persian wording", () => {
+  assert.match(profileEntryStatus, /DRAFT:[\s\S]*پیش‌نویس/);
+  assert.match(profileEntryStatus, /PENDING_REVIEW:[\s\S]*در انتظار بررسی/);
+  assert.match(profileEntryStatus, /CHANGES_REQUESTED:[\s\S]*نیازمند اصلاح/);
+  assert.match(profileEntryStatus, /PUBLISHED:[\s\S]*منتشرشده/);
+  assert.match(profileEntryStatus, /REJECTED:[\s\S]*ردشده/);
+  assert.match(profileEntryStatus, /HIDDEN:[\s\S]*پنهان/);
+  assert.match(profileEntryStatus, /ARCHIVED:[\s\S]*بایگانی‌شده/);
+});
+
+test("profile stats are real entry counts and do not fake reviews or bookmarks", () => {
+  assert.match(profileEntryHooks, /createCountQuery\("all"/);
+  assert.match(profileEntryHooks, /createCountQuery\("published", \{ status: "PUBLISHED" \}/);
+  assert.match(profileEntryHooks, /status: "PENDING_REVIEW"/);
+  assert.match(profileEntryHooks, /status: "CHANGES_REQUESTED"/);
+  assert.match(ownerProfilePage, /همه مطالب/);
+  assert.match(ownerProfilePage, /منتشرشده/);
+  assert.match(ownerProfilePage, /در انتظار بررسی \/ نیازمند اصلاح/);
+  assert.doesNotMatch(ownerProfilePage, /۸ دیدگاه|۲۴ ذخیره/);
+});
+
+test("reviews and bookmarks tabs disclose missing backend contracts", () => {
+  assert.match(ownerProfilePage, /دیدگاه‌های شما اینجا نمایش داده می‌شود/);
+  assert.match(ownerProfilePage, /امکان نمایش فهرست دیدگاه‌های شما هنوز آماده نشده است/);
+  assert.match(ownerProfilePage, /ذخیره‌های شما هنوز وصل نشده است/);
+  assert.match(ownerProfilePage, /فعلاً داده ساختگی نشان نمی‌دهد/);
+});
+
 test("verified-email and role gates are opt-in frontend UX gates", () => {
   assert.match(routeGates, /function RequireVerifiedEmail/);
   assert.match(routeGates, /!user\?\.emailVerified/);
@@ -322,7 +405,7 @@ test("create entry supports sources, image staging, and unsaved-change warning",
 test("role-aware navigation reflects auth state without becoming authorization", () => {
   assert.match(authNavigation, /\/login/);
   assert.match(authNavigation, /\/register/);
-  assert.match(authNavigation, /\/dashboard/);
+  assert.match(authNavigation, /\/profile/);
   assert.match(authNavigation, /\/moderator/);
   assert.match(authNavigation, /\/admin/);
   assert.match(authNavigation, /ایمیل تأیید نشده/);
@@ -342,6 +425,7 @@ test("private query cleanup preserves non-auth public query space", () => {
   assert.match(authQuery, /privateQueryRoots/);
   assert.match(authQuery, /"auth"/);
   assert.match(authQuery, /"dashboard"/);
+  assert.match(authQuery, /"profile"/);
   assert.doesNotMatch(authQuery, /published/);
 });
 

@@ -33,8 +33,8 @@ function AuthNavigation() {
 
   return (
     <nav className="flex flex-wrap items-center gap-2" aria-label="ناوبری حساب کاربری">
-      <Link href="/dashboard" className={cn(buttonVariants({ variant: "ghost" }))}>
-        داشبورد
+      <Link href="/profile" className={cn(buttonVariants({ variant: "ghost" }))}>
+        پروفایل
       </Link>
       {user.role === "MODERATOR" || user.role === "ADMIN" ? (
         <Link href="/moderator" className={cn(buttonVariants({ variant: "ghost" }))}>

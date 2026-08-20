@@ -9,13 +9,11 @@ export default function NewEntryLoading() {
             <Skeleton className="size-9 rounded-full" />
             <div className="space-y-2">
               <Skeleton className="h-4 w-24" />
-
             </div>
           </div>
           <div className="hidden items-center gap-2 sm:flex">
             <Skeleton className="h-9 w-24 rounded-lg" />
             <Skeleton className="h-9 w-32 rounded-lg" />
-
           </div>
         </div>
       </div>

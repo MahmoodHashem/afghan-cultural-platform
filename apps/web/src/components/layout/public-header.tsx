@@ -383,7 +383,7 @@ function MobileNavigation({ isCompact }: { isCompact: boolean }) {
                     افزودن مطلب
                   </Link>
                   <Link
-                    href="/account"
+                    href="/profile"
                     onClick={closeMenu}
                     className={cn(
                       buttonVariants({ variant: "outline" }),
@@ -542,7 +542,7 @@ function ProfileMenu({ user }: { user: SafeUser }) {
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem
-          render={<Link href="/account" />}
+          render={<Link href="/profile" />}
           className="rounded-2xl px-3 py-2 text-[14px] text-muted-foreground hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground"
         >
           حساب کاربری

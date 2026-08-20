@@ -8,6 +8,7 @@ const privateQueryRoots = [
   "moderator",
   "admin",
   "bookmarks",
+  "profile",
 ] as const;
 
 function setCurrentUserQuery(queryClient: QueryClient, user: unknown) {
