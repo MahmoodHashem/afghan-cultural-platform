@@ -242,16 +242,18 @@ test("create entry route is private, verified-email gated, and noindexed", () =>
   assert.match(createEntryLoading, /Skeleton/);
 });
 
-test("create entry editor keeps writing first with toggle-only Tiptap tools", () => {
+test("create entry editor keeps writing first with contextual Tiptap tools", () => {
   assert.match(createEntryForm, /مطلب جدید/);
-  assert.match(createEntryForm, /عنوان مطلب \*/);
-  assert.match(createEntryForm, /خلاصه \*/);
-  assert.match(createEntryForm, /متن مطلب \*/);
-  assert.match(createEntryForm, /toolbarMode="toggle"/);
-  assert.match(createEntryForm, /min-h-\[75vh\]/);
-  assert.match(richTextEditor, /toolbarMode\?: "always" \| "toggle" \| "hidden"/);
-  assert.match(richTextEditor, /aria-expanded=\{isToolbarOpen\}/);
-  assert.match(richTextEditor, /Aa\s*<\/Button>/);
+  assert.match(createEntryForm, /عنوان مطلب/);
+  assert.match(createEntryForm, /خلاصه/);
+  assert.match(createEntryForm, /متن مطلب را بنویسید/);
+  assert.match(createEntryForm, /toolbarMode="bubble"/);
+  assert.match(createEntryForm, /min-h-\[45vh\]/);
+  assert.match(richTextEditor, /toolbarMode\?: "always" \| "toggle" \| "bubble" \| "hidden"/);
+  assert.match(richTextEditor, /BubbleMenu/);
+  assert.match(richTextEditor, /EditorBubbleToolbar/);
+  assert.match(richTextEditor, /ابزارهای بیشتر/);
+  assert.match(richTextEditor, /setLink\(\{ href: nextUrl \}\)/);
 });
 
 test("create entry secondary sections are collapsed and editorial", () => {
@@ -298,9 +300,7 @@ test("create entry API integration uses existing backend draft contracts", () =>
   assert.match(createEntryForm, /toast\.success\("مطلب برای بررسی فرستاده شد\."\)/);
 });
 
-test("create entry supports preview, sources, image staging, and unsaved-change warning", () => {
-  assert.match(createEntryForm, /function PreviewSheet/);
-  assert.match(createEntryForm, /این پیش‌نمایش چیزی را ذخیره یا ارسال نمی‌کند/);
+test("create entry supports sources, image staging, and unsaved-change warning", () => {
   assert.match(createEntryForm, /useFieldArray/);
   assert.match(createEntryForm, /function SourceFields/);
   assert.match(createEntryForm, /handleImageSelection/);

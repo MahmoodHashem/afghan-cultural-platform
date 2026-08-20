@@ -53,10 +53,7 @@ import {
   SOURCE_TYPE_VALUES,
   sourceTypeLabels,
 } from "@/features/entries/schemas/create-entry-schema";
-import {
-  createEmptyTiptapDocument,
-  extractTiptapPlainText,
-} from "@/features/entries/utils/tiptap-content";
+import { createEmptyTiptapDocument } from "@/features/entries/utils/tiptap-content";
 import { isApiError } from "@/lib/api/api-error";
 import { cn } from "@/lib/utils";
 import { CreateEntrySelect, type SelectOption, TagMultiSelect } from "./create-entry-select";
@@ -94,9 +91,6 @@ type StagedImage = {
 };
 
 type WatchedEntryValues = {
-  title?: string;
-  summary?: string;
-  contentJson?: unknown;
   geographicScope?: GeographicScope;
   provinceId?: string;
   categoryId?: string;
@@ -118,7 +112,6 @@ const fieldNameMap = {
 function CreateEntryForm({ taxonomy }: CreateEntryFormProps) {
   const [draftId, setDraftId] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<SaveState>("idle");
-  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
   const [isSyncingMedia, setIsSyncingMedia] = useState(false);
   const [images, setImages] = useState<StagedImage[]>([]);
   const imageInputRef = useRef<HTMLInputElement | null>(null);
@@ -184,7 +177,6 @@ function CreateEntryForm({ taxonomy }: CreateEntryFormProps) {
     [selectedProvinceId, taxonomy.districts],
   );
 
-  const readiness = useMemo(() => calculateReadiness(watchedValues), [watchedValues]);
   const detailsSummary = useMemo(
     () =>
       createMetadataSummary({
@@ -300,7 +292,6 @@ function CreateEntryForm({ taxonomy }: CreateEntryFormProps) {
       setDraftId(savedDraft.id);
       await syncRelatedContent(savedDraft.id, values);
       form.reset(form.getValues());
-      setLastSavedAt(new Date());
       setSaveState("saved");
 
       if (showSuccessToast) {
@@ -511,17 +502,12 @@ function CreateEntryForm({ taxonomy }: CreateEntryFormProps) {
     <LazyMotion features={domAnimation}>
       <div className="min-h-screen bg-background text-foreground">
         <EditorHeader
-          readiness={readiness}
-          saveState={saveState}
-          lastSavedAt={lastSavedAt}
           isBusy={isBusy}
           onSaveDraft={handleSaveDraft}
           onSubmit={handleSubmitForReview}
         />
 
         <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
-
-
           <form className="bg-background px-0 py-6 sm:px-8 lg:px-14" noValidate>
             <section className="space-y-12">
               <div className="space-y-2 border-b border-border pb-3">
@@ -538,7 +524,6 @@ function CreateEntryForm({ taxonomy }: CreateEntryFormProps) {
                     onChange: () => setSaveState("unsaved"),
                   })}
                 />
-
               </div>
 
               <div className="space-y-2 border-b border-border ">
@@ -558,11 +543,6 @@ function CreateEntryForm({ taxonomy }: CreateEntryFormProps) {
               </div>
 
               <div className="space-y-2">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <h2 className="text-small text-muted-foreground">متن مطلب</h2>
-                  </div>
-                </div>
                 <Controller
                   control={control}
                   name="contentJson"
@@ -575,7 +555,7 @@ function CreateEntryForm({ taxonomy }: CreateEntryFormProps) {
                       }}
                       placeholder="متن مطلب را بنویسید..."
                       characterLimit={25_000}
-                      toolbarMode="toggle"
+                      toolbarMode="bubble"
                       showCharacterCount={false}
                       className="rounded-none border-0 bg-transparent"
                       editorClassName="min-h-[45vh] rounded-none bg-background px-0 py-0 text-[18px] leading-9 focus-visible:ring-0 placeholder:text-white"
@@ -889,25 +869,17 @@ function CreateEntryForm({ taxonomy }: CreateEntryFormProps) {
 }
 
 type EditorHeaderProps = {
-  readiness: { completed: number; total: number; ready: boolean };
-  saveState: SaveState;
-  lastSavedAt: Date | null;
   isBusy: boolean;
   onSaveDraft: () => void;
   onSubmit: () => void;
 };
 
-function EditorHeader({
-  isBusy,
-  onSaveDraft,
-  onSubmit,
-}: EditorHeaderProps) {
-
+function EditorHeader({ isBusy, onSaveDraft, onSubmit }: EditorHeaderProps) {
   return (
     <header className="sticky top-5 z-40 border-b border-border bg-card/94 backdrop-blur-md max-w-5xl mx-auto rounded-full">
       <div className="mx-auto flex  flex-col gap-3 px-4 py-3 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
         <div className="flex items-center gap-3">
-          <Button type="button" variant="ghost" size="icon" render={<Link href="/" />}>
+          <Button type="button" variant="ghost" size="icon" render={<Link href="/explore" />}>
             <ArrowRightIcon aria-hidden="true" />
             <span className="sr-only">بازگشت</span>
           </Button>
@@ -916,8 +888,13 @@ function EditorHeader({
           </div>
         </div>
         <div className="flex items-center gap-2 lg:justify-end">
-
-          <Button type="button" variant="outline" className={"rounded-full"} disabled={isBusy} onClick={onSaveDraft}>
+          <Button
+            type="button"
+            variant="outline"
+            className={"rounded-full"}
+            disabled={isBusy}
+            onClick={onSaveDraft}
+          >
             <CheckCircleIcon aria-hidden="true" />
             {isBusy ? "در حال ذخیره..." : "ذخیره پیش‌نویس"}
           </Button>
@@ -1241,11 +1218,6 @@ function ImageList({ images, onChange, onMove, onRemove }: ImageListProps) {
   );
 }
 
-
-
-
-
-
 function FieldError({ message }: { message?: string }) {
   if (!message) {
     return null;
@@ -1367,26 +1339,6 @@ function validateDistrictProvince(
   return true;
 }
 
-function calculateReadiness(values: WatchedEntryValues) {
-  const checks = [
-    Boolean(values.title?.trim()),
-    Boolean(values.summary?.trim()),
-    Boolean(values.contentJson && extractTiptapPlainText(values.contentJson).length > 0),
-    Boolean(values.contentTypeId),
-    Boolean(values.categoryId),
-    values.geographicScope === "PROVINCE"
-      ? Boolean(values.provinceId)
-      : Boolean(values.geographicScope),
-  ];
-  const completed = checks.filter(Boolean).length;
-
-  return {
-    completed,
-    total: checks.length,
-    ready: completed === checks.length,
-  };
-}
-
 function createMetadataSummary({
   values,
   provinces,
@@ -1414,31 +1366,6 @@ function createMetadataSummary({
     [contentTypeName, categoryName, location, tagSummary].filter(Boolean).join(" · ") ||
     "هنوز کامل نشده"
   );
-}
-
-function getSaveStatusText(saveState: SaveState, lastSavedAt: Date | null) {
-  if (saveState === "saving") {
-    return "در حال ذخیره...";
-  }
-
-  if (saveState === "submitted") {
-    return "برای بررسی فرستاده شد";
-  }
-
-  if (saveState === "unsaved") {
-    return "تغییرات ذخیره‌نشده";
-  }
-
-  if (saveState === "saved") {
-    return lastSavedAt
-      ? `ذخیره شد، ${lastSavedAt.toLocaleTimeString("fa-AF", {
-        hour: "2-digit",
-        minute: "2-digit",
-      })}`
-      : "ذخیره شد";
-  }
-
-  return "هنوز ذخیره نشده";
 }
 
 function getFieldErrorMessage(error: unknown) {
