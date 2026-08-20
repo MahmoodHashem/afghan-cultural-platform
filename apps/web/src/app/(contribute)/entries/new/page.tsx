@@ -5,24 +5,24 @@ import { getContributionTaxonomyData } from "@/features/entries/api/contribution
 import { CreateEntryForm } from "@/features/entries/components/create-entry-form";
 
 export const metadata: Metadata = {
-  title: "ایجاد مطلب جدید | میراث افغانستان",
-  description: "نوشتن و ارسال مطلب فرهنگی برای بررسی در میراث افغانستان.",
-  robots: {
-    index: false,
-    follow: false,
-  },
+    title: "ایجاد مطلب جدید | میراث افغانستان",
+    description: "نوشتن و ارسال مطلب فرهنگی برای بررسی در میراث افغانستان.",
+    robots: {
+        index: false,
+        follow: false,
+    },
 };
 
 export default async function NewEntryPage() {
-  const taxonomy = await getContributionTaxonomyData();
+    const taxonomy = await getContributionTaxonomyData();
 
-  return (
-    <RequireAuth>
-      <RequireVerifiedEmail>
-        <PageTransition>
-          <CreateEntryForm taxonomy={taxonomy} />
-        </PageTransition>
-      </RequireVerifiedEmail>
-    </RequireAuth>
-  );
+    return (
+        <RequireAuth>
+            <RequireVerifiedEmail>
+                <PageTransition>
+                    <CreateEntryForm taxonomy={taxonomy} />
+                </PageTransition>
+            </RequireVerifiedEmail>
+        </RequireAuth>
+    );
 }

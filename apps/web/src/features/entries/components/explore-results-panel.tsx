@@ -188,7 +188,7 @@ function SortSelect({ query }: { query: NormalizedExploreQuery }) {
   const [isPending, startTransition] = useTransition();
 
   return (
-    <div className="flex items-center gap-2 text-[13px] text-muted-foreground">
+    <div>
       <Select
         items={sortOptions}
         value={query.sort}
@@ -203,10 +203,10 @@ function SortSelect({ query }: { query: NormalizedExploreQuery }) {
           });
         }}
       >
-        <SelectTrigger className="h-9 rounded-full border-border bg-background px-3  ">
+        <SelectTrigger >
           <SelectValue />
         </SelectTrigger>
-        <SelectContent align="end" alignItemWithTrigger={false}>
+        <SelectContent align="start" alignItemWithTrigger={false}>
           <SelectGroup>
             {sortOptions.map((option) => (
               <SelectItem key={option.value} value={option.value}>
@@ -308,11 +308,11 @@ function getRemoveFilterHref(query: NormalizedExploreQuery, key: ActiveFilterKey
 function ClearFiltersLink({ query }: { query: NormalizedExploreQuery }) {
   const hasFilters = Boolean(
     query.provinceSlug ||
-      query.categorySlug ||
-      query.contentTypeSlug ||
-      query.tagSlug ||
-      query.geographicScope ||
-      query.sort !== "newest",
+    query.categorySlug ||
+    query.contentTypeSlug ||
+    query.tagSlug ||
+    query.geographicScope ||
+    query.sort !== "newest",
   );
 
   if (!hasFilters) {
