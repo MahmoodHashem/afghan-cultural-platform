@@ -308,11 +308,11 @@ function getRemoveFilterHref(query: NormalizedExploreQuery, key: ActiveFilterKey
 function ClearFiltersLink({ query }: { query: NormalizedExploreQuery }) {
   const hasFilters = Boolean(
     query.provinceSlug ||
-    query.categorySlug ||
-    query.contentTypeSlug ||
-    query.tagSlug ||
-    query.geographicScope ||
-    query.sort !== "newest",
+      query.categorySlug ||
+      query.contentTypeSlug ||
+      query.tagSlug ||
+      query.geographicScope ||
+      query.sort !== "newest",
   );
 
   if (!hasFilters) {

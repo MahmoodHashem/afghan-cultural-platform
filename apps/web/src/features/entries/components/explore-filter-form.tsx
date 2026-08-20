@@ -188,7 +188,6 @@ function ExploreFilterForm({
   );
 }
 
-
 function SelectField({
   icon,
   label,
@@ -223,7 +222,6 @@ function SelectField({
     );
   }, [isSearchable, options, searchValue]);
 
-  
   return (
     <Select
       name={name}
@@ -305,10 +303,7 @@ function SelectField({
 
           {filteredOptions.length > 0 ? (
             filteredOptions.map((option) => (
-              <SelectItem
-                key={option.value}
-                value={option.value}
-              >
+              <SelectItem key={option.value} value={option.value}>
                 {option.label}
               </SelectItem>
             ))

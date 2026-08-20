@@ -9,7 +9,7 @@ import Underline from "@tiptap/extension-underline";
 import type { JSONContent } from "@tiptap/react";
 import { EditorContent, Extension, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -23,6 +23,9 @@ type RichTextEditorProps = {
   placeholder?: string;
   characterLimit?: number;
   className?: string;
+  editorClassName?: string;
+  toolbarMode?: "always" | "toggle" | "hidden";
+  showCharacterCount?: boolean;
 };
 
 const defaultContent: RichTextContent = {
@@ -60,10 +63,15 @@ const RtlTextDirection = Extension.create({
 function RichTextEditor({
   value = defaultContent,
   onChange,
-  placeholder = "متن فارسی را اینجا بنویسید...",
+  placeholder = "متن مطلب را اینجا بنویسید...",
   characterLimit = 1200,
   className,
+  editorClassName,
+  toolbarMode = "always",
+  showCharacterCount = true,
 }: RichTextEditorProps) {
+  const [isToolbarOpen, setIsToolbarOpen] = useState(toolbarMode === "always");
+
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
@@ -94,8 +102,11 @@ function RichTextEditor({
     content: value,
     editorProps: {
       attributes: {
-        class:
-          "min-h-48 rounded-b-xl bg-card px-4 py-3 text-body outline-none focus-visible:ring-3 focus-visible:ring-ring/40",
+        class: cn(
+          "min-h-48 bg-card px-4 py-3 text-body outline-none focus-visible:ring-3 focus-visible:ring-ring/40 ",
+          toolbarMode === "always" ? "rounded-b-xl" : "rounded-xl",
+          editorClassName,
+        ),
         dir: "rtl",
       },
     },
@@ -146,121 +157,153 @@ function RichTextEditor({
   }
 
   const characters = editor.storage.characterCount.characters() as number;
+  const shouldShowToolbar = toolbarMode === "always" || (toolbarMode === "toggle" && isToolbarOpen);
 
   return (
     <div className={cn("overflow-hidden rounded-xl border border-border bg-card", className)}>
-      <div className="flex flex-wrap items-center gap-2 border-b border-border bg-muted/50 p-2">
-        <Button
-          type="button"
-          variant={editor.isActive("heading", { level: 2 }) ? "default" : "outline"}
-          size="sm"
-          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-        >
-          عنوان ۲
-        </Button>
-        <Button
-          type="button"
-          variant={editor.isActive("heading", { level: 3 }) ? "default" : "outline"}
-          size="sm"
-          onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-        >
-          عنوان ۳
-        </Button>
-        <Separator orientation="vertical" className="h-7" />
-        <Button
-          type="button"
-          variant={editor.isActive("bold") ? "default" : "outline"}
-          size="sm"
-          onClick={() => editor.chain().focus().toggleBold().run()}
-        >
-          ضخیم
-        </Button>
-        <Button
-          type="button"
-          variant={editor.isActive("italic") ? "default" : "outline"}
-          size="sm"
-          onClick={() => editor.chain().focus().toggleItalic().run()}
-        >
-          کج
-        </Button>
-        <Button
-          type="button"
-          variant={editor.isActive("underline") ? "default" : "outline"}
-          size="sm"
-          onClick={() => editor.chain().focus().toggleUnderline().run()}
-        >
-          زیرخط
-        </Button>
-        <Separator orientation="vertical" className="h-7" />
-        <Button
-          type="button"
-          variant={editor.isActive("bulletList") ? "default" : "outline"}
-          size="sm"
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
-        >
-          فهرست
-        </Button>
-        <Button
-          type="button"
-          variant={editor.isActive("orderedList") ? "default" : "outline"}
-          size="sm"
-          onClick={() => editor.chain().focus().toggleOrderedList().run()}
-        >
-          شماره‌دار
-        </Button>
-        <Button
-          type="button"
-          variant={editor.isActive("blockquote") ? "default" : "outline"}
-          size="sm"
-          onClick={() => editor.chain().focus().toggleBlockquote().run()}
-        >
-          نقل‌قول
-        </Button>
-        <Separator orientation="vertical" className="h-7" />
-        <Button
-          type="button"
-          variant={editor.isActive({ textAlign: "right" }) ? "default" : "outline"}
-          size="sm"
-          onClick={() => editor.chain().focus().setTextAlign("right").run()}
-        >
-          راست
-        </Button>
-        <Button
-          type="button"
-          variant={editor.isActive({ textAlign: "center" }) ? "default" : "outline"}
-          size="sm"
-          onClick={() => editor.chain().focus().setTextAlign("center").run()}
-        >
-          وسط
-        </Button>
-        <Button type="button" variant="outline" size="sm" onClick={setLink}>
-          پیوند
-        </Button>
-        <Separator orientation="vertical" className="h-7" />
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          disabled={!editor.can().undo()}
-          onClick={() => editor.chain().focus().undo().run()}
-        >
-          بازگشت
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          disabled={!editor.can().redo()}
-          onClick={() => editor.chain().focus().redo().run()}
-        >
-          انجام دوباره
-        </Button>
-      </div>
+      {/* {toolbarMode === "toggle" ? (
+        <div className="flex flex-wrap items-center gap-2   p-2">
+          <Button
+            type="button"
+            variant={isToolbarOpen ? "default" : "outline"}
+            size="sm"
+            aria-expanded={isToolbarOpen}
+            onClick={() => setIsToolbarOpen((current) => !current)}
+          >
+            Aa
+          </Button>
+          {shouldShowToolbar ? <EditorToolbar editor={editor} onSetLink={setLink} /> : null}
+        </div>
+      ) : null} */}
+      {toolbarMode === "always" ? (
+        <div className="flex flex-wrap items-center gap-2 border-b border-border bg-muted/50 p-2">
+          <EditorToolbar editor={editor} onSetLink={setLink} />
+        </div>
+      ) : null}
       <EditorContent editor={editor} />
-      <div className="border-t border-border px-4 py-2 text-small text-muted-foreground">
-        {characters.toLocaleString("fa-AF")} / {characterLimit.toLocaleString("fa-AF")} کاراکتر
-      </div>
+      {showCharacterCount ? (
+        <div className="border-t border-border px-4 py-2 text-small text-muted-foreground placeholder:text-muted-foreground/25 ">
+          {characters.toLocaleString("fa-AF")} / {characterLimit.toLocaleString("fa-AF")} کاراکتر
+        </div>
+      ) : null}
     </div>
+  );
+}
+
+type EditorToolbarProps = {
+  editor: NonNullable<ReturnType<typeof useEditor>>;
+  onSetLink: () => void;
+};
+
+function EditorToolbar({ editor, onSetLink }: EditorToolbarProps) {
+  return (
+    <>
+      <Button
+        type="button"
+        variant={editor.isActive("heading", { level: 2 }) ? "default" : "outline"}
+        size="sm"
+        onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+      >
+        عنوان ۲
+      </Button>
+      <Button
+        type="button"
+        variant={editor.isActive("heading", { level: 3 }) ? "default" : "outline"}
+        size="sm"
+        onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+      >
+        عنوان ۳
+      </Button>
+      <Separator orientation="vertical" className="h-7" />
+      <Button
+        type="button"
+        variant={editor.isActive("bold") ? "default" : "outline"}
+        size="sm"
+        onClick={() => editor.chain().focus().toggleBold().run()}
+      >
+        ضخیم
+      </Button>
+      <Button
+        type="button"
+        variant={editor.isActive("italic") ? "default" : "outline"}
+        size="sm"
+        onClick={() => editor.chain().focus().toggleItalic().run()}
+      >
+        کج
+      </Button>
+      <Button
+        type="button"
+        variant={editor.isActive("underline") ? "default" : "outline"}
+        size="sm"
+        onClick={() => editor.chain().focus().toggleUnderline().run()}
+      >
+        زیرخط
+      </Button>
+      <Separator orientation="vertical" className="h-7" />
+      <Button
+        type="button"
+        variant={editor.isActive("bulletList") ? "default" : "outline"}
+        size="sm"
+        onClick={() => editor.chain().focus().toggleBulletList().run()}
+      >
+        فهرست
+      </Button>
+      <Button
+        type="button"
+        variant={editor.isActive("orderedList") ? "default" : "outline"}
+        size="sm"
+        onClick={() => editor.chain().focus().toggleOrderedList().run()}
+      >
+        شماره‌دار
+      </Button>
+      <Button
+        type="button"
+        variant={editor.isActive("blockquote") ? "default" : "outline"}
+        size="sm"
+        onClick={() => editor.chain().focus().toggleBlockquote().run()}
+      >
+        نقل‌قول
+      </Button>
+      <Separator orientation="vertical" className="h-7" />
+      <Button
+        type="button"
+        variant={editor.isActive({ textAlign: "right" }) ? "default" : "outline"}
+        size="sm"
+        onClick={() => editor.chain().focus().setTextAlign("right").run()}
+      >
+        راست
+      </Button>
+      <Button
+        type="button"
+        variant={editor.isActive({ textAlign: "center" }) ? "default" : "outline"}
+        size="sm"
+        onClick={() => editor.chain().focus().setTextAlign("center").run()}
+      >
+        وسط
+      </Button>
+      <Button type="button" variant="outline" size="sm" onClick={onSetLink}>
+        پیوند
+      </Button>
+      <Separator orientation="vertical" className="h-7" />
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        disabled={!editor.can().undo()}
+        onClick={() => editor.chain().focus().undo().run()}
+      >
+        بازگشت
+      </Button>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        disabled={!editor.can().redo()}
+        onClick={() => editor.chain().focus().redo().run()}
+      >
+        انجام دوباره
+      </Button>
+    </>
   );
 }
 

@@ -37,6 +37,8 @@ const verifiedEmailBanner = read("src/features/auth/components/verified-email-ba
 const authQuery = read("src/lib/auth/auth-query.ts");
 const publicLayout = read("src/app/(public)/layout.tsx");
 const publicError = read("src/app/(public)/error.tsx");
+const createEntryPage = read("src/app/(contribute)/entries/new/page.tsx");
+const createEntryLoading = read("src/app/(contribute)/entries/new/loading.tsx");
 const entryDetailPage = read("src/app/(public)/entries/[slug]/page.tsx");
 const entryDetailLoading = read("src/app/(public)/entries/[slug]/loading.tsx");
 const entryDetailContent = read("src/features/entries/components/entry-detail-content.tsx");
@@ -45,6 +47,13 @@ const entryHeaderContext = read("src/features/entries/components/entry-detail-he
 const entryTableOfContents = read("src/features/entries/components/entry-table-of-contents.tsx");
 const entryFeedback = read("src/features/entries/components/reviews/entry-feedback.tsx");
 const communityFeedbackApi = read("src/features/entries/api/community-feedback-api.ts");
+const contributionTaxonomyApi = read("src/features/entries/api/contribution-taxonomy-api.ts");
+const entryDraftsApi = read("src/features/entries/api/entry-drafts-api.ts");
+const createEntryForm = read("src/features/entries/components/create-entry-form.tsx");
+const createEntrySelect = read("src/features/entries/components/create-entry-select.tsx");
+const createEntrySchema = read("src/features/entries/schemas/create-entry-schema.ts");
+const tiptapContentUtils = read("src/features/entries/utils/tiptap-content.ts");
+const richTextEditor = read("src/components/common/rich-text-editor.tsx");
 const explorePage = read("src/app/(public)/explore/page.tsx");
 const exploreLoading = read("src/app/(public)/explore/loading.tsx");
 const provincesPage = read("src/app/(public)/provinces/page.tsx");
@@ -222,6 +231,86 @@ test("verified-email and role gates are opt-in frontend UX gates", () => {
   assert.match(verifiedEmailBanner, /می‌توانید وارد حساب شوید/);
 });
 
+test("create entry route is private, verified-email gated, and noindexed", () => {
+  assert.match(createEntryPage, /robots: \{/);
+  assert.match(createEntryPage, /index: false/);
+  assert.match(createEntryPage, /RequireAuth/);
+  assert.match(createEntryPage, /RequireVerifiedEmail/);
+  assert.match(createEntryPage, /getContributionTaxonomyData\(\)/);
+  assert.match(createEntryPage, /<CreateEntryForm taxonomy=\{taxonomy\} \/>/);
+  assert.match(createEntryLoading, /NewEntryLoading/);
+  assert.match(createEntryLoading, /Skeleton/);
+});
+
+test("create entry editor keeps writing first with toggle-only Tiptap tools", () => {
+  assert.match(createEntryForm, /مطلب جدید/);
+  assert.match(createEntryForm, /عنوان مطلب \*/);
+  assert.match(createEntryForm, /خلاصه \*/);
+  assert.match(createEntryForm, /متن مطلب \*/);
+  assert.match(createEntryForm, /toolbarMode="toggle"/);
+  assert.match(createEntryForm, /min-h-\[75vh\]/);
+  assert.match(richTextEditor, /toolbarMode\?: "always" \| "toggle" \| "hidden"/);
+  assert.match(richTextEditor, /aria-expanded=\{isToolbarOpen\}/);
+  assert.match(richTextEditor, /Aa\s*<\/Button>/);
+});
+
+test("create entry secondary sections are collapsed and editorial", () => {
+  assert.match(createEntryForm, /function EditorSection/);
+  assert.match(createEntryForm, /useState\(false\)/);
+  assert.match(createEntryForm, /جزئیات مطلب/);
+  assert.match(createEntryForm, /تصاویر/);
+  assert.match(createEntryForm, /منابع/);
+  assert.match(createEntryForm, /ویدیوی مرتبط/);
+  assert.match(createEntryForm, /AnimatePresence/);
+  assert.match(createEntryForm, /LazyMotion/);
+});
+
+test("create entry validation covers geography, metadata, and submission readiness", () => {
+  assert.match(createEntrySchema, /GEOGRAPHIC_SCOPE_VALUES = \["PROVINCE", "NATIONAL", "NONE"\]/);
+  assert.match(createEntrySchema, /برای مطلب وابسته به یک ولایت، ولایت را انتخاب کنید/);
+  assert.match(createEntrySchema, /برای این محدوده جغرافیایی، ولایت نباید انتخاب شود/);
+  assert.match(createEntrySchema, /موضوع را انتخاب کنید/);
+  assert.match(createEntrySchema, /نوع مطلب را انتخاب کنید/);
+  assert.match(createEntrySchema, /نشانی یوتیوب معتبر وارد کنید/);
+  assert.match(tiptapContentUtils, /extractTiptapPlainText/);
+});
+
+test("create entry uses searchable selects and multi-select tags without new storage", () => {
+  assert.match(createEntrySelect, /options\.length > 10/);
+  assert.match(createEntrySelect, /selectedValues/);
+  assert.match(createEntrySelect, /normalizePersianSearch/);
+  assert.match(createEntrySelect, /replaceAll\("ي", "ی"\)/);
+  assert.match(createEntrySelect, /replaceAll\("ك", "ک"\)/);
+  assert.match(createEntrySelect, /selectedValues\.includes\(option\.value\)/);
+  assert.doesNotMatch(createEntryForm, /localStorage|sessionStorage|IndexedDB|document\.cookie/);
+});
+
+test("create entry API integration uses existing backend draft contracts", () => {
+  assert.match(entryDraftsApi, /apiRequest<EntryResponse>\("\/entries"/);
+  assert.match(entryDraftsApi, /apiRequest<EntryResponse>\(`\/me\/entries\/\$\{entryId\}`/);
+  assert.match(entryDraftsApi, /\/me\/entries\/\$\{entryId\}\/submit/);
+  assert.match(entryDraftsApi, /\/me\/entries\/\$\{entryId\}\/tags/);
+  assert.match(entryDraftsApi, /\/me\/entries\/\$\{entryId\}\/sources/);
+  assert.match(entryDraftsApi, /\/me\/entries\/\$\{entryId\}\/images/);
+  assert.match(entryDraftsApi, /\/me\/entries\/\$\{entryId\}\/youtube-video/);
+  assert.match(contributionTaxonomyApi, /\/taxonomy\/districts\?limit=500/);
+  assert.match(createEntryForm, /submitEntryForReview\(savedDraft\.id\)/);
+  assert.match(createEntryForm, /toast\.success\("مطلب برای بررسی فرستاده شد\."\)/);
+});
+
+test("create entry supports preview, sources, image staging, and unsaved-change warning", () => {
+  assert.match(createEntryForm, /function PreviewSheet/);
+  assert.match(createEntryForm, /این پیش‌نمایش چیزی را ذخیره یا ارسال نمی‌کند/);
+  assert.match(createEntryForm, /useFieldArray/);
+  assert.match(createEntryForm, /function SourceFields/);
+  assert.match(createEntryForm, /handleImageSelection/);
+  assert.match(createEntryForm, /moveImage/);
+  assert.match(createEntryForm, /sourceFields\.move/);
+  assert.match(createEntryForm, /uploadEntryImage/);
+  assert.match(createEntryForm, /beforeunload/);
+  assert.match(createEntryForm, /permissionConfirmed/);
+});
+
 test("role-aware navigation reflects auth state without becoming authorization", () => {
   assert.match(authNavigation, /\/login/);
   assert.match(authNavigation, /\/register/);
@@ -383,7 +472,7 @@ test("explore page uses public entries and taxonomy APIs with URL filters", () =
   assert.match(exploreFilterForm, /name="provinceSlug"/);
   assert.match(exploreFilterForm, /name="categorySlug"/);
   assert.match(exploreFilterForm, /name="contentTypeSlug"/);
-  assert.match(exploreFilterForm, /name="geographicScope"/);
+  assert.doesNotMatch(exploreFilterForm, /name="geographicScope"/);
   assert.match(exploreFilterForm, /<Select/);
   assert.match(exploreFilterSheet, /SheetContent side="right"/);
   assert.match(exploreResultsPanel, /جست‌وجوی مکان، مشاهیر، رسم یا موضوع/);
@@ -480,7 +569,7 @@ test("entry detail page renders published entry data by Persian slug", () => {
   assert.match(entryDetailContent, /case "internalEntryLink"/);
   assert.match(entryDetailContent, /YouTubeEmbed/);
   assert.match(entryDetailContent, /SourcesList/);
-  assert.match(entryDetailContent, /OutgoingReferences/);
+  assert.match(entryDetailContent, /ReferenceCard/);
   assert.match(entryDetailContent, /IncomingReferences/);
 });
 
@@ -510,7 +599,7 @@ test("entry detail includes reading navigation and sticky article tools", () => 
   assert.match(entryTableOfContents, /max-h-80/);
   assert.match(entryTableOfContents, /overflow-y-auto/);
   assert.match(entryTableOfContents, /aria-current=\{isActive \? "location" : undefined\}/);
-  assert.match(entryTableOfContents, /bg-primary-light text-primary/);
+  assert.match(entryTableOfContents, /border border-primary\/20\s+text-primary/);
   assert.match(entryDetailContent, /createHeadingId\(headingText, key\)/);
   assert.match(entryDetailContent, /id=\{headingId\}/);
   assert.match(
