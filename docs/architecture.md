@@ -415,6 +415,16 @@ Owns:
 - Rating updates
 - Average and count recalculation
 
+### Likes
+
+Owns:
+
+- Idempotent likes and unlikes for published Cultural Entries
+- Public aggregate like counts
+- Private current-user like state
+
+Likes are binary and remain separate from helpfulness ratings and public reviews. The API never exposes the list of users who liked an entry.
+
 ### Reviews
 
 Owns:

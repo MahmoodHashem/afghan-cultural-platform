@@ -54,6 +54,84 @@ class CommunityService {
     };
   }
 
+  async getLikeState(user: AuthenticatedUser, entryId: string) {
+    await this.ensurePublishedEntry(entryId);
+
+    const [likeCount, ownLike] = await this.prisma.$transaction([
+      this.prisma.like.count({ where: { entryId } }),
+      this.prisma.like.findUnique({
+        where: {
+          userId_entryId: {
+            userId: user.id,
+            entryId,
+          },
+        },
+        select: { id: true },
+      }),
+    ]);
+
+    return {
+      data: {
+        entryId,
+        likeCount,
+        isLikedByCurrentUser: Boolean(ownLike),
+      },
+    };
+  }
+
+  async likeEntry(user: AuthenticatedUser, entryId: string) {
+    await this.ensurePublishedEntry(entryId);
+
+    return this.prisma.$transaction(async (tx) => {
+      await tx.like.upsert({
+        where: {
+          userId_entryId: {
+            userId: user.id,
+            entryId,
+          },
+        },
+        create: {
+          userId: user.id,
+          entryId,
+        },
+        update: {},
+      });
+
+      const likeCount = await tx.like.count({ where: { entryId } });
+
+      return {
+        data: {
+          entryId,
+          likeCount,
+          isLikedByCurrentUser: true,
+        },
+      };
+    });
+  }
+
+  async unlikeEntry(user: AuthenticatedUser, entryId: string) {
+    await this.ensurePublishedEntry(entryId);
+
+    return this.prisma.$transaction(async (tx) => {
+      await tx.like.deleteMany({
+        where: {
+          userId: user.id,
+          entryId,
+        },
+      });
+
+      const likeCount = await tx.like.count({ where: { entryId } });
+
+      return {
+        data: {
+          entryId,
+          likeCount,
+          isLikedByCurrentUser: false,
+        },
+      };
+    });
+  }
+
   async createPublicReview(user: AuthenticatedUser, entryId: string, input: CreatePublicReviewDto) {
     await this.ensurePublishedEntry(entryId);
     const body = this.normalizeReviewBody(input.body);

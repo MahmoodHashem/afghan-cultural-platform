@@ -473,6 +473,7 @@ describe("EntriesService", () => {
     expect(response.data[0]).toMatchObject({
       id: ids.entry,
       slug: "فرهنگ-کابل",
+      likeCount: 12,
       coverImage: {
         thumbnailUrl: "https://res.cloudinary.com/demo/image/upload/thumb/entries/sample.jpg",
       },
@@ -634,6 +635,7 @@ describe("EntriesService", () => {
     });
     expect(response.data).toMatchObject({
       slug: "فرهنگ-کابل",
+      likeCount: 12,
       contentJson: validContentJson,
       district: {
         slug: "markaz",
@@ -1976,6 +1978,9 @@ function createPublicEntryCardPayload() {
     summary: createDraftInput.summary,
     averageRating: 4.25,
     ratingCount: 8,
+    _count: {
+      likes: 12,
+    },
     geographicScope: GeographicScope.PROVINCE,
     publishedAt: new Date("2026-01-02T00:00:00.000Z"),
     updatedAt: new Date("2026-01-03T00:00:00.000Z"),

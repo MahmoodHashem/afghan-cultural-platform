@@ -178,6 +178,7 @@ model User {
   reportsSubmitted               Report[]                 @relation("ReportSubmittedBy")
   reportsReviewed                Report[]                 @relation("ReportReviewedBy")
   ratings                        Rating[]                 @relation("RatingUser")
+  likes                          Like[]                   @relation("LikeUser")
   publicReviews                  PublicReview[]           @relation("PublicReviewUser")
   hiddenPublicReviews            PublicReview[]           @relation("PublicReviewHiddenBy")
   bookmarks                      Bookmark[]               @relation("BookmarkUser")
@@ -262,6 +263,7 @@ model CulturalEntry {
   contentVersions       ContentVersion[]       @relation("EntryContentVersions")
   moderationReviews     ModerationReview[]     @relation("EntryModerationReviews")
   ratings               Rating[]               @relation("EntryRatings")
+  likes                 Like[]                 @relation("EntryLikes")
   publicReviews         PublicReview[]         @relation("EntryPublicReviews")
   bookmarks             Bookmark[]             @relation("EntryBookmarks")
   correctionSuggestions CorrectionSuggestion[] @relation("EntryCorrectionSuggestions")
@@ -552,6 +554,21 @@ model Rating {
   @@index([entryId, isActive])
   @@index([value])
   @@map("ratings")
+}
+
+model Like {
+  id        String   @id @default(uuid()) @map("id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  entryId   String   @map("entry_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user  User          @relation("LikeUser", fields: [userId], references: [id], onDelete: Cascade)
+  entry CulturalEntry @relation("EntryLikes", fields: [entryId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, entryId])
+  @@index([userId])
+  @@index([entryId])
+  @@map("likes")
 }
 
 model PublicReview {

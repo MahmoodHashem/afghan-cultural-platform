@@ -60,6 +60,22 @@ class RatingResponseDto {
   data!: RatingDto;
 }
 
+class LikeStateDto {
+  @ApiProperty()
+  entryId!: string;
+
+  @ApiProperty()
+  likeCount!: number;
+
+  @ApiProperty()
+  isLikedByCurrentUser!: boolean;
+}
+
+class LikeStateResponseDto {
+  @ApiProperty({ type: LikeStateDto })
+  data!: LikeStateDto;
+}
+
 class CommunityMessageResponseDto {
   @ApiProperty()
   data!: {
@@ -69,6 +85,7 @@ class CommunityMessageResponseDto {
 
 export {
   CommunityMessageResponseDto,
+  LikeStateResponseDto,
   PublicReviewDto,
   PublicReviewListResponseDto,
   PublicReviewResponseDto,

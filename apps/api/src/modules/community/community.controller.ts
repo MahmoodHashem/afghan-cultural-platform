@@ -33,6 +33,7 @@ import type {
 } from "@/modules/community/dto/community-feedback.dto";
 import {
   CommunityMessageResponseDto,
+  LikeStateResponseDto,
   PublicReviewListResponseDto,
   PublicReviewResponseDto,
   RatingResponseDto,
@@ -50,6 +51,55 @@ class CommunityController {
   @ApiNotFoundResponse({ description: "COMMUNITY_ENTRY_NOT_FOUND" })
   listPublicReviews(@Param("entryId", ParseUUIDPipe) entryId: string) {
     return this.communityService.listPublicReviews(entryId);
+  }
+
+  @Get("like")
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "Get the current user's like state for a published entry" })
+  @ApiOkResponse({ type: LikeStateResponseDto })
+  @ApiUnauthorizedResponse({ description: "Missing or invalid bearer token" })
+  @ApiNotFoundResponse({ description: "COMMUNITY_ENTRY_NOT_FOUND" })
+  getLikeState(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("entryId", ParseUUIDPipe) entryId: string,
+  ) {
+    return this.communityService.getLikeState(user, entryId);
+  }
+
+  @Put("like")
+  @ApiBearerAuth()
+  @RequireVerifiedEmail()
+  @ApiOperation({
+    summary: "Like a published entry",
+    description: "Idempotent. Repeating the request does not create another like.",
+  })
+  @ApiOkResponse({ type: LikeStateResponseDto })
+  @ApiUnauthorizedResponse({ description: "Missing or invalid bearer token" })
+  @ApiForbiddenResponse({ description: "AUTH_EMAIL_VERIFICATION_REQUIRED" })
+  @ApiNotFoundResponse({ description: "COMMUNITY_ENTRY_NOT_FOUND" })
+  likeEntry(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("entryId", ParseUUIDPipe) entryId: string,
+  ) {
+    return this.communityService.likeEntry(user, entryId);
+  }
+
+  @Delete("like")
+  @ApiBearerAuth()
+  @RequireVerifiedEmail()
+  @ApiOperation({
+    summary: "Unlike a published entry",
+    description: "Idempotent. Removing an absent like still returns an unliked state.",
+  })
+  @ApiOkResponse({ type: LikeStateResponseDto })
+  @ApiUnauthorizedResponse({ description: "Missing or invalid bearer token" })
+  @ApiForbiddenResponse({ description: "AUTH_EMAIL_VERIFICATION_REQUIRED" })
+  @ApiNotFoundResponse({ description: "COMMUNITY_ENTRY_NOT_FOUND" })
+  unlikeEntry(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("entryId", ParseUUIDPipe) entryId: string,
+  ) {
+    return this.communityService.unlikeEntry(user, entryId);
   }
 
   @Patch("reviews/me")

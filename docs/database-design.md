@@ -40,7 +40,7 @@ This document defines the planned PostgreSQL and Prisma data model for the Afgha
 
 ## Entity Evaluation For Version One
 
-All 24 currently implemented schema entities are kept for version one, including `EntryReference` for manual Wikipedia-style internal links between Cultural Entries.
+All 25 currently implemented schema entities are kept for version one, including `EntryReference` for manual Wikipedia-style internal links between Cultural Entries and `Like` for binary appreciation separate from ratings.
 
 | Entity               | Decision               | Reason                                                                                                                                          |
 | -------------------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -60,6 +60,7 @@ All 24 currently implemented schema entities are kept for version one, including
 | YouTubeVideo         | Keep                   | Separate one-to-one optional record keeps video validation/removal isolated from the entry.                                                     |
 | Source               | Keep                   | Required for references, oral sources, interviews, and personal experience.                                                                     |
 | Rating               | Keep                   | Required helpfulness rating, one active rating per user per entry.                                                                              |
+| Like                 | Keep                   | Required binary appreciation, separate from ratings and public reviews, with one like per user per entry.                                       |
 | PublicReview         | Keep                   | Required public comments, separate from ratings and corrections.                                                                                |
 | Bookmark             | Keep                   | Allows a registered user to privately save a published Cultural Entry.                                                                          |
 | CorrectionSuggestion | Keep                   | Required workflow for suggested factual/content corrections.                                                                                    |
@@ -71,7 +72,7 @@ All 24 currently implemented schema entities are kept for version one, including
 
 ### Complete Entity List
 
-Version one contains 24 entities:
+Version one contains 25 entities:
 
 1. `User`
 2. `OAuthAccount`
@@ -88,15 +89,16 @@ Version one contains 24 entities:
 13. `YouTubeVideo`
 14. `Source`
 15. `Rating`
-16. `PublicReview`
-17. `Bookmark`
-18. `CorrectionSuggestion`
-19. `Report`
-20. `RefreshSession`
-21. `EmailVerificationToken`
-22. `PasswordResetToken`
-23. `AuditLog`
-24. `EntryReference`
+16. `Like`
+17. `PublicReview`
+18. `Bookmark`
+19. `CorrectionSuggestion`
+20. `Report`
+21. `RefreshSession`
+22. `EmailVerificationToken`
+23. `PasswordResetToken`
+24. `AuditLog`
+25. `EntryReference`
 
 ## Enums
 
@@ -649,6 +651,27 @@ More audit actions can be added later only when new v1 workflows require them.
 
 **Deletion behavior:** User can remove their rating by setting `isActive = false`; do not delete rows needed for aggregate recalculation/audit unless later approved.
 
+### Like
+
+**Purpose:** Stores a binary user like for a published Cultural Entry, separate from ratings and public reviews.
+
+| Field     | Type     | Required | Default    | Notes                    |
+| --------- | -------- | -------- | ---------- | ------------------------ |
+| id        | UUID     | Yes      | `uuid()` | Primary key.             |
+| userId    | UUID     | Yes      | None       | User who liked the entry. |
+| entryId   | UUID     | Yes      | None       | Published entry liked.   |
+| createdAt | DateTime | Yes      | `now()`  | UTC timestamp.           |
+
+**Unique constraints:** `(userId, entryId)` prevents duplicate likes at the database level.
+
+**Indexes:** `userId`, `entryId`.
+
+**Relations:** User, Cultural Entry.
+
+**Deletion behavior:** Unlike physically removes the lightweight interaction row. User removal cascade-deletes that user's likes; Cultural Entries remain protected from physical deletion by the entry relation.
+
+**Business rules:** Only authenticated, active, email-verified users may like or unlike. Only published entries may be liked. Like and unlike operations are idempotent. Public responses expose only the aggregate count; user identities are private. Authenticated interaction state may expose whether the current user liked the entry.
+
 ### PublicReview
 
 **Purpose:** Stores public comments about an entry, separate from ratings and corrections.
@@ -861,12 +884,14 @@ More audit actions can be added later only when new v1 workflows require them.
 - `CulturalEntry` to `EntryReference`: one entry has zero to many outgoing references as a source and zero to many incoming references as a target.
 - `CulturalEntry` to `ModerationReview`: one entry has zero to many moderation reviews.
 - `CulturalEntry` to `Rating`: one entry has zero to many ratings.
+- `CulturalEntry` to `Like`: one entry has zero to many likes.
 - `CulturalEntry` to `PublicReview`: one entry has zero to many public reviews.
 - `CulturalEntry` to `Bookmark`: one entry has zero to many bookmarks.
 - `CulturalEntry` to `CorrectionSuggestion`: one entry has zero to many correction suggestions.
 - `CulturalEntry` to `Report`: one entry has zero to many reports.
 - `User` to `OAuthAccount`: one user has zero to many linked provider accounts.
 - `User` to `Bookmark`: one user has zero to many private bookmarks.
+- `User` to `Like`: one user has zero to many likes.
 - `User` to `EmailVerificationToken`: one user has zero to many email verification tokens.
 - `User` to moderation, correction, report, rating, and review records: a user may create or review many records depending on role.
 
@@ -887,6 +912,7 @@ More audit actions can be added later only when new v1 workflows require them.
 - `CulturalEntry.geographicScope = NONE` requires `provinceId = null` and `districtId = null`.
 - Province filters must return only entries with `geographicScope = PROVINCE` and the matching province. National entries are available through a separate `geographicScope = NATIONAL` filter, and `NONE` entries must not be assigned to a province.
 - A user may have one rating per entry.
+- A user may have one like per entry; likes remain separate from ratings and reviews.
 - Rating changes should update `averageRating`, `ratingCount`, and `lastRatedAt` in one transaction.
 - A user may have one active public review per entry.
 - A user may have one bookmark per entry.
@@ -1094,6 +1120,7 @@ Use PostgreSQL `ILIKE` over normalized text for v1. Consider trigram indexes onl
 - Reports: `(Report.status, Report.createdAt)`, `Report.reason`, `Report.entryId`, `Report.reportedById`
 - Corrections: `(CorrectionSuggestion.status, CorrectionSuggestion.submittedAt)`, `CorrectionSuggestion.entryId`, `CorrectionSuggestion.submittedById`
 - Ratings: `(Rating.entryId, Rating.isActive)`, `(Rating.userId, Rating.entryId)`
+- Likes: `Like.userId`, `Like.entryId`, unique `(Like.userId, Like.entryId)`
 - Public reviews: `(PublicReview.entryId, PublicReview.status)`, `(PublicReview.userId, PublicReview.status)`
 - Bookmarks: `Bookmark.userId`, `Bookmark.entryId`, `(Bookmark.userId, Bookmark.createdAt)`, unique `(Bookmark.userId, Bookmark.entryId)`
 - OAuth accounts: `OAuthAccount.userId`, `OAuthAccount.provider`, `OAuthAccount.providerEmail`, unique `(OAuthAccount.provider, OAuthAccount.providerAccountId)`, unique `(OAuthAccount.userId, OAuthAccount.provider)`
@@ -1111,6 +1138,7 @@ erDiagram
   User ||--o{ CorrectionSuggestion : submits
   User ||--o{ Report : submits
   User ||--o{ Rating : rates
+  User ||--o{ Like : likes
   User ||--o{ PublicReview : reviews
   User ||--o{ Bookmark : saves
   User ||--o{ RefreshSession : has
@@ -1130,6 +1158,7 @@ erDiagram
   CulturalEntry ||--o| YouTubeVideo : has
   CulturalEntry ||--o{ Source : cites
   CulturalEntry ||--o{ Rating : receives
+  CulturalEntry ||--o{ Like : receives
   CulturalEntry ||--o{ PublicReview : receives
   CulturalEntry ||--o{ Bookmark : bookmarked_as
   CulturalEntry ||--o{ CorrectionSuggestion : receives
@@ -1166,7 +1195,7 @@ No unresolved product-level database decisions remain before Prisma implementati
 ## Phase B Implementation Checklist
 
 1. Translate this design into `schema.prisma` with UUID IDs, mapped snake_case tables/columns, relations, enums, defaults, and indexes.
-2. Implement all 24 entities, including `Bookmark`, `OAuthAccount`, `EmailVerificationToken`, and `EntryReference`.
+2. Implement all 25 entities, including `Bookmark`, `Like`, `OAuthAccount`, `EmailVerificationToken`, and `EntryReference`.
 3. Implement unique `(userId, entryId)` for `Bookmark`.
 4. Implement bookmark indexes: `userId`, `entryId`, and `(userId, createdAt)`.
 5. Add `thumbnailUrl` to `Image`.
@@ -1180,5 +1209,5 @@ No unresolved product-level database decisions remain before Prisma implementati
 13. Add the manual SQL partial unique index for one active public review per user and entry.
 14. Add the first migration only after models are approved.
 15. Generate Prisma Client after schema implementation.
-16. Add focused tests for status transitions, self-approval prevention, accepted correction versioning, rating uniqueness, rating aggregate updates, review uniqueness, bookmark uniqueness, OAuth account uniqueness, email verification token behavior, entry-reference constraints, geography-scope validation, and deletion/preservation behavior.
+16. Add focused tests for status transitions, self-approval prevention, accepted correction versioning, rating uniqueness, rating aggregate updates, like uniqueness and idempotency, review uniqueness, bookmark uniqueness, OAuth account uniqueness, email verification token behavior, entry-reference constraints, geography-scope validation, and deletion/preservation behavior.
 17. Keep Prisma access inside NestJS services and transactions.

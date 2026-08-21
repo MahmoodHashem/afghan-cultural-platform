@@ -414,6 +414,9 @@ class PublicEntryCardDto {
 
   @ApiProperty()
   ratingCount!: number;
+
+  @ApiProperty()
+  likeCount!: number;
 }
 
 class PublicEntryDetailDto extends PublicEntryCardDto {

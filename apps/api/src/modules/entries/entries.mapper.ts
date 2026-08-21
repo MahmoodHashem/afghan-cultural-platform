@@ -254,6 +254,11 @@ const publicEntryCardSelect = {
   summary: true,
   averageRating: true,
   ratingCount: true,
+  _count: {
+    select: {
+      likes: true,
+    },
+  },
   geographicScope: true,
   publishedAt: true,
   updatedAt: true,
@@ -511,6 +516,7 @@ function mapPublicEntryCard(entry: PublicEntryCardPayload) {
     updatedAt: entry.updatedAt,
     averageRating: Number(entry.averageRating),
     ratingCount: entry.ratingCount,
+    likeCount: entry._count.likes,
   };
 }
 
