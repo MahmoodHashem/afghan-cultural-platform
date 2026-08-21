@@ -131,7 +131,24 @@ Rules:
 - A feature must not deep-import another feature’s private files.
 - Cross-feature contracts should be exported through deliberate public entry points.
 
-### 3.3 No hidden architecture changes
+### 3.3 Shared utilities and duplication
+
+Before adding a formatter, normalizer, route helper, API response parser, user-display helper, or other small utility, search the frontend for an existing equivalent.
+
+MUST:
+
+- reuse shared utilities from `src/lib/` for cross-feature infrastructure concerns such as dates, numbers, Persian text normalization, safe URL/query handling, API response parsing, and authenticated-user display helpers;
+- keep feature-specific helpers inside the owning feature, for example `src/features/entries/utils/`;
+- move repeated logic to a shared utility only after it is used by more than one feature or is clearly infrastructure;
+- keep utilities focused and named by purpose.
+
+MUST NOT:
+
+- duplicate helpers such as `formatDate`, `formatNumber`, Persian search normalization, `createInitials`, URL query setters, or API error parsing in multiple components;
+- create generic dumping-ground files that mix unrelated responsibilities;
+- move business rules into shared frontend utilities when the NestJS backend is authoritative.
+
+### 3.4 No hidden architecture changes
 
 Do not introduce a new state library, form library, API library, CSS system, token-storage pattern, rendering model, or routing architecture without explicit approval.
 

@@ -126,6 +126,7 @@ For private routes:
 - [ ] No unexplained `any`.
 - [ ] Type-only imports used.
 - [ ] No duplicated domain/API types.
+- [ ] Existing utilities were searched before adding new formatters, normalizers, route helpers, or API parsers.
 - [ ] Components/hooks have clear responsibility.
 - [ ] No generic utility dumping ground.
 - [ ] TSDoc covers exported/non-obvious behavior.
