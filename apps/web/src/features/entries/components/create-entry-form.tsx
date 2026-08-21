@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { domAnimation, LazyMotion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -39,6 +39,7 @@ import {
   toSourceInput,
   validateDistrictProvince,
 } from "@/features/entries/utils/create-entry-form-utils";
+import { profileQueryKeys } from "@/features/profile/constants/profile-query-keys";
 import { formatPersianNumber } from "@/lib/utils/formatters";
 import { CreateEntryEditorHeader, CreateEntryEditorSection } from "./create-entry-editor-layout";
 import {
@@ -58,6 +59,7 @@ const editableEntryStatuses = new Set(["DRAFT", "CHANGES_REQUESTED"]);
 
 function CreateEntryForm({ initialDraftId, taxonomy }: CreateEntryFormProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [draftId, setDraftId] = useState<string | null>(initialDraftId ?? null);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [isSyncingMedia, setIsSyncingMedia] = useState(false);
@@ -100,9 +102,7 @@ function CreateEntryForm({ initialDraftId, taxonomy }: CreateEntryFormProps) {
   const { hasPendingImages, imageInputRef, images } = stagedImages;
   const isDraftLoading = Boolean(initialDraftId && draftQuery.isLoading);
   const isDraftUnavailable = Boolean(initialDraftId && draftQuery.isError);
-  const isDraftLocked = Boolean(
-    initialDraft && !editableEntryStatuses.has(initialDraft.status),
-  );
+  const isDraftLocked = Boolean(initialDraft && !editableEntryStatuses.has(initialDraft.status));
   const isBusy = saveState === "saving" || isSyncingMedia || isDraftLoading || isDraftLocked;
   const hasUnsavedChanges = isDirty || hasPendingImages || saveState === "unsaved";
 
@@ -204,7 +204,9 @@ function CreateEntryForm({ initialDraftId, taxonomy }: CreateEntryFormProps) {
       const submission = await submitEntryForReview(savedDraft.id);
       setDraftId(submission.entry.id);
       setSaveState("submitted");
+      await queryClient.invalidateQueries({ queryKey: profileQueryKeys.all });
       toast.success("مطلب برای بررسی فرستاده شد.");
+      router.replace("/profile?tab=entries&status=PENDING_REVIEW");
     } catch (error) {
       applyApiFieldErrors(error, setError, createEntryFieldNameMap);
       setSaveState("unsaved");

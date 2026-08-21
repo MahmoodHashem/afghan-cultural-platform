@@ -393,6 +393,18 @@ function MobileNavigation({ isCompact }: { isCompact: boolean }) {
                   >
                     حساب کاربری
                   </Link>
+                  {user.role === "MODERATOR" || user.role === "ADMIN" ? (
+                    <Link
+                      href="/moderator"
+                      onClick={closeMenu}
+                      className={cn(
+                        buttonVariants({ variant: "outline" }),
+                        "h-11 w-full rounded-full",
+                      )}
+                    >
+                      بررسی مطالب
+                    </Link>
+                  ) : null}
                   <Button
                     type="button"
                     variant="ghost"
@@ -548,6 +560,14 @@ function ProfileMenu({ user }: { user: SafeUser }) {
         >
           حساب کاربری
         </DropdownMenuItem>
+        {user.role === "MODERATOR" || user.role === "ADMIN" ? (
+          <DropdownMenuItem
+            render={<Link href="/moderator" />}
+            className="rounded-2xl px-3 py-2 text-[14px] text-muted-foreground hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground"
+          >
+            بررسی مطالب
+          </DropdownMenuItem>
+        ) : null}
         <DropdownMenuSeparator />
         <DropdownMenuItem
           variant="destructive"

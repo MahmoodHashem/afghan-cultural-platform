@@ -63,6 +63,7 @@ const createEntryWritingSurface = read(
 const stagedEntryImagesHook = read("src/features/entries/hooks/use-staged-entry-images.ts");
 const createEntrySchema = read("src/features/entries/schemas/create-entry-schema.ts");
 const tiptapContentUtils = read("src/features/entries/utils/tiptap-content.ts");
+const tiptapDocumentRenderer = read("src/components/common/tiptap-document.tsx");
 const richTextEditor = read("src/components/common/rich-text-editor.tsx");
 const explorePage = read("src/app/(public)/explore/page.tsx");
 const exploreLoading = read("src/app/(public)/explore/loading.tsx");
@@ -105,6 +106,18 @@ const profileApi = read("src/features/profile/api/profile-api.ts");
 const profileEntryStatus = read("src/features/profile/constants/entry-status.ts");
 const profileEntryHooks = read("src/features/profile/hooks/use-owner-entries.ts");
 const profileQueryUtils = read("src/features/profile/utils/profile-query.ts");
+const moderationQueuePage = read("src/app/(moderator)/moderator/page.tsx");
+const moderationReviewRoute = read("src/app/(moderator)/moderator/submissions/[id]/page.tsx");
+const moderationApi = read("src/features/moderation/api/moderation-api.ts");
+const moderationHooks = read("src/features/moderation/hooks/use-moderation.ts");
+const moderationQueue = read("src/features/moderation/components/moderation-queue.tsx");
+const moderationReviewPage = read("src/features/moderation/components/moderation-review-page.tsx");
+const moderationDecisionDialog = read(
+  "src/features/moderation/components/moderation-decision-dialog.tsx",
+);
+const moderationMapper = read("src/features/moderation/mappers/moderation-mapper.ts");
+const moderationErrors = read("src/features/moderation/utils/moderation-errors.ts");
+const moderationQuery = read("src/features/moderation/utils/moderation-query.ts");
 
 test("login page renders required fields and links", () => {
   assert.match(loginPage, /title="خوش آمدید"/);
@@ -662,10 +675,11 @@ test("entry detail page renders published entry data by Persian slug", () => {
   assert.match(entryDetailPage, /generateMetadata/);
   assert.match(exploreApi, /\/entries\/\$\{encodeURIComponent\(normalizeSlug\(slug\)\)\}/);
   assert.match(exploreApi, /\/entries\/\$\{entryId\}\/reviews/);
-  assert.match(entryDetailContent, /function TiptapDocument/);
-  assert.match(entryDetailContent, /case "paragraph"/);
-  assert.match(entryDetailContent, /case "heading"/);
-  assert.match(entryDetailContent, /case "internalEntryLink"/);
+  assert.match(entryDetailContent, /TiptapDocument/);
+  assert.match(tiptapDocumentRenderer, /function TiptapDocument/);
+  assert.match(tiptapDocumentRenderer, /case "paragraph"/);
+  assert.match(tiptapDocumentRenderer, /case "heading"/);
+  assert.match(tiptapDocumentRenderer, /case "internalEntryLink"/);
   assert.match(entryDetailContent, /YouTubeEmbed/);
   assert.match(entryDetailContent, /SourcesList/);
   assert.match(entryDetailContent, /ReferenceCard/);
@@ -690,7 +704,7 @@ test("entry cards preserve safe breadcrumb context from their source page", () =
 });
 
 test("entry detail includes reading navigation and sticky article tools", () => {
-  assert.match(entryDetailContent, /createTableOfContents\(entry\.contentJson\)/);
+  assert.match(entryDetailContent, /createTiptapHeadings\(entry\.contentJson\)/);
   assert.match(entryDetailContent, /EntryTableOfContents/);
   assert.match(entryTableOfContents, /فهرست مطالب/);
   assert.match(entryTableOfContents, /IntersectionObserver/);
@@ -699,8 +713,8 @@ test("entry detail includes reading navigation and sticky article tools", () => 
   assert.match(entryTableOfContents, /overflow-y-auto/);
   assert.match(entryTableOfContents, /aria-current=\{isActive \? "location" : undefined\}/);
   assert.match(entryTableOfContents, /border border-primary\/20\s+text-primary/);
-  assert.match(entryDetailContent, /createHeadingId\(headingText, key\)/);
-  assert.match(entryDetailContent, /id=\{headingId\}/);
+  assert.match(tiptapDocumentRenderer, /createHeadingId\(headingText, key\)/);
+  assert.match(tiptapDocumentRenderer, /id=\{headingId\}/);
   assert.match(
     entryDetailContent,
     /<EntryDetailHeaderContext title=\{entry\.title\} backHref="\/explore" \/>/,
@@ -732,4 +746,77 @@ test("entry detail supports public reviews and verified-user feedback", () => {
   assert.match(communityFeedbackApi, /\/entries\/\$\{entryId\}\/reviews/);
   assert.match(communityFeedbackApi, /\/entries\/\$\{entryId\}\/rating/);
   assert.match(communityFeedbackApi, /COMMUNITY_REVIEW_ALREADY_EXISTS/);
+});
+
+test("moderation routes require authenticated verified moderator or admin access", () => {
+  assert.match(moderationQueuePage, /RequireAuth/);
+  assert.match(moderationQueuePage, /RequireRole roles=\{\["MODERATOR", "ADMIN"\]\}/);
+  assert.match(moderationQueuePage, /RequireVerifiedEmail/);
+  assert.match(moderationQueuePage, /index: false/);
+  assert.match(moderationReviewRoute, /RequireRole roles=\{\["MODERATOR", "ADMIN"\]\}/);
+});
+
+test("moderation API uses the confirmed queue detail and decision endpoints", () => {
+  assert.match(moderationApi, /\/moderation\/submissions\?/);
+  assert.match(moderationApi, /\/moderation\/submissions\/\$\{entryId\}/);
+  assert.match(moderationApi, /APPROVE: "approve"/);
+  assert.match(moderationApi, /REQUEST_CHANGES: "request-changes"/);
+  assert.match(moderationApi, /REJECT: "reject"/);
+  assert.doesNotMatch(moderationApi, /publish-directly|force-publish/);
+});
+
+test("moderation queue supports backend filters pagination and complete states", () => {
+  assert.match(moderationQuery, /provinceId/);
+  assert.match(moderationQuery, /categoryId/);
+  assert.match(moderationQuery, /contentTypeId/);
+  assert.match(moderationQuery, /sortDirection/);
+  assert.match(moderationQueue, /ModerationQueueSkeleton/);
+  assert.match(moderationQueue, /ModerationQueueEmpty/);
+  assert.match(moderationQueue, /ModerationQueueError/);
+  assert.match(moderationQueue, /ModerationPagination/);
+  assert.match(moderationQueue, /بررسی مطلب/);
+});
+
+test("moderation review renders the immutable submitted snapshot", () => {
+  assert.match(moderationMapper, /submittedVersion\?\.snapshot/);
+  assert.match(moderationReviewPage, /submission\.snapshot as ModerationSnapshot/);
+  assert.match(moderationReviewPage, /TiptapDocument content=\{snapshot\.contentJson\}/);
+  assert.match(moderationReviewPage, /ModerationImageGallery/);
+  assert.match(moderationReviewPage, /ModerationSources/);
+  assert.match(moderationReviewPage, /ModerationVideo/);
+  assert.match(moderationReviewPage, /versionNumber/);
+});
+
+test("moderation decisions wait for the server and prevent duplicates", () => {
+  assert.match(moderationHooks, /useMutation/);
+  assert.match(moderationReviewPage, /await mutation\.mutateAsync/);
+  assert.match(moderationReviewPage, /disabled=\{mutation\.isPending/);
+  assert.match(moderationDecisionDialog, /disabled=\{isPending\}/);
+  assert.match(moderationDecisionDialog, /moderationReasonSchema/);
+  assert.match(moderationDecisionDialog, /فرستادن برای اصلاح/);
+  assert.match(moderationDecisionDialog, /رد مطلب/);
+});
+
+test("self approval and stale moderation errors have controlled behavior", () => {
+  assert.match(moderationReviewPage, /isOwnSubmission/);
+  assert.match(moderationReviewPage, /تأیید مطلب خودتان مجاز نیست/);
+  assert.match(moderationErrors, /MODERATION_SELF_APPROVAL_FORBIDDEN/);
+  assert.match(moderationErrors, /MODERATION_ALREADY_DECIDED/);
+  assert.match(moderationErrors, /MODERATION_CONFLICT/);
+  assert.match(moderationReviewPage, /isStaleModerationError/);
+});
+
+test("moderation decisions refresh precise private query families", () => {
+  assert.match(moderationHooks, /moderationKeys\.lists\(\)/);
+  assert.match(moderationHooks, /profileQueryKeys\.all/);
+  assert.match(moderationHooks, /\["entry-draft", input\.entryId\]/);
+  assert.doesNotMatch(moderationHooks, /queryClient\.clear\(\)/);
+});
+
+test("requested changes return to the same editor and can be resubmitted", () => {
+  assert.match(ownerProfilePage, /entry\.latestModerationReview\.comments/);
+  assert.match(ownerProfilePage, /نظر بررسی‌کننده/);
+  assert.match(ownerProfilePage, /href=\{`\/entries\/\$\{entry\.id\}\/edit`\}/);
+  assert.match(createEntryForm, /submitEntryForReview\(savedDraft\.id\)/);
+  assert.match(createEntryForm, /status=PENDING_REVIEW/);
 });

@@ -112,6 +112,19 @@ type EntryYouTubeVideo = {
   updatedAt: string;
 };
 
+type EntryModerationFeedback = {
+  id: string;
+  decision: "APPROVE" | "REQUEST_CHANGES" | "REJECT" | "HIDE" | "RESTORE" | "ARCHIVE";
+  comments: string | null;
+  previousStatus: EntryStatus;
+  nextStatus: EntryStatus;
+  moderator: {
+    id: string;
+    displayName: string;
+  };
+  createdAt: string;
+};
+
 type OwnEntry = EntryDraftPayload & {
   id: string;
   key: string;
@@ -131,6 +144,7 @@ type OwnEntry = EntryDraftPayload & {
   sources?: EntrySource[];
   images?: EntryImage[];
   youtubeVideo?: EntryYouTubeVideo | null;
+  latestModerationReview?: EntryModerationFeedback | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -323,6 +337,7 @@ export type {
   EntryDraftPayload,
   EntryImage,
   EntryImageInput,
+  EntryModerationFeedback,
   EntrySource,
   EntrySourceInput,
   EntryStatus,

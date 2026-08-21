@@ -15,16 +15,16 @@ import {
   listMyProfileReviews,
   type ProfileListQuery,
 } from "@/features/profile/api/profile-api";
+import { profileQueryKeys } from "@/features/profile/constants/profile-query-keys";
 import type { ProfileQuery } from "@/features/profile/utils/profile-query";
 
-const PROFILE_QUERY_ROOT = ["profile"] as const;
 const PROFILE_ENTRIES_PAGE_SIZE = 8;
 const PROFILE_REVIEWS_PAGE_SIZE = 8;
 const PROFILE_BOOKMARKS_PAGE_SIZE = 8;
 
 function useOwnerProfile() {
   return useQuery({
-    queryKey: [...PROFILE_QUERY_ROOT, "me"],
+    queryKey: profileQueryKeys.owner(),
     queryFn: ({ signal }) => getMyProfile(signal),
   });
 }
@@ -39,14 +39,14 @@ function useOwnerEntries(query: ProfileQuery) {
   };
 
   return useQuery({
-    queryKey: [...PROFILE_QUERY_ROOT, "entries", ownerEntriesQuery],
+    queryKey: profileQueryKeys.entries(ownerEntriesQuery),
     queryFn: ({ signal }) => listOwnEntries(ownerEntriesQuery, signal),
   });
 }
 
 function useOwnerEntryStats() {
   const stats = useQuery({
-    queryKey: [...PROFILE_QUERY_ROOT, "stats"],
+    queryKey: profileQueryKeys.stats(),
     queryFn: ({ signal }) => getMyProfileStats(signal),
   });
 
@@ -67,7 +67,7 @@ function useOwnerReviews(query: ProfileQuery) {
   };
 
   return useQuery({
-    queryKey: [...PROFILE_QUERY_ROOT, "reviews", reviewsQuery],
+    queryKey: profileQueryKeys.reviews(reviewsQuery),
     queryFn: ({ signal }) => listMyProfileReviews(reviewsQuery, signal),
   });
 }
@@ -79,7 +79,7 @@ function useOwnerBookmarks(query: ProfileQuery) {
   };
 
   return useQuery({
-    queryKey: [...PROFILE_QUERY_ROOT, "bookmarks", bookmarksQuery],
+    queryKey: profileQueryKeys.bookmarks(bookmarksQuery),
     queryFn: ({ signal }) => listMyProfileBookmarks(bookmarksQuery, signal),
   });
 }
@@ -91,7 +91,7 @@ function useDeleteOwnDraftMutation() {
     mutationFn: (entryId: string) => deleteOwnDraft(entryId),
     onSuccess: async () => {
       toast.success("پیش‌نویس حذف شد.");
-      await queryClient.invalidateQueries({ queryKey: PROFILE_QUERY_ROOT });
+      await queryClient.invalidateQueries({ queryKey: profileQueryKeys.all });
     },
     onError: () => {
       toast.error("حذف پیش‌نویس انجام نشد. دوباره تلاش کنید.");
@@ -102,7 +102,6 @@ function useDeleteOwnDraftMutation() {
 export {
   PROFILE_BOOKMARKS_PAGE_SIZE,
   PROFILE_ENTRIES_PAGE_SIZE,
-  PROFILE_QUERY_ROOT,
   PROFILE_REVIEWS_PAGE_SIZE,
   useDeleteOwnDraftMutation,
   useOwnerBookmarks,

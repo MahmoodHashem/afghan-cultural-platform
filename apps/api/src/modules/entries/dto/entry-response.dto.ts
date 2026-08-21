@@ -1,6 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
-import { EntryStatus, GeographicScope, SourceType, VersionReason } from "@/generated/prisma/enums";
+import {
+  EntryStatus,
+  GeographicScope,
+  ModerationDecision,
+  SourceType,
+  VersionReason,
+} from "@/generated/prisma/enums";
 
 class EntryTaxonomyDto {
   @ApiProperty()
@@ -19,6 +25,29 @@ class EntryAuthorDto {
 
   @ApiProperty()
   displayName!: string;
+}
+
+class EntryModerationFeedbackDto {
+  @ApiProperty()
+  id!: string;
+
+  @ApiProperty({ enum: ModerationDecision })
+  decision!: ModerationDecision;
+
+  @ApiPropertyOptional({ nullable: true })
+  comments!: string | null;
+
+  @ApiProperty({ enum: EntryStatus })
+  previousStatus!: EntryStatus;
+
+  @ApiProperty({ enum: EntryStatus })
+  nextStatus!: EntryStatus;
+
+  @ApiProperty({ type: EntryAuthorDto })
+  moderator!: EntryAuthorDto;
+
+  @ApiProperty()
+  createdAt!: Date;
 }
 
 class EntryTagDto {
@@ -523,6 +552,9 @@ class EntryDto {
 
   @ApiPropertyOptional({ type: EntryYouTubeVideoDto })
   youtubeVideo!: EntryYouTubeVideoDto | null;
+
+  @ApiPropertyOptional({ type: EntryModerationFeedbackDto, nullable: true })
+  latestModerationReview!: EntryModerationFeedbackDto | null;
 
   @ApiProperty()
   createdAt!: Date;

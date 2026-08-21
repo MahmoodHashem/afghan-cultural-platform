@@ -225,6 +225,26 @@ const entrySelect = {
   youtubeVideo: {
     select: youtubeVideoSelect,
   },
+  moderationReviews: {
+    select: {
+      id: true,
+      decision: true,
+      comments: true,
+      previousStatus: true,
+      nextStatus: true,
+      createdAt: true,
+      moderator: {
+        select: {
+          id: true,
+          displayName: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    take: 1,
+  },
 } as const;
 
 const publicEntryCardSelect = {
@@ -403,6 +423,7 @@ function mapEntry(entry: EntryPayload) {
       entry.youtubeVideo && !entry.youtubeVideo.isRemoved
         ? mapYouTubeVideo(entry.youtubeVideo)
         : null,
+    latestModerationReview: entry.moderationReviews?.[0] ?? null,
     createdAt: entry.createdAt,
     updatedAt: entry.updatedAt,
   };

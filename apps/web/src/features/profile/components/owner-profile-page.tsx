@@ -604,6 +604,27 @@ function OwnerEntryRow({ entry, onDelete }: { entry: OwnEntry; onDelete: () => v
               ) : null}
             </div>
           </div>
+          {entry.latestModerationReview?.comments &&
+          (entry.status === "CHANGES_REQUESTED" || entry.status === "REJECTED") ? (
+            <div className="flex gap-3 rounded-xl border border-terracotta/20 bg-terracotta/5 px-4 py-3 text-[14px] leading-7 text-foreground">
+              <ChatBubbleLeftRightIcon
+                className="mt-1 size-5 shrink-0 text-terracotta"
+                aria-hidden="true"
+              />
+              <div className="min-w-0">
+                <p className="font-semibold">
+                  {entry.status === "CHANGES_REQUESTED" ? "نظر بررسی‌کننده" : "دلیل رد مطلب"}
+                </p>
+                <p className="mt-1 text-muted-foreground">
+                  {entry.latestModerationReview.comments}
+                </p>
+                <p className="mt-1 text-[12px] text-muted-foreground">
+                  {entry.latestModerationReview.moderator.displayName} ·{" "}
+                  {formatPersianDate(entry.latestModerationReview.createdAt)}
+                </p>
+              </div>
+            </div>
+          ) : null}
         </div>
 
         <div className="flex shrink-0 flex-wrap items-center gap-2 lg:justify-end">
