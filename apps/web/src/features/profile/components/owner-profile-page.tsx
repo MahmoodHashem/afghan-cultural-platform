@@ -69,10 +69,10 @@ const profileTabs: Array<{
   label: string;
   icon: typeof DocumentTextIcon;
 }> = [
-    { value: "entries", label: "مطالب من", icon: DocumentTextIcon },
-    { value: "reviews", label: "دیدگاه‌ها", icon: ChatBubbleLeftRightIcon },
-    { value: "bookmarks", label: "ذخیره‌ها", icon: BookmarkIcon },
-  ];
+  { value: "entries", label: "مطالب من", icon: DocumentTextIcon },
+  { value: "reviews", label: "دیدگاه‌ها", icon: ChatBubbleLeftRightIcon },
+  { value: "bookmarks", label: "ذخیره‌ها", icon: BookmarkIcon },
+];
 
 const ownerEntrySkeletonKeys = ["first", "second", "third", "fourth"] as const;
 const ownerFeedbackSkeletonKeys = ["first", "second", "third"] as const;
@@ -404,7 +404,9 @@ function OwnerEntryToolbar({ query, total }: { query: ProfileQuery; total: numbe
             );
           })}
         </div>
-        {total > 0 && <p className="text-sm text-foreground text-center">{formatPersianNumber(total)} مطلب</p>}
+        {total > 0 && (
+          <p className="text-sm text-foreground text-center">{formatPersianNumber(total)} مطلب</p>
+        )}
       </div>
     </div>
   );

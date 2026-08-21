@@ -141,4 +141,103 @@ describe("Tiptap content utilities", () => {
       }),
     ).toThrow(TiptapValidationError);
   });
+
+  it("accepts frontend link metadata produced by pasted/editor content", () => {
+    expect(() =>
+      validateTiptapDocument({
+        type: "doc",
+        content: [
+          {
+            type: "paragraph",
+            content: [
+              {
+                type: "text",
+                text: "منبع",
+                marks: [
+                  {
+                    type: "link",
+                    attrs: {
+                      href: "https://example.com/source",
+                      target: "_blank",
+                      rel: "noopener noreferrer",
+                      class: null,
+                      title: "Example source",
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      }),
+    ).not.toThrow();
+  });
+
+  it("accepts empty textStyle marks from the frontend editor", () => {
+    expect(() =>
+      validateTiptapDocument({
+        type: "doc",
+        content: [
+          {
+            type: "paragraph",
+            content: [
+              {
+                type: "text",
+                text: "متن",
+                marks: [{ type: "textStyle" }],
+              },
+            ],
+          },
+        ],
+      }),
+    ).not.toThrow();
+  });
+
+  it("rejects unsupported textStyle attributes", () => {
+    expect(() =>
+      validateTiptapDocument({
+        type: "doc",
+        content: [
+          {
+            type: "paragraph",
+            content: [
+              {
+                type: "text",
+                text: "متن رنگی",
+                marks: [{ type: "textStyle", attrs: { color: "red" } }],
+              },
+            ],
+          },
+        ],
+      }),
+    ).toThrow(TiptapValidationError);
+  });
+
+  it("rejects unsupported link attributes", () => {
+    expect(() =>
+      validateTiptapDocument({
+        type: "doc",
+        content: [
+          {
+            type: "paragraph",
+            content: [
+              {
+                type: "text",
+                text: "بد",
+                marks: [
+                  {
+                    type: "link",
+                    attrs: {
+                      href: "https://example.com",
+                      onclick: "alert(1)",
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      }),
+    ).toThrow(TiptapValidationError);
+  });
 });

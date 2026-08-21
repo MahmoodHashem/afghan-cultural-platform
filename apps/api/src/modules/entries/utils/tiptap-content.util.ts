@@ -25,7 +25,14 @@ const ALLOWED_NODE_TYPES = new Set([
   "blockquote",
 ]);
 
-const ALLOWED_MARK_TYPES = new Set(["bold", "italic", "underline", "link", "internalEntryLink"]);
+const ALLOWED_MARK_TYPES = new Set([
+  "bold",
+  "italic",
+  "underline",
+  "link",
+  "internalEntryLink",
+  "textStyle",
+]);
 const TEXT_ALIGN_VALUES = new Set(["left", "center", "right", "justify", "start", "end"]);
 const TEXT_DIRECTION_VALUES = new Set(["rtl", "ltr"]);
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -215,7 +222,7 @@ function validateLinkMark(mark: Record<string, unknown>, path: string): void {
     throw new TiptapValidationError(`Link mark attributes are required at ${path}.`);
   }
 
-  const allowedAttributes = new Set(["href", "target", "rel", "class"]);
+  const allowedAttributes = new Set(["href", "target", "rel", "class", "title"]);
 
   for (const key of Object.keys(mark.attrs)) {
     if (!allowedAttributes.has(key)) {
@@ -227,6 +234,17 @@ function validateLinkMark(mark: Record<string, unknown>, path: string): void {
 
   if (typeof href !== "string" || !isSafeLink(href)) {
     throw new TiptapValidationError(`Invalid link href at ${path}.`);
+  }
+
+  validateOptionalStringAttribute(mark.attrs.target, "target", path);
+  validateOptionalStringAttribute(mark.attrs.rel, "rel", path);
+  validateOptionalStringAttribute(mark.attrs.class, "class", path);
+  validateOptionalStringAttribute(mark.attrs.title, "title", path);
+}
+
+function validateOptionalStringAttribute(value: unknown, attribute: string, path: string): void {
+  if (value !== undefined && value !== null && typeof value !== "string") {
+    throw new TiptapValidationError(`Invalid link ${attribute} at ${path}.`);
   }
 }
 
