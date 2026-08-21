@@ -3,16 +3,15 @@
 import {
   ArrowPathIcon,
   BookmarkIcon,
+  CameraIcon,
   ChatBubbleLeftRightIcon,
-  CheckIcon,
   DocumentTextIcon,
   EyeIcon,
-  PlusIcon,
   TrashIcon,
 } from "@heroicons/react/24/outline";
 import { motion } from "motion/react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 
 import {
@@ -29,7 +28,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList } from "@/components/ui/tabs";
 import { VerifiedEmailBanner } from "@/features/auth/components/verified-email-banner";
 import type { OwnEntry } from "@/features/entries/api/entry-drafts-api";
 import {
@@ -46,7 +45,6 @@ import {
 } from "@/features/profile/hooks/use-owner-entries";
 import {
   createProfileHref,
-  isProfileTab,
   type ProfileQuery,
   type ProfileTab,
   parseProfileQuery,
@@ -69,7 +67,6 @@ const profileTabs: Array<{
 const ownerEntrySkeletonKeys = ["first", "second", "third", "fourth"] as const;
 
 function OwnerProfilePage() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const user = useAuthStore((state) => state.user);
   const profileQuery = useMemo(() => parseProfileQuery(searchParams), [searchParams]);
@@ -79,24 +76,12 @@ function OwnerProfilePage() {
   }
 
   return (
-    <section className="content-container space-y-7 pb-16">
+    <section className="content-container space-y-7 p-6 rounded-xl  bg-card">
       <OwnerProfileHeader user={user} />
-      <Tabs
-        value={profileQuery.tab}
-        onValueChange={(value) => {
-          if (isProfileTab(value)) {
-            router.push(createProfileHref(profileQuery, { tab: value, page: 1 }), {
-              scroll: false,
-            });
-          }
-        }}
-        className="gap-6"
-      >
-        <ProfileNavigationTabs />
-        <TabsContent value="entries" className="outline-none">
+      <div className="flex flex-col items-center gap-6">
+        <ProfileNavigationTabs activeTab={profileQuery.tab} query={profileQuery} />
+        <div className="w-full outline-none">
           {profileQuery.tab === "entries" ? <OwnerEntriesPanel query={profileQuery} /> : null}
-        </TabsContent>
-        <TabsContent value="reviews" className="outline-none">
           {profileQuery.tab === "reviews" ? (
             <DeferredProfileTab
               icon={ChatBubbleLeftRightIcon}
@@ -104,8 +89,6 @@ function OwnerProfilePage() {
               description="امکان نمایش فهرست دیدگاه‌های شما هنوز آماده نشده است. تا آن زمان این بخش داده ساختگی نشان نمی‌دهد."
             />
           ) : null}
-        </TabsContent>
-        <TabsContent value="bookmarks" className="outline-none">
           {profileQuery.tab === "bookmarks" ? (
             <DeferredProfileTab
               icon={BookmarkIcon}
@@ -113,8 +96,8 @@ function OwnerProfilePage() {
               description="امکان نمایش فهرست ذخیره‌های شما هنوز آماده نشده است. این بخش بعداً با داده واقعی وصل می‌شود و فعلاً داده ساختگی نشان نمی‌دهد."
             />
           ) : null}
-        </TabsContent>
-      </Tabs>
+        </div>
+      </div>
     </section>
   );
 }
@@ -123,51 +106,36 @@ function OwnerProfileHeader({ user }: { user: SafeUser }) {
   const stats = useOwnerEntryStats();
 
   return (
-    <div className="overflow-hidden rounded-[28px] border border-border bg-card shadow-[0_18px_55px_rgba(31,41,55,0.07)]">
+    <div className="overflow-hidden ">
       <div className="relative min-h-36  px-5 py-6 sm:px-8">
-        <div className="absolute inset-x-0 bottom-0 h-px bg-border" aria-hidden="true" />
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-          <div className="flex items-center gap-4">
-            <Avatar className="size-20 border-4 border-card bg-primary-light shadow-[0_12px_30px_rgba(31,41,55,0.12)]">
+        <div className="flex flex-col justify-center items-center gap-4">
+          <div className="relative shrink-0">
+            <Avatar className="size-28 border-4 border-card bg-primary-light ">
               <AvatarFallback className="bg-primary-light text-[24px] font-bold text-primary">
                 {createInitials(user.displayName)}
               </AvatarFallback>
             </Avatar>
-            <div className="min-w-0 space-y-2">
-              <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-[28px] font-bold leading-10 text-foreground sm:text-[34px]">
-                  {user.displayName}
-                </h1>
-              
-                  {user.emailVerified ? <CheckIcon className="size-5 border rounded-full"  /> : "ایمیل تأیید نشده"}
-            
-              </div>
-              <p className="max-w-2xl text-[14px] leading-7 text-muted-foreground">
-                اینجا می‌توانید نوشته‌های فرهنگی خود را دنبال کنید و وضعیت بررسی آن‌ها را ببینید.
-              </p>
-              <p className="text-[13px] font-medium text-muted-foreground" dir="ltr">
-                {user.email}
-              </p>
-            </div>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
             <span
               className={cn(
                 buttonVariants({ variant: "outline" }),
-                "h-10 cursor-not-allowed rounded-full opacity-70",
+                "absolute bottom-0 right-1 size-9 cursor-not-allowed rounded-full bg-card p-0",
               )}
               aria-disabled="true"
               title="ویرایش پروفایل پس از آماده شدن API پروفایل فعال می‌شود."
             >
-              ویرایش پروفایل
+              <CameraIcon className="size-4" aria-hidden="true" />
             </span>
-            <Link
-              href="/entries/new"
-              className={cn(buttonVariants({ variant: "default" }), "h-10 rounded-full")}
-            >
-              <PlusIcon className="size-4" aria-hidden="true" />
-              افزودن مطلب
-            </Link>
+          </div>
+          <div className="min-w-0 space-y-2 flex flex-col items-center">
+            <div className="flex flex-wrap items-center  gap-2">
+              <h1 className="text-[28px] font-bold leading-10 text-foreground sm:text-[34px]">
+                {user.displayName}
+              </h1>
+              {/* {user.emailVerified ? <CheckIcon className="size-5 border rounded-full"  /> : "ایمیل تأیید نشده"} */}
+            </div>
+            <p className="text-[13px] font-medium text-muted-foreground" dir="ltr">
+              {user.email}
+            </p>
           </div>
         </div>
       </div>
@@ -178,54 +146,88 @@ function OwnerProfileHeader({ user }: { user: SafeUser }) {
 
 function ProfileStats({ stats }: { stats: ReturnType<typeof useOwnerEntryStats> }) {
   const items = [
-    { label: "همه مطالب", value: stats.all },
-    { label: "منتشرشده", value: stats.published },
-    { label: "در انتظار بررسی / نیازمند اصلاح", value: stats.needsAttention },
+    { label: "مطلب", value: stats.all },
+    { label: "دیدگاه", value: stats.published },
+    { label: "ذخیره", value: stats.needsAttention },
   ];
 
   return (
-    <dl className="grid divide-y divide-border sm:grid-cols-3 sm:divide-x sm:divide-x-reverse sm:divide-y-0">
-      {items.map((item) => (
-        <div key={item.label} className="px-5 py-5 sm:px-8">
-          <dt className="text-[13px] font-medium text-muted-foreground">{item.label}</dt>
-          <dd className="mt-2 text-[28px] font-bold text-foreground">
-            {stats.isLoading ? (
-              <Skeleton className="h-8 w-14" />
-            ) : stats.isError ? (
-              <>
-                <span aria-hidden="true">—</span>
-                <span className="sr-only">آمار در دسترس نیست</span>
-              </>
-            ) : (
-              <span>{formatNumber(item.value)}</span>
-            )}
-          </dd>
+    <dl className="flex justify-center gap-6">
+      {items.map((item, index) => (
+        <div className="flex items-center gap-6" key={item.label}>
+          <div key={item.label} className="flex flex-col items-center px-3  ">
+            <dd className="mt-2 text-[29px] text-foreground ">
+              {stats.isLoading ? (
+                <Skeleton className="h-8 w-14" />
+              ) : stats.isError ? (
+                <>
+                  <span aria-hidden="true">—</span>
+                  <span className="sr-only">آمار در دسترس نیست</span>
+                </>
+              ) : (
+                <span>{formatNumber(item.value)}</span>
+              )}
+            </dd>
+
+            <dt className="text-sm text-muted-foreground">{item.label}</dt>
+          </div>
+          {index < items.length - 1 && <div className="h-6 w-px bg-slate-300" />}
         </div>
       ))}
     </dl>
   );
 }
 
-function ProfileNavigationTabs() {
+function ProfileNavigationTabs({
+  activeTab,
+  query,
+}: {
+  activeTab: ProfileTab;
+  query: ProfileQuery;
+}) {
   return (
-    <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
-      <TabsList className="h-auto min-h-12 w-max rounded-full border border-border bg-card p-1 shadow-[0_2px_10px_rgba(0,0,0,.04)]">
+    <Tabs value={activeTab} className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+      <TabsList
+        variant="default"
+        className="relative h-auto min-h-11 w-max justify-start gap-1 rounded-full border border-border bg-card p-1 shadow-[0_2px_10px_rgba(0,0,0,.04)]"
+        aria-label="بخش‌های پروفایل"
+      >
         {profileTabs.map((tab) => {
           const Icon = tab.icon;
+          const isActive = tab.value === activeTab;
 
           return (
-            <TabsTrigger
+            <Link
               key={tab.value}
-              value={tab.value}
-              className="h-10 min-w-30 rounded-full px-4 text-[14px] data-active:bg-primary data-active:text-primary-foreground"
+              href={createProfileHref(query, { tab: tab.value, page: 1 })}
+              scroll={false}
+              role="tab"
+              aria-selected={isActive}
+              aria-current={isActive ? "page" : undefined}
+              className={cn(
+                "relative inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-full px-4 text-[13px] font-semibold outline-none transition-all focus-visible:ring-3 focus-visible:ring-ring/40",
+                isActive
+                  ? " text-primary-foreground shadow-[0_6px_16px_rgba(15,118,110,0.12)]"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
+              )}
             >
-              <Icon className="size-4" aria-hidden="true" />
-              {tab.label}
-            </TabsTrigger>
+              {isActive ? (
+                <motion.span
+                  layoutId="profile-active-tab"
+                  className="absolute inset-0 rounded-full bg-primary"
+                  transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                  aria-hidden="true"
+                />
+              ) : null}
+              <span className="relative z-10 inline-flex items-center gap-2">
+                <Icon className="size-4" aria-hidden="true" />
+                {tab.label}
+              </span>
+            </Link>
           );
         })}
       </TabsList>
-    </div>
+    </Tabs>
   );
 }
 
@@ -233,7 +235,7 @@ function OwnerEntriesPanel({ query }: { query: ProfileQuery }) {
   const ownerEntries = useOwnerEntries(query);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 p-4">
       <OwnerEntryToolbar query={query} total={ownerEntries.data?.meta.total ?? 0} />
       {ownerEntries.isLoading ? <OwnerEntryListSkeleton /> : null}
       {isVerifiedEmailError(ownerEntries.error) ? <OwnerEntriesVerificationState /> : null}
@@ -263,15 +265,9 @@ function OwnerEntriesVerificationState() {
 
 function OwnerEntryToolbar({ query, total }: { query: ProfileQuery; total: number }) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-3 shadow-[0_2px_10px_rgba(0,0,0,.035)]">
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <p className="text-[15px] font-bold text-foreground">{formatNumber(total)} مطلب</p>
-          <p className="mt-1 text-[13px] text-muted-foreground">
-            فقط نوشته‌های متعلق به حساب شما نمایش داده می‌شود.
-          </p>
-        </div>
-        <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+    <div className=" ">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between border py-1 px-2 rounded-full">
+        <div className=" flex gap-2 overflow-x-auto">
           {ENTRY_STATUS_FILTERS.map((filter) => {
             const isActive = filter.value === "ALL" ? !query.status : query.status === filter.value;
 
@@ -286,17 +282,30 @@ function OwnerEntryToolbar({ query, total }: { query: ProfileQuery; total: numbe
                 scroll={false}
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
-                  "inline-flex h-9 shrink-0 items-center rounded-full border px-3 text-[13px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/40",
+                  "relative inline-flex h-7 shrink-0 items-center rounded-full px-3 text-[13px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/40",
                   isActive
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "border-border bg-background text-muted-foreground hover:border-primary/35 hover:bg-primary-light/30 hover:text-primary",
+                    ? "border-primary text-primary"
+                    : "",
                 )}
               >
-                {filter.label}
+                {isActive ? (
+                  <motion.span
+                    layoutId="owner-entry-toolbar-active-filter"
+                    className="absolute inset-0 rounded-full bg-primary/10"
+                    transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                    aria-hidden="true"
+                  />
+                ) : null}
+                <span className="relative z-10">{filter.label}</span>
               </Link>
             );
           })}
         </div>
+        {total > 0 && (
+          <p className="text-sm text-foreground">
+            {formatNumber(total)} مطلب
+          </p>
+        )}
       </div>
     </div>
   );
@@ -348,27 +357,10 @@ function OwnerEntryRow({ entry, onDelete }: { entry: OwnEntry; onDelete: () => v
   const statusMeta = ENTRY_STATUS_META[entry.status];
 
   return (
-    <article className="group rounded-2xl border border-border bg-card p-4 shadow-[0_2px_10px_rgba(0,0,0,.035)] transition-all duration-200 hover:border-primary/25 hover:shadow-[0_14px_34px_rgba(31,41,55,0.07)]">
+    <article className="group rounded-xl  p-4  transition-all duration-200 hover:border-primary/25 hover:shadow-[0_14px_34px_rgba(31,41,55,0.07)]">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0 flex-1 space-y-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge
-              variant="outline"
-              className={getEntryStatusBadgeClassName(entry.status, "rounded-full px-3 py-1")}
-            >
-              {statusMeta.label}
-            </Badge>
-            {entry.category ? (
-              <Badge variant="outline" className="rounded-full bg-background px-3 py-1">
-                {entry.category.name}
-              </Badge>
-            ) : null}
-            {entry.contentType ? (
-              <span className="text-[13px] font-medium text-muted-foreground">
-                {entry.contentType.name}
-              </span>
-            ) : null}
-          </div>
+
           <div>
             <h2 className="line-clamp-2 text-[20px] font-bold leading-8 text-foreground">
               {entry.title || "بدون عنوان"}
@@ -378,11 +370,28 @@ function OwnerEntryRow({ entry, onDelete }: { entry: OwnEntry; onDelete: () => v
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[13px] text-muted-foreground">
-            <span>{getLocationLabel(entry)}</span>
-            <span>آخرین ویرایش: {formatDate(entry.updatedAt)}</span>
-            <span>{statusMeta.description}</span>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge
+                variant="outline"
+                className={getEntryStatusBadgeClassName(entry.status, "rounded-full px-3 py-1")}
+              >
+                {statusMeta.label}
+              </Badge>
+              {entry.category ? (
+                <Badge variant="outline" className="rounded-full bg-background px-3 py-1">
+                  {entry.category.name}
+                </Badge>
+              ) : null}
+              {entry.contentType ? (
+                <span className="text-[13px] font-medium text-muted-foreground">
+                  {entry.contentType.name}
+                </span>
+              ) : null}
+            </div>
           </div>
         </div>
+
         <div className="flex shrink-0 flex-wrap items-center gap-2 lg:justify-end">
           {entry.status === "PUBLISHED" ? (
             <Link
@@ -419,6 +428,7 @@ function OwnerEntryRow({ entry, onDelete }: { entry: OwnEntry; onDelete: () => v
             </button>
           ) : null}
         </div>
+
       </div>
     </article>
   );
