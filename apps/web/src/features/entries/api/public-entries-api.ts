@@ -114,11 +114,19 @@ async function getPublishedEntryBySlug(slug: string): Promise<PublicEntryDetail 
 }
 
 async function getPublicEntryReviews(entryId: string) {
-  const response = await fetchApi<PublicReviewListResponse>(`/entries/${entryId}/reviews`, {
-    data: [],
-  });
+  try {
+    const response = await fetch(`${getPublicApiBaseUrl()}/entries/${entryId}/reviews`, {
+      cache: "no-store",
+    });
 
-  return response.data;
+    if (!response.ok) {
+      return [];
+    }
+
+    return ((await response.json()) as PublicReviewListResponse).data;
+  } catch {
+    return [];
+  }
 }
 
 async function getExploreTaxonomyData(): Promise<ExploreTaxonomyData> {

@@ -13,6 +13,7 @@ import {
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
+  ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -21,6 +22,7 @@ import {
 } from "@nestjs/swagger";
 
 import { CurrentUser } from "@/modules/auth/decorators/current-user.decorator";
+import { RequireVerifiedEmail } from "@/modules/auth/decorators/require-verified-email.decorator";
 import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.type";
 import type {
   ProfileBookmarksQueryDto,
@@ -124,12 +126,14 @@ class ProfileController {
   }
 
   @Put("bookmarks/:entryId")
+  @RequireVerifiedEmail()
   @ApiOperation({
     summary: "Save one published entry to the current user's bookmarks",
     description: "Idempotent. The raw published entry is not duplicated.",
   })
   @ApiOkResponse({ type: ProfileBookmarkStatusResponseDto })
   @ApiUnauthorizedResponse({ description: "Missing or invalid bearer token" })
+  @ApiForbiddenResponse({ description: "AUTH_EMAIL_VERIFICATION_REQUIRED" })
   @ApiNotFoundResponse({ description: "PROFILE_BOOKMARK_ENTRY_NOT_FOUND" })
   saveBookmark(
     @CurrentUser() user: AuthenticatedUser,
@@ -139,12 +143,14 @@ class ProfileController {
   }
 
   @Delete("bookmarks/:entryId")
+  @RequireVerifiedEmail()
   @ApiOperation({
     summary: "Remove one entry from the current user's bookmarks",
     description: "Idempotent. Removing a missing bookmark still returns bookmarked=false.",
   })
   @ApiOkResponse({ type: ProfileBookmarkStatusResponseDto })
   @ApiUnauthorizedResponse({ description: "Missing or invalid bearer token" })
+  @ApiForbiddenResponse({ description: "AUTH_EMAIL_VERIFICATION_REQUIRED" })
   @ApiNotFoundResponse({ description: "PROFILE_BOOKMARK_ENTRY_NOT_FOUND" })
   removeBookmark(
     @CurrentUser() user: AuthenticatedUser,

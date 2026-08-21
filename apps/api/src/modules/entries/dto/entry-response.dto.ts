@@ -416,6 +416,9 @@ class PublicEntryCardDto {
   ratingCount!: number;
 
   @ApiProperty()
+  bookmarkCount!: number;
+
+  @ApiProperty()
   likeCount!: number;
 }
 

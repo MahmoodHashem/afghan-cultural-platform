@@ -7,11 +7,12 @@ import { createTiptapHeadings, TiptapDocument } from "@/components/common/tiptap
 import { PageBreadcrumb, type PageBreadcrumbItem } from "@/components/layout/page-breadcrumb";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { EntryReviews } from "@/features/engagement/components/entry-reviews";
 import { EntryActionRail } from "@/features/entries/components/entry-action-rail";
 import { EntryDetailHeaderContext } from "@/features/entries/components/entry-detail-header-context";
 import { EntryTableOfContents } from "@/features/entries/components/entry-table-of-contents";
 import { EntryFeedback } from "@/features/entries/components/reviews/entry-feedback";
-import { formatPersianDate, formatPersianNumber } from "@/lib/utils/formatters";
+import { formatPersianDate } from "@/lib/utils/formatters";
 import type { PublicEntryDetail, PublicReview } from "../types/public-entry";
 import { getEntryLocationLabel } from "../utils/geography";
 
@@ -84,9 +85,11 @@ function EntryDetailContent({
 
         <section className="content-container grid gap-8 py-10 lg:grid-cols-[56px_minmax(0,760px)_320px] lg:items-start lg:justify-between">
           <EntryActionRail
+            entryId={entry.id}
             title={entry.title}
-            commentCount={reviews.length}
-            ratingCount={entry.ratingCount}
+            initialReviews={reviews}
+            likeCount={entry.likeCount}
+            bookmarkCount={entry.bookmarkCount}
           />
 
           <div className="min-w-0 space-y-10">
@@ -103,7 +106,7 @@ function EntryDetailContent({
                 ratingCount={entry.ratingCount}
               />
             </div>
-            <PublicReviewsList reviews={reviews} />
+            <EntryReviews entryId={entry.id} initialReviews={reviews} />
           </div>
 
           <aside className="space-y-5 lg:sticky lg:top-24 bg-card p-3 rounded-lg divide-y divide-border">
@@ -115,41 +118,6 @@ function EntryDetailContent({
         </section>
       </article>
     </main>
-  );
-}
-
-function PublicReviewsList({ reviews }: { reviews: PublicReview[] }) {
-  return (
-    <section id="entry-comments" className="scroll-mt-32 space-y-4">
-      <div className="flex items-center justify-between gap-4">
-        <h2 className="text-[26px] font-bold text-foreground">دیدگاه‌های خوانندگان</h2>
-        <span className="rounded-full bg-muted px-3 py-1 text-[13px] font-semibold text-muted-foreground">
-          {formatPersianNumber(reviews.length)} دیدگاه
-        </span>
-      </div>
-
-      {reviews.length > 0 ? (
-        <div className="space-y-3">
-          {reviews.map((review) => (
-            <article key={review.id} className="rounded-2xl border border-border bg-card p-4">
-              <div className="flex items-start justify-between gap-4">
-                <div className="space-y-1">
-                  <h3 className="font-bold text-foreground">{review.author.displayName}</h3>
-                  <p className="text-[12px] text-muted-foreground">
-                    {formatPersianDate(review.createdAt)}
-                  </p>
-                </div>
-              </div>
-              <p className="mt-3 text-[15px] leading-8 text-muted-foreground">{review.body}</p>
-            </article>
-          ))}
-        </div>
-      ) : (
-        <div className="rounded-2xl border border-dashed border-border bg-card p-5 text-[14px] leading-7 text-muted-foreground">
-          هنوز دیدگاهی نوشته نشده است. شما اولین نفر باشید.
-        </div>
-      )}
-    </section>
   );
 }
 

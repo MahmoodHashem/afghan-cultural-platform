@@ -473,6 +473,7 @@ describe("EntriesService", () => {
     expect(response.data[0]).toMatchObject({
       id: ids.entry,
       slug: "فرهنگ-کابل",
+      bookmarkCount: 7,
       likeCount: 12,
       coverImage: {
         thumbnailUrl: "https://res.cloudinary.com/demo/image/upload/thumb/entries/sample.jpg",
@@ -635,6 +636,7 @@ describe("EntriesService", () => {
     });
     expect(response.data).toMatchObject({
       slug: "فرهنگ-کابل",
+      bookmarkCount: 7,
       likeCount: 12,
       contentJson: validContentJson,
       district: {
@@ -1979,6 +1981,7 @@ function createPublicEntryCardPayload() {
     averageRating: 4.25,
     ratingCount: 8,
     _count: {
+      bookmarks: 7,
       likes: 12,
     },
     geographicScope: GeographicScope.PROVINCE,

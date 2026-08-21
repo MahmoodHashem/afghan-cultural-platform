@@ -6,21 +6,41 @@ import {
   HeartIcon,
   ShareIcon,
 } from "@heroicons/react/24/outline";
+import {
+  BookmarkIcon as BookmarkIconSolid,
+  HeartIcon as HeartIconSolid,
+} from "@heroicons/react/24/solid";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+import { useEngagementAccess } from "@/features/engagement/hooks/use-engagement-access";
+import { useEntryBookmark, useEntryLike } from "@/features/engagement/hooks/use-entry-interactions";
+import { useEntryReviews } from "@/features/engagement/hooks/use-entry-reviews";
+import type { PublicReview } from "@/features/entries/types/public-entry";
 import { cn } from "@/lib/utils";
 import { formatPersianNumber } from "@/lib/utils/formatters";
 
 type EntryActionRailProps = {
+  entryId: string;
   title: string;
-  commentCount: number;
-  ratingCount: number;
+  initialReviews: PublicReview[];
+  likeCount: number;
+  bookmarkCount: number;
 };
 
-function EntryActionRail({ title, commentCount, ratingCount }: EntryActionRailProps) {
+function EntryActionRail({
+  entryId,
+  title,
+  initialReviews,
+  likeCount,
+  bookmarkCount,
+}: EntryActionRailProps) {
   const [progress, setProgress] = useState(0);
+  const { isAuthenticated, status, ensureVerifiedAccess } = useEngagementAccess();
+  const like = useEntryLike({ entryId, initialCount: likeCount, isAuthenticated });
+  const bookmark = useEntryBookmark({ entryId, initialCount: bookmarkCount, isAuthenticated });
+  const reviews = useEntryReviews(entryId, initialReviews);
 
   useEffect(() => {
     let animationFrameId = 0;
@@ -67,25 +87,56 @@ function EntryActionRail({ title, commentCount, ratingCount }: EntryActionRailPr
     }
   }
 
+  function toggleLike() {
+    if (ensureVerifiedAccess("like")) {
+      like.toggle();
+    }
+  }
+
+  function toggleBookmark() {
+    if (ensureVerifiedAccess("bookmark")) {
+      bookmark.toggle();
+    }
+  }
+
   return (
-    <aside className="hidden self-start lg:sticky lg:top-32 lg:block lg:h-fit">
-      <div className="flex flex-col items-center gap-4">
+    <aside className="sticky top-20 z-20 self-start lg:top-32 lg:h-fit">
+      <div className="flex items-center justify-around gap-2 rounded-xl border border-border bg-card/95 px-2 py-1 shadow-[0_2px_10px_rgba(0,0,0,.05)] backdrop-blur-sm lg:flex-col lg:gap-4 lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none lg:backdrop-blur-none">
         <ActionButton
           label="دیدگاه‌ها"
-          count={commentCount}
+          count={reviews.data?.length ?? initialReviews.length}
           onClick={() => scrollToSection("entry-comments")}
           icon={<ChatBubbleOvalLeftEllipsisIcon className="size-6" aria-hidden="true" />}
         />
         <ActionButton
-          label="امتیازدهی"
-          count={ratingCount}
-          onClick={() => scrollToSection("entry-feedback")}
-          icon={<HeartIcon className="size-6" aria-hidden="true" />}
+          label={like.isLikedByCurrentUser ? "برداشتن پسند" : "پسندیدن مطلب"}
+          count={like.likeCount}
+          active={like.isLikedByCurrentUser}
+          pending={like.isPending}
+          disabled={status === "initializing" || like.isLoading}
+          onClick={toggleLike}
+          icon={
+            like.isLikedByCurrentUser ? (
+              <HeartIconSolid className="size-6" aria-hidden="true" />
+            ) : (
+              <HeartIcon className="size-6" aria-hidden="true" />
+            )
+          }
         />
         <ActionButton
-          label="ذخیره مطلب"
-          onClick={() => toast.message("این امکان هنوز فعال نشده است.")}
-          icon={<BookmarkIcon className="size-6" aria-hidden="true" />}
+          label={bookmark.bookmarked ? "برداشتن از ذخیره‌ها" : "ذخیره مطلب"}
+          count={bookmark.bookmarkCount}
+          active={bookmark.bookmarked}
+          pending={bookmark.isPending}
+          disabled={status === "initializing" || bookmark.isLoading}
+          onClick={toggleBookmark}
+          icon={
+            bookmark.bookmarked ? (
+              <BookmarkIconSolid className="size-6" aria-hidden="true" />
+            ) : (
+              <BookmarkIcon className="size-6" aria-hidden="true" />
+            )
+          }
         />
         <ActionButton
           label="اشتراک‌گذاری"
@@ -94,7 +145,7 @@ function EntryActionRail({ title, commentCount, ratingCount }: EntryActionRailPr
         />
 
         <div
-          className="flex h-36 w-2 justify-center py-1"
+          className="hidden h-36 w-2 justify-center py-1 lg:flex"
           role="progressbar"
           aria-label="پیشرفت مطالعه"
           aria-valuemin={0}
@@ -116,11 +167,17 @@ function EntryActionRail({ title, commentCount, ratingCount }: EntryActionRailPr
 function ActionButton({
   label,
   count,
+  active,
+  pending = false,
+  disabled = false,
   icon,
   onClick,
 }: {
   label: string;
   count?: number;
+  active?: boolean;
+  pending?: boolean;
+  disabled?: boolean;
   icon: ReactNode;
   onClick: () => void;
 }) {
@@ -128,10 +185,14 @@ function ActionButton({
     <button
       type="button"
       onClick={onClick}
+      disabled={disabled || pending}
       className={cn(
-        "group flex min-h-12 min-w-12 flex-col items-center justify-center rounded-2xl text-muted-foreground transition-colors hover:bg-card hover:text-primary focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/40",
+        "group flex min-h-12 min-w-12 flex-col items-center justify-center rounded-2xl text-muted-foreground transition-colors hover:bg-card hover:text-primary focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/40 disabled:pointer-events-none disabled:opacity-60",
+        active === true && "text-primary",
       )}
       aria-label={label}
+      aria-pressed={active}
+      aria-busy={pending}
     >
       {icon}
       {typeof count === "number" ? (

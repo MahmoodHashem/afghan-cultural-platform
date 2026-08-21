@@ -230,23 +230,27 @@ class ProfileService {
   async getMyBookmarkStatus(user: AuthenticatedUser, entryId: string) {
     await this.ensurePublishedEntry(entryId);
 
-    const bookmark = await this.prisma.bookmark.findUnique({
-      where: {
-        userId_entryId: {
-          userId: user.id,
-          entryId,
+    const [bookmark, bookmarkCount] = await this.prisma.$transaction([
+      this.prisma.bookmark.findUnique({
+        where: {
+          userId_entryId: {
+            userId: user.id,
+            entryId,
+          },
         },
-      },
-      select: {
-        id: true,
-      },
-    });
+        select: {
+          id: true,
+        },
+      }),
+      this.prisma.bookmark.count({ where: { entryId } }),
+    ]);
 
     return {
       data: {
         entryId,
         bookmarked: Boolean(bookmark),
         bookmarkId: bookmark?.id ?? null,
+        bookmarkCount,
       },
     };
   }
@@ -254,49 +258,57 @@ class ProfileService {
   async saveBookmark(user: AuthenticatedUser, entryId: string) {
     await this.ensurePublishedEntry(entryId);
 
-    const bookmark = await this.prisma.bookmark.upsert({
-      where: {
-        userId_entryId: {
+    return this.prisma.$transaction(async (tx) => {
+      const bookmark = await tx.bookmark.upsert({
+        where: {
+          userId_entryId: {
+            userId: user.id,
+            entryId,
+          },
+        },
+        create: {
           userId: user.id,
           entryId,
         },
-      },
-      create: {
-        userId: user.id,
-        entryId,
-      },
-      update: {},
-      select: {
-        id: true,
-      },
-    });
+        update: {},
+        select: {
+          id: true,
+        },
+      });
+      const bookmarkCount = await tx.bookmark.count({ where: { entryId } });
 
-    return {
-      data: {
-        entryId,
-        bookmarked: true,
-        bookmarkId: bookmark.id,
-      },
-    };
+      return {
+        data: {
+          entryId,
+          bookmarked: true,
+          bookmarkId: bookmark.id,
+          bookmarkCount,
+        },
+      };
+    });
   }
 
   async removeBookmark(user: AuthenticatedUser, entryId: string) {
     await this.ensurePublishedEntry(entryId);
 
-    await this.prisma.bookmark.deleteMany({
-      where: {
-        userId: user.id,
-        entryId,
-      },
-    });
+    return this.prisma.$transaction(async (tx) => {
+      await tx.bookmark.deleteMany({
+        where: {
+          userId: user.id,
+          entryId,
+        },
+      });
+      const bookmarkCount = await tx.bookmark.count({ where: { entryId } });
 
-    return {
-      data: {
-        entryId,
-        bookmarked: false,
-        bookmarkId: null,
-      },
-    };
+      return {
+        data: {
+          entryId,
+          bookmarked: false,
+          bookmarkId: null,
+          bookmarkCount,
+        },
+      };
+    });
   }
 
   private normalizePagination(query: ProfilePaginationInput): NormalizedPaginationQuery {

@@ -203,6 +203,9 @@ class ProfileBookmarkStatusDto {
 
   @ApiPropertyOptional()
   bookmarkId!: string | null;
+
+  @ApiProperty()
+  bookmarkCount!: number;
 }
 
 class ProfileBookmarkStatusResponseDto {

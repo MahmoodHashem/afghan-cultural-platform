@@ -2,8 +2,15 @@ jest.mock("@/database/prisma.service", () => ({
   PrismaService: class PrismaService {},
 }));
 
+import { ValidationPipe } from "@nestjs/common";
+
 import { IS_PUBLIC_ROUTE_KEY, REQUIRE_VERIFIED_EMAIL_KEY } from "@/modules/auth/auth.constants";
 import { CommunityController } from "@/modules/community/community.controller";
+import {
+  CreatePublicReviewDto,
+  UpdatePublicReviewDto,
+  UpsertRatingDto,
+} from "@/modules/community/dto/community-feedback.dto";
 
 describe("CommunityController like authorization metadata", () => {
   it("requires authentication for personal like state", () => {
@@ -24,4 +31,25 @@ describe("CommunityController like authorization metadata", () => {
       expect(Reflect.getMetadata(REQUIRE_VERIFIED_EMAIL_KEY, handler)).toBe(true);
     },
   );
+});
+
+describe("CommunityController request DTO validation", () => {
+  const validationPipe = new ValidationPipe({
+    forbidNonWhitelisted: true,
+    transform: true,
+    whitelist: true,
+  });
+
+  it.each([
+    ["create review", CreatePublicReviewDto, { body: "A sufficiently detailed public review." }],
+    ["update review", UpdatePublicReviewDto, { body: "An updated and detailed public review." }],
+    ["upsert rating", UpsertRatingDto, { value: 5 }],
+  ] as const)("accepts the documented body for %s", async (_name, metatype, body) => {
+    await expect(
+      validationPipe.transform(body, {
+        metatype,
+        type: "body",
+      }),
+    ).resolves.toMatchObject(body);
+  });
 });

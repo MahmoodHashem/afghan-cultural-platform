@@ -47,6 +47,8 @@ type PublicEntryCard = {
   updatedAt: string;
   averageRating: number;
   ratingCount: number;
+  likeCount: number;
+  bookmarkCount: number;
 };
 
 type PublicEntrySource = {

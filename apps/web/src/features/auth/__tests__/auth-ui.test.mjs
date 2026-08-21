@@ -23,6 +23,7 @@ const oauthRedirect = read("src/features/auth/utils/oauth-redirect.ts");
 const oauthCallbackPage = read("src/app/auth/callback/page.tsx");
 const oauthCallbackCompletion = read("src/features/auth/components/oauth-callback-completion.tsx");
 const authErrorMessages = read("src/features/auth/utils/auth-error-messages.ts");
+const authRedirects = read("src/features/auth/utils/redirects.ts");
 const apiClient = read("src/lib/api/api-client.ts");
 const authCoordinator = read("src/lib/auth/auth-coordinator.ts");
 const authProvider = read("src/providers/auth-provider.tsx");
@@ -49,6 +50,13 @@ const entryHeaderContext = read("src/features/entries/components/entry-detail-he
 const entryTableOfContents = read("src/features/entries/components/entry-table-of-contents.tsx");
 const entryFeedback = read("src/features/entries/components/reviews/entry-feedback.tsx");
 const communityFeedbackApi = read("src/features/entries/api/community-feedback-api.ts");
+const engagementApi = read("src/features/engagement/api/entry-engagement-api.ts");
+const engagementAccess = read("src/features/engagement/hooks/use-engagement-access.ts");
+const engagementInteractions = read("src/features/engagement/hooks/use-entry-interactions.ts");
+const engagementReviewsHook = read("src/features/engagement/hooks/use-entry-reviews.ts");
+const engagementReviews = read("src/features/engagement/components/entry-reviews.tsx");
+const engagementQueryKeys = read("src/features/engagement/constants/engagement-query-keys.ts");
+const engagementErrors = read("src/features/engagement/utils/engagement-errors.ts");
 const contributionTaxonomyApi = read("src/features/entries/api/contribution-taxonomy-api.ts");
 const entryDraftsApi = read("src/features/entries/api/entry-drafts-api.ts");
 const createEntryForm = read("src/features/entries/components/create-entry-form.tsx");
@@ -252,8 +260,9 @@ test("API client retries authenticated 401 responses only once", () => {
 test("protected route gates preserve safe next paths and enforce auth states", () => {
   assert.match(routeGates, /function RequireAuth/);
   assert.match(routeGates, /status === "initializing"/);
-  assert.match(routeGates, /\/login\?next=/);
+  assert.match(routeGates, /createLoginPath\(nextPath\)/);
   assert.match(routeGates, /getSafeRedirectPath\(pathname\)/);
+  assert.match(authRedirects, /`\/login\?next=\$\{encodeURIComponent\(safePath\)\}`/);
 });
 
 test("owner profile route is authenticated and noindexed", () => {
@@ -726,7 +735,8 @@ test("entry detail includes reading navigation and sticky article tools", () => 
   assert.match(publicHeader, /transition-all duration-300 ease-out/);
   assert.match(publicHeader, /inert=\{shouldShowHeaderContext\}/);
   assert.match(entryDetailContent, /EntryActionRail/);
-  assert.match(entryActionRail, /lg:sticky lg:top-32/);
+  assert.match(entryActionRail, /sticky top-20/);
+  assert.match(entryActionRail, /lg:top-32/);
   assert.match(entryActionRail, /ChatBubbleOvalLeftEllipsisIcon/);
   assert.match(entryActionRail, /HeartIcon/);
   assert.match(entryActionRail, /BookmarkIcon/);
@@ -737,15 +747,77 @@ test("entry detail includes reading navigation and sticky article tools", () => 
 
 test("entry detail supports public reviews and verified-user feedback", () => {
   assert.match(entryDetailContent, /EntryFeedback/);
-  assert.match(entryDetailContent, /PublicReviewsList/);
-  assert.match(entryDetailContent, /دیدگاه‌های خوانندگان/);
+  assert.match(entryDetailContent, /EntryReviews/);
   assert.match(entryFeedback, /submitRating\(entryId, value\)/);
-  assert.match(entryFeedback, /submitPublicReview\(entryId, values\.body\)/);
-  assert.match(entryFeedback, /user\?\.emailVerified/);
-  assert.match(entryFeedback, /برای ثبت دیدگاه باید وارد شوید و ایمیل خود را تأیید کنید/);
-  assert.match(communityFeedbackApi, /\/entries\/\$\{entryId\}\/reviews/);
   assert.match(communityFeedbackApi, /\/entries\/\$\{entryId\}\/rating/);
-  assert.match(communityFeedbackApi, /COMMUNITY_REVIEW_ALREADY_EXISTS/);
+  assert.match(engagementReviews, /دیدگاه‌های خوانندگان/);
+  assert.match(engagementReviews, /review\.author\.id === user\?\.id/);
+  assert.match(engagementReviews, /ویرایش دیدگاه شما/);
+  assert.match(engagementReviews, /حذف دیدگاه/);
+  assert.match(engagementReviews, /ReviewsSkeleton/);
+  assert.match(engagementReviews, /reviewsQuery\.isError/);
+  assert.match(engagementReviews, /هنوز دیدگاهی نوشته نشده است/);
+});
+
+test("entry engagement API uses confirmed like bookmark and review contracts", () => {
+  assert.match(engagementApi, /\/entries\/\$\{entryId\}\/like/);
+  assert.match(engagementApi, /method: "PUT"/);
+  assert.match(engagementApi, /method: "DELETE"/);
+  assert.match(engagementApi, /\/profile\/me\/bookmarks\/\$\{entryId\}/);
+  assert.match(engagementApi, /\/entries\/\$\{entryId\}\/reviews/);
+  assert.match(engagementApi, /\/entries\/\$\{entryId\}\/reviews\/me/);
+  assert.match(engagementApi, /function createEntryReview/);
+  assert.match(engagementApi, /function updateOwnEntryReview/);
+  assert.match(engagementApi, /function deleteOwnEntryReview/);
+  assert.doesNotMatch(engagementApi, /current-review|interaction-state|toggle-like/);
+});
+
+test("like and bookmark mutations optimistically update rollback and reconcile", () => {
+  assert.match(engagementInteractions, /cancelQueries/);
+  assert.match(engagementInteractions, /getQueryData<EntryLikeState>/);
+  assert.match(engagementInteractions, /getQueryData<EntryBookmarkState>/);
+  assert.match(engagementInteractions, /context\?\.previous \?\? fallbackState/);
+  assert.match(engagementInteractions, /onSuccess:.*serverState/s);
+  assert.match(engagementInteractions, /invalidateQueries\(\{ queryKey, exact: true \}\)/);
+  assert.match(engagementInteractions, /actionLock\.current/);
+  assert.match(entryActionRail, /aria-pressed=\{active\}/);
+  assert.match(entryActionRail, /aria-busy=\{pending\}/);
+  assert.match(entryActionRail, /like\.likeCount/);
+  assert.match(entryActionRail, /bookmark\.bookmarkCount/);
+});
+
+test("engagement access redirects guests and explains verification requirements", () => {
+  assert.match(engagementAccess, /createLoginPath\(currentPath\)/);
+  assert.match(engagementAccess, /!user\.emailVerified/);
+  assert.match(engagementAccess, /برای پسندیدن مطلب باید ایمیل خود را تأیید کنید/);
+  assert.match(engagementAccess, /برای ذخیره‌کردن مطلب باید ایمیل خود را تأیید کنید/);
+  assert.match(engagementAccess, /برای نوشتن دیدگاه باید ایمیل خود را تأیید کنید/);
+  assert.match(engagementErrors, /AUTH_ACCOUNT_SUSPENDED/);
+  assert.match(engagementErrors, /TOO_MANY_REQUESTS/);
+  assert.match(engagementErrors, /NETWORK_ERROR/);
+});
+
+test("review mutations preserve server truth and synchronize Profile caches", () => {
+  assert.match(engagementReviewsHook, /useCreateEntryReview/);
+  assert.match(engagementReviewsHook, /useUpdateEntryReview/);
+  assert.match(engagementReviewsHook, /useDeleteEntryReview/);
+  assert.match(engagementReviewsHook, /profileQueryKeys\.reviewLists\(\)/);
+  assert.match(engagementReviewsHook, /profileQueryKeys\.stats\(\)/);
+  assert.match(engagementReviewsHook, /engagementQueryKeys\.reviews\(entryId\)/);
+  assert.match(engagementReviews, /submitLock\.current/);
+  assert.match(engagementReviews, /deleteLock\.current/);
+  assert.match(engagementReviews, /fieldErrors\.find/);
+  assert.match(engagementReviews, /reset\(\{ body: review\.body \}\)/);
+});
+
+test("engagement query keys are scoped and Profile invalidation remains precise", () => {
+  assert.match(engagementQueryKeys, /entry-engagement/);
+  assert.match(engagementQueryKeys, /like:/);
+  assert.match(engagementQueryKeys, /bookmark:/);
+  assert.match(engagementQueryKeys, /reviews:/);
+  assert.match(engagementInteractions, /profileQueryKeys\.bookmarkLists\(\)/);
+  assert.match(engagementInteractions, /profileQueryKeys\.stats\(\)/);
+  assert.doesNotMatch(engagementInteractions, /clear\(\)|removeQueries\(\)/);
 });
 
 test("moderation routes require authenticated verified moderator or admin access", () => {

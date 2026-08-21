@@ -23,4 +23,10 @@ function getSafeRedirectPath(path: string | null | undefined) {
   }
 }
 
-export { DEFAULT_AUTHENTICATED_PATH, getSafeRedirectPath };
+function createLoginPath(nextPath: string) {
+  const safePath = getSafeRedirectPath(nextPath);
+
+  return safePath === "/" ? "/login" : `/login?next=${encodeURIComponent(safePath)}`;
+}
+
+export { createLoginPath, DEFAULT_AUTHENTICATED_PATH, getSafeRedirectPath };

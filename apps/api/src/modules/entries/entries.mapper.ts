@@ -256,6 +256,7 @@ const publicEntryCardSelect = {
   ratingCount: true,
   _count: {
     select: {
+      bookmarks: true,
       likes: true,
     },
   },
@@ -516,6 +517,7 @@ function mapPublicEntryCard(entry: PublicEntryCardPayload) {
     updatedAt: entry.updatedAt,
     averageRating: Number(entry.averageRating),
     ratingCount: entry.ratingCount,
+    bookmarkCount: entry._count.bookmarks,
     likeCount: entry._count.likes,
   };
 }

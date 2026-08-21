@@ -12,6 +12,7 @@ import {
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
+  ApiBody,
   ApiConflictResponse,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
@@ -26,7 +27,7 @@ import { Public } from "@/modules/auth/decorators/public.decorator";
 import { RequireVerifiedEmail } from "@/modules/auth/decorators/require-verified-email.decorator";
 import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.type";
 import { CommunityService } from "@/modules/community/community.service";
-import type {
+import {
   CreatePublicReviewDto,
   UpdatePublicReviewDto,
   UpsertRatingDto,
@@ -106,6 +107,7 @@ class CommunityController {
   @ApiBearerAuth()
   @RequireVerifiedEmail()
   @ApiOperation({ summary: "Update the current user's active public review" })
+  @ApiBody({ type: UpdatePublicReviewDto })
   @ApiOkResponse({ type: PublicReviewResponseDto })
   @ApiBadRequestResponse({ description: "COMMUNITY_REVIEW_BODY_INVALID or validation failed" })
   @ApiUnauthorizedResponse({ description: "Missing or invalid bearer token" })
@@ -123,6 +125,7 @@ class CommunityController {
   @ApiBearerAuth()
   @RequireVerifiedEmail()
   @ApiOperation({ summary: "Create a public review for a published entry" })
+  @ApiBody({ type: CreatePublicReviewDto })
   @ApiOkResponse({ type: PublicReviewResponseDto })
   @ApiBadRequestResponse({ description: "COMMUNITY_REVIEW_BODY_INVALID or validation failed" })
   @ApiUnauthorizedResponse({ description: "Missing or invalid bearer token" })
@@ -156,6 +159,7 @@ class CommunityController {
   @ApiBearerAuth()
   @RequireVerifiedEmail()
   @ApiOperation({ summary: "Set or update the current user's helpfulness rating" })
+  @ApiBody({ type: UpsertRatingDto })
   @ApiOkResponse({ type: RatingResponseDto })
   @ApiBadRequestResponse({ description: "COMMUNITY_RATING_INVALID or validation failed" })
   @ApiUnauthorizedResponse({ description: "Missing or invalid bearer token" })

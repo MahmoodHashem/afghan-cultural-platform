@@ -7,7 +7,7 @@ import { useEffect } from "react";
 import { AuthLoadingState } from "@/features/auth/components/auth-loading-state";
 import { ForbiddenState } from "@/features/auth/components/forbidden-state";
 import { VerifiedEmailBanner } from "@/features/auth/components/verified-email-banner";
-import { getSafeRedirectPath } from "@/features/auth/utils/redirects";
+import { createLoginPath, getSafeRedirectPath } from "@/features/auth/utils/redirects";
 import { type SafeUser, useAuthStore } from "@/stores/auth-store";
 
 type RequireAuthProps = {
@@ -34,7 +34,7 @@ function RequireAuth({ children }: RequireAuthProps) {
     }
 
     const nextPath = getSafeRedirectPath(pathname);
-    const loginPath = nextPath === "/" ? "/login" : `/login?next=${encodeURIComponent(nextPath)}`;
+    const loginPath = createLoginPath(nextPath);
 
     router.replace(loginPath);
   }, [pathname, router, status]);

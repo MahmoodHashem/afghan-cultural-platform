@@ -160,6 +160,7 @@ describe("ProfileService", () => {
   it("saves a bookmark idempotently for a published entry", async () => {
     prisma.culturalEntry.findFirst.mockResolvedValue({ id: publishedEntry.id });
     prisma.bookmark.upsert.mockResolvedValue({ id: "55555555-5555-5555-5555-555555555555" });
+    prisma.bookmark.count.mockResolvedValue(6);
 
     const response = await service.saveBookmark(user, publishedEntry.id);
 
@@ -174,6 +175,39 @@ describe("ProfileService", () => {
       }),
     );
     expect(response.data.bookmarked).toBe(true);
+    expect(response.data.bookmarkCount).toBe(6);
+  });
+
+  it("returns the current bookmark state and public aggregate count", async () => {
+    prisma.culturalEntry.findFirst.mockResolvedValue({ id: publishedEntry.id });
+    prisma.bookmark.findUnique.mockResolvedValue({
+      id: "55555555-5555-5555-5555-555555555555",
+    });
+    prisma.bookmark.count.mockResolvedValue(6);
+
+    await expect(service.getMyBookmarkStatus(user, publishedEntry.id)).resolves.toEqual({
+      data: {
+        entryId: publishedEntry.id,
+        bookmarked: true,
+        bookmarkId: "55555555-5555-5555-5555-555555555555",
+        bookmarkCount: 6,
+      },
+    });
+  });
+
+  it("removes a bookmark idempotently and returns the remaining count", async () => {
+    prisma.culturalEntry.findFirst.mockResolvedValue({ id: publishedEntry.id });
+    prisma.bookmark.deleteMany.mockResolvedValue({ count: 1 });
+    prisma.bookmark.count.mockResolvedValue(5);
+
+    await expect(service.removeBookmark(user, publishedEntry.id)).resolves.toEqual({
+      data: {
+        entryId: publishedEntry.id,
+        bookmarked: false,
+        bookmarkId: null,
+        bookmarkCount: 5,
+      },
+    });
   });
 
   it("rejects bookmark actions for unavailable entries", async () => {
@@ -214,8 +248,13 @@ function createPrismaMock(): PrismaMock {
     province: createDelegateMock(),
     publicReview: createDelegateMock(),
     user: createDelegateMock(),
-    $transaction: jest.fn((operations: Array<Promise<unknown>>) => Promise.all(operations)),
+    $transaction: jest.fn(),
   };
+
+  prisma.$transaction.mockImplementation(
+    (operation: Array<Promise<unknown>> | ((tx: PrismaMock) => Promise<unknown>)) =>
+      Array.isArray(operation) ? Promise.all(operation) : operation(prisma),
+  );
 
   return prisma;
 }

@@ -716,7 +716,7 @@ More audit actions can be added later only when new v1 workflows require them.
 
 **Deletion behavior:** A user may remove a bookmark through hard deletion. Bookmark deletion does not require versioning or audit history. If user deletion or anonymization is implemented in a future version, the user's bookmarks may be cascade-deleted. Published entries are normally archived rather than physically deleted. Bookmarks for hidden or archived entries may remain stored, but inaccessible content must not be exposed publicly.
 
-**Business rules:** Only authenticated active users can create bookmarks. Only published entries can be bookmarked. A user cannot bookmark the same entry more than once. Bookmark lists are private. Bookmarking does not change rating, popularity, moderation status, or view count. Removing a bookmark should be idempotent where practical.
+**Business rules:** Only authenticated, active, email-verified users can create or remove bookmarks. Only published entries can be bookmarked. A user cannot bookmark the same entry more than once. Bookmark lists are private, while public APIs may expose only the aggregate bookmark count. Bookmarking does not change rating, moderation status, or view count. Creating and removing bookmarks should be idempotent where practical.
 
 ### CorrectionSuggestion
 
