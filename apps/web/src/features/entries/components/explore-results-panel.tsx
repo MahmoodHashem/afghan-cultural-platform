@@ -18,6 +18,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { formatPersianNumber } from "@/lib/utils/formatters";
+import { normalizePersianSearch } from "@/lib/utils/persian";
 import { sortOptions } from "../constants/explore-options";
 import type { EntryListResponse, TaxonomyItem } from "../types/public-entry";
 import type { EntryBreadcrumbContext } from "../utils/entry-breadcrumb";
@@ -47,7 +49,7 @@ function ExploreResultsPanel({
   breadcrumbParent,
 }: ExploreResultsPanelProps) {
   const [searchValue, setSearchValue] = useState("");
-  const normalizedSearch = normalizeSearch(searchValue);
+  const normalizedSearch = normalizePersianSearch(searchValue);
   const filteredEntries = useMemo(
     () =>
       normalizedSearch
@@ -175,8 +177,8 @@ function ExploreToolbar({
       <div className="flex flex-wrap items-center gap-2">
         <p className="text-[15px] font-bold text-foreground">
           {isSearching
-            ? `${formatNumber(filteredCount)} از ${formatNumber(total)} مطلب`
-            : `${formatNumber(total)} مطلب`}
+            ? `${formatPersianNumber(filteredCount)} از ${formatPersianNumber(total)} مطلب`
+            : `${formatPersianNumber(total)} مطلب`}
         </p>
       </div>
     </div>
@@ -366,16 +368,7 @@ function entryMatchesSearch(
     .filter(Boolean)
     .join(" ");
 
-  return normalizeSearch(searchableText).includes(normalizedSearch);
-}
-
-function normalizeSearch(value: string) {
-  return value
-    .trim()
-    .toLocaleLowerCase("fa-AF")
-    .replaceAll("ي", "ی")
-    .replaceAll("ك", "ک")
-    .replace(/\s+/g, " ");
+  return normalizePersianSearch(searchableText).includes(normalizedSearch);
 }
 
 function getActiveFilters(
@@ -418,10 +411,6 @@ function addActiveFilter(
 
 function findTaxonomyName(items: TaxonomyItem[], slug: string) {
   return items.find((item) => item.slug === slug)?.name;
-}
-
-function formatNumber(value: number) {
-  return new Intl.NumberFormat("fa-AF").format(value);
 }
 
 export { ExploreResultsPanel };

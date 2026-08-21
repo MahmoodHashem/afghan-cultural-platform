@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import { formatPersianNumber } from "@/lib/utils/formatters";
 
 type RichTextContent = JSONContent;
 
@@ -188,7 +189,7 @@ function RichTextEditor({
       <EditorContent editor={editor} />
       {showCharacterCount ? (
         <div className="border-t border-border px-4 py-2 text-small text-muted-foreground placeholder:text-muted-foreground/25 ">
-          {characters.toLocaleString("fa-AF")} / {characterLimit.toLocaleString("fa-AF")} کاراکتر
+          {formatPersianNumber(characters)} / {formatPersianNumber(characterLimit)} کاراکتر
         </div>
       ) : null}
     </div>

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { PageBreadcrumb } from "@/components/layout/page-breadcrumb";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { formatPersianNumber } from "@/lib/utils/formatters";
 import type { PublicEntryListQuery } from "../api/public-entries-api";
 import type { EntryListResponse, TaxonomyItem } from "../types/public-entry";
 import { createExploreHref } from "../utils/explore-query";
@@ -77,7 +78,7 @@ function Pagination({
       aria-label="صفحه‌بندی"
     >
       <p className="text-[14px] text-muted-foreground">
-        صفحه {formatNumber(meta.page)} از {formatNumber(meta.totalPages)}
+        صفحه {formatPersianNumber(meta.page)} از {formatPersianNumber(meta.totalPages)}
       </p>
       <div className="flex gap-3">
         <Link
@@ -117,10 +118,6 @@ function ApiNotice() {
       فعلاً بخشی از مطالب در دسترس نیست. کمی بعد دوباره تلاش کنید.
     </div>
   );
-}
-
-function formatNumber(value: number) {
-  return new Intl.NumberFormat("fa-AF").format(value);
 }
 
 export { ExploreContent };

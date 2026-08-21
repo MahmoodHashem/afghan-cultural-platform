@@ -4,6 +4,7 @@ import type { ContributionTaxonomyData } from "@/features/entries/api/contributi
 import type { EntryDraftPayload, EntrySourceInput } from "@/features/entries/api/entry-drafts-api";
 import type { CreateEntryFormValues } from "@/features/entries/schemas/create-entry-schema";
 import { geographicScopeLabels } from "@/features/entries/schemas/create-entry-schema";
+import { formatPersianNumber } from "@/lib/utils/formatters";
 import type { SelectOption } from "../components/create-entry-select";
 import type { WatchedEntryValues } from "../types/create-entry-form";
 
@@ -129,7 +130,7 @@ export function createMetadataSummary({
       : values.geographicScope
         ? geographicScopeLabels[values.geographicScope]
         : undefined;
-  const tagSummary = tagCount > 0 ? `${tagCount.toLocaleString("fa-AF")} برچسب` : undefined;
+  const tagSummary = tagCount > 0 ? `${formatPersianNumber(tagCount)} برچسب` : undefined;
 
   return (
     [contentTypeName, categoryName, location, tagSummary].filter(Boolean).join(" · ") ||

@@ -5,7 +5,7 @@ import Link from "next/link";
 
 import { Tabs, TabsList } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import { formatPersianNumber } from "./public-entry-card";
+import { formatPersianNumber } from "@/lib/utils/formatters";
 
 type FilterTabItem = {
   value: string;

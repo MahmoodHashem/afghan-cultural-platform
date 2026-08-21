@@ -1,13 +1,17 @@
 import type { Metadata } from "next";
 import { PageTransition } from "@/components/layout/page-transition";
 import {
-  type GeographicScope,
   getExploreTaxonomyData,
   getPublishedEntries,
   type PublicEntryListQuery,
-  type PublicEntrySort,
 } from "@/features/entries/api/public-entries-api";
 import { ExploreContent } from "@/features/entries/components/explore-content";
+import {
+  getGeographicScope,
+  getOptionalSearchParam,
+  getPositiveIntegerSearchParam,
+  getPublicEntrySort,
+} from "@/features/entries/utils/public-entry-query";
 
 type ExplorePageProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
@@ -48,50 +52,13 @@ function normalizeExploreQuery(
 ): Required<Pick<PublicEntryListQuery, "page" | "limit" | "sort">> &
   Omit<PublicEntryListQuery, "page" | "limit" | "sort"> {
   return {
-    page: getPositiveInteger(searchParams.page, 1),
+    page: getPositiveIntegerSearchParam(searchParams.page, 1),
     limit: 12,
-    sort: getSort(searchParams.sort),
-    provinceSlug: getOptionalString(searchParams.provinceSlug),
-    categorySlug: getOptionalString(searchParams.categorySlug),
-    contentTypeSlug: getOptionalString(searchParams.contentTypeSlug),
-    tagSlug: getOptionalString(searchParams.tagSlug),
+    sort: getPublicEntrySort(searchParams.sort),
+    provinceSlug: getOptionalSearchParam(searchParams.provinceSlug),
+    categorySlug: getOptionalSearchParam(searchParams.categorySlug),
+    contentTypeSlug: getOptionalSearchParam(searchParams.contentTypeSlug),
+    tagSlug: getOptionalSearchParam(searchParams.tagSlug),
     geographicScope: getGeographicScope(searchParams.geographicScope),
   };
-}
-
-function getOptionalString(value: string | string[] | undefined) {
-  const stringValue = Array.isArray(value) ? value[0] : value;
-
-  return stringValue?.trim() || undefined;
-}
-
-function getPositiveInteger(value: string | string[] | undefined, fallback: number) {
-  const stringValue = getOptionalString(value);
-  const parsedValue = stringValue ? Number(stringValue) : Number.NaN;
-
-  return Number.isInteger(parsedValue) && parsedValue > 0 ? parsedValue : fallback;
-}
-
-function getSort(value: string | string[] | undefined): PublicEntrySort {
-  const sort = getOptionalString(value);
-
-  if (sort === "oldest" || sort === "recentlyUpdated") {
-    return sort;
-  }
-
-  return "newest";
-}
-
-function getGeographicScope(value: string | string[] | undefined): GeographicScope | undefined {
-  const geographicScope = getOptionalString(value);
-
-  if (
-    geographicScope === "PROVINCE" ||
-    geographicScope === "NATIONAL" ||
-    geographicScope === "NONE"
-  ) {
-    return geographicScope;
-  }
-
-  return undefined;
 }

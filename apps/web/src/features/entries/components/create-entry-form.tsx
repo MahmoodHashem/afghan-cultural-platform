@@ -36,6 +36,7 @@ import {
   validateDistrictProvince,
 } from "@/features/entries/utils/create-entry-form-utils";
 import { createEmptyTiptapDocument } from "@/features/entries/utils/tiptap-content";
+import { formatPersianNumber } from "@/lib/utils/formatters";
 import { CreateEntryEditorHeader, CreateEntryEditorSection } from "./create-entry-editor-layout";
 import {
   DetailsSection,
@@ -347,7 +348,7 @@ function CreateEntryForm({ taxonomy }: CreateEntryFormProps) {
 
               <CreateEntryEditorSection
                 title="تصاویر"
-                summary={`${images.length.toLocaleString("fa-AF")} تصویر`}
+                summary={`${formatPersianNumber(images.length)} تصویر`}
               >
                 <ImagesSection
                   imageInputRef={imageInputRef}
@@ -361,7 +362,7 @@ function CreateEntryForm({ taxonomy }: CreateEntryFormProps) {
 
               <CreateEntryEditorSection
                 title="منابع"
-                summary={`${sourceFields.fields.length.toLocaleString("fa-AF")} منبع`}
+                summary={`${formatPersianNumber(sourceFields.fields.length)} منبع`}
               >
                 <SourcesSection
                   control={control}

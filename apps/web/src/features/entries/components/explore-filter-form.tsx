@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { normalizePersianSearch } from "@/lib/utils/persian";
 import type { TaxonomyItem } from "../types/public-entry";
 import { createExploreHref, type NormalizedExploreQuery } from "../utils/explore-query";
 
@@ -215,10 +216,10 @@ function SelectField({
       return options;
     }
 
-    const normalizedSearch = normalizeOptionSearch(searchValue);
+    const normalizedSearch = normalizePersianSearch(searchValue);
 
     return options.filter((option) =>
-      normalizeOptionSearch(option.label).includes(normalizedSearch),
+      normalizePersianSearch(option.label).includes(normalizedSearch),
     );
   }, [isSearchable, options, searchValue]);
 
@@ -316,16 +317,6 @@ function SelectField({
       </SelectContent>
     </Select>
   );
-}
-
-function normalizeOptionSearch(value: string) {
-  return value
-    .trim()
-    .toLocaleLowerCase("fa-AF")
-    .replaceAll("ي", "ی")
-    .replaceAll("ك", "ک")
-    .replace(/\u200c/g, " ")
-    .replace(/\s+/g, " ");
 }
 
 function getInitialFilters(query: ExploreFilterFormProps["query"]): FilterState {

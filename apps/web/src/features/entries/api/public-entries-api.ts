@@ -1,6 +1,7 @@
 import "server-only";
 
 import { getPublicApiBaseUrl } from "@/lib/api/env";
+import { setOptionalSearchParam } from "@/lib/utils/url-search-params";
 import type {
   EntryDetailResponse,
   EntryListResponse,
@@ -68,12 +69,12 @@ async function getPublishedEntries(query: PublicEntryListQuery): Promise<PublicE
   searchParams.set("limit", String(query.limit ?? 12));
   searchParams.set("sort", query.sort ?? "newest");
 
-  setOptionalParam(searchParams, "provinceSlug", query.provinceSlug);
-  setOptionalParam(searchParams, "districtSlug", query.districtSlug);
-  setOptionalParam(searchParams, "categorySlug", query.categorySlug);
-  setOptionalParam(searchParams, "contentTypeSlug", query.contentTypeSlug);
-  setOptionalParam(searchParams, "tagSlug", query.tagSlug);
-  setOptionalParam(searchParams, "geographicScope", query.geographicScope);
+  setOptionalSearchParam(searchParams, "provinceSlug", query.provinceSlug);
+  setOptionalSearchParam(searchParams, "districtSlug", query.districtSlug);
+  setOptionalSearchParam(searchParams, "categorySlug", query.categorySlug);
+  setOptionalSearchParam(searchParams, "contentTypeSlug", query.contentTypeSlug);
+  setOptionalSearchParam(searchParams, "tagSlug", query.tagSlug);
+  setOptionalSearchParam(searchParams, "geographicScope", query.geographicScope);
 
   return fetchApi<EntryListResponse>(`/entries?${searchParams.toString()}`, EMPTY_ENTRY_RESPONSE);
 }
@@ -167,12 +168,6 @@ async function fetchApi<TResponse>(path: string, fallback: TResponse) {
     };
   } catch {
     return { ...fallback, isUnavailable: true };
-  }
-}
-
-function setOptionalParam(searchParams: URLSearchParams, key: string, value: string | undefined) {
-  if (value) {
-    searchParams.set(key, value);
   }
 }
 

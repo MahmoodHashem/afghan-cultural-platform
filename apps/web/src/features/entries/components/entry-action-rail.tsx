@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
+import { formatPersianNumber } from "@/lib/utils/formatters";
 
 type EntryActionRailProps = {
   title: string;
@@ -134,7 +135,9 @@ function ActionButton({
     >
       {icon}
       {typeof count === "number" ? (
-        <span className="mt-1 text-[12px] font-bold leading-none">{formatNumber(count)}</span>
+        <span className="mt-1 text-[12px] font-bold leading-none">
+          {formatPersianNumber(count)}
+        </span>
       ) : null}
     </button>
   );
@@ -145,10 +148,6 @@ function scrollToSection(id: string) {
     behavior: "smooth",
     block: "start",
   });
-}
-
-function formatNumber(value: number) {
-  return new Intl.NumberFormat("fa-AF").format(value);
 }
 
 export { EntryActionRail };

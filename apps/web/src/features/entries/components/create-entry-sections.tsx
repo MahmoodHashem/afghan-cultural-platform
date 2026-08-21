@@ -25,6 +25,7 @@ import {
 } from "@/features/entries/schemas/create-entry-schema";
 import type { StagedImage } from "@/features/entries/types/create-entry-form";
 import { cn } from "@/lib/utils";
+import { formatPersianNumber } from "@/lib/utils/formatters";
 import { EmptyRow, FieldError } from "./create-entry-editor-layout";
 import { CreateEntrySelect, type SelectOption, TagMultiSelect } from "./create-entry-select";
 
@@ -397,9 +398,7 @@ function SourceFields({
   return (
     <div className="rounded-xl border border-border bg-background/50 p-4">
       <div className="mb-4 flex items-center justify-between gap-3">
-        <p className="font-semibold text-foreground">
-          منبع {Number(index + 1).toLocaleString("fa-AF")}
-        </p>
+        <p className="font-semibold text-foreground">منبع {formatPersianNumber(index + 1)}</p>
         <div className="flex items-center gap-1">
           <Button
             type="button"

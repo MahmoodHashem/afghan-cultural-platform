@@ -9,9 +9,10 @@ import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { formatPersianNumber } from "@/lib/utils/formatters";
+import { createPersianPathSegment, normalizePersianSearch } from "@/lib/utils/persian";
 import type { TaxonomyItem } from "../types/public-entry";
 import { getProvinceImage } from "../utils/province-images";
-import { formatPersianNumber } from "./public-entry-card";
 
 type CountedProvince = TaxonomyItem & {
   entryCount: number;
@@ -19,14 +20,14 @@ type CountedProvince = TaxonomyItem & {
 
 function ProvinceSearchGrid({ provinces }: { provinces: CountedProvince[] }) {
   const [search, setSearch] = useState("");
-  const normalizedSearch = normalizeSearchText(search);
+  const normalizedSearch = normalizePersianSearch(search);
   const filteredProvinces = useMemo(() => {
     if (!normalizedSearch) {
       return provinces;
     }
 
     return provinces.filter((province) =>
-      normalizeSearchText(`${province.name} ${province.slug}`).includes(normalizedSearch),
+      normalizePersianSearch(`${province.name} ${province.slug}`).includes(normalizedSearch),
     );
   }, [provinces, normalizedSearch]);
 
@@ -122,14 +123,6 @@ function ProvinceCard({ province }: { province: CountedProvince }) {
       </Card>
     </motion.div>
   );
-}
-
-function normalizeSearchText(value: string) {
-  return value.trim().toLowerCase().replaceAll("ي", "ی").replaceAll("ك", "ک").replace(/\s+/g, " ");
-}
-
-function createPersianPathSegment(value: string) {
-  return value.trim().replace(/\s+/g, "-").replace(/-+/g, "-");
 }
 
 export { ProvinceSearchGrid };

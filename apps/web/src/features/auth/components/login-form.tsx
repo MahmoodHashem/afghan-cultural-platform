@@ -11,7 +11,6 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { createOAuthStartUrl } from "@/features/auth/api/auth-api";
 import { AuthDivider } from "@/features/auth/components/auth-divider";
 import { FieldError } from "@/features/auth/components/field-error";
 import { OAuthButtons } from "@/features/auth/components/oauth-buttons";
@@ -20,6 +19,7 @@ import { UnverifiedEmailNotice } from "@/features/auth/components/unverified-ema
 import { useLogin } from "@/features/auth/hooks/use-auth-mutations";
 import { type LoginFormValues, loginSchema } from "@/features/auth/schemas/auth-schemas";
 import { applyApiFieldErrors, getAuthFormErrorMessage } from "@/features/auth/utils/form-errors";
+import { redirectToOAuthProvider } from "@/features/auth/utils/oauth-redirect";
 import { getSafeRedirectPath } from "@/features/auth/utils/redirects";
 import { cn } from "@/lib/utils";
 
@@ -42,12 +42,6 @@ function LoginForm() {
     },
     mode: "onBlur",
   });
-
-  function startOAuth(provider: "google" | "facebook") {
-    const nextPath = getSafeRedirectPath(searchParams.get("next"));
-
-    window.location.assign(createOAuthStartUrl(provider, nextPath));
-  }
 
   async function handleLoginSubmit(values: LoginFormValues) {
     setShowUnverifiedNotice(false);
@@ -138,8 +132,8 @@ function LoginForm() {
       <OAuthButtons
         googleLabel="ورود با گوگل"
         facebookLabel="ورود با فیسبوک"
-        onGoogleClick={() => startOAuth("google")}
-        onFacebookClick={() => startOAuth("facebook")}
+        onGoogleClick={() => redirectToOAuthProvider("google", searchParams.get("next"))}
+        onFacebookClick={() => redirectToOAuthProvider("facebook", searchParams.get("next"))}
       />
 
       <p className="text-center text-[15px] text-muted-foreground">

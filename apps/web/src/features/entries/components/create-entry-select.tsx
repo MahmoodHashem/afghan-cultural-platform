@@ -13,6 +13,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { formatPersianNumber } from "@/lib/utils/formatters";
+import { normalizePersianSearch } from "@/lib/utils/persian";
 
 type SelectOption = {
   label: string;
@@ -160,7 +162,7 @@ function TagMultiSelect({ label, selectedValues, options, onChange, error }: Tag
       <div className="flex items-center justify-between gap-3">
         <span className="text-small font-semibold text-foreground">{label}</span>
         <span className="text-[12px] text-muted-foreground">
-          {selectedValues.length.toLocaleString("fa-AF")} انتخاب
+          {formatPersianNumber(selectedValues.length)} انتخاب
         </span>
       </div>
       {selectedOptions.length > 0 ? (
@@ -265,16 +267,6 @@ function useFilteredOptions(options: SelectOption[], search: string, enabled: bo
       ),
     );
   }, [enabled, options, search]);
-}
-
-function normalizePersianSearch(value: string) {
-  return value
-    .trim()
-    .toLocaleLowerCase("fa-AF")
-    .replaceAll("ي", "ی")
-    .replaceAll("ك", "ک")
-    .replace(/\u200c/g, " ")
-    .replace(/\s+/g, " ");
 }
 
 export type { SelectOption };

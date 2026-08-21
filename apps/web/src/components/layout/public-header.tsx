@@ -38,6 +38,7 @@ import { Menubar } from "@/components/ui/menubar";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useLogout } from "@/features/auth/hooks/use-auth-mutations";
 import { cn } from "@/lib/utils";
+import { createUserInitials } from "@/lib/utils/user";
 import { type SafeUser, useAuthStore } from "@/stores/auth-store";
 
 type PublicHeaderProps = {
@@ -360,7 +361,7 @@ function MobileNavigation({ isCompact }: { isCompact: boolean }) {
                   <div className="flex items-center gap-3 rounded-2xl bg-card p-3">
                     <Avatar size="default" className="size-9 bg-primary-light">
                       <AvatarFallback className="bg-primary-light text-[12px] font-bold text-primary">
-                        {createInitials(user.displayName)}
+                        {createUserInitials(user.displayName)}
                       </AvatarFallback>
                     </Avatar>
                     <div className="min-w-0">
@@ -519,7 +520,7 @@ function ProfileMenu({ user }: { user: SafeUser }) {
       >
         <Avatar size="default" className="size-8 bg-primary-light">
           <AvatarFallback className="bg-primary-light text-[12px] font-bold text-primary">
-            {createInitials(user.displayName)}
+            {createUserInitials(user.displayName)}
           </AvatarFallback>
         </Avatar>
         <ChevronDownIcon
@@ -603,15 +604,6 @@ function LogoutConfirmationDialog({
       </AlertDialogContent>
     </AlertDialog>
   );
-}
-
-function createInitials(displayName: string) {
-  return displayName
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join("");
 }
 
 function isHeaderContext(value: unknown): value is HeaderContext {

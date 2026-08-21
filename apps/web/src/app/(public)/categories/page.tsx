@@ -5,7 +5,7 @@ import {
   getPublishedEntryCount,
 } from "@/features/entries/api/public-entries-api";
 import { CategoriesIndexContent } from "@/features/entries/components/taxonomy-discovery-pages";
-import type { TaxonomyItem } from "@/features/entries/types/public-entry";
+import { sortTaxonomyItems } from "@/features/entries/utils/taxonomy";
 
 export const metadata: Metadata = {
   title: "موضوع‌ها | میراث افغانستان",
@@ -45,13 +45,4 @@ export default async function CategoriesPage() {
       />
     </PageTransition>
   );
-}
-
-function sortTaxonomyItems(items: TaxonomyItem[]) {
-  return [...items].sort((first, second) => {
-    const firstOrder = first.sortOrder ?? Number.MAX_SAFE_INTEGER;
-    const secondOrder = second.sortOrder ?? Number.MAX_SAFE_INTEGER;
-
-    return firstOrder - secondOrder || first.name.localeCompare(second.name, "fa");
-  });
 }

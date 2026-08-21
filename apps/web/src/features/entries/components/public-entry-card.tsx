@@ -4,8 +4,10 @@ import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { formatPersianDate } from "@/lib/utils/formatters";
 import type { PublicEntryCard } from "../types/public-entry";
 import { createEntryHref, type EntryBreadcrumbContext } from "../utils/entry-breadcrumb";
+import { getEntryLocationLabel } from "../utils/geography";
 
 const fallbackImages = [
   "/images/HERAT02.jpg",
@@ -59,7 +61,7 @@ function PublicEntryCardView({
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border/70 pt-3 text-[12px] text-muted-foreground">
             <span className="inline-flex items-center gap-1">
               <MapPinIcon className="size-4" aria-hidden="true" />
-              {locationLabel(entry)}
+              {getEntryLocationLabel(entry)}
             </span>
             <span className="inline-flex items-center gap-1">
               <CalendarDaysIcon className="size-4" aria-hidden="true" />
@@ -79,26 +81,4 @@ function entryHref(
   return createEntryHref(entry, breadcrumbParent);
 }
 
-function locationLabel(entry: Pick<PublicEntryCard, "geographicScope" | "province">) {
-  if (entry.geographicScope === "NATIONAL") {
-    return "سراسر افغانستان";
-  }
-
-  if (entry.geographicScope === "NONE") {
-    return "بدون وابستگی به مکان";
-  }
-
-  return entry.province?.name ?? "وابسته به یک ولایت";
-}
-
-function formatPersianDate(value: string) {
-  return new Intl.DateTimeFormat("fa-AF", {
-    dateStyle: "medium",
-  }).format(new Date(value));
-}
-
-function formatPersianNumber(value: number) {
-  return new Intl.NumberFormat("fa-AF").format(value);
-}
-
-export { entryHref, formatPersianDate, formatPersianNumber, locationLabel, PublicEntryCardView };
+export { entryHref, PublicEntryCardView };

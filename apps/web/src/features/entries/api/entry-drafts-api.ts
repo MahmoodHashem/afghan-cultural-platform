@@ -1,4 +1,5 @@
 import { apiRequest } from "@/lib/api/api-client";
+import { setOptionalSearchParam } from "@/lib/utils/url-search-params";
 import type { TaxonomyItem } from "../types/public-entry";
 
 type GeographicScope = "PROVINCE" | "NATIONAL" | "NONE";
@@ -186,13 +187,13 @@ async function createEntryDraft(input: EntryDraftPayload) {
 async function listOwnEntries(query: OwnEntriesQuery = {}, signal?: AbortSignal) {
   const searchParams = new URLSearchParams();
 
-  setOptionalParam(searchParams, "page", query.page);
-  setOptionalParam(searchParams, "limit", query.limit);
-  setOptionalParam(searchParams, "status", query.status);
-  setOptionalParam(searchParams, "categoryId", query.categoryId);
-  setOptionalParam(searchParams, "contentTypeId", query.contentTypeId);
-  setOptionalParam(searchParams, "sortBy", query.sortBy);
-  setOptionalParam(searchParams, "sortDirection", query.sortDirection);
+  setOptionalSearchParam(searchParams, "page", query.page);
+  setOptionalSearchParam(searchParams, "limit", query.limit);
+  setOptionalSearchParam(searchParams, "status", query.status);
+  setOptionalSearchParam(searchParams, "categoryId", query.categoryId);
+  setOptionalSearchParam(searchParams, "contentTypeId", query.contentTypeId);
+  setOptionalSearchParam(searchParams, "sortBy", query.sortBy);
+  setOptionalSearchParam(searchParams, "sortDirection", query.sortDirection);
 
   const queryString = searchParams.toString();
   const response = await apiRequest<OwnEntryListResponse>(
@@ -316,16 +317,6 @@ async function deleteEntryImage(entryId: string, imageId: string) {
   await apiRequest(`/me/entries/${entryId}/images/${imageId}`, {
     method: "DELETE",
   });
-}
-
-function setOptionalParam(
-  searchParams: URLSearchParams,
-  key: string,
-  value: number | string | undefined,
-) {
-  if (value !== undefined && value !== "") {
-    searchParams.set(key, String(value));
-  }
 }
 
 export type {

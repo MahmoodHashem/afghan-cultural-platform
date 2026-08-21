@@ -10,11 +10,16 @@ import {
   type PublicEntryListQuery,
   type PublicEntrySort,
 } from "@/features/entries/api/public-entries-api";
+import { CategoryDetailContent } from "@/features/entries/components/taxonomy-discovery-pages";
 import {
-  CategoryDetailContent,
-  createPersianPathSegment,
-} from "@/features/entries/components/taxonomy-discovery-pages";
-import type { TaxonomyItem } from "@/features/entries/types/public-entry";
+  getGeographicScope,
+  getOptionalSearchParam,
+  getPositiveIntegerSearchParam,
+  getPublicEntrySort,
+} from "@/features/entries/utils/public-entry-query";
+import { sortTaxonomyItems } from "@/features/entries/utils/taxonomy";
+import { findTaxonomyItemByRouteSegment } from "@/features/entries/utils/taxonomy-route";
+import { createPersianPathSegment } from "@/lib/utils/persian";
 
 type CategoryDetailPageProps = {
   params: Promise<{
@@ -69,9 +74,9 @@ export default async function CategoryDetailPage({
     notFound();
   }
 
-  const page = getPositiveInteger(resolvedSearchParams.page, 1);
-  const sort = getSort(resolvedSearchParams.sort);
-  const selectedProvinceSlug = getOptionalString(resolvedSearchParams.provinceSlug);
+  const page = getPositiveIntegerSearchParam(resolvedSearchParams.page, 1);
+  const sort = getPublicEntrySort(resolvedSearchParams.sort);
+  const selectedProvinceSlug = getOptionalSearchParam(resolvedSearchParams.provinceSlug);
   const selectedGeographicScope = getGeographicScope(resolvedSearchParams.geographicScope);
   const effectiveProvinceSlug =
     selectedGeographicScope === "NATIONAL" ? undefined : selectedProvinceSlug;
@@ -197,80 +202,4 @@ function createCategoryHref(
   const queryString = searchParams.toString();
 
   return queryString ? `${baseHref}?${queryString}` : baseHref;
-}
-
-function findTaxonomyItemByRouteSegment(items: TaxonomyItem[], segment: string) {
-  const normalizedSegment = normalizeRouteSegment(segment);
-
-  return items.find((item) => {
-    return (
-      normalizeRouteSegment(item.slug) === normalizedSegment ||
-      normalizeRouteSegment(item.name) === normalizedSegment ||
-      normalizeRouteSegment(createPersianPathSegment(item.name)) === normalizedSegment
-    );
-  });
-}
-
-function normalizeRouteSegment(value: string) {
-  return safeDecodeURIComponent(value)
-    .trim()
-    .replace(/ي/g, "ی")
-    .replace(/ك/g, "ک")
-    .replace(/-/g, " ")
-    .replace(/\s+/g, " ")
-    .toLowerCase();
-}
-
-function safeDecodeURIComponent(value: string) {
-  try {
-    return decodeURIComponent(value);
-  } catch {
-    return value;
-  }
-}
-
-function getOptionalString(value: string | string[] | undefined) {
-  const stringValue = Array.isArray(value) ? value[0] : value;
-
-  return stringValue?.trim() || undefined;
-}
-
-function getPositiveInteger(value: string | string[] | undefined, fallback: number) {
-  const stringValue = getOptionalString(value);
-  const parsedValue = stringValue ? Number(stringValue) : Number.NaN;
-
-  return Number.isInteger(parsedValue) && parsedValue > 0 ? parsedValue : fallback;
-}
-
-function getSort(value: string | string[] | undefined): PublicEntrySort {
-  const sort = getOptionalString(value);
-
-  if (sort === "oldest" || sort === "recentlyUpdated") {
-    return sort;
-  }
-
-  return "newest";
-}
-
-function getGeographicScope(value: string | string[] | undefined): GeographicScope | undefined {
-  const geographicScope = getOptionalString(value);
-
-  if (
-    geographicScope === "PROVINCE" ||
-    geographicScope === "NATIONAL" ||
-    geographicScope === "NONE"
-  ) {
-    return geographicScope;
-  }
-
-  return undefined;
-}
-
-function sortTaxonomyItems(items: TaxonomyItem[]) {
-  return [...items].sort((first, second) => {
-    const firstOrder = first.sortOrder ?? Number.MAX_SAFE_INTEGER;
-    const secondOrder = second.sortOrder ?? Number.MAX_SAFE_INTEGER;
-
-    return firstOrder - secondOrder || first.name.localeCompare(second.name, "fa");
-  });
 }

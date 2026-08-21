@@ -5,6 +5,7 @@ import { siFacebook, siInstagram, siX, siYoutube } from "simple-icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { formatPersianNumber } from "@/lib/utils/formatters";
 
 type FooterLink = {
   label: string;
@@ -51,7 +52,7 @@ const socialIcons: SocialIconDefinition[] = [
 ];
 
 function Footer() {
-  const currentYear = new Date().getFullYear().toLocaleString("fa-AF", { useGrouping: false });
+  const currentYear = formatPersianNumber(new Date().getFullYear(), { useGrouping: false });
 
   return (
     <footer className="w-full border-t border-border bg-background text-foreground">

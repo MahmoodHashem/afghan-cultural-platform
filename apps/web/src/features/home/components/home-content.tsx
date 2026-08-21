@@ -7,7 +7,10 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import type { PublicEntryCard, TaxonomyItem } from "@/features/entries/types/public-entry";
+import { createEntryHref } from "@/features/entries/utils/entry-breadcrumb";
+import { getEntryLocationLabel } from "@/features/entries/utils/geography";
 import { cn } from "@/lib/utils";
+import { formatPersianDate, formatPersianNumber } from "@/lib/utils/formatters";
 import type { HomeData } from "../api/home-api";
 import { ScrollReveal } from "./scroll-reveal";
 
@@ -114,7 +117,9 @@ function StatsStrip({ data }: { data: HomeData }) {
       {stats.map((stat) => (
         <div key={stat.label} className="px-3 py-4 text-center">
           <dt className="text-[12px] font-medium text-muted-foreground">{stat.label}</dt>
-          <dd className="mt-1 text-[22px] font-bold text-foreground">{formatNumber(stat.value)}</dd>
+          <dd className="mt-1 text-[22px] font-bold text-foreground">
+            {formatPersianNumber(stat.value)}
+          </dd>
         </div>
       ))}
     </dl>
@@ -125,7 +130,7 @@ function FeaturedEntryCard({ entry }: { entry: PublicEntryCard }) {
   return (
     <article className="group overflow-hidden rounded-[28px] border border-border bg-card shadow-[0_2px_10px_rgba(0,0,0,.05)]">
       <Link
-        href={entryHref(entry)}
+        href={createEntryHref(entry)}
         className="block outline-none focus-visible:ring-3 focus-visible:ring-ring/40"
       >
         <div className="relative min-h-[420px] overflow-hidden">
@@ -143,7 +148,7 @@ function FeaturedEntryCard({ entry }: { entry: PublicEntryCard }) {
                 {entry.category.name}
               </Badge>
               <Badge className="border-white/20 bg-white/16 text-white backdrop-blur-sm">
-                {locationLabel(entry)}
+                {getEntryLocationLabel(entry)}
               </Badge>
             </div>
             <div className="max-w-2xl space-y-3">
@@ -161,7 +166,7 @@ function CompactEntryCard({ entry, imageIndex }: { entry: PublicEntryCard; image
   return (
     <article className="group rounded-2xl border border-border bg-card p-3 shadow-[0_2px_10px_rgba(0,0,0,.04)] transition-colors hover:border-primary/35">
       <Link
-        href={entryHref(entry)}
+        href={createEntryHref(entry)}
         className="grid gap-4 outline-none focus-visible:ring-3 focus-visible:ring-ring/40 sm:grid-cols-[132px_1fr] lg:grid-cols-[148px_1fr]"
       >
         <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-muted">
@@ -180,7 +185,9 @@ function CompactEntryCard({ entry, imageIndex }: { entry: PublicEntryCard; image
           <p className="mt-2 line-clamp-2 text-[14px] leading-7 text-muted-foreground">
             {entry.summary}
           </p>
-          <p className="mt-3 text-[12px] text-muted-foreground">{formatDate(entry.publishedAt)}</p>
+          <p className="mt-3 text-[12px] text-muted-foreground">
+            {formatPersianDate(entry.publishedAt)}
+          </p>
         </div>
       </Link>
     </article>
@@ -224,7 +231,7 @@ function EntryCard({ entry, imageIndex }: { entry: PublicEntryCard; imageIndex: 
   return (
     <Card className="group overflow-hidden rounded-2xl border-border bg-card p-0 shadow-[0_2px_10px_rgba(0,0,0,.04)]">
       <Link
-        href={entryHref(entry)}
+        href={createEntryHref(entry)}
         className="block outline-none focus-visible:ring-3 focus-visible:ring-ring/40"
       >
         <div className="relative aspect-[4/3] overflow-hidden bg-muted">
@@ -248,8 +255,8 @@ function EntryCard({ entry, imageIndex }: { entry: PublicEntryCard; imageIndex: 
             {entry.summary}
           </p>
           <div className="flex items-center justify-between gap-3 text-[12px] text-muted-foreground">
-            <span>{locationLabel(entry)}</span>
-            <span>{formatDate(entry.publishedAt)}</span>
+            <span>{getEntryLocationLabel(entry)}</span>
+            <span>{formatPersianDate(entry.publishedAt)}</span>
           </div>
         </CardContent>
       </Link>
@@ -456,32 +463,6 @@ function WideEmptyState() {
       هنوز فهرستی برای این بخش وجود ندارد.
     </div>
   );
-}
-
-function entryHref(entry: PublicEntryCard) {
-  return `/entries/${encodeURIComponent(entry.slug)}`;
-}
-
-function locationLabel(entry: PublicEntryCard) {
-  if (entry.geographicScope === "NATIONAL") {
-    return "سراسر افغانستان";
-  }
-
-  if (entry.geographicScope === "NONE") {
-    return "بدون وابستگی به مکان";
-  }
-
-  return entry.province?.name ?? "وابسته به یک ولایت";
-}
-
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("fa-AF", {
-    dateStyle: "medium",
-  }).format(new Date(value));
-}
-
-function formatNumber(value: number) {
-  return new Intl.NumberFormat("fa-AF").format(value);
 }
 
 export { HomeContent };

@@ -22,13 +22,14 @@ import { PageBreadcrumb } from "@/components/layout/page-breadcrumb";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { formatPersianNumber } from "@/lib/utils/formatters";
 import type { EntryListResponse, TaxonomyItem } from "../types/public-entry";
 import type { EntryBreadcrumbContext } from "../utils/entry-breadcrumb";
 import { getProvinceImage } from "../utils/province-images";
+import { taxonomyItemHref } from "../utils/taxonomy-route";
 import type { FilterTabItem } from "./filter-tabs";
 import { FilterableEntryResults } from "./filterable-entry-results";
 import { ProvinceSearchGrid } from "./province-search-grid";
-import { formatPersianNumber } from "./public-entry-card";
 
 type CountedTaxonomyItem = TaxonomyItem & {
   entryCount: number;
@@ -655,18 +656,9 @@ function getCategoryDescription(category: Pick<TaxonomyItem, "name" | "slug">) {
   return categoryDescriptions[category.slug] ?? `مطالب فرهنگی مرتبط با ${category.name}.`;
 }
 
-function taxonomyItemHref(basePath: "/provinces" | "/categories", item: TaxonomyItem) {
-  return `${basePath}/${encodeURIComponent(createPersianPathSegment(item.name))}`;
-}
-
-function createPersianPathSegment(value: string) {
-  return value.trim().replace(/\s+/g, "-").replace(/-+/g, "-");
-}
-
 export {
   CategoriesIndexContent,
   CategoryDetailContent,
-  createPersianPathSegment,
   ProvinceDetailContent,
   ProvinceIndexContent,
 };

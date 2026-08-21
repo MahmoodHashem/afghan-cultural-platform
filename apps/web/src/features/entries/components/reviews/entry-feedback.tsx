@@ -13,6 +13,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { submitPublicReview, submitRating } from "@/features/entries/api/community-feedback-api";
 import { cn } from "@/lib/utils";
+import { formatPersianNumber } from "@/lib/utils/formatters";
 import { useAuthStore } from "@/stores/auth-store";
 
 type EntryFeedbackProps = {
@@ -98,9 +99,11 @@ function EntryFeedback({ entryId, entryTitle, averageRating, ratingCount }: Entr
       <div className="rounded-2xl bg-muted/60 p-4">
         <p className="text-[13px] text-muted-foreground">میانگین امتیاز</p>
         <div className="mt-2 flex items-center gap-3">
-          <strong className="text-[28px] text-foreground">{formatRating(averageRating)}</strong>
+          <strong className="text-[28px] text-foreground">
+            {formatPersianNumber(averageRating, { maximumFractionDigits: 1 })}
+          </strong>
           <span className="text-[13px] text-muted-foreground">
-            از {formatNumber(ratingCount)} رأی
+            از {formatPersianNumber(ratingCount)} رأی
           </span>
         </div>
         <fieldset className="mt-4 flex gap-1" aria-label={`امتیازدهی به ${entryTitle}`}>
@@ -162,16 +165,6 @@ function EntryFeedback({ entryId, entryTitle, averageRating, ratingCount }: Entr
       )}
     </section>
   );
-}
-
-function formatRating(value: number) {
-  return new Intl.NumberFormat("fa-AF", {
-    maximumFractionDigits: 1,
-  }).format(value);
-}
-
-function formatNumber(value: number) {
-  return new Intl.NumberFormat("fa-AF").format(value);
 }
 
 export { EntryFeedback };

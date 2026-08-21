@@ -51,6 +51,8 @@ import {
 } from "@/features/profile/utils/profile-query";
 import { isApiError } from "@/lib/api/api-error";
 import { cn } from "@/lib/utils";
+import { formatPersianNumber } from "@/lib/utils/formatters";
+import { createUserInitials } from "@/lib/utils/user";
 import { type SafeUser, useAuthStore } from "@/stores/auth-store";
 import { ProfilePageSkeleton } from "./profile-page-skeleton";
 
@@ -59,10 +61,10 @@ const profileTabs: Array<{
   label: string;
   icon: typeof DocumentTextIcon;
 }> = [
-    { value: "entries", label: "مطالب من", icon: DocumentTextIcon },
-    { value: "reviews", label: "دیدگاه‌ها", icon: ChatBubbleLeftRightIcon },
-    { value: "bookmarks", label: "ذخیره‌ها", icon: BookmarkIcon },
-  ];
+  { value: "entries", label: "مطالب من", icon: DocumentTextIcon },
+  { value: "reviews", label: "دیدگاه‌ها", icon: ChatBubbleLeftRightIcon },
+  { value: "bookmarks", label: "ذخیره‌ها", icon: BookmarkIcon },
+];
 
 const ownerEntrySkeletonKeys = ["first", "second", "third", "fourth"] as const;
 
@@ -112,7 +114,7 @@ function OwnerProfileHeader({ user }: { user: SafeUser }) {
           <div className="relative shrink-0">
             <Avatar className="size-28 border-4 border-card bg-primary-light ">
               <AvatarFallback className="bg-primary-light text-[24px] font-bold text-primary">
-                {createInitials(user.displayName)}
+                {createUserInitials(user.displayName)}
               </AvatarFallback>
             </Avatar>
             <span
@@ -165,7 +167,7 @@ function ProfileStats({ stats }: { stats: ReturnType<typeof useOwnerEntryStats> 
                   <span className="sr-only">آمار در دسترس نیست</span>
                 </>
               ) : (
-                <span>{formatNumber(item.value)}</span>
+                <span>{formatPersianNumber(item.value)}</span>
               )}
             </dd>
 
@@ -283,9 +285,7 @@ function OwnerEntryToolbar({ query, total }: { query: ProfileQuery; total: numbe
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
                   "relative inline-flex h-7 shrink-0 items-center rounded-full px-3 text-[13px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/40",
-                  isActive
-                    ? "border-primary text-primary"
-                    : "",
+                  isActive ? "border-primary text-primary" : "",
                 )}
               >
                 {isActive ? (
@@ -301,11 +301,7 @@ function OwnerEntryToolbar({ query, total }: { query: ProfileQuery; total: numbe
             );
           })}
         </div>
-        {total > 0 && (
-          <p className="text-sm text-foreground">
-            {formatNumber(total)} مطلب
-          </p>
-        )}
+        {total > 0 && <p className="text-sm text-foreground">{formatPersianNumber(total)} مطلب</p>}
       </div>
     </div>
   );
@@ -360,7 +356,6 @@ function OwnerEntryRow({ entry, onDelete }: { entry: OwnEntry; onDelete: () => v
     <article className="group rounded-xl  p-4  transition-all duration-200 hover:border-primary/25 hover:shadow-[0_14px_34px_rgba(31,41,55,0.07)]">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0 flex-1 space-y-3">
-
           <div>
             <h2 className="line-clamp-2 text-[20px] font-bold leading-8 text-foreground">
               {entry.title || "بدون عنوان"}
@@ -370,7 +365,6 @@ function OwnerEntryRow({ entry, onDelete }: { entry: OwnEntry; onDelete: () => v
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[13px] text-muted-foreground">
-
             <div className="flex flex-wrap items-center gap-2">
               <Badge
                 variant="outline"
@@ -428,7 +422,6 @@ function OwnerEntryRow({ entry, onDelete }: { entry: OwnEntry; onDelete: () => v
             </button>
           ) : null}
         </div>
-
       </div>
     </article>
   );
@@ -466,7 +459,7 @@ function ProfilePagination({
         قبلی
       </Link>
       <span className="text-muted-foreground">
-        صفحه {formatNumber(meta.page)} از {formatNumber(meta.totalPages)}
+        صفحه {formatPersianNumber(meta.page)} از {formatPersianNumber(meta.totalPages)}
       </span>
       <Link
         href={createProfileHref(query, { page: Math.min(meta.totalPages, meta.page + 1) })}
@@ -620,37 +613,6 @@ function DeleteDraftDialog({
       </AlertDialogContent>
     </AlertDialog>
   );
-}
-
-function getLocationLabel(entry: Pick<OwnEntry, "geographicScope" | "province">) {
-  if (entry.geographicScope === "NATIONAL") {
-    return "سراسر افغانستان";
-  }
-
-  if (entry.geographicScope === "NONE") {
-    return "بدون وابستگی به مکان";
-  }
-
-  return entry.province?.name ?? "وابسته به یک ولایت";
-}
-
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("fa-AF", {
-    dateStyle: "medium",
-  }).format(new Date(value));
-}
-
-function formatNumber(value: number) {
-  return new Intl.NumberFormat("fa-AF").format(value);
-}
-
-function createInitials(displayName: string) {
-  return displayName
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join("");
 }
 
 function isVerifiedEmailError(error: unknown) {

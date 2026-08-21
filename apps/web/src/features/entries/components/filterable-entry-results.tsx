@@ -8,6 +8,7 @@ import { type ReactNode, useMemo, useState } from "react";
 import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { normalizePersianSearch } from "@/lib/utils/persian";
 import type { EntryListResponse } from "../types/public-entry";
 import type { EntryBreadcrumbContext } from "../utils/entry-breadcrumb";
 import { AnimatedEntryGrid } from "./animated-entry-grid";
@@ -36,7 +37,7 @@ function FilterableEntryResults({
   pagination,
 }: FilterableEntryResultsProps) {
   const [search, setSearch] = useState("");
-  const normalizedSearch = normalizeSearchText(search);
+  const normalizedSearch = normalizePersianSearch(search);
   const filteredEntries = useMemo(() => {
     if (!normalizedSearch) {
       return entries;
@@ -113,7 +114,7 @@ function EntryResultsEmptyState({
 }
 
 function normalizeEntrySearchText(entry: EntryListResponse["data"][number]) {
-  return normalizeSearchText(
+  return normalizePersianSearch(
     [
       entry.title,
       entry.summary,
@@ -125,10 +126,6 @@ function normalizeEntrySearchText(entry: EntryListResponse["data"][number]) {
       .filter(Boolean)
       .join(" "),
   );
-}
-
-function normalizeSearchText(value: string) {
-  return value.trim().toLowerCase().replaceAll("ي", "ی").replaceAll("ك", "ک").replace(/\s+/g, " ");
 }
 
 export { FilterableEntryResults };

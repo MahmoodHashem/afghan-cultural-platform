@@ -14,7 +14,9 @@ import {
 } from "@/features/entries/components/entry-table-of-contents";
 import { EntryFeedback } from "@/features/entries/components/reviews/entry-feedback";
 import { cn } from "@/lib/utils";
+import { formatPersianDate, formatPersianNumber } from "@/lib/utils/formatters";
 import type { PublicEntryDetail, PublicReview } from "../types/public-entry";
+import { getEntryLocationLabel } from "../utils/geography";
 
 type TiptapNode = {
   type?: string;
@@ -59,7 +61,7 @@ function EntryDetailContent({
                     {entry.contentType.name}
                   </Badge>
                   <Badge variant="outline" className="rounded-full">
-                    {locationLabel(entry)}
+                    {getEntryLocationLabel(entry)}
                   </Badge>
                 </div>
                 <div className="space-y-4">
@@ -138,7 +140,7 @@ function PublicReviewsList({ reviews }: { reviews: PublicReview[] }) {
       <div className="flex items-center justify-between gap-4">
         <h2 className="text-[26px] font-bold text-foreground">دیدگاه‌های خوانندگان</h2>
         <span className="rounded-full bg-muted px-3 py-1 text-[13px] font-semibold text-muted-foreground">
-          {formatNumber(reviews.length)} دیدگاه
+          {formatPersianNumber(reviews.length)} دیدگاه
         </span>
       </div>
 
@@ -150,7 +152,7 @@ function PublicReviewsList({ reviews }: { reviews: PublicReview[] }) {
                 <div className="space-y-1">
                   <h3 className="font-bold text-foreground">{review.author.displayName}</h3>
                   <p className="text-[12px] text-muted-foreground">
-                    {formatDate(review.createdAt)}
+                    {formatPersianDate(review.createdAt)}
                   </p>
                 </div>
               </div>
@@ -178,12 +180,12 @@ function EntryMeta({ entry }: { entry: PublicEntryDetail }) {
       <div className="inline-flex items-center gap-2">
         <CalendarDaysIcon className="size-5" aria-hidden="true" />
         <dt className="sr-only">تاریخ انتشار</dt>
-        <dd>{formatDate(entry.publishedAt)}</dd>
+        <dd>{formatPersianDate(entry.publishedAt)}</dd>
       </div>
       <div className="inline-flex items-center gap-2">
         <MapPinIcon className="size-5" aria-hidden="true" />
         <dt className="sr-only">موقعیت</dt>
-        <dd>{locationLabel(entry)}</dd>
+        <dd>{getEntryLocationLabel(entry)}</dd>
       </div>
     </dl>
   );
@@ -447,7 +449,7 @@ function SourcesList({ entry }: { entry: PublicEntryDetail }) {
 
 function TaxonomyCard({ entry }: { entry: PublicEntryDetail }) {
   const items = [
-    ["محدوده جغرافیایی", locationLabel(entry)],
+    ["محدوده جغرافیایی", getEntryLocationLabel(entry)],
     ["ولایت", entry.province?.name],
     ["ولسوالی", entry.district?.name],
     ["موقعیت", entry.villageOrLocation],
@@ -585,18 +587,6 @@ function getTextAlignClass(attrs: Record<string, unknown> | undefined) {
   }
 }
 
-function locationLabel(entry: PublicEntryDetail) {
-  if (entry.geographicScope === "NATIONAL") {
-    return "سراسر افغانستان";
-  }
-
-  if (entry.geographicScope === "NONE") {
-    return "بدون وابستگی به مکان";
-  }
-
-  return entry.province?.name ?? "وابسته به یک ولایت";
-}
-
 function sourceTypeLabel(type: string) {
   const labels: Record<string, string> = {
     BOOK: "کتاب",
@@ -609,16 +599,6 @@ function sourceTypeLabel(type: string) {
   };
 
   return labels[type] ?? "منبع";
-}
-
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("fa-AF", {
-    dateStyle: "medium",
-  }).format(new Date(value));
-}
-
-function formatNumber(value: number) {
-  return new Intl.NumberFormat("fa-AF").format(value);
 }
 
 export { EntryDetailContent };
