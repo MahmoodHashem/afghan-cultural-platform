@@ -69,10 +69,10 @@ const profileTabs: Array<{
   label: string;
   icon: typeof DocumentTextIcon;
 }> = [
-  { value: "entries", label: "مطالب من", icon: DocumentTextIcon },
-  { value: "reviews", label: "دیدگاه‌ها", icon: ChatBubbleLeftRightIcon },
-  { value: "bookmarks", label: "ذخیره‌ها", icon: BookmarkIcon },
-];
+    { value: "entries", label: "مطالب من", icon: DocumentTextIcon },
+    { value: "reviews", label: "دیدگاه‌ها", icon: ChatBubbleLeftRightIcon },
+    { value: "bookmarks", label: "ذخیره‌ها", icon: BookmarkIcon },
+  ];
 
 const ownerEntrySkeletonKeys = ["first", "second", "third", "fourth"] as const;
 const ownerFeedbackSkeletonKeys = ["first", "second", "third"] as const;
@@ -371,7 +371,7 @@ function SimpleProfileToolbar({ total, label }: { total: number; label: string }
 function OwnerEntryToolbar({ query, total }: { query: ProfileQuery; total: number }) {
   return (
     <div className=" ">
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between border py-1 px-2 rounded-full">
+      <div className="flex  items-center justify-between border py-1 px-2 rounded-full gap-5">
         <div className=" flex gap-2 overflow-x-auto">
           {ENTRY_STATUS_FILTERS.map((filter) => {
             const isActive = filter.value === "ALL" ? !query.status : query.status === filter.value;
@@ -404,7 +404,7 @@ function OwnerEntryToolbar({ query, total }: { query: ProfileQuery; total: numbe
             );
           })}
         </div>
-        {total > 0 && <p className="text-sm text-foreground">{formatPersianNumber(total)} مطلب</p>}
+        {total > 0 && <p className="text-sm text-foreground text-center">{formatPersianNumber(total)} مطلب</p>}
       </div>
     </div>
   );
