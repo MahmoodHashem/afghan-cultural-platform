@@ -2,7 +2,13 @@ jest.mock("@/database/prisma.service", () => ({
   PrismaService: class PrismaService {},
 }));
 
+import { ValidationPipe } from "@nestjs/common";
+
 import { IS_PUBLIC_ROUTE_KEY, REQUIRE_VERIFIED_EMAIL_KEY } from "@/modules/auth/auth.constants";
+import {
+  ProfileBookmarksQueryDto,
+  ProfileReviewsQueryDto,
+} from "@/modules/profile/dto/profile-query.dto";
 import { ProfileController } from "@/modules/profile/profile.controller";
 
 describe("ProfileController authorization metadata", () => {
@@ -18,4 +24,27 @@ describe("ProfileController authorization metadata", () => {
       ).toBe(true);
     },
   );
+});
+
+describe("ProfileController query DTO validation", () => {
+  const validationPipe = new ValidationPipe({
+    forbidNonWhitelisted: true,
+    transform: true,
+    whitelist: true,
+  });
+
+  it.each([
+    ["reviews", ProfileReviewsQueryDto],
+    ["bookmarks", ProfileBookmarksQueryDto],
+  ] as const)("accepts and transforms pagination for %s", async (_name, metatype) => {
+    await expect(
+      validationPipe.transform(
+        { page: "2", limit: "8" },
+        {
+          metatype,
+          type: "query",
+        },
+      ),
+    ).resolves.toMatchObject({ page: 2, limit: 8 });
+  });
 });

@@ -13,6 +13,8 @@ import {
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
+  ApiBody,
+  ApiExtraModels,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -24,7 +26,7 @@ import {
 import { CurrentUser } from "@/modules/auth/decorators/current-user.decorator";
 import { RequireVerifiedEmail } from "@/modules/auth/decorators/require-verified-email.decorator";
 import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.type";
-import type {
+import {
   ProfileBookmarksQueryDto,
   ProfileReviewsQueryDto,
 } from "@/modules/profile/dto/profile-query.dto";
@@ -35,11 +37,12 @@ import {
   ProfileReviewsResponseDto,
   ProfileStatsResponseDto,
 } from "@/modules/profile/dto/profile-response.dto";
-import type { UpdateProfileDto } from "@/modules/profile/dto/update-profile.dto";
+import { UpdateProfileDto } from "@/modules/profile/dto/update-profile.dto";
 import { ProfileService } from "@/modules/profile/profile.service";
 
 @ApiTags("Profile")
 @ApiBearerAuth()
+@ApiExtraModels(ProfileBookmarksQueryDto, ProfileReviewsQueryDto, UpdateProfileDto)
 @Controller("profile/me")
 class ProfileController {
   constructor(@Inject(ProfileService) private readonly profileService: ProfileService) {}
@@ -50,6 +53,7 @@ class ProfileController {
     description:
       "Returns safe profile fields for the authenticated owner profile page. Password hashes, token hashes, OAuth provider tokens, and private security fields are never returned.",
   })
+  @ApiBody({ type: UpdateProfileDto })
   @ApiOkResponse({ type: ProfileResponseDto })
   @ApiUnauthorizedResponse({ description: "Missing or invalid bearer token" })
   getMyProfile(@CurrentUser() user: AuthenticatedUser) {
