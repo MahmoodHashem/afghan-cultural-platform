@@ -11,7 +11,7 @@ Updated areas:
 - Homepage section labels, topic wording, and contribution links.
 - Explore filters, sorting, geographic-scope labels, buttons, count text, and API-unavailable message.
 - Province and topic pages, including empty states, badges, breadcrumbs, metadata, loading labels, and category descriptions.
-- Cultural Entry detail page labels, empty states, internal-reference heading, action rail labels, bookmark placeholder, share error, rating/review guidance, and taxonomy labels.
+- Cultural Entry detail page labels, empty states, internal-reference heading, action rail labels, bookmark placeholder, share error, review guidance, and taxonomy labels.
 - Authentication form copy, OAuth divider copy, terms copy, validation messages, forbidden state, unverified-email notices, and normalized auth error messages.
 
 Remaining by design:
@@ -280,8 +280,6 @@ Change:
 
 `رفتن به دیدگاه‌ها` → **`دیدگاه‌ها`**
 
-`رفتن به امتیازدهی` → **`امتیازدهی`**
-
 Buttons do not need to narrate navigation.
 
 ### 6. Bookmark placeholder
@@ -312,15 +310,15 @@ All of these appear in the detail-page copy.
 
 ---
 
-# Ratings and reviews
+# Reviews
 
 This sentence is accurate but sounds like policy documentation:
 
-> `امتیازها میزان مفید بودن محتوا را نشان می‌دهند و دیدگاه‌ها جایگزین اصلاح رسمی اطلاعات نیستند.`
+> `دیدگاه‌ها جایگزین اصلاح رسمی اطلاعات نیستند.`
 
 I recommend:
 
-> **`امتیازها نشان می‌دهند این مطلب چقدر برای خوانندگان مفید بوده است. برای اصلاح اطلاعات، از «پیشنهاد اصلاح» استفاده کنید.`**
+> **`دیدگاه‌ها برای نظر خوانندگان‌اند. برای اصلاح اطلاعات، از «پیشنهاد اصلاح» استفاده کنید.`**
 
 That explains the distinction to the reader rather than stating a rule.
 
@@ -390,13 +388,13 @@ No need to say «ورود انجام شد».
 
 Current:
 
-> `ورود به حساب مجاز است، اما برای مشارکت‌هایی مانند ثبت محتوا، گزارش، امتیازدهی و نظر عمومی باید ایمیل خود را تأیید کنید.`
+> `ورود به حساب مجاز است، اما برای مشارکت‌هایی مانند ثبت محتوا، گزارش و نظر عمومی باید ایمیل خود را تأیید کنید.`
 
 This sounds like a terms-of-service document.
 
 Use:
 
-> **`می‌توانید وارد حساب شوید؛ اما برای افزودن مطلب، گزارش، امتیازدهی و نوشتن دیدگاه باید ایمیل خود را تأیید کنید.`**
+> **`می‌توانید وارد حساب شوید؛ اما برای افزودن مطلب، گزارش و نوشتن دیدگاه باید ایمیل خود را تأیید کنید.`**
 
 ### Forbidden
 

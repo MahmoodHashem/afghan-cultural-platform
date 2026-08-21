@@ -41,25 +41,6 @@ class PublicReviewResponseDto {
   data!: PublicReviewDto;
 }
 
-class RatingDto {
-  @ApiProperty()
-  entryId!: string;
-
-  @ApiProperty()
-  value!: number;
-
-  @ApiProperty()
-  averageRating!: number;
-
-  @ApiProperty()
-  ratingCount!: number;
-}
-
-class RatingResponseDto {
-  @ApiProperty({ type: RatingDto })
-  data!: RatingDto;
-}
-
 class LikeStateDto {
   @ApiProperty()
   entryId!: string;
@@ -89,5 +70,4 @@ export {
   PublicReviewDto,
   PublicReviewListResponseDto,
   PublicReviewResponseDto,
-  RatingResponseDto,
 };

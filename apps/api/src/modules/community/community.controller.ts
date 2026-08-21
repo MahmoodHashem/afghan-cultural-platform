@@ -30,14 +30,12 @@ import { CommunityService } from "@/modules/community/community.service";
 import {
   CreatePublicReviewDto,
   UpdatePublicReviewDto,
-  UpsertRatingDto,
 } from "@/modules/community/dto/community-feedback.dto";
 import {
   CommunityMessageResponseDto,
   LikeStateResponseDto,
   PublicReviewListResponseDto,
   PublicReviewResponseDto,
-  RatingResponseDto,
 } from "@/modules/community/dto/community-response.dto";
 
 @ApiTags("Community feedback")
@@ -153,39 +151,6 @@ class CommunityController {
     @Param("entryId", ParseUUIDPipe) entryId: string,
   ) {
     return this.communityService.deleteOwnPublicReview(user, entryId);
-  }
-
-  @Put("rating")
-  @ApiBearerAuth()
-  @RequireVerifiedEmail()
-  @ApiOperation({ summary: "Set or update the current user's helpfulness rating" })
-  @ApiBody({ type: UpsertRatingDto })
-  @ApiOkResponse({ type: RatingResponseDto })
-  @ApiBadRequestResponse({ description: "COMMUNITY_RATING_INVALID or validation failed" })
-  @ApiUnauthorizedResponse({ description: "Missing or invalid bearer token" })
-  @ApiForbiddenResponse({ description: "AUTH_EMAIL_VERIFICATION_REQUIRED" })
-  @ApiNotFoundResponse({ description: "COMMUNITY_ENTRY_NOT_FOUND" })
-  upsertRating(
-    @CurrentUser() user: AuthenticatedUser,
-    @Param("entryId", ParseUUIDPipe) entryId: string,
-    @Body() body: UpsertRatingDto,
-  ) {
-    return this.communityService.upsertRating(user, entryId, body);
-  }
-
-  @Delete("rating")
-  @ApiBearerAuth()
-  @RequireVerifiedEmail()
-  @ApiOperation({ summary: "Remove the current user's helpfulness rating" })
-  @ApiOkResponse({ type: CommunityMessageResponseDto })
-  @ApiUnauthorizedResponse({ description: "Missing or invalid bearer token" })
-  @ApiForbiddenResponse({ description: "AUTH_EMAIL_VERIFICATION_REQUIRED" })
-  @ApiNotFoundResponse({ description: "COMMUNITY_ENTRY_NOT_FOUND" })
-  removeRating(
-    @CurrentUser() user: AuthenticatedUser,
-    @Param("entryId", ParseUUIDPipe) entryId: string,
-  ) {
-    return this.communityService.removeRating(user, entryId);
   }
 }
 

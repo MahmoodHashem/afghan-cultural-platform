@@ -9,7 +9,6 @@ import { CommunityController } from "@/modules/community/community.controller";
 import {
   CreatePublicReviewDto,
   UpdatePublicReviewDto,
-  UpsertRatingDto,
 } from "@/modules/community/dto/community-feedback.dto";
 
 describe("CommunityController like authorization metadata", () => {
@@ -43,7 +42,6 @@ describe("CommunityController request DTO validation", () => {
   it.each([
     ["create review", CreatePublicReviewDto, { body: "A sufficiently detailed public review." }],
     ["update review", UpdatePublicReviewDto, { body: "An updated and detailed public review." }],
-    ["upsert rating", UpsertRatingDto, { value: 5 }],
   ] as const)("accepts the documented body for %s", async (_name, metatype, body) => {
     await expect(
       validationPipe.transform(body, {
@@ -51,5 +49,12 @@ describe("CommunityController request DTO validation", () => {
         type: "body",
       }),
     ).resolves.toMatchObject(body);
+  });
+});
+
+describe("CommunityController engagement surface", () => {
+  it("does not expose removed rating actions", () => {
+    expect(CommunityController.prototype).not.toHaveProperty("upsertRating");
+    expect(CommunityController.prototype).not.toHaveProperty("removeRating");
   });
 });

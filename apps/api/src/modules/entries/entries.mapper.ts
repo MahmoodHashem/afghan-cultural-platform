@@ -252,8 +252,6 @@ const publicEntryCardSelect = {
   slug: true,
   title: true,
   summary: true,
-  averageRating: true,
-  ratingCount: true,
   _count: {
     select: {
       bookmarks: true,
@@ -515,8 +513,6 @@ function mapPublicEntryCard(entry: PublicEntryCardPayload) {
     author: entry.author,
     publishedAt: requirePublishedAt(entry.publishedAt),
     updatedAt: entry.updatedAt,
-    averageRating: Number(entry.averageRating),
-    ratingCount: entry.ratingCount,
     bookmarkCount: entry._count.bookmarks,
     likeCount: entry._count.likes,
   };

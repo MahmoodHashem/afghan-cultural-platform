@@ -48,8 +48,6 @@ const entryDetailContent = read("src/features/entries/components/entry-detail-co
 const entryActionRail = read("src/features/entries/components/entry-action-rail.tsx");
 const entryHeaderContext = read("src/features/entries/components/entry-detail-header-context.tsx");
 const entryTableOfContents = read("src/features/entries/components/entry-table-of-contents.tsx");
-const entryFeedback = read("src/features/entries/components/reviews/entry-feedback.tsx");
-const communityFeedbackApi = read("src/features/entries/api/community-feedback-api.ts");
 const engagementApi = read("src/features/engagement/api/entry-engagement-api.ts");
 const engagementAccess = read("src/features/engagement/hooks/use-engagement-access.ts");
 const engagementInteractions = read("src/features/engagement/hooks/use-entry-interactions.ts");
@@ -746,10 +744,9 @@ test("entry detail includes reading navigation and sticky article tools", () => 
 });
 
 test("entry detail supports public reviews and verified-user feedback", () => {
-  assert.match(entryDetailContent, /EntryFeedback/);
   assert.match(entryDetailContent, /EntryReviews/);
-  assert.match(entryFeedback, /submitRating\(entryId, value\)/);
-  assert.match(communityFeedbackApi, /\/entries\/\$\{entryId\}\/rating/);
+  assert.doesNotMatch(entryDetailContent, /EntryFeedback|averageRating|ratingCount/);
+  assert.doesNotMatch(engagementApi, /\/rating/);
   assert.match(engagementReviews, /دیدگاه‌های خوانندگان/);
   assert.match(engagementReviews, /review\.author\.id === user\?\.id/);
   assert.match(engagementReviews, /ویرایش دیدگاه شما/);

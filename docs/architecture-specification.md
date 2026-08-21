@@ -194,7 +194,6 @@ apps/api/src/
 │   ├── moderation/
 │   ├── corrections/
 │   ├── reports/
-│   ├── ratings/
 │   ├── public-reviews/
 │   ├── taxonomy/
 │   ├── media/
@@ -385,7 +384,6 @@ Tag
 Image
 YouTubeVideo
 Source
-Rating
 PublicReview
 CorrectionSuggestion
 Report
@@ -813,9 +811,8 @@ USER_SUSPENDED
 9. Images, YouTube, and Tiptap content
 10. Submission and moderation
 11. Public pages and search
-12. Ratings and reviews
+12. Likes and reviews
 13. Corrections and reports
 14. Administration and audit logs
 15. Testing and deployment
 ```
-

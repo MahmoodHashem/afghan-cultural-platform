@@ -1,13 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsInt, IsString, Max, MaxLength, Min, MinLength } from "class-validator";
-
-class UpsertRatingDto {
-  @ApiProperty({ minimum: 1, maximum: 5 })
-  @IsInt()
-  @Min(1)
-  @Max(5)
-  value!: number;
-}
+import { IsString, MaxLength, MinLength } from "class-validator";
 
 class CreatePublicReviewDto {
   @ApiProperty({ minLength: 10, maxLength: 1200 })
@@ -19,4 +11,4 @@ class CreatePublicReviewDto {
 
 class UpdatePublicReviewDto extends CreatePublicReviewDto {}
 
-export { CreatePublicReviewDto, UpdatePublicReviewDto, UpsertRatingDto };
+export { CreatePublicReviewDto, UpdatePublicReviewDto };

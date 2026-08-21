@@ -91,7 +91,6 @@ apps/web/src/
 │   ├── auth/
 │   ├── entries/
 │   ├── bookmarks/
-│   ├── ratings/
 │   ├── reviews/
 │   ├── corrections/
 │   ├── reports/
@@ -194,7 +193,6 @@ apps/api/src/
 │   ├── moderation/
 │   ├── corrections/
 │   ├── reports/
-│   ├── ratings/
 │   ├── reviews/
 │   ├── taxonomy/
 │   ├── media/
@@ -407,14 +405,6 @@ Owns:
 - Resolution
 - Content moderation actions
 
-### Ratings
-
-Owns:
-
-- Helpfulness ratings
-- Rating updates
-- Average and count recalculation
-
 ### Likes
 
 Owns:
@@ -423,7 +413,7 @@ Owns:
 - Public aggregate like counts
 - Private current-user like state
 
-Likes are binary and remain separate from helpfulness ratings and public reviews. The API never exposes the list of users who liked an entry.
+Likes are binary and remain separate from public reviews. The API never exposes the list of users who liked an entry.
 
 ### Reviews
 
@@ -513,8 +503,6 @@ Corrections ────────► Audit
 
 Reports ────────────► Entries
 Reports ────────────► Audit
-
-Ratings ────────────► Entries
 
 Reviews ────────────► Entries
 
@@ -708,7 +696,7 @@ Adding one of these technologies requires a documented architecture decision.
 10. Public content pages
 11. Search and filtering
 12. Bookmarks
-13. Ratings and reviews
+13. Likes and reviews
 14. Corrections and reports
 15. Administration and audit logs
 16. Testing and deployment

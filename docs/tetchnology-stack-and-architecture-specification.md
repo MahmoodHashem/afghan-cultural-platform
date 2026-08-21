@@ -17,7 +17,7 @@ The selected technologies should:
     
 - Use TypeScript across the frontend and backend.
     
-- Support public cultural pages, contribution forms, moderation dashboards, images, ratings, corrections, and reports.
+- Support public cultural pages, contribution forms, moderation dashboards, images, likes, public reviews, corrections, and reports.
     
 - Provide clear separation between presentation, business logic, and data storage.
     
@@ -144,8 +144,6 @@ NestJS will manage:
     
 - Reports
     
-- Ratings
-    
 - Public reviews
     
 - Image validation and upload
@@ -183,8 +181,6 @@ PostgreSQL will store:
     
 - YouTube video identifiers
     
-- Ratings
-    
 - Public reviews
     
 - Correction suggestions
@@ -198,7 +194,7 @@ PostgreSQL will store:
 - Audit logs
     
 
-PostgreSQL is suitable because the system has many connected entities and workflows. Its relational model, tables, constraints, indexes, and transaction support fit relationships such as entries, contributors, moderators, reports, ratings, and content versions. ([PostgreSQL](https://www.postgresql.org/docs/current/index.html?utm_source=chatgpt.com "PostgreSQL 18.4 Documentation"))
+PostgreSQL is suitable because the system has many connected entities and workflows. Its relational model, tables, constraints, indexes, and transaction support fit relationships such as entries, contributors, moderators, reports, reviews, and content versions. ([PostgreSQL](https://www.postgresql.org/docs/current/index.html?utm_source=chatgpt.com "PostgreSQL 18.4 Documentation"))
 
 ---
 
@@ -270,7 +266,7 @@ Next.js will be used for:
     └── /audit-logs
 ```
 
-Public content pages should normally use Server Components. Interactive forms, dashboards, the rich-text editor, dialogs, and ratings will use Client Components.
+Public content pages should normally use Server Components. Interactive forms, dashboards, the rich-text editor, dialogs, and engagement controls will use Client Components.
 
 ---
 
@@ -418,8 +414,6 @@ It will be used for:
     
 - YouTube links
     
-- Ratings
-    
 - Public reviews
     
 - Correction suggestions
@@ -490,8 +484,6 @@ Use TanStack Query for:
 - Reports
     
 - Corrections
-    
-- Ratings
     
 - Public reviews
     
@@ -718,7 +710,6 @@ POST   /api/v1/moderation/:id/reject
 
 POST   /api/v1/entries/:id/corrections
 POST   /api/v1/entries/:id/reports
-POST   /api/v1/entries/:id/ratings
 POST   /api/v1/entries/:id/reviews
 ```
 
@@ -745,7 +736,6 @@ src/
 ├── moderation/
 ├── corrections/
 ├── reports/
-├── ratings/
 ├── public-reviews/
 ├── audit-logs/
 ├── admin/
@@ -856,8 +846,6 @@ Important relationships include:
     
 - Cultural Entry to images
     
-- Cultural Entry to ratings
-    
 - Cultural Entry to reports
     
 - Moderator to moderation decisions
@@ -913,7 +901,6 @@ model CulturalEntry {
   versions          ContentVersion[]
   images            Image[]
   sources           Source[]
-  ratings           Rating[]
   publicReviews     PublicReview[]
   reports           Report[]
 

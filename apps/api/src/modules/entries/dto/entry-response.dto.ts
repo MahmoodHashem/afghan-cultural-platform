@@ -410,12 +410,6 @@ class PublicEntryCardDto {
   updatedAt!: Date;
 
   @ApiProperty()
-  averageRating!: number;
-
-  @ApiProperty()
-  ratingCount!: number;
-
-  @ApiProperty()
   bookmarkCount!: number;
 
   @ApiProperty()

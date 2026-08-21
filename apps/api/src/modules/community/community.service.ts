@@ -13,7 +13,6 @@ import { COMMUNITY_ERROR_CODES } from "@/modules/community/community.constants";
 import type {
   CreatePublicReviewDto,
   UpdatePublicReviewDto,
-  UpsertRatingDto,
 } from "@/modules/community/dto/community-feedback.dto";
 
 const publicReviewSelect = {
@@ -205,73 +204,6 @@ class CommunityService {
     };
   }
 
-  async upsertRating(user: AuthenticatedUser, entryId: string, input: UpsertRatingDto) {
-    await this.ensurePublishedEntry(entryId);
-
-    if (!Number.isInteger(input.value) || input.value < 1 || input.value > 5) {
-      throw new BadRequestException({
-        error: COMMUNITY_ERROR_CODES.RATING_INVALID,
-        message: "Rating value must be between 1 and 5.",
-      });
-    }
-
-    return this.prisma.$transaction(async (tx) => {
-      await tx.rating.upsert({
-        where: {
-          userId_entryId: {
-            userId: user.id,
-            entryId,
-          },
-        },
-        create: {
-          entryId,
-          userId: user.id,
-          value: input.value,
-        },
-        update: {
-          value: input.value,
-          isActive: true,
-        },
-      });
-
-      const aggregates = await this.updateRatingAggregates(tx, entryId);
-
-      return {
-        data: {
-          entryId,
-          value: input.value,
-          ...aggregates,
-        },
-      };
-    });
-  }
-
-  async removeRating(user: AuthenticatedUser, entryId: string) {
-    await this.ensurePublishedEntry(entryId);
-
-    return this.prisma.$transaction(async (tx) => {
-      await tx.rating.updateMany({
-        where: {
-          entryId,
-          userId: user.id,
-          isActive: true,
-        },
-        data: {
-          isActive: false,
-        },
-      });
-
-      const aggregates = await this.updateRatingAggregates(tx, entryId);
-
-      return {
-        data: {
-          message: "Rating removed.",
-          ...aggregates,
-        },
-      };
-    });
-  }
-
   private async ensurePublishedEntry(entryId: string) {
     const entry = await this.prisma.culturalEntry.findFirst({
       where: {
@@ -321,36 +253,6 @@ class CommunityService {
     }
 
     return normalizedBody;
-  }
-
-  private async updateRatingAggregates(
-    tx: Prisma.TransactionClient,
-    entryId: string,
-  ): Promise<{ averageRating: number; ratingCount: number }> {
-    const aggregate = await tx.rating.aggregate({
-      where: {
-        entryId,
-        isActive: true,
-      },
-      _avg: { value: true },
-      _count: { value: true },
-    });
-    const ratingCount = aggregate._count.value;
-    const averageRating = aggregate._avg.value ?? 0;
-
-    await tx.culturalEntry.update({
-      where: { id: entryId },
-      data: {
-        averageRating,
-        ratingCount,
-        lastRatedAt: new Date(),
-      },
-    });
-
-    return {
-      averageRating,
-      ratingCount,
-    };
   }
 }
 

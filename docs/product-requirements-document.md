@@ -15,7 +15,7 @@ The product is a centralized Persian-language crowdsourced web platform for coll
 
 Registered users can contribute cultural articles, stories, images, sources, and YouTube videos. Submitted content is not published immediately. A moderator reviews each contribution and may approve it, reject it, or return it to the contributor for correction.
 
-Visitors can search and browse approved content by keyword, province, category, tag, and content type. Registered users can also rate content, write reviews, suggest corrections, and report inaccurate or inappropriate information.
+Visitors can search and browse approved content by keyword, province, category, tag, and content type. Registered users can also like content, save bookmarks, write reviews, suggest corrections, and report inaccurate or inappropriate information.
 
 The main product process is:
 
@@ -114,8 +114,6 @@ The first version will include:
 - Public content pages
     
 - Search and filters
-    
-- Ratings
     
 - Public reviews
     
@@ -255,7 +253,7 @@ A visitor can:
     
 - View sources
     
-- View ratings and public reviews
+- View public reviews
     
 - Register or log in
     
@@ -263,8 +261,6 @@ A visitor can:
 A visitor cannot:
 
 - Create content
-    
-- Rate content
     
 - Write reviews
     
@@ -300,8 +296,6 @@ A user can:
 - Read moderator feedback
     
 - Edit and resubmit returned content
-    
-- Rate published content
     
 - Write public reviews
     
@@ -406,7 +400,6 @@ ADMIN
 |Create cultural content|No|Yes|Yes|Yes|
 |Save drafts|No|Yes|Yes|Yes|
 |Submit content|No|Yes|Yes|Yes|
-|Rate content|No|Yes|Yes|Yes|
 |Write public reviews|No|Yes|Yes|Yes|
 |Suggest corrections|No|Yes|Yes|Yes|
 |Report content|No|Yes|Yes|Yes|
@@ -941,9 +934,6 @@ Private information such as email addresses shall not be publicly displayed.
     
 - Most viewed
     
-- Highest helpfulness rating
-    
-
 **FR-SRC-09:** Visitors shall see only published content.
 
 **FR-SRC-10:** The system shall show a clear Persian message when no results are found.
@@ -952,25 +942,7 @@ Private information such as email addresses shall not be publicly displayed.
 
 ---
 
-## 13.7 Ratings
-
-Ratings should measure helpfulness, not historical truth.
-
-**FR-RAT-01:** A registered user shall be able to rate a published Cultural Entry.
-
-**FR-RAT-02:** A user shall have one active rating per entry.
-
-**FR-RAT-03:** A user shall be able to update or remove their rating.
-
-**FR-RAT-04:** The platform shall display the average rating.
-
-**FR-RAT-05:** The platform shall display the total number of ratings.
-
-**FR-RAT-06:** Ratings shall not change the verified or moderation status of content.
-
----
-
-## 13.8 Public Reviews
+## 13.7 Public Reviews
 
 **FR-PRV-01:** A registered user shall be able to write a public review.
 
@@ -986,7 +958,7 @@ Ratings should measure helpfulness, not historical truth.
 
 ---
 
-## 13.9 Correction Suggestions
+## 13.8 Correction Suggestions
 
 **FR-COR-01:** A registered user shall be able to suggest a correction.
 
@@ -1012,7 +984,7 @@ Ratings should measure helpfulness, not historical truth.
 
 ---
 
-## 13.10 Reports
+## 13.9 Reports
 
 **FR-REP-01:** A registered user shall be able to report published content.
 
@@ -1072,7 +1044,7 @@ Ratings should measure helpfulness, not historical truth.
 
 ---
 
-## 13.11 Administration
+## 13.10 Administration
 
 **FR-ADM-01:** The administrator shall have a protected dashboard.
 
@@ -1380,16 +1352,14 @@ Moderator dismisses, hides, corrects, archives, or escalates content
 User sees report status in dashboard
 ```
 
-## 17.7 Rating and Review Flow
+## 17.7 Public Review Flow
 
 ```text
 User opens published content
         ↓
-Rates helpfulness
+Writes a public review
         ↓
-Optionally writes a public review
-        ↓
-Rating and review appear publicly
+Review appears publicly
         ↓
 Moderator may hide reviews that violate rules
 ```
@@ -1413,7 +1383,6 @@ Moderator may hide reviews that violate rules
 | Source                | Reference or information source                    |
 | Moderation Review     | Approval, rejection, or changes-requested decision |
 | Correction Suggestion | Proposed correction                                |
-| Rating                | Helpfulness rating                                 |
 | Public Review         | Public user comment                                |
 | Report                | Content or policy complaint                        |
 | Audit Log             | Important system activity                          |
@@ -1441,23 +1410,21 @@ Moderator may hide reviews that violate rules
     
 8. Previous versions must remain available to moderators and administrators.
     
-9. Ratings measure helpfulness, not factual correctness.
+9. Public reviews do not directly change Cultural Entries.
     
-10. Public reviews do not directly change Cultural Entries.
+10. Reports do not automatically remove content.
     
-11. Reports do not automatically remove content.
+11. Serious reports may temporarily hide content.
     
-12. Serious reports may temporarily hide content.
+12. Images require ownership or permission confirmation.
     
-13. Images require ownership or permission confirmation.
+13. Videos are accepted only through valid YouTube links.
     
-14. Videos are accepted only through valid YouTube links.
+14. A removed YouTube video must not break the Cultural Entry page.
     
-15. A removed YouTube video must not break the Cultural Entry page.
+15. Cultural stories may use oral or personal sources.
     
-16. Cultural stories may use oral or personal sources.
-    
-17. Oral history should be labeled as oral history, not automatically presented as established historical fact.
+16. Oral history should be labeled as oral history, not automatically presented as established historical fact.
     
 18. Different regional interpretations may coexist when appropriate.
 
@@ -1713,8 +1680,6 @@ Administrators should be able to see:
     
 - Most-viewed content
     
-- Highest-rated content
-    
 - Average moderation time
     
 - Common search terms
@@ -1754,17 +1719,15 @@ The first version will be considered complete when:
     
 12. Visitors can filter by province for province-scoped entries, by geographic scope for national/non-geographic entries, and by category, tag, and content type.
     
-13. Users can rate published content.
+13. Users can write public reviews.
     
-14. Users can write public reviews.
+14. Users can suggest corrections.
     
-15. Users can suggest corrections.
+15. Moderators can accept or reject corrections.
     
-16. Moderators can accept or reject corrections.
+16. Users can report content.
     
-17. Users can report content.
-    
-18. Moderators can resolve reports.
+17. Moderators can resolve reports.
     
 19. Previous content versions are preserved.
     

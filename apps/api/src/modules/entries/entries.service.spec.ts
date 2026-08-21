@@ -481,6 +481,8 @@ describe("EntriesService", () => {
     });
     expect(response.data[0]).not.toHaveProperty("contentJson");
     expect(response.data[0]).not.toHaveProperty("plainTextContent");
+    expect(response.data[0]).not.toHaveProperty("averageRating");
+    expect(response.data[0]).not.toHaveProperty("ratingCount");
   });
 
   it("applies public province, category, content-type, tag, and author filters", async () => {
@@ -673,6 +675,8 @@ describe("EntriesService", () => {
       },
     });
     expect(response.data).not.toHaveProperty("authorId");
+    expect(response.data).not.toHaveProperty("averageRating");
+    expect(response.data).not.toHaveProperty("ratingCount");
     expect(response.data.author).not.toHaveProperty("email");
     expect(prisma.source.findMany).not.toHaveBeenCalled();
     expect(prisma.image.findMany).not.toHaveBeenCalled();
@@ -1978,8 +1982,6 @@ function createPublicEntryCardPayload() {
     slug: "فرهنگ-کابل",
     title: createDraftInput.title,
     summary: createDraftInput.summary,
-    averageRating: 4.25,
-    ratingCount: 8,
     _count: {
       bookmarks: 7,
       likes: 12,

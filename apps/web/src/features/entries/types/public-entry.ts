@@ -45,8 +45,6 @@ type PublicEntryCard = {
   author: PublicEntryAuthor;
   publishedAt: string;
   updatedAt: string;
-  averageRating: number;
-  ratingCount: number;
   likeCount: number;
   bookmarkCount: number;
 };

@@ -40,11 +40,11 @@ This document defines the planned PostgreSQL and Prisma data model for the Afgha
 
 ## Entity Evaluation For Version One
 
-All 25 currently implemented schema entities are kept for version one, including `EntryReference` for manual Wikipedia-style internal links between Cultural Entries and `Like` for binary appreciation separate from ratings.
+Version one contains 24 approved entities, including `EntryReference` for manual Wikipedia-style internal links and `Like` for binary appreciation of Cultural Entries.
 
 | Entity               | Decision               | Reason                                                                                                                                          |
 | -------------------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| User                 | Keep                   | Required for accounts, profiles, roles, moderation attribution, ratings, reviews, corrections, reports, and audit actions.                      |
+| User                 | Keep                   | Required for accounts, profiles, roles, moderation attribution, reviews, corrections, reports, and audit actions.                               |
 | OAuthAccount         | Keep                   | Required for linking Google and Facebook social-login accounts to platform users.                                                               |
 | CulturalEntry        | Keep                   | Main cultural content object.                                                                                                                   |
 | ContentVersion       | Keep                   | Required to preserve submitted and published history.                                                                                           |
@@ -59,9 +59,8 @@ All 25 currently implemented schema entities are kept for version one, including
 | Image                | Keep                   | Required for Cloudinary image metadata and moderation removal without deleting the entry.                                                       |
 | YouTubeVideo         | Keep                   | Separate one-to-one optional record keeps video validation/removal isolated from the entry.                                                     |
 | Source               | Keep                   | Required for references, oral sources, interviews, and personal experience.                                                                     |
-| Rating               | Keep                   | Required helpfulness rating, one active rating per user per entry.                                                                              |
-| Like                 | Keep                   | Required binary appreciation, separate from ratings and public reviews, with one like per user per entry.                                       |
-| PublicReview         | Keep                   | Required public comments, separate from ratings and corrections.                                                                                |
+| Like                 | Keep                   | Required binary appreciation, separate from public reviews, with one like per user per entry.                                                    |
+| PublicReview         | Keep                   | Required public comments, separate from likes and corrections.                                                                                  |
 | Bookmark             | Keep                   | Allows a registered user to privately save a published Cultural Entry.                                                                          |
 | CorrectionSuggestion | Keep                   | Required workflow for suggested factual/content corrections.                                                                                    |
 | Report               | Keep                   | Required private content complaint workflow.                                                                                                    |
@@ -72,7 +71,7 @@ All 25 currently implemented schema entities are kept for version one, including
 
 ### Complete Entity List
 
-Version one contains 25 entities:
+Version one contains 24 entities:
 
 1. `User`
 2. `OAuthAccount`
@@ -88,17 +87,16 @@ Version one contains 25 entities:
 12. `Image`
 13. `YouTubeVideo`
 14. `Source`
-15. `Rating`
-16. `Like`
-17. `PublicReview`
-18. `Bookmark`
-19. `CorrectionSuggestion`
-20. `Report`
-21. `RefreshSession`
-22. `EmailVerificationToken`
-23. `PasswordResetToken`
-24. `AuditLog`
-25. `EntryReference`
+15. `Like`
+16. `PublicReview`
+17. `Bookmark`
+18. `CorrectionSuggestion`
+19. `Report`
+20. `RefreshSession`
+21. `EmailVerificationToken`
+22. `PasswordResetToken`
+23. `AuditLog`
+24. `EntryReference`
 
 ## Enums
 
@@ -263,7 +261,7 @@ More audit actions can be added later only when new v1 workflows require them.
 
 **Indexes:** `role`, `status`, `provinceId`, `createdAt`.
 
-**Relations:** OAuth accounts, entries, content versions created, moderation reviews, correction suggestions, reports, ratings, public reviews, bookmarks, refresh sessions, email verification tokens, password reset tokens, audit logs as actor or target.
+**Relations:** OAuth accounts, entries, content versions created, moderation reviews, correction suggestions, reports, likes, public reviews, bookmarks, refresh sessions, email verification tokens, password reset tokens, audit logs as actor or target.
 
 **Deletion behavior:** Version one uses suspension only and does not support physical user deletion. Published cultural history, content versions, audit logs, reviews, reports, and moderation records remain preserved.
 
@@ -318,9 +316,6 @@ More audit actions can be added later only when new v1 workflows require them.
 | alternativeLocalName | String      | No              | None          | Optional.                                                              |
 | regionalDifferences  | String      | No              | None          | Optional notes.                                                        |
 | viewCount            | Int         | Yes             | `0`         | Used for sorting, not critical to correctness.                         |
-| averageRating        | Decimal     | Yes             | `0`         | Denormalized for listing.                                              |
-| ratingCount          | Int         | Yes             | `0`         | Denormalized for listing.                                              |
-| lastRatedAt          | DateTime    | No              | None          | Latest time an active rating was created, updated, or removed.         |
 | submittedAt          | DateTime    | No              | None          | First submission timestamp.                                            |
 | publishedAt          | DateTime    | No              | None          | Set when published.                                                    |
 | hiddenAt             | DateTime    | No              | None          | Set when hidden.                                                       |
@@ -332,7 +327,7 @@ More audit actions can be added later only when new v1 workflows require them.
 
 **Indexes:** `status`, `geographicScope`, `provinceId`, `districtId`, `categoryId`, `contentTypeId`, `authorId`, `publishedAt`, `createdAt`, `(status, publishedAt)`, `(status, provinceId)`, `(geographicScope, provinceId)`, `(status, categoryId)`, `(status, contentTypeId)`.
 
-**Relations:** Author, optional province, optional district, category, content type, tags through `EntryTag`, images, optional YouTube video, sources, outgoing and incoming internal references through `EntryReference`, content versions, moderation reviews, ratings, public reviews, bookmarks, correction suggestions, reports.
+**Relations:** Author, optional province, optional district, category, content type, tags through `EntryTag`, images, optional YouTube video, sources, outgoing and incoming internal references through `EntryReference`, content versions, moderation reviews, likes, public reviews, bookmarks, correction suggestions, reports.
 
 **Deletion behavior:** Do not physically delete published cultural entries. Use status transitions: `DRAFT` may be hard-deleted by the author before submission; submitted/published entries should use `REJECTED`, `HIDDEN`, or `ARCHIVED`. Audit logs and content versions remain preserved.
 
@@ -629,31 +624,9 @@ More audit actions can be added later only when new v1 workflows require them.
 
 **Deletion behavior:** Draft sources may be edited/deleted. Sources attached to submitted/published content should be preserved through content versions; direct deletion from current entry should create a new version when published.
 
-### Rating
-
-**Purpose:** Stores a user helpfulness rating for a published entry.
-
-| Field     | Type     | Required | Default       | Notes                                     |
-| --------- | -------- | -------- | ------------- | ----------------------------------------- |
-| id        | UUID     | Yes      | `uuid()`    | Primary key.                              |
-| entryId   | UUID     | Yes      | None          | Rated entry.                              |
-| userId    | UUID     | Yes      | None          | Rater.                                    |
-| value     | Int      | Yes      | None          | Service validates the approved 1-5 scale. |
-| isActive  | Boolean  | Yes      | `true`      | User removal of rating can deactivate.    |
-| createdAt | DateTime | Yes      | `now()`     | UTC.                                      |
-| updatedAt | DateTime | Yes      | `updatedAt` | UTC.                                      |
-
-**Unique constraints:** `(userId, entryId)` for one rating per user per entry.
-
-**Indexes:** `entryId`, `userId`, `(entryId, isActive)`, `value`.
-
-**Relations:** Cultural entry, user.
-
-**Deletion behavior:** User can remove their rating by setting `isActive = false`; do not delete rows needed for aggregate recalculation/audit unless later approved.
-
 ### Like
 
-**Purpose:** Stores a binary user like for a published Cultural Entry, separate from ratings and public reviews.
+**Purpose:** Stores a binary user like for a published Cultural Entry, separate from public reviews.
 
 | Field     | Type     | Required | Default    | Notes                    |
 | --------- | -------- | -------- | ---------- | ------------------------ |
@@ -674,7 +647,7 @@ More audit actions can be added later only when new v1 workflows require them.
 
 ### PublicReview
 
-**Purpose:** Stores public comments about an entry, separate from ratings and corrections.
+**Purpose:** Stores public comments about an entry, separate from likes and corrections.
 
 | Field      | Type               | Required | Default       | Notes                            |
 | ---------- | ------------------ | -------- | ------------- | -------------------------------- |
@@ -716,7 +689,7 @@ More audit actions can be added later only when new v1 workflows require them.
 
 **Deletion behavior:** A user may remove a bookmark through hard deletion. Bookmark deletion does not require versioning or audit history. If user deletion or anonymization is implemented in a future version, the user's bookmarks may be cascade-deleted. Published entries are normally archived rather than physically deleted. Bookmarks for hidden or archived entries may remain stored, but inaccessible content must not be exposed publicly.
 
-**Business rules:** Only authenticated, active, email-verified users can create or remove bookmarks. Only published entries can be bookmarked. A user cannot bookmark the same entry more than once. Bookmark lists are private, while public APIs may expose only the aggregate bookmark count. Bookmarking does not change rating, moderation status, or view count. Creating and removing bookmarks should be idempotent where practical.
+**Business rules:** Only authenticated, active, email-verified users can create or remove bookmarks. Only published entries can be bookmarked. A user cannot bookmark the same entry more than once. Bookmark lists are private, while public APIs may expose only the aggregate bookmark count. Bookmarking does not change moderation status or view count. Creating and removing bookmarks should be idempotent where practical.
 
 ### CorrectionSuggestion
 
@@ -883,7 +856,6 @@ More audit actions can be added later only when new v1 workflows require them.
 - `CulturalEntry` to `ContentVersion`: one entry has one to many permanent versions after submission.
 - `CulturalEntry` to `EntryReference`: one entry has zero to many outgoing references as a source and zero to many incoming references as a target.
 - `CulturalEntry` to `ModerationReview`: one entry has zero to many moderation reviews.
-- `CulturalEntry` to `Rating`: one entry has zero to many ratings.
 - `CulturalEntry` to `Like`: one entry has zero to many likes.
 - `CulturalEntry` to `PublicReview`: one entry has zero to many public reviews.
 - `CulturalEntry` to `Bookmark`: one entry has zero to many bookmarks.
@@ -893,7 +865,7 @@ More audit actions can be added later only when new v1 workflows require them.
 - `User` to `Bookmark`: one user has zero to many private bookmarks.
 - `User` to `Like`: one user has zero to many likes.
 - `User` to `EmailVerificationToken`: one user has zero to many email verification tokens.
-- `User` to moderation, correction, report, rating, and review records: a user may create or review many records depending on role.
+- `User` to moderation, correction, report, like, and review records: a user may create or review many records depending on role.
 
 ## Important Constraints And Business Rules
 
@@ -911,9 +883,7 @@ More audit actions can be added later only when new v1 workflows require them.
 - `CulturalEntry.geographicScope = NATIONAL` requires `provinceId = null` and `districtId = null`.
 - `CulturalEntry.geographicScope = NONE` requires `provinceId = null` and `districtId = null`.
 - Province filters must return only entries with `geographicScope = PROVINCE` and the matching province. National entries are available through a separate `geographicScope = NATIONAL` filter, and `NONE` entries must not be assigned to a province.
-- A user may have one rating per entry.
-- A user may have one like per entry; likes remain separate from ratings and reviews.
-- Rating changes should update `averageRating`, `ratingCount`, and `lastRatedAt` in one transaction.
+- A user may have one like per entry; likes remain separate from reviews.
 - A user may have one active public review per entry.
 - A user may have one bookmark per entry.
 - Version one supports one optional YouTube video per entry.
@@ -934,15 +904,13 @@ More audit actions can be added later only when new v1 workflows require them.
 - Categories, provinces, districts, tags, and content types should not be deleted while referenced.
 - Audit logs must remain preserved.
 - Hidden, rejected, and archived entries must not appear in public search or public listing.
-- Ratings measure helpfulness only and do not change entry status.
-- Bookmarks are private convenience data and do not change rating, popularity, moderation status, or view count.
+- Bookmarks are private convenience data and do not change popularity, moderation status, or view count.
 - Public reviews do not directly change entry content.
 - Reports do not automatically remove content.
 - Images require ownership or permission confirmation before publication. Version one allows up to six images per entry, with a maximum size of 5 MB each.
 - Sources are allowed as zero or many records; written sources are optional because some cultural knowledge is based on oral history or personal experience.
 - YouTube links must be validated and stored as YouTube IDs/URLs only; arbitrary iframes are not accepted.
 - Email verification is mandatory in version one.
-- Ratings use a 1-5 star scale.
 
 ## Deletion And Preservation Rules
 
@@ -955,7 +923,7 @@ When a user is suspended:
 - Revoke refresh sessions.
 - Prevent new protected actions.
 - Preserve published cultural entries.
-- Preserve moderation, correction, report, rating, review, and audit records.
+- Preserve moderation, correction, report, review, and audit records.
 - Keep private bookmarks stored unless the user removes them before suspension.
 
 ### Cultural Entries
@@ -979,7 +947,6 @@ This avoids deletion rules that destroy published cultural history.
 | CulturalEntry -> ModerationReview              | Preserve.                                                                                                                                                              |
 | CulturalEntry -> CorrectionSuggestion          | Preserve.                                                                                                                                                              |
 | CulturalEntry -> Report                        | Preserve privately.                                                                                                                                                    |
-| CulturalEntry -> Rating                        | Preserve or deactivate; do not cascade from published entries.                                                                                                         |
 | CulturalEntry -> PublicReview                  | Preserve with status; do not cascade from published entries.                                                                                                           |
 | User -> Bookmark                               | Cascade-delete is acceptable because bookmarks are private convenience data.                                                                                           |
 | CulturalEntry -> Bookmark                      | Published entries should normally be archived, not physically deleted; if a draft is hard-deleted, bookmark cascade is irrelevant because drafts cannot be bookmarked. |
@@ -1119,7 +1086,6 @@ Use PostgreSQL `ILIKE` over normalized text for v1. Consider trigram indexes onl
 - Moderation queue: `(ModerationReview.decision, ModerationReview.createdAt)` and `CulturalEntry.status`
 - Reports: `(Report.status, Report.createdAt)`, `Report.reason`, `Report.entryId`, `Report.reportedById`
 - Corrections: `(CorrectionSuggestion.status, CorrectionSuggestion.submittedAt)`, `CorrectionSuggestion.entryId`, `CorrectionSuggestion.submittedById`
-- Ratings: `(Rating.entryId, Rating.isActive)`, `(Rating.userId, Rating.entryId)`
 - Likes: `Like.userId`, `Like.entryId`, unique `(Like.userId, Like.entryId)`
 - Public reviews: `(PublicReview.entryId, PublicReview.status)`, `(PublicReview.userId, PublicReview.status)`
 - Bookmarks: `Bookmark.userId`, `Bookmark.entryId`, `(Bookmark.userId, Bookmark.createdAt)`, unique `(Bookmark.userId, Bookmark.entryId)`
@@ -1137,7 +1103,6 @@ erDiagram
   User ||--o{ ModerationReview : moderates
   User ||--o{ CorrectionSuggestion : submits
   User ||--o{ Report : submits
-  User ||--o{ Rating : rates
   User ||--o{ Like : likes
   User ||--o{ PublicReview : reviews
   User ||--o{ Bookmark : saves
@@ -1157,7 +1122,6 @@ erDiagram
   CulturalEntry ||--o{ Image : has
   CulturalEntry ||--o| YouTubeVideo : has
   CulturalEntry ||--o{ Source : cites
-  CulturalEntry ||--o{ Rating : receives
   CulturalEntry ||--o{ Like : receives
   CulturalEntry ||--o{ PublicReview : receives
   CulturalEntry ||--o{ Bookmark : bookmarked_as
@@ -1188,26 +1152,24 @@ The following previously open decisions are now approved for Phase B:
 - Published content: administrators may edit published content, but every change must create a new `ContentVersion`.
 - Publication: approved content is published immediately.
 - Initial taxonomy: seed Afghanistan's official provinces and districts, with initial categories and content types from the PRD. Tags are created by administrators as needed.
-- Ratings: use a 1-5 star scale.
 
 No unresolved product-level database decisions remain before Prisma implementation. Phase B still needs normal implementation review for field lengths, exact seed keys and Persian slugs, and any raw SQL needed for constraints Prisma cannot express directly.
 
 ## Phase B Implementation Checklist
 
 1. Translate this design into `schema.prisma` with UUID IDs, mapped snake_case tables/columns, relations, enums, defaults, and indexes.
-2. Implement all 25 entities, including `Bookmark`, `Like`, `OAuthAccount`, `EmailVerificationToken`, and `EntryReference`.
+2. Implement all 24 entities, including `Bookmark`, `Like`, `OAuthAccount`, `EmailVerificationToken`, and `EntryReference`.
 3. Implement unique `(userId, entryId)` for `Bookmark`.
 4. Implement bookmark indexes: `userId`, `entryId`, and `(userId, createdAt)`.
 5. Add `thumbnailUrl` to `Image`.
-6. Add `lastRatedAt` to `CulturalEntry`.
-7. Add `GeographicScope` to `CulturalEntry`, make `provinceId` optional, keep `districtId` optional, and enforce the approved `PROVINCE`/`NATIONAL`/`NONE` validation rules in service logic and database constraints where practical.
-8. Make `User.passwordHash` optional for OAuth-only users.
-9. Add `AuthProvider` and `OAuthAccount`.
-10. Implement unique `(provider, providerAccountId)` and unique `(userId, provider)` for `OAuthAccount`.
-11. Add `EmailVerificationToken` with hashed token storage, single-use tracking, expiration, and indexes.
-12. Add required unique `CulturalEntry.key`, keep required unique Persian `CulturalEntry.slug`, and implement key immutability plus published-entry slug immutability in service logic.
-13. Add the manual SQL partial unique index for one active public review per user and entry.
-14. Add the first migration only after models are approved.
-15. Generate Prisma Client after schema implementation.
-16. Add focused tests for status transitions, self-approval prevention, accepted correction versioning, rating uniqueness, rating aggregate updates, like uniqueness and idempotency, review uniqueness, bookmark uniqueness, OAuth account uniqueness, email verification token behavior, entry-reference constraints, geography-scope validation, and deletion/preservation behavior.
-17. Keep Prisma access inside NestJS services and transactions.
+6. Add `GeographicScope` to `CulturalEntry`, make `provinceId` optional, keep `districtId` optional, and enforce the approved `PROVINCE`/`NATIONAL`/`NONE` validation rules in service logic and database constraints where practical.
+7. Make `User.passwordHash` optional for OAuth-only users.
+8. Add `AuthProvider` and `OAuthAccount`.
+9. Implement unique `(provider, providerAccountId)` and unique `(userId, provider)` for `OAuthAccount`.
+10. Add `EmailVerificationToken` with hashed token storage, single-use tracking, expiration, and indexes.
+11. Add required unique `CulturalEntry.key`, keep required unique Persian `CulturalEntry.slug`, and implement key immutability plus published-entry slug immutability in service logic.
+12. Add the manual SQL partial unique index for one active public review per user and entry.
+13. Add the first migration only after models are approved.
+14. Generate Prisma Client after schema implementation.
+15. Add focused tests for status transitions, self-approval prevention, accepted correction versioning, like uniqueness and idempotency, review uniqueness, bookmark uniqueness, OAuth account uniqueness, email verification token behavior, entry-reference constraints, geography-scope validation, and deletion/preservation behavior.
+16. Keep Prisma access inside NestJS services and transactions.

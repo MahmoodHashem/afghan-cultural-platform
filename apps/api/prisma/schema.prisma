@@ -177,7 +177,6 @@ model User {
   correctionSuggestionsReviewed  CorrectionSuggestion[]   @relation("CorrectionReviewedBy")
   reportsSubmitted               Report[]                 @relation("ReportSubmittedBy")
   reportsReviewed                Report[]                 @relation("ReportReviewedBy")
-  ratings                        Rating[]                 @relation("RatingUser")
   likes                          Like[]                   @relation("LikeUser")
   publicReviews                  PublicReview[]           @relation("PublicReviewUser")
   hiddenPublicReviews            PublicReview[]           @relation("PublicReviewHiddenBy")
@@ -239,9 +238,6 @@ model CulturalEntry {
   alternativeLocalName String?         @map("alternative_local_name")
   regionalDifferences  String?         @map("regional_differences")
   viewCount            Int             @default(0) @map("view_count")
-  averageRating        Decimal         @default(0) @map("average_rating")
-  ratingCount          Int             @default(0) @map("rating_count")
-  lastRatedAt          DateTime?       @map("last_rated_at") @db.Timestamptz(3)
   submittedAt          DateTime?       @map("submitted_at") @db.Timestamptz(3)
   publishedAt          DateTime?       @map("published_at") @db.Timestamptz(3)
   hiddenAt             DateTime?       @map("hidden_at") @db.Timestamptz(3)
@@ -262,7 +258,6 @@ model CulturalEntry {
   incomingReferences    EntryReference[]       @relation("EntryReferenceTarget")
   contentVersions       ContentVersion[]       @relation("EntryContentVersions")
   moderationReviews     ModerationReview[]     @relation("EntryModerationReviews")
-  ratings               Rating[]               @relation("EntryRatings")
   likes                 Like[]                 @relation("EntryLikes")
   publicReviews         PublicReview[]         @relation("EntryPublicReviews")
   bookmarks             Bookmark[]             @relation("EntryBookmarks")
@@ -534,26 +529,6 @@ model Source {
   @@index([type])
   @@index([entryId, displayOrder])
   @@map("sources")
-}
-
-model Rating {
-  id        String   @id @default(uuid()) @map("id") @db.Uuid
-  entryId   String   @map("entry_id") @db.Uuid
-  userId    String   @map("user_id") @db.Uuid
-  value     Int      @map("value")
-  isActive  Boolean  @default(true) @map("is_active")
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
-
-  entry CulturalEntry @relation("EntryRatings", fields: [entryId], references: [id], onDelete: Restrict)
-  user  User          @relation("RatingUser", fields: [userId], references: [id], onDelete: Restrict)
-
-  @@unique([userId, entryId])
-  @@index([entryId])
-  @@index([userId])
-  @@index([entryId, isActive])
-  @@index([value])
-  @@map("ratings")
 }
 
 model Like {

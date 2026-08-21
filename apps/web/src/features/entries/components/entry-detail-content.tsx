@@ -11,7 +11,6 @@ import { EntryReviews } from "@/features/engagement/components/entry-reviews";
 import { EntryActionRail } from "@/features/entries/components/entry-action-rail";
 import { EntryDetailHeaderContext } from "@/features/entries/components/entry-detail-header-context";
 import { EntryTableOfContents } from "@/features/entries/components/entry-table-of-contents";
-import { EntryFeedback } from "@/features/entries/components/reviews/entry-feedback";
 import { formatPersianDate } from "@/lib/utils/formatters";
 import type { PublicEntryDetail, PublicReview } from "../types/public-entry";
 import { getEntryLocationLabel } from "../utils/geography";
@@ -98,14 +97,6 @@ function EntryDetailContent({
             {entry.images.length > 1 ? <ImageGallery images={entry.images.slice(1)} /> : null}
             {entry.youtubeVideo ? <YouTubeEmbed entry={entry} /> : null}
             {entry.sources.length > 0 ? <SourcesList entry={entry} /> : null}
-            <div id="entry-feedback" className="scroll-mt-32">
-              <EntryFeedback
-                entryId={entry.id}
-                entryTitle={entry.title}
-                averageRating={entry.averageRating}
-                ratingCount={entry.ratingCount}
-              />
-            </div>
             <EntryReviews entryId={entry.id} initialReviews={reviews} />
           </div>
 

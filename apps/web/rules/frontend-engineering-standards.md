@@ -324,7 +324,7 @@ Optimistic behavior is preferred only when it improves responsiveness without pr
 Good candidates:
 
 - add/remove bookmark;
-- create/update a rating;
+- like/unlike an entry;
 - simple preference actions;
 - edit/delete the user’s simple review when rollback is reliable;
 - simple profile preference changes.
