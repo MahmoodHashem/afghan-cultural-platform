@@ -1,7 +1,9 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQuery } from "@tanstack/react-query";
 import { domAnimation, LazyMotion } from "motion/react";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
@@ -12,6 +14,7 @@ import {
   createEntryDraft,
   createEntrySource,
   deleteEntrySource,
+  getOwnEntry,
   replaceEntryTags,
   submitEntryForReview,
   updateEntryDraft,
@@ -30,12 +33,12 @@ import {
   createMetadataSummary,
   emptyToUndefined,
   isUsefulSource,
+  toCreateEntryFormDefaults,
   toDraftPayload,
   toSelectOptions,
   toSourceInput,
   validateDistrictProvince,
 } from "@/features/entries/utils/create-entry-form-utils";
-import { createEmptyTiptapDocument } from "@/features/entries/utils/tiptap-content";
 import { formatPersianNumber } from "@/lib/utils/formatters";
 import { CreateEntryEditorHeader, CreateEntryEditorSection } from "./create-entry-editor-layout";
 import {
@@ -47,33 +50,28 @@ import {
 import { CreateEntryWritingSurface } from "./create-entry-writing-surface";
 
 type CreateEntryFormProps = {
+  initialDraftId?: string;
   taxonomy: ContributionTaxonomyData;
 };
 
-function CreateEntryForm({ taxonomy }: CreateEntryFormProps) {
-  const [draftId, setDraftId] = useState<string | null>(null);
+const editableEntryStatuses = new Set(["DRAFT", "CHANGES_REQUESTED"]);
+
+function CreateEntryForm({ initialDraftId, taxonomy }: CreateEntryFormProps) {
+  const router = useRouter();
+  const [draftId, setDraftId] = useState<string | null>(initialDraftId ?? null);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [isSyncingMedia, setIsSyncingMedia] = useState(false);
+  const draftQuery = useQuery({
+    queryKey: ["entry-draft", initialDraftId],
+    queryFn: ({ signal }) => getOwnEntry(initialDraftId as string, signal),
+    enabled: Boolean(initialDraftId),
+  });
+  const initialDraft = draftQuery.data;
 
   const form = useForm<CreateEntryFormValues>({
     resolver: zodResolver(createEntryFormSchema),
     mode: "onBlur",
-    defaultValues: {
-      title: "",
-      summary: "",
-      contentJson: createEmptyTiptapDocument(),
-      geographicScope: "PROVINCE",
-      provinceId: "",
-      districtId: "",
-      categoryId: "",
-      contentTypeId: "",
-      villageOrLocation: "",
-      tagIds: [],
-      sources: [],
-      youtubeUrl: "",
-      youtubeTitle: "",
-      youtubeDescription: "",
-    },
+    defaultValues: toCreateEntryFormDefaults(),
   });
 
   const {
@@ -96,11 +94,27 @@ function CreateEntryForm({ taxonomy }: CreateEntryFormProps) {
   const stagedImages = useStagedEntryImages({
     draftId,
     getTitle: () => form.getValues("title"),
+    initialImages: initialDraft?.images,
     onDirty: markUnsaved,
   });
   const { hasPendingImages, imageInputRef, images } = stagedImages;
-  const isBusy = saveState === "saving" || isSyncingMedia;
+  const isDraftLoading = Boolean(initialDraftId && draftQuery.isLoading);
+  const isDraftUnavailable = Boolean(initialDraftId && draftQuery.isError);
+  const isDraftLocked = Boolean(
+    initialDraft && !editableEntryStatuses.has(initialDraft.status),
+  );
+  const isBusy = saveState === "saving" || isSyncingMedia || isDraftLoading || isDraftLocked;
   const hasUnsavedChanges = isDirty || hasPendingImages || saveState === "unsaved";
+
+  useEffect(() => {
+    if (!initialDraft) {
+      return;
+    }
+
+    setDraftId(initialDraft.id);
+    form.reset(toCreateEntryFormDefaults(initialDraft));
+    setSaveState("saved");
+  }, [form, initialDraft]);
 
   const provinceOptions = useMemo(() => toSelectOptions(taxonomy.provinces), [taxonomy.provinces]);
   const categoryOptions = useMemo(
@@ -222,11 +236,16 @@ function CreateEntryForm({ taxonomy }: CreateEntryFormProps) {
       const savedDraft = draftId
         ? await updateEntryDraft(draftId, payload)
         : await createEntryDraft(payload);
+      const wasNewDraft = !draftId;
 
       setDraftId(savedDraft.id);
       await syncRelatedContent(savedDraft.id, values);
       form.reset(form.getValues());
       setSaveState("saved");
+
+      if (wasNewDraft) {
+        router.replace(`/entries/${savedDraft.id}/edit`);
+      }
 
       if (showSuccessToast) {
         toast.success("پیش‌نویس ذخیره شد.");
@@ -315,75 +334,105 @@ function CreateEntryForm({ taxonomy }: CreateEntryFormProps) {
     <LazyMotion features={domAnimation}>
       <div className="min-h-screen bg-background text-foreground">
         <CreateEntryEditorHeader
+          title={initialDraftId ? "ویرایش مطلب" : "مطلب جدید"}
           isBusy={isBusy}
           onSaveDraft={handleSaveDraft}
           onSubmit={handleSubmitForReview}
         />
 
         <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
-          <form className="bg-background px-0 py-6 sm:px-8 lg:px-14" noValidate>
-            <CreateEntryWritingSurface
-              control={control}
-              errors={errors}
-              register={register}
-              onDirty={markUnsaved}
-            />
+          {isDraftLoading ? <DraftEditorLoadingState /> : null}
+          {isDraftUnavailable ? <DraftEditorErrorState /> : null}
+          {isDraftLocked ? <DraftEditorLockedState /> : null}
+          {!isDraftLoading && !isDraftUnavailable && !isDraftLocked ? (
+            <form className="bg-background px-0 py-6 sm:px-8 lg:px-14" noValidate>
+              <CreateEntryWritingSurface
+                control={control}
+                errors={errors}
+                register={register}
+                onDirty={markUnsaved}
+              />
 
-            <section className="mt-8 divide-y divide-border border-y border-border">
-              <CreateEntryEditorSection title="جزئیات مطلب" summary={detailsSummary}>
-                <DetailsSection
-                  categoryOptions={categoryOptions}
-                  contentTypeOptions={contentTypeOptions}
-                  control={control}
-                  districtOptions={districtOptions}
-                  errors={errors}
-                  provinceOptions={provinceOptions}
-                  register={register}
-                  selectedProvinceId={selectedProvinceId}
-                  selectedScope={selectedScope}
-                  tagOptions={tagOptions}
-                  onDirty={markUnsaved}
-                />
-              </CreateEntryEditorSection>
+              <section className="mt-8 divide-y divide-border border-y border-border">
+                <CreateEntryEditorSection title="جزئیات مطلب" summary={detailsSummary}>
+                  <DetailsSection
+                    categoryOptions={categoryOptions}
+                    contentTypeOptions={contentTypeOptions}
+                    control={control}
+                    districtOptions={districtOptions}
+                    errors={errors}
+                    provinceOptions={provinceOptions}
+                    register={register}
+                    selectedProvinceId={selectedProvinceId}
+                    selectedScope={selectedScope}
+                    tagOptions={tagOptions}
+                    onDirty={markUnsaved}
+                  />
+                </CreateEntryEditorSection>
 
-              <CreateEntryEditorSection
-                title="تصاویر"
-                summary={`${formatPersianNumber(images.length)} تصویر`}
-              >
-                <ImagesSection
-                  imageInputRef={imageInputRef}
-                  images={images}
-                  onAddImages={stagedImages.selectImages}
-                  onChangeImage={stagedImages.updateImage}
-                  onMoveImage={stagedImages.moveImage}
-                  onRemoveImage={stagedImages.removeImage}
-                />
-              </CreateEntryEditorSection>
+                <CreateEntryEditorSection
+                  title="تصاویر"
+                  summary={`${formatPersianNumber(images.length)} تصویر`}
+                >
+                  <ImagesSection
+                    imageInputRef={imageInputRef}
+                    images={images}
+                    onAddImages={stagedImages.selectImages}
+                    onChangeImage={stagedImages.updateImage}
+                    onMoveImage={stagedImages.moveImage}
+                    onRemoveImage={stagedImages.removeImage}
+                  />
+                </CreateEntryEditorSection>
 
-              <CreateEntryEditorSection
-                title="منابع"
-                summary={`${formatPersianNumber(sourceFields.fields.length)} منبع`}
-              >
-                <SourcesSection
-                  control={control}
-                  register={register}
-                  sourceFields={sourceFields}
-                  onDirty={markUnsaved}
-                  onRemoveSource={handleRemoveSource}
-                />
-              </CreateEntryEditorSection>
+                <CreateEntryEditorSection
+                  title="منابع"
+                  summary={`${formatPersianNumber(sourceFields.fields.length)} منبع`}
+                >
+                  <SourcesSection
+                    control={control}
+                    register={register}
+                    sourceFields={sourceFields}
+                    onDirty={markUnsaved}
+                    onRemoveSource={handleRemoveSource}
+                  />
+                </CreateEntryEditorSection>
 
-              <CreateEntryEditorSection
-                title="ویدیوی مرتبط"
-                summary={watchedValues.youtubeUrl ? "ویدیو اضافه شده" : "اختیاری"}
-              >
-                <YouTubeSection errors={errors} register={register} onDirty={markUnsaved} />
-              </CreateEntryEditorSection>
-            </section>
-          </form>
+                <CreateEntryEditorSection
+                  title="ویدیوی مرتبط"
+                  summary={watchedValues.youtubeUrl ? "ویدیو اضافه شده" : "اختیاری"}
+                >
+                  <YouTubeSection errors={errors} register={register} onDirty={markUnsaved} />
+                </CreateEntryEditorSection>
+              </section>
+            </form>
+          ) : null}
         </main>
       </div>
     </LazyMotion>
+  );
+}
+
+function DraftEditorLoadingState() {
+  return (
+    <div className="rounded-xl border border-border bg-card px-5 py-4 text-small text-muted-foreground">
+      پیش‌نویس در حال آماده‌سازی است...
+    </div>
+  );
+}
+
+function DraftEditorErrorState() {
+  return (
+    <div className="rounded-xl border border-destructive/25 bg-destructive/10 px-5 py-4 text-small text-destructive">
+      پیش‌نویس پیدا نشد یا امکان ویرایش آن وجود ندارد.
+    </div>
+  );
+}
+
+function DraftEditorLockedState() {
+  return (
+    <div className="rounded-xl border border-gold/35 bg-gold/10 px-5 py-4 text-small text-[#8A641C]">
+      این مطلب در وضعیت قابل ویرایش نیست.
+    </div>
   );
 }
 

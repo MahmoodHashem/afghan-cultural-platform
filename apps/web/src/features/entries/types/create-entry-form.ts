@@ -4,8 +4,9 @@ export type SaveState = "idle" | "saving" | "saved" | "unsaved" | "submitted";
 
 export type StagedImage = {
   clientId: string;
-  file: File;
+  file?: File;
   previewUrl: string;
+  isLocalPreview?: boolean;
   altText: string;
   caption: string;
   photographerOrSource: string;

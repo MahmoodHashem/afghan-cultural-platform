@@ -617,16 +617,12 @@ function OwnerEntryRow({ entry, onDelete }: { entry: OwnEntry; onDelete: () => v
             </Link>
           ) : null}
           {isOwnerEditableStatus(entry.status) ? (
-            <span
-              className={cn(
-                buttonVariants({ variant: "outline", size: "sm" }),
-                "cursor-not-allowed rounded-full opacity-60",
-              )}
-              aria-disabled="true"
-              title="مسیر ویرایش پیش‌نویس هنوز در frontend ساخته نشده است."
+            <Link
+              href={`/entries/${entry.id}/edit`}
+              className={cn(buttonVariants({ variant: "outline", size: "sm" }), "rounded-full")}
             >
-              ویرایش به‌زودی
-            </span>
+              ویرایش
+            </Link>
           ) : null}
           {canDeleteOwnEntry(entry) ? (
             <button

@@ -3,7 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
-import { deleteEntryImage, uploadEntryImage } from "@/features/entries/api/entry-drafts-api";
+import {
+  deleteEntryImage,
+  type EntryImage,
+  uploadEntryImage,
+} from "@/features/entries/api/entry-drafts-api";
 import type { StagedImage } from "@/features/entries/types/create-entry-form";
 import { getEntryFormErrorMessage } from "@/features/entries/utils/create-entry-errors";
 import { emptyToUndefined } from "@/features/entries/utils/create-entry-form-utils";
@@ -13,13 +17,20 @@ const maxImagesPerEntry = 6;
 type UseStagedEntryImagesOptions = {
   draftId: string | null;
   getTitle: () => string;
+  initialImages?: EntryImage[];
   onDirty: () => void;
 };
 
-export function useStagedEntryImages({ draftId, getTitle, onDirty }: UseStagedEntryImagesOptions) {
+export function useStagedEntryImages({
+  draftId,
+  getTitle,
+  initialImages,
+  onDirty,
+}: UseStagedEntryImagesOptions) {
   const [images, setImages] = useState<StagedImage[]>([]);
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const imagesRef = useRef<StagedImage[]>([]);
+  const hydratedDraftIdRef = useRef<string | null>(null);
   const hasPendingImages = images.some(
     (image) => image.status === "pending" || image.status === "error",
   );
@@ -31,10 +42,32 @@ export function useStagedEntryImages({ draftId, getTitle, onDirty }: UseStagedEn
   useEffect(() => {
     return () => {
       for (const image of imagesRef.current) {
-        URL.revokeObjectURL(image.previewUrl);
+        if (image.isLocalPreview) {
+          URL.revokeObjectURL(image.previewUrl);
+        }
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (!draftId || !initialImages || hydratedDraftIdRef.current === draftId) {
+      return;
+    }
+
+    hydratedDraftIdRef.current = draftId;
+    setImages(
+      initialImages.map((image) => ({
+        clientId: image.id,
+        previewUrl: image.thumbnailUrl ?? image.secureUrl,
+        altText: image.altText,
+        caption: image.caption ?? "",
+        photographerOrSource: image.photographerOrSource ?? "",
+        permissionConfirmed: image.permissionConfirmed,
+        status: "uploaded",
+        uploadedImage: image,
+      })),
+    );
+  }, [draftId, initialImages]);
 
   function selectImages(files: FileList | null) {
     if (!files?.length) {
@@ -53,6 +86,7 @@ export function useStagedEntryImages({ draftId, getTitle, onDirty }: UseStagedEn
       clientId: crypto.randomUUID(),
       file,
       previewUrl: URL.createObjectURL(file),
+      isLocalPreview: true,
       altText: title ? `تصویر مربوط به ${title}` : "",
       caption: "",
       photographerOrSource: "",
@@ -74,7 +108,9 @@ export function useStagedEntryImages({ draftId, getTitle, onDirty }: UseStagedEn
       }
     }
 
-    URL.revokeObjectURL(image.previewUrl);
+    if (image.isLocalPreview) {
+      URL.revokeObjectURL(image.previewUrl);
+    }
     setImages((currentImages) =>
       currentImages.filter((currentImage) => currentImage.clientId !== image.clientId),
     );
@@ -114,6 +150,14 @@ export function useStagedEntryImages({ draftId, getTitle, onDirty }: UseStagedEn
   async function syncPendingImages(entryId: string) {
     for (const [index, image] of images.entries()) {
       if (image.status === "uploaded" || image.status === "uploading") {
+        continue;
+      }
+
+      if (!image.file) {
+        patchImageWithoutDirty(image.clientId, {
+          status: "error",
+          error: "فایل تصویر دوباره انتخاب شود.",
+        });
         continue;
       }
 

@@ -16,12 +16,14 @@ import { cn } from "@/lib/utils";
 
 type CreateEntryEditorHeaderProps = {
   isBusy: boolean;
+  title?: string;
   onSaveDraft: () => void;
   onSubmit: () => void;
 };
 
 export function CreateEntryEditorHeader({
   isBusy,
+  title = "مطلب جدید",
   onSaveDraft,
   onSubmit,
 }: CreateEntryEditorHeaderProps) {
@@ -34,7 +36,7 @@ export function CreateEntryEditorHeader({
             <span className="sr-only">بازگشت</span>
           </Button>
           <div>
-            <h1 className="text-base font-bold text-foreground">مطلب جدید</h1>
+            <h1 className="text-base font-bold text-foreground">{title}</h1>
           </div>
         </div>
         <div className="flex items-center gap-2 lg:justify-end">

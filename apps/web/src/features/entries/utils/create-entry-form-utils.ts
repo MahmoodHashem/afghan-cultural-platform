@@ -1,9 +1,14 @@
 import type { UseFormSetError } from "react-hook-form";
 
 import type { ContributionTaxonomyData } from "@/features/entries/api/contribution-taxonomy-api";
-import type { EntryDraftPayload, EntrySourceInput } from "@/features/entries/api/entry-drafts-api";
+import type {
+  EntryDraftPayload,
+  EntrySourceInput,
+  OwnEntry,
+} from "@/features/entries/api/entry-drafts-api";
 import type { CreateEntryFormValues } from "@/features/entries/schemas/create-entry-schema";
 import { geographicScopeLabels } from "@/features/entries/schemas/create-entry-schema";
+import { createEmptyTiptapDocument } from "@/features/entries/utils/tiptap-content";
 import { formatPersianNumber } from "@/lib/utils/formatters";
 import type { SelectOption } from "../components/create-entry-select";
 import type { WatchedEntryValues } from "../types/create-entry-form";
@@ -43,6 +48,55 @@ export function toDraftPayload(values: CreateEntryFormValues): EntryDraftPayload
     categoryId: values.categoryId,
     contentTypeId: values.contentTypeId,
     villageOrLocation: emptyToNull(values.villageOrLocation),
+  };
+}
+
+export function toCreateEntryFormDefaults(entry?: OwnEntry | null): CreateEntryFormValues {
+  if (!entry) {
+    return {
+      title: "",
+      summary: "",
+      contentJson: createEmptyTiptapDocument(),
+      geographicScope: "PROVINCE",
+      provinceId: "",
+      districtId: "",
+      categoryId: "",
+      contentTypeId: "",
+      villageOrLocation: "",
+      tagIds: [],
+      sources: [],
+      youtubeUrl: "",
+      youtubeTitle: "",
+      youtubeDescription: "",
+    };
+  }
+
+  return {
+    title: entry.title ?? "",
+    summary: entry.summary ?? "",
+    contentJson: entry.contentJson as CreateEntryFormValues["contentJson"],
+    geographicScope: entry.geographicScope,
+    provinceId: entry.provinceId ?? "",
+    districtId: entry.districtId ?? "",
+    categoryId: entry.categoryId ?? "",
+    contentTypeId: entry.contentTypeId ?? "",
+    villageOrLocation: entry.villageOrLocation ?? "",
+    tagIds: entry.tags?.map((tag) => tag.id) ?? [],
+    sources:
+      entry.sources?.map((source) => ({
+        id: source.id,
+        type: source.type,
+        title: source.title ?? "",
+        authorOrProvider: source.authorOrProvider ?? "",
+        publicationDate: source.publicationDate ?? "",
+        websiteUrl: source.websiteUrl ?? "",
+        bookOrArticleDetails: source.bookOrArticleDetails ?? "",
+        interviewDate: source.interviewDate ?? "",
+        explanation: source.explanation ?? "",
+      })) ?? [],
+    youtubeUrl: entry.youtubeVideo?.url ?? "",
+    youtubeTitle: entry.youtubeVideo?.title ?? "",
+    youtubeDescription: entry.youtubeVideo?.description ?? "",
   };
 }
 
