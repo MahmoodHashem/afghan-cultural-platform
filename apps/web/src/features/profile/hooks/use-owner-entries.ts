@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import {
@@ -8,10 +8,26 @@ import {
   listOwnEntries,
   type OwnEntriesQuery,
 } from "@/features/entries/api/entry-drafts-api";
+import {
+  getMyProfile,
+  getMyProfileStats,
+  listMyProfileBookmarks,
+  listMyProfileReviews,
+  type ProfileListQuery,
+} from "@/features/profile/api/profile-api";
 import type { ProfileQuery } from "@/features/profile/utils/profile-query";
 
 const PROFILE_QUERY_ROOT = ["profile"] as const;
 const PROFILE_ENTRIES_PAGE_SIZE = 8;
+const PROFILE_REVIEWS_PAGE_SIZE = 8;
+const PROFILE_BOOKMARKS_PAGE_SIZE = 8;
+
+function useOwnerProfile() {
+  return useQuery({
+    queryKey: [...PROFILE_QUERY_ROOT, "me"],
+    queryFn: ({ signal }) => getMyProfile(signal),
+  });
+}
 
 function useOwnerEntries(query: ProfileQuery) {
   const ownerEntriesQuery: OwnEntriesQuery = {
@@ -29,28 +45,43 @@ function useOwnerEntries(query: ProfileQuery) {
 }
 
 function useOwnerEntryStats() {
-  const [allEntries, publishedEntries, pendingReviewEntries, changesRequestedEntries] = useQueries({
-    queries: [
-      createCountQuery("all", {}),
-      createCountQuery("published", { status: "PUBLISHED" }),
-      createCountQuery("pending-review", { status: "PENDING_REVIEW" }),
-      createCountQuery("changes-requested", { status: "CHANGES_REQUESTED" }),
-    ],
+  const stats = useQuery({
+    queryKey: [...PROFILE_QUERY_ROOT, "stats"],
+    queryFn: ({ signal }) => getMyProfileStats(signal),
   });
 
   return {
-    all: allEntries.data?.meta.total ?? 0,
-    published: publishedEntries.data?.meta.total ?? 0,
-    needsAttention:
-      (pendingReviewEntries.data?.meta.total ?? 0) +
-      (changesRequestedEntries.data?.meta.total ?? 0),
-    isLoading: [allEntries, publishedEntries, pendingReviewEntries, changesRequestedEntries].some(
-      (query) => query.isLoading,
-    ),
-    isError: [allEntries, publishedEntries, pendingReviewEntries, changesRequestedEntries].some(
-      (query) => query.isError,
-    ),
+    entries: stats.data?.entries.all ?? 0,
+    reviews: stats.data?.reviews ?? 0,
+    bookmarks: stats.data?.bookmarks ?? 0,
+    needsAttention: stats.data?.needsAttention ?? 0,
+    isLoading: stats.isLoading,
+    isError: stats.isError,
   };
+}
+
+function useOwnerReviews(query: ProfileQuery) {
+  const reviewsQuery: ProfileListQuery = {
+    page: query.page,
+    limit: PROFILE_REVIEWS_PAGE_SIZE,
+  };
+
+  return useQuery({
+    queryKey: [...PROFILE_QUERY_ROOT, "reviews", reviewsQuery],
+    queryFn: ({ signal }) => listMyProfileReviews(reviewsQuery, signal),
+  });
+}
+
+function useOwnerBookmarks(query: ProfileQuery) {
+  const bookmarksQuery: ProfileListQuery = {
+    page: query.page,
+    limit: PROFILE_BOOKMARKS_PAGE_SIZE,
+  };
+
+  return useQuery({
+    queryKey: [...PROFILE_QUERY_ROOT, "bookmarks", bookmarksQuery],
+    queryFn: ({ signal }) => listMyProfileBookmarks(bookmarksQuery, signal),
+  });
 }
 
 function useDeleteOwnDraftMutation() {
@@ -68,23 +99,15 @@ function useDeleteOwnDraftMutation() {
   });
 }
 
-function createCountQuery(label: string, query: OwnEntriesQuery) {
-  const countQuery: OwnEntriesQuery = {
-    page: 1,
-    limit: 1,
-    ...query,
-  };
-
-  return {
-    queryKey: [...PROFILE_QUERY_ROOT, "entry-stats", label, countQuery],
-    queryFn: ({ signal }: { signal: AbortSignal }) => listOwnEntries(countQuery, signal),
-  };
-}
-
 export {
+  PROFILE_BOOKMARKS_PAGE_SIZE,
   PROFILE_ENTRIES_PAGE_SIZE,
   PROFILE_QUERY_ROOT,
+  PROFILE_REVIEWS_PAGE_SIZE,
   useDeleteOwnDraftMutation,
+  useOwnerBookmarks,
   useOwnerEntries,
   useOwnerEntryStats,
+  useOwnerProfile,
+  useOwnerReviews,
 };

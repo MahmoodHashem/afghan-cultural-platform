@@ -14,6 +14,7 @@ import { VerifiedEmailGuard } from "@/modules/auth/guards/verified-email.guard";
 import { CommunityModule } from "@/modules/community/community.module";
 import { EntriesModule } from "@/modules/entries/entries.module";
 import { ModerationModule } from "@/modules/moderation/moderation.module";
+import { ProfileModule } from "@/modules/profile/profile.module";
 import { TaxonomyModule } from "@/modules/taxonomy/taxonomy.module";
 
 @Module({
@@ -37,6 +38,7 @@ import { TaxonomyModule } from "@/modules/taxonomy/taxonomy.module";
     CommunityModule,
     EntriesModule,
     ModerationModule,
+    ProfileModule,
     TaxonomyModule,
   ],
   providers: [

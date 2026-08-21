@@ -19,6 +19,7 @@ const authSchemas = read("src/features/auth/schemas/auth-schemas.ts");
 const authApi = read("src/features/auth/api/auth-api.ts");
 const authMutations = read("src/features/auth/hooks/use-auth-mutations.ts");
 const oauthButtons = read("src/features/auth/components/oauth-buttons.tsx");
+const oauthRedirect = read("src/features/auth/utils/oauth-redirect.ts");
 const oauthCallbackPage = read("src/app/auth/callback/page.tsx");
 const oauthCallbackCompletion = read("src/features/auth/components/oauth-callback-completion.tsx");
 const authErrorMessages = read("src/features/auth/utils/auth-error-messages.ts");
@@ -35,6 +36,7 @@ const authNavigation = read("src/features/auth/components/auth-navigation.tsx");
 const logoutAllButton = read("src/features/auth/components/logout-all-button.tsx");
 const verifiedEmailBanner = read("src/features/auth/components/verified-email-banner.tsx");
 const authQuery = read("src/lib/auth/auth-query.ts");
+const persianUtils = read("src/lib/utils/persian.ts");
 const publicLayout = read("src/app/(public)/layout.tsx");
 const publicError = read("src/app/(public)/error.tsx");
 const createEntryPage = read("src/app/(contribute)/entries/new/page.tsx");
@@ -99,6 +101,7 @@ const profileLayout = read("src/app/(profile)/layout.tsx");
 const profileLoading = read("src/app/(profile)/profile/loading.tsx");
 const ownerProfilePage = read("src/features/profile/components/owner-profile-page.tsx");
 const profileSkeleton = read("src/features/profile/components/profile-page-skeleton.tsx");
+const profileApi = read("src/features/profile/api/profile-api.ts");
 const profileEntryStatus = read("src/features/profile/constants/entry-status.ts");
 const profileEntryHooks = read("src/features/profile/hooks/use-owner-entries.ts");
 const profileQueryUtils = read("src/features/profile/utils/profile-query.ts");
@@ -168,8 +171,9 @@ test("login and register use the same approved login logo asset", () => {
 test("OAuth buttons are connected through click handlers", () => {
   assert.match(oauthButtons, /onGoogleClick/);
   assert.match(oauthButtons, /onFacebookClick/);
-  assert.match(loginForm, /createOAuthStartUrl\(provider, nextPath\)/);
-  assert.match(registerForm, /createOAuthStartUrl\(provider, nextPath\)/);
+  assert.match(loginForm, /redirectToOAuthProvider\("google", searchParams\.get\("next"\)\)/);
+  assert.match(registerForm, /redirectToOAuthProvider\("google", searchParams\.get\("next"\)\)/);
+  assert.match(oauthRedirect, /createOAuthStartUrl\(provider, getSafeRedirectPath\(nextPath\)\)/);
 });
 
 test("OAuth start URLs use backend auth endpoints without frontend token handling", () => {
@@ -261,7 +265,7 @@ test("owner profile uses safe authenticated user data", () => {
   assert.match(ownerProfilePage, /useAuthStore/);
   assert.match(ownerProfilePage, /user\.displayName/);
   assert.match(ownerProfilePage, /user\.emailVerified/);
-  assert.match(ownerProfilePage, /createInitials\(user\.displayName\)/);
+  assert.match(ownerProfilePage, /createUserInitials\(user\.displayName\)/);
   assert.doesNotMatch(ownerProfilePage, /passwordHash|refreshToken|tokenHash/);
 });
 
@@ -282,8 +286,7 @@ test("profile tabs and filters are owned by URL search params", () => {
   assert.match(profileQueryUtils, /createProfileHref/);
   assert.match(profileQueryUtils, /\/profile/);
   assert.match(ownerProfilePage, /useSearchParams/);
-  assert.match(ownerProfilePage, /router\.push\(createProfileHref/);
-  assert.match(ownerProfilePage, /scroll: false/);
+  assert.match(ownerProfilePage, /scroll=\{false\}/);
 });
 
 test("profile status labels use approved Persian wording", () => {
@@ -296,22 +299,26 @@ test("profile status labels use approved Persian wording", () => {
   assert.match(profileEntryStatus, /ARCHIVED:[\s\S]*بایگانی‌شده/);
 });
 
-test("profile stats are real entry counts and do not fake reviews or bookmarks", () => {
-  assert.match(profileEntryHooks, /createCountQuery\("all"/);
-  assert.match(profileEntryHooks, /createCountQuery\("published", \{ status: "PUBLISHED" \}/);
-  assert.match(profileEntryHooks, /status: "PENDING_REVIEW"/);
-  assert.match(profileEntryHooks, /status: "CHANGES_REQUESTED"/);
-  assert.match(ownerProfilePage, /همه مطالب/);
-  assert.match(ownerProfilePage, /منتشرشده/);
-  assert.match(ownerProfilePage, /در انتظار بررسی \/ نیازمند اصلاح/);
+test("profile stats use the backend profile counts for entries reviews and bookmarks", () => {
+  assert.match(profileApi, /async function getMyProfileStats/);
+  assert.match(profileApi, /\/profile\/me\/stats/);
+  assert.match(profileEntryHooks, /getMyProfileStats/);
+  assert.match(ownerProfilePage, /stats\.entries/);
+  assert.match(ownerProfilePage, /stats\.reviews/);
+  assert.match(ownerProfilePage, /stats\.bookmarks/);
   assert.doesNotMatch(ownerProfilePage, /۸ دیدگاه|۲۴ ذخیره/);
 });
 
-test("reviews and bookmarks tabs disclose missing backend contracts", () => {
-  assert.match(ownerProfilePage, /دیدگاه‌های شما اینجا نمایش داده می‌شود/);
-  assert.match(ownerProfilePage, /امکان نمایش فهرست دیدگاه‌های شما هنوز آماده نشده است/);
-  assert.match(ownerProfilePage, /ذخیره‌های شما هنوز وصل نشده است/);
-  assert.match(ownerProfilePage, /فعلاً داده ساختگی نشان نمی‌دهد/);
+test("reviews and bookmarks tabs integrate profile backend endpoints", () => {
+  assert.match(profileApi, /async function listMyProfileReviews/);
+  assert.match(profileApi, /\/profile\/me\/reviews/);
+  assert.match(profileApi, /async function listMyProfileBookmarks/);
+  assert.match(profileApi, /\/profile\/me\/bookmarks/);
+  assert.match(profileEntryHooks, /useOwnerReviews/);
+  assert.match(profileEntryHooks, /useOwnerBookmarks/);
+  assert.match(ownerProfilePage, /OwnerReviewsPanel/);
+  assert.match(ownerProfilePage, /OwnerBookmarksPanel/);
+  assert.doesNotMatch(ownerProfilePage, /فعلاً داده ساختگی نشان نمی‌دهد/);
 });
 
 test("verified-email and role gates are opt-in frontend UX gates", () => {
@@ -372,8 +379,8 @@ test("create entry uses searchable selects and multi-select tags without new sto
   assert.match(createEntrySelect, /options\.length > 10/);
   assert.match(createEntrySelect, /selectedValues/);
   assert.match(createEntrySelect, /normalizePersianSearch/);
-  assert.match(createEntrySelect, /replaceAll\("ي", "ی"\)/);
-  assert.match(createEntrySelect, /replaceAll\("ك", "ک"\)/);
+  assert.match(persianUtils, /replaceAll\("ي", "ی"\)/);
+  assert.match(persianUtils, /replaceAll\("ك", "ک"\)/);
   assert.match(createEntrySelect, /selectedValues\.includes\(option\.value\)/);
   assert.doesNotMatch(createEntryForm, /localStorage|sessionStorage|IndexedDB|document\.cookie/);
 });

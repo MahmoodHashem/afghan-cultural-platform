@@ -24,13 +24,18 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList } from "@/components/ui/tabs";
 import { VerifiedEmailBanner } from "@/features/auth/components/verified-email-banner";
 import type { OwnEntry } from "@/features/entries/api/entry-drafts-api";
+import type {
+  ProfileBookmark,
+  ProfileOwner,
+  ProfileReview,
+} from "@/features/profile/api/profile-api";
 import {
   canDeleteOwnEntry,
   ENTRY_STATUS_FILTERS,
@@ -40,8 +45,11 @@ import {
 } from "@/features/profile/constants/entry-status";
 import {
   useDeleteOwnDraftMutation,
+  useOwnerBookmarks,
   useOwnerEntries,
   useOwnerEntryStats,
+  useOwnerProfile,
+  useOwnerReviews,
 } from "@/features/profile/hooks/use-owner-entries";
 import {
   createProfileHref,
@@ -51,7 +59,7 @@ import {
 } from "@/features/profile/utils/profile-query";
 import { isApiError } from "@/lib/api/api-error";
 import { cn } from "@/lib/utils";
-import { formatPersianNumber } from "@/lib/utils/formatters";
+import { formatPersianDate, formatPersianNumber } from "@/lib/utils/formatters";
 import { createUserInitials } from "@/lib/utils/user";
 import { type SafeUser, useAuthStore } from "@/stores/auth-store";
 import { ProfilePageSkeleton } from "./profile-page-skeleton";
@@ -67,44 +75,57 @@ const profileTabs: Array<{
 ];
 
 const ownerEntrySkeletonKeys = ["first", "second", "third", "fourth"] as const;
+const ownerFeedbackSkeletonKeys = ["first", "second", "third"] as const;
+
+const PUBLIC_REVIEW_STATUS_META = {
+  ACTIVE: {
+    label: "منتشرشده",
+    className: "border-emerald-200 bg-emerald-50 text-emerald-700",
+  },
+  HIDDEN: {
+    label: "پنهان‌شده",
+    className: "border-muted bg-muted text-muted-foreground",
+  },
+  DELETED: {
+    label: "حذف‌شده",
+    className: "border-destructive/25 bg-destructive/10 text-destructive",
+  },
+} satisfies Record<ProfileReview["status"], { label: string; className: string }>;
 
 function OwnerProfilePage() {
   const searchParams = useSearchParams();
   const user = useAuthStore((state) => state.user);
   const profileQuery = useMemo(() => parseProfileQuery(searchParams), [searchParams]);
+  const ownerProfile = useOwnerProfile();
 
   if (!user) {
     return <ProfilePageSkeleton />;
   }
 
+  const profileUser = ownerProfile.data ?? createProfileFallback(user);
+
   return (
     <section className="content-container space-y-7 p-6 rounded-xl  bg-card">
-      <OwnerProfileHeader user={user} />
+      <OwnerProfileHeader user={profileUser} isProfileLoading={ownerProfile.isLoading} />
       <div className="flex flex-col items-center gap-6">
         <ProfileNavigationTabs activeTab={profileQuery.tab} query={profileQuery} />
         <div className="w-full outline-none">
           {profileQuery.tab === "entries" ? <OwnerEntriesPanel query={profileQuery} /> : null}
-          {profileQuery.tab === "reviews" ? (
-            <DeferredProfileTab
-              icon={ChatBubbleLeftRightIcon}
-              title="دیدگاه‌های شما اینجا نمایش داده می‌شود"
-              description="امکان نمایش فهرست دیدگاه‌های شما هنوز آماده نشده است. تا آن زمان این بخش داده ساختگی نشان نمی‌دهد."
-            />
-          ) : null}
-          {profileQuery.tab === "bookmarks" ? (
-            <DeferredProfileTab
-              icon={BookmarkIcon}
-              title="ذخیره‌های شما هنوز وصل نشده است"
-              description="امکان نمایش فهرست ذخیره‌های شما هنوز آماده نشده است. این بخش بعداً با داده واقعی وصل می‌شود و فعلاً داده ساختگی نشان نمی‌دهد."
-            />
-          ) : null}
+          {profileQuery.tab === "reviews" ? <OwnerReviewsPanel query={profileQuery} /> : null}
+          {profileQuery.tab === "bookmarks" ? <OwnerBookmarksPanel query={profileQuery} /> : null}
         </div>
       </div>
     </section>
   );
 }
 
-function OwnerProfileHeader({ user }: { user: SafeUser }) {
+function OwnerProfileHeader({
+  user,
+  isProfileLoading,
+}: {
+  user: ProfileOwner;
+  isProfileLoading: boolean;
+}) {
   const stats = useOwnerEntryStats();
 
   return (
@@ -113,6 +134,9 @@ function OwnerProfileHeader({ user }: { user: SafeUser }) {
         <div className="flex flex-col justify-center items-center gap-4">
           <div className="relative shrink-0">
             <Avatar className="size-28 border-4 border-card bg-primary-light ">
+              {user.profileImageUrl ? (
+                <AvatarImage src={user.profileImageUrl} alt={user.displayName} />
+              ) : null}
               <AvatarFallback className="bg-primary-light text-[24px] font-bold text-primary">
                 {createUserInitials(user.displayName)}
               </AvatarFallback>
@@ -123,7 +147,7 @@ function OwnerProfileHeader({ user }: { user: SafeUser }) {
                 "absolute bottom-0 right-1 size-9 cursor-not-allowed rounded-full bg-card p-0",
               )}
               aria-disabled="true"
-              title="ویرایش پروفایل پس از آماده شدن API پروفایل فعال می‌شود."
+              title="ویرایش تصویر پروفایل در مرحله بعدی رابط کاربری فعال می‌شود."
             >
               <CameraIcon className="size-4" aria-hidden="true" />
             </span>
@@ -138,6 +162,12 @@ function OwnerProfileHeader({ user }: { user: SafeUser }) {
             <p className="text-[13px] font-medium text-muted-foreground" dir="ltr">
               {user.email}
             </p>
+            {isProfileLoading ? <Skeleton className="h-4 w-36" /> : null}
+            {user.biography ? (
+              <p className="max-w-xl text-center text-[14px] leading-7 text-muted-foreground">
+                {user.biography}
+              </p>
+            ) : null}
           </div>
         </div>
       </div>
@@ -148,9 +178,9 @@ function OwnerProfileHeader({ user }: { user: SafeUser }) {
 
 function ProfileStats({ stats }: { stats: ReturnType<typeof useOwnerEntryStats> }) {
   const items = [
-    { label: "مطلب", value: stats.all },
-    { label: "دیدگاه", value: stats.published },
-    { label: "ذخیره", value: stats.needsAttention },
+    { label: "مطلب", value: stats.entries },
+    { label: "دیدگاه", value: stats.reviews },
+    { label: "ذخیره", value: stats.bookmarks },
   ];
 
   return (
@@ -265,6 +295,79 @@ function OwnerEntriesVerificationState() {
   );
 }
 
+function OwnerReviewsPanel({ query }: { query: ProfileQuery }) {
+  const ownerReviews = useOwnerReviews(query);
+
+  return (
+    <div className="space-y-4 p-4">
+      <SimpleProfileToolbar total={ownerReviews.data?.meta.total ?? 0} label="دیدگاه" />
+      {ownerReviews.isLoading ? <OwnerFeedbackListSkeleton /> : null}
+      {ownerReviews.isError ? (
+        <ProfileErrorState
+          title="دیدگاه‌ها بارگذاری نشد"
+          onRetry={() => void ownerReviews.refetch()}
+        />
+      ) : null}
+      {ownerReviews.data && ownerReviews.data.data.length === 0 ? (
+        <ProfileEmptyState
+          icon={ChatBubbleLeftRightIcon}
+          title="هنوز دیدگاهی ننوشته‌اید"
+          description="دیدگاه‌هایی که زیر مطالب منتشرشده می‌نویسید، اینجا دیده می‌شوند."
+        />
+      ) : null}
+      {ownerReviews.data && ownerReviews.data.data.length > 0 ? (
+        <>
+          <OwnerReviewList reviews={ownerReviews.data.data} />
+          <ProfilePagination meta={ownerReviews.data.meta} query={query} />
+        </>
+      ) : null}
+    </div>
+  );
+}
+
+function OwnerBookmarksPanel({ query }: { query: ProfileQuery }) {
+  const ownerBookmarks = useOwnerBookmarks(query);
+
+  return (
+    <div className="space-y-4 p-4">
+      <SimpleProfileToolbar total={ownerBookmarks.data?.meta.total ?? 0} label="ذخیره" />
+      {ownerBookmarks.isLoading ? <OwnerFeedbackListSkeleton /> : null}
+      {ownerBookmarks.isError ? (
+        <ProfileErrorState
+          title="ذخیره‌ها بارگذاری نشد"
+          onRetry={() => void ownerBookmarks.refetch()}
+        />
+      ) : null}
+      {ownerBookmarks.data && ownerBookmarks.data.data.length === 0 ? (
+        <ProfileEmptyState
+          icon={BookmarkIcon}
+          title="هنوز مطلبی ذخیره نکرده‌اید"
+          description="مطالبی که برای خواندن دوباره ذخیره می‌کنید، اینجا قرار می‌گیرند."
+        />
+      ) : null}
+      {ownerBookmarks.data && ownerBookmarks.data.data.length > 0 ? (
+        <>
+          <OwnerBookmarkList bookmarks={ownerBookmarks.data.data} />
+          <ProfilePagination meta={ownerBookmarks.data.meta} query={query} />
+        </>
+      ) : null}
+    </div>
+  );
+}
+
+function SimpleProfileToolbar({ total, label }: { total: number; label: string }) {
+  return (
+    <div className="flex min-h-10 items-center justify-between rounded-full border border-border px-4 py-1">
+      <p className="text-[13px] font-semibold text-muted-foreground">{label}</p>
+      {total > 0 ? (
+        <p className="text-sm text-foreground">
+          {formatPersianNumber(total)} {label}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
 function OwnerEntryToolbar({ query, total }: { query: ProfileQuery; total: number }) {
   return (
     <div className=" ">
@@ -304,6 +407,121 @@ function OwnerEntryToolbar({ query, total }: { query: ProfileQuery; total: numbe
         {total > 0 && <p className="text-sm text-foreground">{formatPersianNumber(total)} مطلب</p>}
       </div>
     </div>
+  );
+}
+
+function OwnerReviewList({ reviews }: { reviews: ProfileReview[] }) {
+  return (
+    <motion.ul layout className="space-y-3">
+      {reviews.map((review) => (
+        <motion.li
+          key={review.id}
+          layout
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -6 }}
+          transition={{ duration: 0.18, ease: "easeOut" }}
+        >
+          <OwnerReviewRow review={review} />
+        </motion.li>
+      ))}
+    </motion.ul>
+  );
+}
+
+function OwnerReviewRow({ review }: { review: ProfileReview }) {
+  const reviewStatusMeta = PUBLIC_REVIEW_STATUS_META[review.status];
+
+  return (
+    <article className="group rounded-xl p-4 transition-all duration-200 hover:border-primary/25 hover:shadow-[0_14px_34px_rgba(31,41,55,0.07)]">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="min-w-0 flex-1 space-y-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge
+              variant="outline"
+              className={cn("rounded-full px-3 py-1", reviewStatusMeta.className)}
+            >
+              {reviewStatusMeta.label}
+            </Badge>
+            <span className="text-[13px] text-muted-foreground">
+              {formatPersianDate(review.updatedAt)}
+            </span>
+          </div>
+          <p className="line-clamp-3 text-[15px] leading-8 text-foreground">{review.body}</p>
+          <Link
+            href={`/entries/${encodeURIComponent(review.entry.slug)}`}
+            className="line-clamp-1 text-[14px] font-semibold text-primary transition-colors hover:text-primary-hover"
+          >
+            {review.entry.title}
+          </Link>
+        </div>
+        {review.entry.status === "PUBLISHED" ? (
+          <Link
+            href={`/entries/${encodeURIComponent(review.entry.slug)}`}
+            className={cn(buttonVariants({ variant: "outline", size: "sm" }), "rounded-full")}
+          >
+            <EyeIcon className="size-4" aria-hidden="true" />
+            نمایش مطلب
+          </Link>
+        ) : null}
+      </div>
+    </article>
+  );
+}
+
+function OwnerBookmarkList({ bookmarks }: { bookmarks: ProfileBookmark[] }) {
+  return (
+    <motion.ul layout className="space-y-3">
+      {bookmarks.map((bookmark) => (
+        <motion.li
+          key={bookmark.id}
+          layout
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -6 }}
+          transition={{ duration: 0.18, ease: "easeOut" }}
+        >
+          <OwnerBookmarkRow bookmark={bookmark} />
+        </motion.li>
+      ))}
+    </motion.ul>
+  );
+}
+
+function OwnerBookmarkRow({ bookmark }: { bookmark: ProfileBookmark }) {
+  return (
+    <article className="group rounded-xl p-4 transition-all duration-200 hover:border-primary/25 hover:shadow-[0_14px_34px_rgba(31,41,55,0.07)]">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="min-w-0 flex-1 space-y-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge
+              variant="outline"
+              className="rounded-full border-primary/25 bg-primary-light px-3 py-1 text-primary"
+            >
+              ذخیره‌شده
+            </Badge>
+            <span className="text-[13px] text-muted-foreground">
+              {formatPersianDate(bookmark.createdAt)}
+            </span>
+          </div>
+          <div>
+            <h2 className="line-clamp-2 text-[20px] font-bold leading-8 text-foreground">
+              {bookmark.entry.title}
+            </h2>
+            <p className="mt-2 line-clamp-2 text-[14px] leading-7 text-muted-foreground">
+              {bookmark.entry.summary}
+            </p>
+          </div>
+        </div>
+        <Link
+          href={`/entries/${encodeURIComponent(bookmark.entry.slug)}`}
+          className={cn(buttonVariants({ variant: "outline", size: "sm" }), "rounded-full")}
+        >
+          <EyeIcon className="size-4" aria-hidden="true" />
+          نمایش مطلب
+        </Link>
+      </div>
+    </article>
   );
 }
 
@@ -503,6 +721,32 @@ function OwnerEntryListSkeleton() {
   );
 }
 
+function OwnerFeedbackListSkeleton() {
+  return (
+    <div className="space-y-3">
+      {ownerFeedbackSkeletonKeys.map((key) => (
+        <div
+          key={`profile-feedback-skeleton-${key}`}
+          className="rounded-2xl border border-border bg-card p-4"
+        >
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div className="flex-1 space-y-3">
+              <div className="flex gap-2">
+                <Skeleton className="h-6 w-20 rounded-full" />
+                <Skeleton className="h-6 w-24 rounded-full" />
+              </div>
+              <Skeleton className="h-7 w-2/3" />
+              <Skeleton className="h-5 w-full" />
+              <Skeleton className="h-5 w-1/2" />
+            </div>
+            <Skeleton className="h-8 w-28 rounded-full" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function OwnerEntriesEmptyState({ query }: { query: ProfileQuery }) {
   const hasStatusFilter = Boolean(query.status);
 
@@ -535,7 +779,7 @@ function OwnerEntriesEmptyState({ query }: { query: ProfileQuery }) {
   );
 }
 
-function DeferredProfileTab({
+function ProfileEmptyState({
   icon: Icon,
   title,
   description,
@@ -545,7 +789,7 @@ function DeferredProfileTab({
   description: string;
 }) {
   return (
-    <div className="rounded-[24px] border border-border bg-card px-5 py-14 text-center shadow-[0_2px_10px_rgba(0,0,0,.035)]">
+    <div className="rounded-[24px] border border-dashed border-border bg-card px-5 py-12 text-center">
       <Icon className="mx-auto size-11 text-primary" aria-hidden="true" />
       <h2 className="mt-4 text-[20px] font-bold text-foreground">{title}</h2>
       <p className="mx-auto mt-3 max-w-lg text-[14px] leading-7 text-muted-foreground">
@@ -555,11 +799,17 @@ function DeferredProfileTab({
   );
 }
 
-function ProfileErrorState({ onRetry }: { onRetry: () => void }) {
+function ProfileErrorState({
+  title = "مطالب بارگذاری نشد",
+  onRetry,
+}: {
+  title?: string;
+  onRetry: () => void;
+}) {
   return (
     <div className="rounded-[24px] border border-destructive/20 bg-card px-5 py-10 text-center">
       <ArrowPathIcon className="mx-auto size-10 text-destructive" aria-hidden="true" />
-      <h2 className="mt-4 text-[20px] font-bold text-foreground">مطالب بارگذاری نشد</h2>
+      <h2 className="mt-4 text-[20px] font-bold text-foreground">{title}</h2>
       <p className="mx-auto mt-3 max-w-md text-[14px] leading-7 text-muted-foreground">
         فعلاً بخشی از مطالب در دسترس نیست. کمی بعد دوباره تلاش کنید.
       </p>
@@ -617,6 +867,24 @@ function DeleteDraftDialog({
 
 function isVerifiedEmailError(error: unknown) {
   return isApiError(error) && error.code === "AUTH_EMAIL_VERIFICATION_REQUIRED";
+}
+
+function createProfileFallback(user: SafeUser): ProfileOwner {
+  return {
+    id: user.id,
+    email: user.email,
+    role: user.role,
+    status: user.status === "SUSPENDED" ? "SUSPENDED" : "ACTIVE",
+    displayName: user.displayName,
+    profileImageUrl: null,
+    biography: null,
+    province: null,
+    culturalInterests: [],
+    emailVerified: user.emailVerified,
+    emailVerifiedAt: null,
+    createdAt: "",
+    updatedAt: "",
+  };
 }
 
 export { OwnerProfilePage };
