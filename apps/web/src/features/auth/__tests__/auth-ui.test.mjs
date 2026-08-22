@@ -164,9 +164,20 @@ const adminUserRecords = read("src/features/admin/components/admin-user-records.
 const adminUserActions = read("src/features/admin/components/admin-user-action-dialogs.tsx");
 const adminUserErrors = read("src/features/admin/utils/admin-user-errors.ts");
 const adminUsersUrl = read("src/features/admin/utils/admin-users-url.ts");
+const adminEntriesRoute = read("src/app/(admin)/admin/entries/page.tsx");
+const adminEntryDetailRoute = read("src/app/(admin)/admin/entries/[id]/page.tsx");
+const adminEntriesApi = read("src/features/admin/api/admin-entries-api.ts");
+const adminEntriesHooks = read("src/features/admin/hooks/use-admin-entries.ts");
+const adminEntriesPage = read("src/features/admin/components/admin-entries-page.tsx");
+const adminEntriesTable = read("src/features/admin/components/admin-entries-table.tsx");
+const adminEntriesToolbar = read("src/features/admin/components/admin-entries-toolbar.tsx");
+const adminEntryDetailPage = read("src/features/admin/components/admin-entry-detail-page.tsx");
+const adminEntryLifecycleDialog = read(
+  "src/features/admin/components/admin-entry-lifecycle-dialog.tsx",
+);
+const adminEntriesUrl = read("src/features/admin/utils/admin-entries-url.ts");
 const shadcnSidebar = read("src/components/ui/sidebar.tsx");
 const adminPageRoutes = [
-  "src/app/(admin)/admin/entries/page.tsx",
   "src/app/(admin)/admin/topics/page.tsx",
   "src/app/(admin)/admin/content-types/page.tsx",
   "src/app/(admin)/admin/tags/page.tsx",
@@ -1133,10 +1144,46 @@ test("admin account security actions require confirmation and server success", (
   assert.match(adminUserErrors, /ADMIN_USER_SELF_ACTION_FORBIDDEN/);
 });
 
+test("admin entries use real global list/detail and lifecycle contracts", () => {
+  assert.match(adminEntriesRoute, /AdminEntriesPage/);
+  assert.match(adminEntryDetailRoute, /AdminEntryDetailPage/);
+  assert.match(adminEntriesApi, /\/admin\/entries/);
+  assert.match(adminEntriesApi, /\/archive/);
+  assert.match(adminEntriesApi, /\/restore/);
+  assert.match(adminEntriesApi, /listAdminTaxonomy\("provinces"/);
+  assert.match(adminEntriesHooks, /placeholderData: keepPreviousData/);
+  assert.match(adminEntriesHooks, /adminOverviewQueryKeys/);
+  assert.match(adminEntriesHooks, /\["public-entries"\]/);
+});
+
+test("admin entry list keeps URL filters, animated grid rows, and focused actions", () => {
+  assert.match(adminEntriesPage, /useSearchParams/);
+  assert.match(adminEntriesPage, /scroll: false/);
+  assert.match(adminEntriesToolbar, /جست‌وجو در عنوان، نویسنده یا نشانی مطلب/);
+  assert.match(adminEntriesToolbar, /محدوده جغرافیایی/);
+  assert.match(adminEntriesTable, /tableFeatures/);
+  assert.match(adminEntriesTable, /useTable/);
+  assert.match(adminEntriesTable, /layout="position"/);
+  assert.match(adminEntriesTable, /useReducedMotion/);
+  assert.match(adminEntriesUrl, /parseAdminEntriesQuery/);
+  assert.match(adminEntriesUrl, /createAdminEntriesHref/);
+});
+
+test("admin entry detail exposes inspection panels and confirmed archive restore actions", () => {
+  assert.match(adminEntryDetailPage, /TiptapDocument/);
+  assert.match(adminEntryDetailPage, /مشخصات مطلب/);
+  assert.match(adminEntryDetailPage, /تاریخچه بررسی/);
+  assert.match(adminEntryDetailPage, /moderator\/submissions/);
+  assert.match(adminEntryDetailPage, /encodeURIComponent\(entry\.slug\)/);
+  assert.match(adminEntryLifecycleDialog, /AlertDialog/);
+  assert.match(adminEntryLifecycleDialog, /دلیل تصمیم/);
+  assert.match(adminEntryLifecycleDialog, /reason\.trim\(\)\.length < 3/);
+});
+
 test("remaining admin destinations are deliberately minimal placeholders", () => {
   assert.match(adminPlaceholder, /این بخش در مرحله بعد پیاده‌سازی می‌شود/);
   assert.doesNotMatch(adminPlaceholder, /chart|table|statistics/i);
-  assert.equal(adminPageRoutes.length, 9);
+  assert.equal(adminPageRoutes.length, 8);
   for (const route of adminPageRoutes) {
     assert.match(route, /AdminPlaceholderPage/);
     assert.match(route, /createAdminMetadata/);

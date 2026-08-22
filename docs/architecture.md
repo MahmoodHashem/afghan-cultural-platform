@@ -479,6 +479,8 @@ Owns:
 
 Coordinates administrator operations but must not duplicate logic owned by users, entries, moderation, or taxonomy modules.
 
+The Admin Entries boundary provides global, read-only inspection across every Cultural Entry status. Its only direct lifecycle operations in v1 are audited `PUBLISHED → ARCHIVED` and `ARCHIVED → PUBLISHED` transitions. These operations preserve the published slug, publication timestamp, content versions, and entry relations; they do not edit content or bypass the normal moderation workflow.
+
 ---
 
 ## 10. Main Module Dependencies

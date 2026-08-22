@@ -225,6 +225,7 @@ This is the review-status equivalent needed for v1 because users may delete thei
 - `ENTRY_REJECTED`
 - `ENTRY_CHANGES_REQUESTED`
 - `ENTRY_HIDDEN`
+- `ENTRY_ARCHIVED`
 - `ENTRY_RESTORED`
 - `CORRECTION_ACCEPTED`
 - `REPORT_RESOLVED`

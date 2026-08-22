@@ -1066,6 +1066,8 @@ Private information such as email addresses shall not be publicly displayed.
 
 **FR-ADM-10:** The administrator shall be able to archive and restore content.
 
+Archiving is allowed only for published content and restoration returns only previously published archived content to `PUBLISHED`. Both actions require a reason, create moderation and audit history, and preserve the original publication timestamp and content versions.
+
 **FR-ADM-11:** The administrator shall be able to manage featured content.
 
 **FR-ADM-12:** The administrator shall be able to manage report reasons.
