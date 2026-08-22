@@ -59,6 +59,15 @@ const describedTaxonomySelect = {
   description: true,
 } as const;
 
+const adminCategorySelect = {
+  ...describedTaxonomySelect,
+  _count: {
+    select: {
+      entries: true,
+    },
+  },
+} as const;
+
 const districtSelect = {
   ...taxonomySelect,
   provinceId: true,
@@ -233,7 +242,27 @@ class TaxonomyService {
   }
 
   async listAdminCategories(query: AdminTaxonomyQueryDto) {
-    return this.listDescribedTaxonomies("category", query);
+    const normalizedQuery = this.normalizeQuery(query);
+    const where: Prisma.CategoryWhereInput = {
+      ...(query.isActive === undefined ? {} : { isActive: query.isActive }),
+      ...this.searchWhere(query.search),
+    };
+    const [items, total] = await this.prisma.$transaction([
+      this.prisma.category.findMany({
+        where,
+        select: adminCategorySelect,
+        orderBy: this.categoryOrderBy(normalizedQuery),
+        skip: this.skip(normalizedQuery),
+        take: normalizedQuery.limit,
+      }),
+      this.prisma.category.count({ where }),
+    ]);
+
+    return this.listResponse(
+      items.map(({ _count, ...item }) => ({ ...item, entryCount: _count.entries })),
+      total,
+      normalizedQuery,
+    );
   }
 
   async createCategory(input: CreateDescribedTaxonomyDto) {
@@ -843,7 +872,7 @@ class TaxonomyService {
   }
 
   private searchWhere(search: string | undefined) {
-    const normalizedSearch = search?.trim();
+    const normalizedSearch = search ? normalizeTaxonomyName(search) : undefined;
 
     if (!normalizedSearch) {
       return {};

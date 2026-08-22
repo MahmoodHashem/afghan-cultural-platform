@@ -43,6 +43,7 @@ import {
   TaxonomyQueryDto,
 } from "@/modules/taxonomy/dto/taxonomy-query.dto";
 import {
+  AdminCategoryListResponseDto,
   type DescribedTaxonomyItemDto,
   type DistrictItemDto,
   type TagItemDto,
@@ -214,7 +215,7 @@ class TaxonomyController {
   @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: "Admin list categories" })
-  @ApiOkResponse({ type: TaxonomyListResponseDto<DescribedTaxonomyItemDto> })
+  @ApiOkResponse({ type: AdminCategoryListResponseDto })
   listAdminCategories(@Query() query: AdminTaxonomyQueryDto) {
     return this.taxonomyService.listAdminCategories(query);
   }

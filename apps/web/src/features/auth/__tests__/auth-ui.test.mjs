@@ -176,9 +176,17 @@ const adminEntryLifecycleDialog = read(
   "src/features/admin/components/admin-entry-lifecycle-dialog.tsx",
 );
 const adminEntriesUrl = read("src/features/admin/utils/admin-entries-url.ts");
+const adminTopicsRoute = read("src/app/(admin)/admin/topics/page.tsx");
+const adminTopicsApi = read("src/features/admin/api/admin-topics-api.ts");
+const adminTopicsHooks = read("src/features/admin/hooks/use-admin-topics.ts");
+const adminTopicsPage = read("src/features/admin/components/admin-topics-page.tsx");
+const adminTopicsTable = read("src/features/admin/components/admin-topics-table.tsx");
+const adminTopicsToolbar = read("src/features/admin/components/admin-topics-toolbar.tsx");
+const adminTopicForm = read("src/features/admin/components/admin-topic-form-sheet.tsx");
+const adminTopicStatus = read("src/features/admin/components/admin-topic-status-dialog.tsx");
+const adminTopicsUrl = read("src/features/admin/utils/admin-topics-url.ts");
 const shadcnSidebar = read("src/components/ui/sidebar.tsx");
 const adminPageRoutes = [
-  "src/app/(admin)/admin/topics/page.tsx",
   "src/app/(admin)/admin/content-types/page.tsx",
   "src/app/(admin)/admin/tags/page.tsx",
   "src/app/(admin)/admin/provinces/page.tsx",
@@ -1180,10 +1188,37 @@ test("admin entry detail exposes inspection panels and confirmed archive restore
   assert.match(adminEntryLifecycleDialog, /reason\.trim\(\)\.length < 3/);
 });
 
+test("admin topics use the guarded taxonomy management contracts", () => {
+  assert.match(adminTopicsRoute, /AdminTopicsView/);
+  assert.match(adminTopicsApi, /\/taxonomy\/admin\/categories/);
+  assert.match(adminTopicsApi, /\/reorder/);
+  assert.match(adminTopicsApi, /\/active/);
+  assert.match(adminTopicsHooks, /useMutation/);
+  assert.match(adminTopicsHooks, /placeholderData: keepPreviousData/);
+  assert.match(adminTopicsHooks, /adminEntriesQueryKeys\.taxonomy/);
+  assert.doesNotMatch(adminTopicsHooks, /onMutate/);
+});
+
+test("admin topics provide URL filters, animated ordering, and accessible management surfaces", () => {
+  assert.match(adminTopicsPage, /useSearchParams/);
+  assert.match(adminTopicsPage, /scroll: false/);
+  assert.match(adminTopicsPage, /تغییر ترتیب/);
+  assert.match(adminTopicsToolbar, /جست‌وجو با نام یا نشانی/);
+  assert.match(adminTopicsTable, /tableFeatures/);
+  assert.match(adminTopicsTable, /layout="position"/);
+  assert.match(adminTopicsTable, /useReducedMotion/);
+  assert.match(adminTopicForm, /useForm/);
+  assert.match(adminTopicForm, /zodResolver/);
+  assert.match(adminTopicForm, /SheetContent side="right"/);
+  assert.match(adminTopicStatus, /مطالب قبلی حذف نخواهند شد/);
+  assert.match(adminTopicsUrl, /parseAdminTopicsQuery/);
+  assert.match(adminTopicsUrl, /createAdminTopicsHref/);
+});
+
 test("remaining admin destinations are deliberately minimal placeholders", () => {
   assert.match(adminPlaceholder, /این بخش در مرحله بعد پیاده‌سازی می‌شود/);
   assert.doesNotMatch(adminPlaceholder, /chart|table|statistics/i);
-  assert.equal(adminPageRoutes.length, 8);
+  assert.equal(adminPageRoutes.length, 7);
   for (const route of adminPageRoutes) {
     assert.match(route, /AdminPlaceholderPage/);
     assert.match(route, /createAdminMetadata/);

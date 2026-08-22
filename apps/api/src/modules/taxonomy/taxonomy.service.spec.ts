@@ -200,6 +200,25 @@ describe("TaxonomyService", () => {
     expect(prisma.category).not.toHaveProperty("delete");
   });
 
+  it("returns entry usage counts only in the admin category listing", async () => {
+    prisma.category.findMany.mockResolvedValue([
+      { ...taxonomyItem, description: "بناها و مکان‌های تاریخی", _count: { entries: 4 } },
+    ]);
+    prisma.category.count.mockResolvedValue(1);
+
+    const response = await service.listAdminCategories({ page: 1, limit: 20 });
+
+    expect(prisma.category.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        select: expect.objectContaining({
+          _count: { select: { entries: true } },
+        }),
+      }),
+    );
+    expect(response.data[0]).toMatchObject({ entryCount: 4 });
+    expect(response.data[0]).not.toHaveProperty("_count");
+  });
+
   it("rejects duplicate reorder items", async () => {
     await expect(
       service.reorderCategories({
