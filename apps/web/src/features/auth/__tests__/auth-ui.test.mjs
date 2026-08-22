@@ -146,9 +146,14 @@ const adminSidebar = read("src/features/admin/components/admin-sidebar.tsx");
 const adminHeader = read("src/features/admin/components/admin-header.tsx");
 const adminRoutes = read("src/features/admin/utils/admin-routes.ts");
 const adminPlaceholder = read("src/features/admin/components/admin-placeholder-page.tsx");
+const adminOverviewRoute = read("src/app/(admin)/admin/page.tsx");
+const adminOverviewApi = read("src/features/admin/api/admin-overview-api.ts");
+const adminOverviewHook = read("src/features/admin/hooks/use-admin-overview.ts");
+const adminOverviewPage = read("src/features/admin/components/admin-overview-page.tsx");
+const adminOverviewChart = read("src/features/admin/components/admin-overview-growth-chart.tsx");
+const adminOverviewActivity = read("src/features/admin/components/admin-overview-activity.tsx");
 const shadcnSidebar = read("src/components/ui/sidebar.tsx");
 const adminPageRoutes = [
-  "src/app/(admin)/admin/page.tsx",
   "src/app/(admin)/admin/users/page.tsx",
   "src/app/(admin)/admin/entries/page.tsx",
   "src/app/(admin)/admin/topics/page.tsx",
@@ -1047,10 +1052,23 @@ test("admin header is reusable and keeps future controls nonfunctional", () => {
   assert.doesNotMatch(adminHeader, /apiRequest|useQuery|fetch\(/);
 });
 
-test("every admin destination is a deliberately minimal placeholder", () => {
+test("admin overview uses the real aggregate API with shadcn chart and table", () => {
+  assert.match(adminOverviewRoute, /AdminOverviewPage/);
+  assert.match(adminOverviewApi, /"\/admin\/overview"/);
+  assert.match(adminOverviewHook, /useQuery/);
+  assert.match(adminOverviewHook, /staleTime: 60_000/);
+  assert.match(adminOverviewPage, /AdminOverviewStatsGrid/);
+  assert.match(adminOverviewPage, /AdminOverviewAttention/);
+  assert.match(adminOverviewChart, /ChartContainer/);
+  assert.match(adminOverviewChart, /AreaChart/);
+  assert.match(adminOverviewActivity, /TableHeader/);
+  assert.match(adminOverviewActivity, /TableBody/);
+});
+
+test("remaining admin destinations are deliberately minimal placeholders", () => {
   assert.match(adminPlaceholder, /این بخش در مرحله بعد پیاده‌سازی می‌شود/);
   assert.doesNotMatch(adminPlaceholder, /chart|table|statistics/i);
-  assert.equal(adminPageRoutes.length, 11);
+  assert.equal(adminPageRoutes.length, 10);
   for (const route of adminPageRoutes) {
     assert.match(route, /AdminPlaceholderPage/);
     assert.match(route, /createAdminMetadata/);

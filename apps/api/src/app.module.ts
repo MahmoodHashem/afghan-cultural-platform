@@ -7,6 +7,7 @@ import { RequestIdMiddleware } from "@/common/middleware/request-id.middleware";
 import { envValidationSchema } from "@/config/env.validation";
 import { PrismaModule } from "@/database/prisma.module";
 import { HealthModule } from "@/health/health.module";
+import { AdminModule } from "@/modules/admin/admin.module";
 import { AuthModule } from "@/modules/auth/auth.module";
 import { JwtAuthGuard } from "@/modules/auth/guards/jwt-auth.guard";
 import { RolesGuard } from "@/modules/auth/guards/roles.guard";
@@ -34,6 +35,7 @@ import { TaxonomyModule } from "@/modules/taxonomy/taxonomy.module";
     ]),
     PrismaModule,
     HealthModule,
+    AdminModule,
     AuthModule,
     CommunityModule,
     EntriesModule,
