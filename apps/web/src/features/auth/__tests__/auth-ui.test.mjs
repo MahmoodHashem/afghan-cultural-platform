@@ -139,6 +139,27 @@ const moderatorNavigation = read("src/features/moderation/components/moderator-n
 const correctionRoute = read("src/app/(moderator)/moderator/corrections/page.tsx");
 const reportsRoute = read("src/app/(moderator)/moderator/reports/page.tsx");
 const historyRoute = read("src/app/(moderator)/moderator/history/page.tsx");
+const adminLayout = read("src/app/(admin)/admin/layout.tsx");
+const adminNavigationConfig = read("src/features/admin/constants/admin-navigation.ts");
+const adminNavigation = read("src/features/admin/components/admin-navigation.tsx");
+const adminSidebar = read("src/features/admin/components/admin-sidebar.tsx");
+const adminHeader = read("src/features/admin/components/admin-header.tsx");
+const adminRoutes = read("src/features/admin/utils/admin-routes.ts");
+const adminPlaceholder = read("src/features/admin/components/admin-placeholder-page.tsx");
+const shadcnSidebar = read("src/components/ui/sidebar.tsx");
+const adminPageRoutes = [
+  "src/app/(admin)/admin/page.tsx",
+  "src/app/(admin)/admin/users/page.tsx",
+  "src/app/(admin)/admin/entries/page.tsx",
+  "src/app/(admin)/admin/topics/page.tsx",
+  "src/app/(admin)/admin/content-types/page.tsx",
+  "src/app/(admin)/admin/tags/page.tsx",
+  "src/app/(admin)/admin/provinces/page.tsx",
+  "src/app/(admin)/admin/moderators/page.tsx",
+  "src/app/(admin)/admin/reports/page.tsx",
+  "src/app/(admin)/admin/audit/page.tsx",
+  "src/app/(admin)/admin/settings/page.tsx",
+].map(read);
 
 test("login page renders required fields and links", () => {
   assert.match(loginPage, /title="خوش آمدید"/);
@@ -955,4 +976,72 @@ test("content moderation invalidates focused query families", () => {
   assert.match(contentModerationHooks, /contentModerationKeys\.reports\(\)/);
   assert.match(contentModerationHooks, /\["entry-reviews"\]/);
   assert.doesNotMatch(contentModerationHooks, /queryClient\.clear\(\)/);
+});
+
+test("admin authorization and noindex policy live at the shared layout boundary", () => {
+  assert.match(adminLayout, /RequireAuth/);
+  assert.ok(adminLayout.includes('<RequireRole roles={["ADMIN"]}>'));
+  assert.match(adminLayout, /robots: \{ index: false, follow: false \}/);
+  assert.match(adminLayout, /SidebarProvider/);
+  assert.match(adminLayout, /AdminSidebar/);
+  assert.match(adminLayout, /AdminHeader/);
+  assert.doesNotMatch(adminLayout, /^"use client"/);
+});
+
+test("admin navigation is typed centralized and covers every approved destination", () => {
+  for (const href of [
+    "/admin",
+    "/admin/users",
+    "/admin/entries",
+    "/admin/topics",
+    "/admin/content-types",
+    "/admin/tags",
+    "/admin/provinces",
+    "/admin/moderators",
+    "/admin/reports",
+    "/admin/audit",
+    "/admin/settings",
+  ]) {
+    assert.ok(adminNavigationConfig.includes(`href: "${href}"`));
+  }
+  assert.match(adminNavigationConfig, /type AdminNavItem/);
+  assert.match(adminNavigationConfig, /type AdminNavGroup/);
+  assert.match(adminNavigation, /adminNavigation\.map/);
+});
+
+test("admin active-route matching supports nested pages and exact overview", () => {
+  assert.match(adminRoutes, /targetPath === "\/admin"/);
+  assert.match(adminRoutes, /currentPath === targetPath \|\| currentPath\.startsWith/);
+  assert.match(adminNavigation, /isAdminRouteActive\(pathname, item\.href\)/);
+  assert.match(adminNavigation, /aria-current=\{isActive \? "page" : undefined\}/);
+});
+
+test("admin sidebar uses shadcn right-side icon collapse and mobile behavior", () => {
+  assert.match(adminSidebar, /side="right"/);
+  assert.match(adminSidebar, /dir="rtl"/);
+  assert.match(adminSidebar, /collapsible="icon"/);
+  assert.match(adminSidebar, /SidebarRail/);
+  assert.match(adminNavigation, /setOpenMobile\(false\)/);
+  assert.match(shadcnSidebar, /isMobile/);
+  assert.match(shadcnSidebar, /SheetContent/);
+  assert.match(shadcnSidebar, /TooltipContent/);
+});
+
+test("admin header is reusable and keeps future controls nonfunctional", () => {
+  assert.match(adminHeader, /getAdminRouteMeta\(pathname\)/);
+  assert.match(adminHeader, /SidebarTrigger/);
+  assert.match(adminHeader, /readOnly/);
+  assert.match(adminHeader, /useAuthStore/);
+  assert.match(adminHeader, /AvatarFallback/);
+  assert.doesNotMatch(adminHeader, /apiRequest|useQuery|fetch\(/);
+});
+
+test("every admin destination is a deliberately minimal placeholder", () => {
+  assert.match(adminPlaceholder, /این بخش در مرحله بعد پیاده‌سازی می‌شود/);
+  assert.doesNotMatch(adminPlaceholder, /chart|table|statistics/i);
+  assert.equal(adminPageRoutes.length, 11);
+  for (const route of adminPageRoutes) {
+    assert.match(route, /AdminPlaceholderPage/);
+    assert.match(route, /createAdminMetadata/);
+  }
 });
