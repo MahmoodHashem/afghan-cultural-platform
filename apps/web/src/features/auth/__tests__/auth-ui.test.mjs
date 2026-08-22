@@ -124,6 +124,21 @@ const moderationDecisionDialog = read(
 const moderationMapper = read("src/features/moderation/mappers/moderation-mapper.ts");
 const moderationErrors = read("src/features/moderation/utils/moderation-errors.ts");
 const moderationQuery = read("src/features/moderation/utils/moderation-query.ts");
+const contentModerationApi = read("src/features/moderation/api/content-moderation-api.ts");
+const contentModerationHooks = read("src/features/moderation/hooks/use-content-moderation.ts");
+const contentModerationQueues = read(
+  "src/features/moderation/components/content-moderation-queues.tsx",
+);
+const contentModerationDetails = read(
+  "src/features/moderation/components/content-moderation-details.tsx",
+);
+const communityModerationActions = read(
+  "src/features/moderation/components/community-moderation-actions.tsx",
+);
+const moderatorNavigation = read("src/features/moderation/components/moderator-navigation.tsx");
+const correctionRoute = read("src/app/(moderator)/moderator/corrections/page.tsx");
+const reportsRoute = read("src/app/(moderator)/moderator/reports/page.tsx");
+const historyRoute = read("src/app/(moderator)/moderator/history/page.tsx");
 
 test("login page renders required fields and links", () => {
   assert.match(loginPage, /title="خوش آمدید"/);
@@ -888,4 +903,56 @@ test("requested changes return to the same editor and can be resubmitted", () =>
   assert.match(ownerProfilePage, /href=\{`\/entries\/\$\{entry\.id\}\/edit`\}/);
   assert.match(createEntryForm, /submitEntryForReview\(savedDraft\.id\)/);
   assert.match(createEntryForm, /status=PENDING_REVIEW/);
+});
+
+test("remaining moderator routes use the existing role and verification gates", () => {
+  for (const route of [correctionRoute, reportsRoute, historyRoute]) {
+    assert.match(route, /RequireAuth/);
+    assert.ok(route.includes('<RequireRole roles={["MODERATOR", "ADMIN"]}>'));
+    assert.match(route, /RequireVerifiedEmail/);
+    assert.match(route, /index: false/);
+  }
+  assert.match(moderatorNavigation, /پیشنهادهای اصلاح/);
+  assert.match(moderatorNavigation, /گزارش‌ها/);
+  assert.match(moderatorNavigation, /تاریخچه بررسی/);
+});
+
+test("correction and report APIs use confirmed backend contracts", () => {
+  assert.match(contentModerationApi, /\/entries\/\$\{entryId\}\/corrections/);
+  assert.match(contentModerationApi, /\/entries\/\$\{entryId\}\/reports/);
+  assert.match(contentModerationApi, /reviews\/\$\{reviewId\}\/reports/);
+  assert.match(contentModerationApi, /\/moderation\/corrections/);
+  assert.match(contentModerationApi, /\/moderation\/reports/);
+  assert.match(contentModerationApi, /\/moderation\/history/);
+});
+
+test("moderator correction review presents original and proposed content", () => {
+  assert.match(contentModerationDetails, /متن فعلی/);
+  assert.match(contentModerationDetails, /پیشنهاد کاربر/);
+  assert.match(contentModerationDetails, /await mutation\.mutateAsync/);
+  assert.match(contentModerationDetails, /disabled=\{mutation\.isPending/);
+  assert.match(contentModerationQueues, /CorrectionQueue/);
+});
+
+test("reports share one queue and only expose supported resolution actions", () => {
+  assert.match(contentModerationQueues, /ENTRY/);
+  assert.match(contentModerationQueues, /REVIEW/);
+  assert.match(contentModerationDetails, /"DISMISS", "HIDE_REVIEW"/);
+  assert.match(contentModerationDetails, /"DISMISS", "HIDE_CONTENT", "ARCHIVE_CONTENT"/);
+  assert.doesNotMatch(contentModerationDetails, /ESCALATE_TO_ADMIN|REMOVE_IMAGE|REMOVE_YOUTUBE/);
+});
+
+test("community moderation actions preserve failures and require verified access", () => {
+  assert.match(communityModerationActions, /ensureVerifiedAccess\(action\)/);
+  assert.match(communityModerationActions, /useSubmitCorrection/);
+  assert.match(communityModerationActions, /useSubmitReport/);
+  assert.match(communityModerationActions, /values stay intact|Keep the explanation/);
+  assert.match(engagementReviews, /ReviewReportButton/);
+});
+
+test("content moderation invalidates focused query families", () => {
+  assert.match(contentModerationHooks, /contentModerationKeys\.corrections\(\)/);
+  assert.match(contentModerationHooks, /contentModerationKeys\.reports\(\)/);
+  assert.match(contentModerationHooks, /\["entry-reviews"\]/);
+  assert.doesNotMatch(contentModerationHooks, /queryClient\.clear\(\)/);
 });

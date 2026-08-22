@@ -11,6 +11,7 @@ import { EntryReviews } from "@/features/engagement/components/entry-reviews";
 import { EntryActionRail } from "@/features/entries/components/entry-action-rail";
 import { EntryDetailHeaderContext } from "@/features/entries/components/entry-detail-header-context";
 import { EntryTableOfContents } from "@/features/entries/components/entry-table-of-contents";
+import { CommunityModerationActions } from "@/features/moderation/components/community-moderation-actions";
 import { formatPersianDate } from "@/lib/utils/formatters";
 import type { PublicEntryDetail, PublicReview } from "../types/public-entry";
 import { getEntryLocationLabel } from "../utils/geography";
@@ -97,6 +98,7 @@ function EntryDetailContent({
             {entry.images.length > 1 ? <ImageGallery images={entry.images.slice(1)} /> : null}
             {entry.youtubeVideo ? <YouTubeEmbed entry={entry} /> : null}
             {entry.sources.length > 0 ? <SourcesList entry={entry} /> : null}
+            <CommunityModerationActions entryId={entry.id} />
             <EntryReviews entryId={entry.id} initialReviews={reviews} />
           </div>
 

@@ -7,12 +7,14 @@ import { toast } from "sonner";
 import { createLoginPath } from "@/features/auth/utils/redirects";
 import { useAuthStore } from "@/stores/auth-store";
 
-type EngagementAction = "like" | "bookmark" | "review";
+type EngagementAction = "like" | "bookmark" | "review" | "report" | "correction";
 
 const verificationMessages: Record<EngagementAction, string> = {
   like: "برای پسندیدن مطلب باید ایمیل خود را تأیید کنید.",
   bookmark: "برای ذخیره‌کردن مطلب باید ایمیل خود را تأیید کنید.",
   review: "برای نوشتن دیدگاه باید ایمیل خود را تأیید کنید.",
+  report: "برای فرستادن گزارش باید ایمیل خود را تأیید کنید.",
+  correction: "برای پیشنهاد اصلاح باید ایمیل خود را تأیید کنید.",
 };
 
 function useEngagementAccess() {

@@ -31,6 +31,7 @@ import {
   entryReviewSchema,
 } from "@/features/engagement/schemas/entry-review-schema";
 import type { PublicReview } from "@/features/entries/types/public-entry";
+import { ReviewReportButton } from "@/features/moderation/components/community-moderation-actions";
 import { isApiError } from "@/lib/api/api-error";
 import { formatPersianDate, formatPersianNumber } from "@/lib/utils/formatters";
 
@@ -152,7 +153,12 @@ function EntryReviews({ entryId, initialReviews }: EntryReviewsProps) {
       {!isReviewsLoading && reviews.length > 0 ? (
         <div className="space-y-3">
           {reviews.map((review) => (
-            <ReviewCard key={review.id} review={review} isOwner={review.author.id === user?.id} />
+            <ReviewCard
+              key={review.id}
+              entryId={entryId}
+              review={review}
+              isOwner={review.author.id === user?.id}
+            />
           ))}
         </div>
       ) : null}
@@ -272,7 +278,15 @@ function ReviewComposer({
   );
 }
 
-function ReviewCard({ review, isOwner }: { review: PublicReview; isOwner: boolean }) {
+function ReviewCard({
+  entryId,
+  review,
+  isOwner,
+}: {
+  entryId: string;
+  review: PublicReview;
+  isOwner: boolean;
+}) {
   return (
     <article className="rounded-2xl border border-border bg-card p-4">
       <div className="flex items-start justify-between gap-4">
@@ -287,6 +301,11 @@ function ReviewCard({ review, isOwner }: { review: PublicReview; isOwner: boolea
       <p className="mt-3 whitespace-pre-wrap text-[15px] leading-8 text-muted-foreground">
         {review.body}
       </p>
+      {!isOwner ? (
+        <div className="mt-2 flex justify-end">
+          <ReviewReportButton entryId={entryId} reviewId={review.id} />
+        </div>
+      ) : null}
     </article>
   );
 }

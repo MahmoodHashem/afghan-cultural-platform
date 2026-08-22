@@ -105,6 +105,7 @@ enum ReportReason {
 enum ReportResolutionAction {
   DISMISS
   HIDE_CONTENT
+  HIDE_REVIEW
   REQUEST_CORRECTIONS
   REMOVE_IMAGE
   REMOVE_YOUTUBE_VIDEO
@@ -143,8 +144,12 @@ enum AuditAction {
   ENTRY_CHANGES_REQUESTED
   ENTRY_HIDDEN
   ENTRY_RESTORED
+  CORRECTION_SUBMITTED
   CORRECTION_ACCEPTED
+  CORRECTION_REJECTED
+  REPORT_SUBMITTED
   REPORT_RESOLVED
+  REVIEW_HIDDEN
   USER_ROLE_CHANGED
   USER_SUSPENDED
 
@@ -561,6 +566,7 @@ model PublicReview {
   entry    CulturalEntry @relation("EntryPublicReviews", fields: [entryId], references: [id], onDelete: Restrict)
   user     User          @relation("PublicReviewUser", fields: [userId], references: [id], onDelete: Restrict)
   hiddenBy User?         @relation("PublicReviewHiddenBy", fields: [hiddenById], references: [id], onDelete: SetNull)
+  reports  Report[]      @relation("PublicReviewReports")
 
   @@index([entryId])
   @@index([userId])
@@ -623,6 +629,7 @@ model CorrectionSuggestion {
 model Report {
   id               String                  @id @default(uuid()) @map("id") @db.Uuid
   entryId          String                  @map("entry_id") @db.Uuid
+  publicReviewId   String?                 @map("public_review_id") @db.Uuid
   reportedById     String                  @map("reported_by_id") @db.Uuid
   reviewedById     String?                 @map("reviewed_by_id") @db.Uuid
   reason           ReportReason            @map("reason")
@@ -634,12 +641,14 @@ model Report {
   createdAt        DateTime                @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt        DateTime                @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  entry      CulturalEntry @relation("EntryReports", fields: [entryId], references: [id], onDelete: Restrict)
-  reportedBy User          @relation("ReportSubmittedBy", fields: [reportedById], references: [id], onDelete: Restrict)
-  reviewedBy User?         @relation("ReportReviewedBy", fields: [reviewedById], references: [id], onDelete: SetNull)
-  auditLogs  AuditLog[]    @relation("AuditReport")
+  entry        CulturalEntry @relation("EntryReports", fields: [entryId], references: [id], onDelete: Restrict)
+  publicReview PublicReview? @relation("PublicReviewReports", fields: [publicReviewId], references: [id], onDelete: Restrict)
+  reportedBy   User          @relation("ReportSubmittedBy", fields: [reportedById], references: [id], onDelete: Restrict)
+  reviewedBy   User?         @relation("ReportReviewedBy", fields: [reviewedById], references: [id], onDelete: SetNull)
+  auditLogs    AuditLog[]    @relation("AuditReport")
 
   @@index([entryId])
+  @@index([publicReviewId])
   @@index([reportedById])
   @@index([reviewedById])
   @@index([status])
