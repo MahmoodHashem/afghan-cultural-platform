@@ -42,7 +42,7 @@ function AdminHeader() {
   const prefersReducedMotion = useReducedMotion();
 
   return (
-    <header className="sticky top-0 z-20 flex h-16 shrink-0 items-center border-b border-border bg-card/95 px-4 backdrop-blur-sm md:px-6">
+    <header className="sticky top-0 z-30 flex h-16 w-full shrink-0 items-center border-b border-border bg-card/95 px-4 backdrop-blur-sm md:px-6">
       <div className="flex min-w-0 flex-1 items-center gap-3">
         <SidebarTrigger className="size-9 rounded-lg border border-border md:border-transparent" />
         <Breadcrumb className="hidden min-w-0 sm:block">

@@ -17,17 +17,20 @@ function AdminLayout({ children }: Readonly<{ children: ReactNode }>) {
     <RequireAuth>
       <RequireRole roles={["ADMIN"]}>
         <TooltipProvider delay={350}>
-          <SidebarProvider dir="rtl" className="bg-background">
+          <SidebarProvider dir="rtl" className="h-dvh min-h-0 overflow-hidden bg-background">
             <a
               href="#admin-content"
-              className="fixed start-4 top-3 z-50 -translate-y-20 rounded-lg bg-primary px-4 py-2 text-primary-foreground transition-transform focus:translate-y-0"
+              className="fixed inset-s-4 top-3 z-50 -translate-y-20 rounded-lg bg-primary px-4 py-2 text-primary-foreground transition-transform focus:translate-y-0"
             >
               رفتن به محتوای اصلی
             </a>
             <AdminSidebar />
-            <SidebarInset className="min-h-0 min-w-0 overflow-hidden bg-background">
+            <SidebarInset className="h-dvh min-h-0 min-w-0 overflow-hidden bg-background">
               <AdminHeader />
-              <div id="admin-content" className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+              <div
+                id="admin-content"
+                className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain p-4 scrollbar-gutter-stable sm:p-6 lg:p-8"
+              >
                 {children}
               </div>
             </SidebarInset>
