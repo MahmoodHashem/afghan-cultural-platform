@@ -5,5 +5,9 @@ import { createAdminMetadata } from "@/features/admin/utils/admin-metadata";
 export const metadata = createAdminMetadata("نمای کلی");
 
 export default function AdminOverviewRoute() {
-  return <PageTransition><AdminOverviewPage /></PageTransition>;
+  return (
+    <PageTransition>
+      <AdminOverviewPage />
+    </PageTransition>
+  );
 }

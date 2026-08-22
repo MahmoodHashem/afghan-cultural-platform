@@ -5,5 +5,9 @@ import { createAdminMetadata } from "@/features/admin/utils/admin-metadata";
 export const metadata = createAdminMetadata("کاربران");
 
 export default function AdminUsersRoute() {
-  return <PageTransition><AdminUsersPage /></PageTransition>;
+  return (
+    <PageTransition>
+      <AdminUsersPage />
+    </PageTransition>
+  );
 }

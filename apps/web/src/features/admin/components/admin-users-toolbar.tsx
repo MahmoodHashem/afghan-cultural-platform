@@ -1,6 +1,7 @@
 "use client";
 
 import { FunnelIcon, MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { AdminUsersQuery } from "@/features/admin/types/admin-users";
+import { cn } from "@/lib/utils";
 import { formatPersianNumber } from "@/lib/utils/formatters";
 
 const ALL_VALUE = "ALL";
@@ -57,6 +59,7 @@ function AdminUsersToolbar({
   onClear: () => void;
 }) {
   const [search, setSearch] = useState(query.search ?? "");
+  const prefersReducedMotion = useReducedMotion();
   const hasFilters = Boolean(
     query.search ||
       query.role ||
@@ -64,6 +67,7 @@ function AdminUsersToolbar({
       query.authMethod ||
       query.emailVerified !== undefined,
   );
+  const activeFilters = getActiveFilters(query);
 
   useEffect(() => setSearch(query.search ?? ""), [query.search]);
 
@@ -104,15 +108,49 @@ function AdminUsersToolbar({
         </search>
 
         <div className="flex items-center justify-between gap-3 xl:justify-end">
-          <p className="text-[13px] text-muted-foreground" aria-live="polite">
-            {formatPersianNumber(total)} کاربر
+          <p
+            className="flex min-w-16 items-center justify-end gap-1 text-[13px] text-muted-foreground"
+            aria-live="polite"
+          >
+            <span className="relative grid overflow-hidden font-semibold text-foreground">
+              <AnimatePresence initial={false} mode="popLayout">
+                <motion.span
+                  key={total}
+                  className="col-start-1 row-start-1"
+                  initial={prefersReducedMotion ? false : { opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -6 }}
+                  transition={{ duration: prefersReducedMotion ? 0 : 0.16 }}
+                >
+                  {formatPersianNumber(total)}
+                </motion.span>
+              </AnimatePresence>
+            </span>
+            کاربر
           </p>
-          {hasFilters ? (
-            <Button type="button" variant="ghost" size="sm" onClick={onClear} disabled={pending}>
-              <XMarkIcon className="size-4" aria-hidden="true" />
-              حذف فیلترها
-            </Button>
-          ) : null}
+          <AnimatePresence initial={false}>
+            {hasFilters ? (
+              <motion.div
+                initial={prefersReducedMotion ? false : { opacity: 0, width: 0 }}
+                animate={{ opacity: 1, width: "auto" }}
+                exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, width: 0 }}
+                transition={{ duration: prefersReducedMotion ? 0 : 0.16 }}
+                className="overflow-hidden"
+              >
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={onClear}
+                  disabled={pending}
+                  className="whitespace-nowrap"
+                >
+                  <XMarkIcon className="size-4" aria-hidden="true" />
+                  حذف فیلترها
+                </Button>
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
         </div>
       </div>
 
@@ -171,6 +209,46 @@ function AdminUsersToolbar({
           }}
         />
       </div>
+
+      <AnimatePresence initial={false}>
+        {activeFilters.length > 0 ? (
+          <motion.div
+            layout
+            initial={prefersReducedMotion ? false : { opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, height: 0 }}
+            transition={{ duration: prefersReducedMotion ? 0 : 0.18 }}
+            className="flex flex-wrap gap-2 overflow-hidden"
+            aria-label="فیلترهای فعال"
+          >
+            <AnimatePresence initial={false} mode="popLayout">
+              {activeFilters.map((filter) => (
+                <motion.div
+                  layout
+                  key={filter.key}
+                  initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.94, y: -3 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.94, y: -3 }}
+                  transition={{ duration: prefersReducedMotion ? 0 : 0.16 }}
+                >
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    disabled={pending}
+                    onClick={() => onChange(filter.clear)}
+                    aria-label={`حذف فیلتر ${filter.label}`}
+                    className="h-7 rounded-full px-2.5 text-[11px] font-medium"
+                  >
+                    {filter.label}
+                    <XMarkIcon className="size-3.5" aria-hidden="true" />
+                  </Button>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
     </div>
   );
 }
@@ -206,7 +284,10 @@ function ToolbarSelect({
         aria-label={label}
         size="sm"
         disabled={disabled}
-        className="h-9 w-auto min-w-36 shrink-0 bg-card px-3 text-[12px] shadow-none"
+        className={cn(
+          "h-9 w-auto min-w-36 shrink-0 bg-card px-3 text-[12px] shadow-none transition-[border-color,box-shadow,background-color] duration-200",
+          value !== undefined && "border-primary/40 bg-primary/5 text-primary",
+        )}
       >
         <SelectValue />
       </SelectTrigger>
@@ -221,6 +302,55 @@ function ToolbarSelect({
       </SelectContent>
     </Select>
   );
+}
+
+type ActiveFilter = {
+  key: string;
+  label: string;
+  clear: Partial<AdminUsersQuery>;
+};
+
+function getActiveFilters(query: AdminUsersQuery): ActiveFilter[] {
+  const filters: ActiveFilter[] = [];
+
+  if (query.search) {
+    filters.push({ key: "search", label: `جست‌وجو: ${query.search}`, clear: { search: undefined } });
+  }
+  if (query.role) {
+    filters.push({
+      key: "role",
+      label: `نقش: ${findOptionLabel(roleOptions, query.role)}`,
+      clear: { role: undefined },
+    });
+  }
+  if (query.status) {
+    filters.push({
+      key: "status",
+      label: `وضعیت: ${findOptionLabel(statusOptions, query.status)}`,
+      clear: { status: undefined },
+    });
+  }
+  if (query.emailVerified !== undefined) {
+    const value = String(query.emailVerified);
+    filters.push({
+      key: "emailVerified",
+      label: findOptionLabel(verificationOptions, value),
+      clear: { emailVerified: undefined },
+    });
+  }
+  if (query.authMethod) {
+    filters.push({
+      key: "authMethod",
+      label: `ورود: ${findOptionLabel(authMethodOptions, query.authMethod)}`,
+      clear: { authMethod: undefined },
+    });
+  }
+
+  return filters;
+}
+
+function findOptionLabel(options: ReadonlyArray<{ value: string; label: string }>, value: string) {
+  return options.find((option) => option.value === value)?.label ?? value;
 }
 
 export { AdminUsersToolbar };

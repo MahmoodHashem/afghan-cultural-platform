@@ -10,5 +10,9 @@ export const metadata = createAdminMetadata("جزئیات کاربر");
 
 export default async function AdminUserDetailRoute({ params }: AdminUserDetailRouteProps) {
   const { id } = await params;
-  return  <PageTransition><AdminUserDetailPage userId={id} /></PageTransition>;
+  return (
+    <PageTransition>
+      <AdminUserDetailPage userId={id} />
+    </PageTransition>
+  );
 }

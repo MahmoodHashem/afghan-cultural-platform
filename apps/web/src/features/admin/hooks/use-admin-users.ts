@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import {
@@ -26,6 +26,7 @@ function useAdminUsers(query: AdminUsersQuery) {
   return useQuery({
     queryKey: adminUsersQueryKeys.list(query),
     queryFn: ({ signal }) => listAdminUsers(query, signal),
+    placeholderData: keepPreviousData,
     staleTime: 30_000,
   });
 }

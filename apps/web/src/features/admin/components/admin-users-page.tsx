@@ -26,9 +26,11 @@ function AdminUsersPage() {
   const [selectedUser, setSelectedUser] = useState<AdminUserListItem | null>(null);
   const statusMutation = useUpdateAdminUserStatus(selectedUser?.id ?? "");
   const [isNavigating, startTransition] = useTransition();
+  const [pageDirection, setPageDirection] = useState<-1 | 0 | 1>(0);
 
   const updateQuery = useCallback(
     (updates: Partial<AdminUsersQuery>) => {
+      setPageDirection(0);
       startTransition(() => {
         router.replace(createAdminUsersHref(searchParams, { page: 1, ...updates }), {
           scroll: false,
@@ -51,7 +53,10 @@ function AdminUsersPage() {
           total={usersQuery.data?.meta.total ?? 0}
           pending={isNavigating || usersQuery.isFetching}
           onChange={updateQuery}
-          onClear={() => startTransition(() => router.replace("/admin/users", { scroll: false }))}
+          onClear={() => {
+            setPageDirection(0);
+            startTransition(() => router.replace("/admin/users", { scroll: false }));
+          }}
         />
 
         {usersQuery.isError ? (
@@ -78,8 +83,11 @@ function AdminUsersPage() {
             meta={usersQuery.data?.meta ?? EMPTY_META}
             currentUserId={currentUserId}
             loading={usersQuery.isLoading}
+            updating={usersQuery.isFetching && !usersQuery.isLoading}
+            pageDirection={pageDirection}
             onStatusAction={setSelectedUser}
             onPageChange={(page) => {
+              setPageDirection(page > (query.page ?? 1) ? -1 : 1);
               startTransition(() => {
                 router.replace(createAdminUsersHref(searchParams, { page }), { scroll: false });
               });

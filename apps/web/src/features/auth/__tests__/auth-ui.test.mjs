@@ -1108,6 +1108,16 @@ test("admin user filters and detail records preserve useful URL state", () => {
   assert.match(adminUserRecords, /value="activity"/);
 });
 
+test("admin user table transitions preserve previous data and reduced-motion behavior", () => {
+  assert.match(adminUsersHooks, /placeholderData: keepPreviousData/);
+  assert.match(adminUsersToolbar, /AnimatePresence/);
+  assert.match(adminUsersToolbar, /فیلترهای فعال/);
+  assert.match(adminUsersTable, /layout="position"/);
+  assert.match(adminUsersTable, /useReducedMotion/);
+  assert.match(adminUsersTable, /aria-busy/);
+  assert.match(adminUsersPage, /pageDirection/);
+});
+
 test("admin account security actions require confirmation and server success", () => {
   assert.match(adminUserActions, /AlertDialog/);
   assert.match(adminUserActions, /دلیل تعلیق/);
