@@ -152,9 +152,20 @@ const adminOverviewHook = read("src/features/admin/hooks/use-admin-overview.ts")
 const adminOverviewPage = read("src/features/admin/components/admin-overview-page.tsx");
 const adminOverviewChart = read("src/features/admin/components/admin-overview-growth-chart.tsx");
 const adminOverviewActivity = read("src/features/admin/components/admin-overview-activity.tsx");
+const adminUsersRoute = read("src/app/(admin)/admin/users/page.tsx");
+const adminUserDetailRoute = read("src/app/(admin)/admin/users/[id]/page.tsx");
+const adminUsersApi = read("src/features/admin/api/admin-users-api.ts");
+const adminUsersHooks = read("src/features/admin/hooks/use-admin-users.ts");
+const adminUsersPage = read("src/features/admin/components/admin-users-page.tsx");
+const adminUsersTable = read("src/features/admin/components/admin-users-table.tsx");
+const adminUsersToolbar = read("src/features/admin/components/admin-users-toolbar.tsx");
+const adminUserDetailPage = read("src/features/admin/components/admin-user-detail-page.tsx");
+const adminUserRecords = read("src/features/admin/components/admin-user-records.tsx");
+const adminUserActions = read("src/features/admin/components/admin-user-action-dialogs.tsx");
+const adminUserErrors = read("src/features/admin/utils/admin-user-errors.ts");
+const adminUsersUrl = read("src/features/admin/utils/admin-users-url.ts");
 const shadcnSidebar = read("src/components/ui/sidebar.tsx");
 const adminPageRoutes = [
-  "src/app/(admin)/admin/users/page.tsx",
   "src/app/(admin)/admin/entries/page.tsx",
   "src/app/(admin)/admin/topics/page.tsx",
   "src/app/(admin)/admin/content-types/page.tsx",
@@ -1065,10 +1076,51 @@ test("admin overview uses the real aggregate API with shadcn chart and table", (
   assert.match(adminOverviewActivity, /TableBody/);
 });
 
+test("admin users use real server contracts and TanStack Table v9", () => {
+  assert.match(adminUsersRoute, /AdminUsersPage/);
+  assert.match(adminUserDetailRoute, /AdminUserDetailPage/);
+  assert.match(adminUsersApi, /\/admin\/users/);
+  assert.match(adminUsersApi, /\/entries/);
+  assert.match(adminUsersApi, /\/reviews/);
+  assert.match(adminUsersApi, /\/activity/);
+  assert.match(adminUsersApi, /\/status/);
+  assert.match(adminUsersApi, /revoke-sessions/);
+  assert.match(adminUsersHooks, /useQuery/);
+  assert.match(adminUsersHooks, /useMutation/);
+  assert.doesNotMatch(adminUsersHooks, /onMutate/);
+  assert.match(adminUsersTable, /tableFeatures/);
+  assert.match(adminUsersTable, /useTable/);
+  assert.match(adminUsersTable, /TableHeader/);
+  assert.match(adminUsersTable, /table\.FlexRender/);
+});
+
+test("admin user filters and detail records preserve useful URL state", () => {
+  assert.match(adminUsersPage, /useSearchParams/);
+  assert.match(adminUsersPage, /scroll: false/);
+  assert.match(adminUsersToolbar, /جست‌وجو با نام یا ایمیل/);
+  assert.match(adminUsersToolbar, /همه نقش‌ها/);
+  assert.match(adminUsersUrl, /parseAdminUsersQuery/);
+  assert.match(adminUsersUrl, /createAdminUsersHref/);
+  assert.match(adminUserDetailPage, /parseTab/);
+  assert.match(adminUserDetailPage, /scroll: false/);
+  assert.match(adminUserRecords, /value="entries"/);
+  assert.match(adminUserRecords, /value="reviews"/);
+  assert.match(adminUserRecords, /value="activity"/);
+});
+
+test("admin account security actions require confirmation and server success", () => {
+  assert.match(adminUserActions, /AlertDialog/);
+  assert.match(adminUserActions, /دلیل تعلیق/);
+  assert.match(adminUserActions, /پایان همه نشست‌ها/);
+  assert.match(adminUserActions, /pending/);
+  assert.match(adminUsersHooks, /invalidateQueries/);
+  assert.match(adminUserErrors, /ADMIN_USER_SELF_ACTION_FORBIDDEN/);
+});
+
 test("remaining admin destinations are deliberately minimal placeholders", () => {
   assert.match(adminPlaceholder, /این بخش در مرحله بعد پیاده‌سازی می‌شود/);
   assert.doesNotMatch(adminPlaceholder, /chart|table|statistics/i);
-  assert.equal(adminPageRoutes.length, 10);
+  assert.equal(adminPageRoutes.length, 9);
   for (const route of adminPageRoutes) {
     assert.match(route, /AdminPlaceholderPage/);
     assert.match(route, /createAdminMetadata/);

@@ -152,6 +152,8 @@ enum AuditAction {
   REVIEW_HIDDEN
   USER_ROLE_CHANGED
   USER_SUSPENDED
+  USER_REACTIVATED
+  USER_SESSIONS_REVOKED
 
   @@map("audit_action")
 }
