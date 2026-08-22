@@ -15,7 +15,7 @@ import { AdminUserMenu } from "@/features/admin/components/admin-user-menu";
 function AdminSidebar() {
   return (
     <Sidebar side="right" dir="rtl" collapsible="icon" className="border-e ">
-      <SidebarHeader className="h-16 justify-center px-3 group-data-[collapsible=icon]:px-2 border-b border-muted-foreground/10">
+      <SidebarHeader className="h-16 justify-center px-3 group-data-[collapsible=icon]:px-2 mb-7">
         <Link
           href="/admin"
           className="flex min-w-0 items-center gap-3 rounded-lg focus-visible:ring-2 focus-visible:ring-sidebar-ring"

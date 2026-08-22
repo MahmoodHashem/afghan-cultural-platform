@@ -57,6 +57,7 @@ function AdminNavigation() {
                   }
                   isActive={isActive}
                   tooltip={{ children: item.title, side: "left" }}
+
                   className="relative isolate h-10 gap-3 rounded-md px-3 text-[14px] data-active:bg-transparent data-active:font-semibold data-active:text-sidebar-accent-foreground group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:text-center"
                 >
                   {isActive ? (
