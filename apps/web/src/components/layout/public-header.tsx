@@ -2,10 +2,14 @@
 
 import {
   ArrowRightIcon,
+  ArrowRightStartOnRectangleIcon,
   Bars3Icon,
   ChevronDownIcon,
+  ClipboardDocumentCheckIcon,
   MagnifyingGlassIcon,
   PlusIcon,
+  Squares2X2Icon,
+  UserCircleIcon,
 } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import Link from "next/link";
@@ -381,6 +385,7 @@ function MobileNavigation({ isCompact }: { isCompact: boolean }) {
                       "h-11 w-full rounded-full",
                     )}
                   >
+                    <PlusIcon className="size-4" aria-hidden="true" />
                     افزودن مطلب
                   </Link>
                   <Link
@@ -391,6 +396,7 @@ function MobileNavigation({ isCompact }: { isCompact: boolean }) {
                       "h-11 w-full rounded-full",
                     )}
                   >
+                    <UserCircleIcon className="size-4" aria-hidden="true" />
                     حساب کاربری
                   </Link>
                   {user.role === "MODERATOR" || user.role === "ADMIN" ? (
@@ -402,7 +408,21 @@ function MobileNavigation({ isCompact }: { isCompact: boolean }) {
                         "h-11 w-full rounded-full",
                       )}
                     >
+                      <ClipboardDocumentCheckIcon className="size-4" aria-hidden="true" />
                       بررسی مطالب
+                    </Link>
+                  ) : null}
+                  {user.role === "ADMIN" ? (
+                    <Link
+                      href="/admin"
+                      onClick={closeMenu}
+                      className={cn(
+                        buttonVariants({ variant: "outline" }),
+                        "h-11 w-full rounded-full",
+                      )}
+                    >
+                      <Squares2X2Icon className="size-4" aria-hidden="true" />
+                      پنل مدیریت
                     </Link>
                   ) : null}
                   <Button
@@ -412,6 +432,7 @@ function MobileNavigation({ isCompact }: { isCompact: boolean }) {
                     onClick={() => setIsLogoutDialogOpen(true)}
                     className="h-11 w-full rounded-full text-destructive hover:bg-destructive/10 hover:text-destructive"
                   >
+                    <ArrowRightStartOnRectangleIcon className="size-4" aria-hidden="true" />
                     {logoutMutation.isPending ? "در حال خروج..." : "خروج"}
                   </Button>
                 </div>
@@ -558,6 +579,7 @@ function ProfileMenu({ user }: { user: SafeUser }) {
           render={<Link href="/profile" />}
           className="rounded-2xl px-3 py-2 text-[14px] text-muted-foreground hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground"
         >
+          <UserCircleIcon className="size-4" aria-hidden="true" />
           حساب کاربری
         </DropdownMenuItem>
         {user.role === "MODERATOR" || user.role === "ADMIN" ? (
@@ -565,7 +587,17 @@ function ProfileMenu({ user }: { user: SafeUser }) {
             render={<Link href="/moderator" />}
             className="rounded-2xl px-3 py-2 text-[14px] text-muted-foreground hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground"
           >
+            <ClipboardDocumentCheckIcon className="size-4" aria-hidden="true" />
             بررسی مطالب
+          </DropdownMenuItem>
+        ) : null}
+        {user.role === "ADMIN" ? (
+          <DropdownMenuItem
+            render={<Link href="/admin" />}
+            className="rounded-2xl px-3 py-2 text-[14px] text-muted-foreground hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground"
+          >
+            <Squares2X2Icon className="size-4" aria-hidden="true" />
+            پنل مدیریت
           </DropdownMenuItem>
         ) : null}
         <DropdownMenuSeparator />
@@ -575,6 +607,7 @@ function ProfileMenu({ user }: { user: SafeUser }) {
           onClick={() => setIsLogoutDialogOpen(true)}
           className="rounded-2xl px-3 py-2 text-[14px] focus:bg-destructive/10"
         >
+          <ArrowRightStartOnRectangleIcon className="size-4" aria-hidden="true" />
           {logoutMutation.isPending ? "در حال خروج..." : "خروج"}
         </DropdownMenuItem>
       </DropdownMenuContent>

@@ -328,6 +328,11 @@ test("owner profile route is authenticated and noindexed", () => {
 
 test("profile links replace stale account and dashboard destinations", () => {
   assert.match(publicHeader, /href="\/profile"/);
+  assert.match(publicHeader, /href="\/admin"/);
+  assert.match(publicHeader, /user\.role === "ADMIN"/);
+  assert.match(publicHeader, /UserCircleIcon/);
+  assert.match(publicHeader, /Squares2X2Icon/);
+  assert.match(publicHeader, /ArrowRightStartOnRectangleIcon/);
   assert.match(authNavigation, /href="\/profile"/);
   assert.doesNotMatch(publicHeader, /href="\/account"/);
   assert.doesNotMatch(authNavigation, /href="\/dashboard"/);
@@ -1090,7 +1095,8 @@ test("admin users use real server contracts and TanStack Table v9", () => {
   assert.doesNotMatch(adminUsersHooks, /onMutate/);
   assert.match(adminUsersTable, /tableFeatures/);
   assert.match(adminUsersTable, /useTable/);
-  assert.match(adminUsersTable, /TableHeader/);
+  assert.match(adminUsersTable, /<table/);
+  assert.match(adminUsersTable, /gridTemplateColumns/);
   assert.match(adminUsersTable, /table\.FlexRender/);
 });
 
