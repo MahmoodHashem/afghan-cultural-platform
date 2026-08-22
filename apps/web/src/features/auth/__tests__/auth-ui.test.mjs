@@ -1027,9 +1027,20 @@ test("admin sidebar uses shadcn right-side icon collapse and mobile behavior", (
   assert.match(shadcnSidebar, /TooltipContent/);
 });
 
+test("admin sidebar motion preserves stable icons and reduced-motion behavior", () => {
+  assert.match(adminNavigation, /layoutId="admin-active-navigation"/);
+  assert.match(adminNavigation, /useReducedMotion/);
+  assert.match(adminNavigation, /showLabels = isMobile \|\| state === "expanded"/);
+  assert.match(shadcnSidebar, /cubic-bezier\(0\.22,1,0\.36,1\)/);
+  assert.match(shadcnSidebar, /motion-reduce:duration-0/);
+});
+
 test("admin header is reusable and keeps future controls nonfunctional", () => {
   assert.match(adminHeader, /getAdminRouteMeta\(pathname\)/);
   assert.match(adminHeader, /SidebarTrigger/);
+  assert.match(adminHeader, /AnimatePresence/);
+  assert.match(adminHeader, /key=\{route\.href\}/);
+  assert.match(adminHeader, /useReducedMotion/);
   assert.match(adminHeader, /readOnly/);
   assert.match(adminHeader, /useAuthStore/);
   assert.match(adminHeader, /AvatarFallback/);

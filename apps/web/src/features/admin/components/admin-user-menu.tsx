@@ -6,6 +6,7 @@ import {
   ChevronUpDownIcon,
   UserCircleIcon,
 } from "@heroicons/react/24/outline";
+import { motion, useReducedMotion } from "motion/react";
 import Link from "next/link";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -24,6 +25,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { AdminSidebarLabel } from "@/features/admin/components/admin-sidebar-label";
 import { useLogout } from "@/features/auth/hooks/use-auth-mutations";
 import { createUserInitials } from "@/lib/utils/user";
 import { useAuthStore } from "@/stores/auth-store";
@@ -31,7 +33,9 @@ import { useAuthStore } from "@/stores/auth-store";
 function AdminUserMenu() {
   const user = useAuthStore((state) => state.user);
   const logout = useLogout();
-  const { isMobile } = useSidebar();
+  const prefersReducedMotion = useReducedMotion();
+  const { isMobile, state } = useSidebar();
+  const showLabels = isMobile || state === "expanded";
 
   if (!user) {
     return null;
@@ -54,13 +58,22 @@ function AdminUserMenu() {
                 {createUserInitials(user.displayName)}
               </AvatarFallback>
             </Avatar>
-            <span className="min-w-0 flex-1 text-start leading-5">
+            <AdminSidebarLabel className="flex-1 text-start leading-5">
               <span className="block truncate text-[13px] font-semibold">{user.displayName}</span>
               <span className="block truncate text-[11px] text-sidebar-foreground/60" dir="ltr">
                 {user.email}
               </span>
-            </span>
-            <ChevronUpDownIcon className="ms-auto size-4" aria-hidden="true" />
+            </AdminSidebarLabel>
+            {showLabels ? (
+              <motion.span
+                initial={prefersReducedMotion ? false : { opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: prefersReducedMotion ? 0 : 0.12 }}
+                className="ms-auto"
+              >
+                <ChevronUpDownIcon className="size-4" aria-hidden="true" />
+              </motion.span>
+            ) : null}
           </DropdownMenuTrigger>
           <DropdownMenuContent
             side={isMobile ? "bottom" : "left"}

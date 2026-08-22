@@ -7,9 +7,9 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
-  SidebarSeparator,
 } from "@/components/ui/sidebar";
 import { AdminNavigation } from "@/features/admin/components/admin-navigation";
+import { AdminSidebarLabel } from "@/features/admin/components/admin-sidebar-label";
 import { AdminUserMenu } from "@/features/admin/components/admin-user-menu";
 
 function AdminSidebar() {
@@ -28,12 +28,12 @@ function AdminSidebar() {
             sizes="40px"
             className="h-7 w-auto shrink-0"
           />
-          <span className="min-w-0 group-data-[collapsible=icon]:hidden">
+          <AdminSidebarLabel className="block">
             <span className="block truncate text-[16px] font-bold text-primary">
               میراث افغانستان
             </span>
             <span className="block truncate text-[12px] text-muted-foreground">پنل مدیریت</span>
-          </span>
+          </AdminSidebarLabel>
         </Link>
       </SidebarHeader>
 

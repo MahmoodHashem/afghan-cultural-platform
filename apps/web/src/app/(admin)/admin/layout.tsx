@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import type { CSSProperties, ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -17,11 +17,7 @@ function AdminLayout({ children }: Readonly<{ children: ReactNode }>) {
     <RequireAuth>
       <RequireRole roles={["ADMIN"]}>
         <TooltipProvider delay={350}>
-          <SidebarProvider
-            dir="rtl"
-           
-            className="bg-background"
-          >
+          <SidebarProvider dir="rtl" className="bg-background">
             <a
               href="#admin-content"
               className="fixed start-4 top-3 z-50 -translate-y-20 rounded-lg bg-primary px-4 py-2 text-primary-foreground transition-transform focus:translate-y-0"
