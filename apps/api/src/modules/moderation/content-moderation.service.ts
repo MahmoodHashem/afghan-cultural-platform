@@ -12,8 +12,8 @@ import type { Prisma } from "@/generated/prisma/client";
 import {
   AuditAction,
   CorrectionStatus,
+  EntryCommentStatus,
   EntryStatus,
-  PublicReviewStatus,
   ReportResolutionAction,
   ReportStatus,
   VersionReason,
@@ -68,7 +68,7 @@ const correctionSelect = {
 const reportSelect = {
   id: true,
   entryId: true,
-  publicReviewId: true,
+  entryCommentId: true,
   reviewedById: true,
   reason: true,
   explanation: true,
@@ -88,13 +88,13 @@ const reportSelect = {
       publishedAt: true,
     },
   },
-  publicReview: {
+  entryComment: {
     select: {
       id: true,
       body: true,
       status: true,
       createdAt: true,
-      user: {
+      author: {
         select: { id: true, displayName: true },
       },
     },
@@ -116,7 +116,7 @@ const historyActions = [
   AuditAction.CORRECTION_REJECTED,
   AuditAction.REPORT_SUBMITTED,
   AuditAction.REPORT_RESOLVED,
-  AuditAction.REVIEW_HIDDEN,
+  AuditAction.COMMENT_HIDDEN,
 ] as const;
 
 @Injectable()
@@ -391,16 +391,16 @@ class ContentModerationService {
   async submitReport(
     user: AuthenticatedUser,
     entryId: string,
-    publicReviewId: string | null,
+    entryCommentId: string | null,
     input: SubmitReportDto,
   ) {
-    await this.ensureReportTarget(entryId, publicReviewId);
+    await this.ensureReportTarget(entryId, entryCommentId);
 
     return this.prisma.$transaction(async (tx) => {
       const existing = await tx.report.findFirst({
         where: {
           entryId,
-          publicReviewId,
+          entryCommentId,
           reportedById: user.id,
           status: { in: [ReportStatus.OPEN, ReportStatus.UNDER_REVIEW] },
         },
@@ -416,7 +416,7 @@ class ContentModerationService {
       const report = await tx.report.create({
         data: {
           entryId,
-          publicReviewId,
+          entryCommentId,
           reportedById: user.id,
           reason: input.reason,
           explanation: this.normalizeRequired(input.explanation),
@@ -429,7 +429,11 @@ class ContentModerationService {
         actorId: user.id,
         entryId,
         reportId: report.id,
-        metadata: { entryId, reportId: report.id, targetType: publicReviewId ? "REVIEW" : "ENTRY" },
+        metadata: {
+          entryId,
+          reportId: report.id,
+          targetType: entryCommentId ? "COMMENT" : "ENTRY",
+        },
       });
 
       return { data: this.mapReport(report) };
@@ -442,8 +446,8 @@ class ContentModerationService {
     const where: Prisma.ReportWhereInput = {
       ...(query.status ? { status: query.status } : { status: { not: ReportStatus.RESOLVED } }),
       ...(query.reason ? { reason: query.reason } : {}),
-      ...(query.targetType === "ENTRY" ? { publicReviewId: null } : {}),
-      ...(query.targetType === "REVIEW" ? { publicReviewId: { not: null } } : {}),
+      ...(query.targetType === "ENTRY" ? { entryCommentId: null } : {}),
+      ...(query.targetType === "COMMENT" ? { entryCommentId: { not: null } } : {}),
     };
     const [items, total] = await this.prisma.$transaction([
       this.prisma.report.findMany({
@@ -485,7 +489,7 @@ class ContentModerationService {
         );
       }
 
-      this.validateReportAction(report.publicReviewId, input.resolutionAction);
+      this.validateReportAction(report.entryCommentId, input.resolutionAction);
       const claim = await tx.report.updateMany({
         where: { id, status: { in: [ReportStatus.OPEN, ReportStatus.UNDER_REVIEW] } },
         data: {
@@ -509,7 +513,7 @@ class ContentModerationService {
         metadata: {
           entryId: report.entryId,
           reportId: report.id,
-          targetType: report.publicReviewId ? "REVIEW" : "ENTRY",
+          targetType: report.entryCommentId ? "COMMENT" : "ENTRY",
           resolutionAction: input.resolutionAction,
           notes: input.notes,
         },
@@ -563,7 +567,7 @@ class ContentModerationService {
     );
   }
 
-  private async ensureReportTarget(entryId: string, publicReviewId: string | null) {
+  private async ensureReportTarget(entryId: string, entryCommentId: string | null) {
     const entry = await this.prisma.culturalEntry.findFirst({
       where: { id: entryId, status: EntryStatus.PUBLISHED, publishedAt: { not: null } },
       select: { id: true },
@@ -574,12 +578,12 @@ class ContentModerationService {
         "Report target not found.",
       );
     }
-    if (publicReviewId) {
-      const review = await this.prisma.publicReview.findFirst({
-        where: { id: publicReviewId, entryId, status: PublicReviewStatus.ACTIVE },
+    if (entryCommentId) {
+      const comment = await this.prisma.entryComment.findFirst({
+        where: { id: entryCommentId, entryId, status: EntryCommentStatus.ACTIVE },
         select: { id: true },
       });
-      if (!review) {
+      if (!comment) {
         throw this.notFound(
           MODERATION_ERROR_CODES.REPORT_TARGET_NOT_FOUND,
           "Report target not found.",
@@ -591,7 +595,7 @@ class ContentModerationService {
   private async applyReportAction(
     tx: Prisma.TransactionClient,
     moderatorId: string,
-    report: { entryId: string; publicReviewId: string | null },
+    report: { entryId: string; entryCommentId: string | null },
     action: ReportResolutionAction,
   ) {
     if (action === ReportResolutionAction.HIDE_CONTENT) {
@@ -606,26 +610,27 @@ class ContentModerationService {
         data: { status: EntryStatus.ARCHIVED, archivedAt: new Date() },
       });
     }
-    if (action === ReportResolutionAction.HIDE_REVIEW && report.publicReviewId) {
-      const review = await tx.publicReview.updateMany({
-        where: { id: report.publicReviewId, status: PublicReviewStatus.ACTIVE },
-        data: { status: PublicReviewStatus.HIDDEN, hiddenById: moderatorId, hiddenAt: new Date() },
+    if (action === ReportResolutionAction.HIDE_COMMENT && report.entryCommentId) {
+      const comment = await tx.entryComment.updateMany({
+        where: { id: report.entryCommentId, status: EntryCommentStatus.ACTIVE },
+        data: { status: EntryCommentStatus.HIDDEN, hiddenById: moderatorId, hiddenAt: new Date() },
       });
-      if (review.count !== 1) {
-        throw this.conflict(MODERATION_ERROR_CODES.REPORT_CONFLICT, "Review is no longer active.");
+      if (comment.count !== 1) {
+        throw this.conflict(MODERATION_ERROR_CODES.REPORT_CONFLICT, "Comment is no longer active.");
       }
+      await tx.commentLike.deleteMany({ where: { commentId: report.entryCommentId } });
       await this.auditService.createWithClient(tx, {
-        action: AuditAction.REVIEW_HIDDEN,
+        action: AuditAction.COMMENT_HIDDEN,
         actorId: moderatorId,
         entryId: report.entryId,
-        metadata: { reviewId: report.publicReviewId },
+        metadata: { commentId: report.entryCommentId },
       });
     }
   }
 
-  private validateReportAction(publicReviewId: string | null, action: ReportResolutionAction) {
-    const allowed: ReportResolutionAction[] = publicReviewId
-      ? [ReportResolutionAction.DISMISS, ReportResolutionAction.HIDE_REVIEW]
+  private validateReportAction(entryCommentId: string | null, action: ReportResolutionAction) {
+    const allowed: ReportResolutionAction[] = entryCommentId
+      ? [ReportResolutionAction.DISMISS, ReportResolutionAction.HIDE_COMMENT]
       : [
           ReportResolutionAction.DISMISS,
           ReportResolutionAction.HIDE_CONTENT,
@@ -734,8 +739,8 @@ class ContentModerationService {
     return {
       id: report.id,
       entryId: report.entryId,
-      publicReviewId: report.publicReviewId,
-      targetType: report.publicReviewId ? "REVIEW" : "ENTRY",
+      entryCommentId: report.entryCommentId,
+      targetType: report.entryCommentId ? "COMMENT" : "ENTRY",
       reason: report.reason,
       explanation: report.explanation,
       status: report.status,
@@ -745,7 +750,7 @@ class ContentModerationService {
       createdAt: report.createdAt,
       updatedAt: report.updatedAt,
       entry: report.entry,
-      publicReview: report.publicReview,
+      entryComment: report.entryComment,
       reviewedBy: report.reviewedBy,
     };
   }

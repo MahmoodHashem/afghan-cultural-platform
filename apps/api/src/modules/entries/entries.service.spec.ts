@@ -475,6 +475,7 @@ describe("EntriesService", () => {
       slug: "فرهنگ-کابل",
       bookmarkCount: 7,
       likeCount: 12,
+      commentCount: 5,
       coverImage: {
         thumbnailUrl: "https://res.cloudinary.com/demo/image/upload/thumb/entries/sample.jpg",
       },
@@ -640,6 +641,7 @@ describe("EntriesService", () => {
       slug: "فرهنگ-کابل",
       bookmarkCount: 7,
       likeCount: 12,
+      commentCount: 5,
       contentJson: validContentJson,
       district: {
         slug: "markaz",
@@ -1985,6 +1987,7 @@ function createPublicEntryCardPayload() {
     _count: {
       bookmarks: 7,
       likes: 12,
+      comments: 5,
     },
     geographicScope: GeographicScope.PROVINCE,
     publishedAt: new Date("2026-01-02T00:00:00.000Z"),

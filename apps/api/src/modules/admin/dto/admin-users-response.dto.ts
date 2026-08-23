@@ -3,8 +3,8 @@ import { ApiProperty } from "@nestjs/swagger";
 import {
   AuditAction,
   AuthProvider,
+  EntryCommentStatus,
   EntryStatus,
-  PublicReviewStatus,
   UserRole,
   UserStatus,
 } from "@/generated/prisma/enums";
@@ -28,7 +28,7 @@ class AdminUserCountsDto {
   entries!: number;
 
   @ApiProperty({ example: 4 })
-  reviews!: number;
+  comments!: number;
 
   @ApiProperty({ example: 7 })
   bookmarks!: number;
@@ -119,7 +119,7 @@ class AdminUserDetailStatsDto {
   entries!: AdminUserEntryStatusCountsDto;
 
   @ApiProperty({ example: 4 })
-  reviews!: number;
+  comments!: number;
 
   @ApiProperty({ example: 7 })
   bookmarks!: number;
@@ -210,7 +210,7 @@ class AdminUserEntriesResponseDto {
   meta!: AdminPaginationMetaDto;
 }
 
-class AdminUserReviewEntryDto {
+class AdminUserCommentEntryDto {
   @ApiProperty({ format: "uuid" })
   id!: string;
 
@@ -221,18 +221,18 @@ class AdminUserReviewEntryDto {
   title!: string;
 }
 
-class AdminUserReviewDto {
+class AdminUserCommentDto {
   @ApiProperty({ format: "uuid" })
   id!: string;
 
   @ApiProperty()
   body!: string;
 
-  @ApiProperty({ enum: PublicReviewStatus })
-  status!: PublicReviewStatus;
+  @ApiProperty({ enum: EntryCommentStatus })
+  status!: EntryCommentStatus;
 
-  @ApiProperty({ type: AdminUserReviewEntryDto })
-  entry!: AdminUserReviewEntryDto;
+  @ApiProperty({ type: AdminUserCommentEntryDto })
+  entry!: AdminUserCommentEntryDto;
 
   @ApiProperty()
   createdAt!: Date;
@@ -241,9 +241,9 @@ class AdminUserReviewDto {
   updatedAt!: Date;
 }
 
-class AdminUserReviewsResponseDto {
-  @ApiProperty({ type: [AdminUserReviewDto] })
-  data!: AdminUserReviewDto[];
+class AdminUserCommentsResponseDto {
+  @ApiProperty({ type: [AdminUserCommentDto] })
+  data!: AdminUserCommentDto[];
 
   @ApiProperty({ type: AdminPaginationMetaDto })
   meta!: AdminPaginationMetaDto;
@@ -317,6 +317,8 @@ export {
   AdminRevokeSessionsResponseDto,
   AdminUserActivityDto,
   AdminUserActivityResponseDto,
+  AdminUserCommentDto,
+  AdminUserCommentsResponseDto,
   AdminUserCountsDto,
   AdminUserDetailDto,
   AdminUserDetailResponseDto,
@@ -326,8 +328,6 @@ export {
   AdminUserEntryStatusCountsDto,
   AdminUserListItemDto,
   AdminUserProviderDto,
-  AdminUserReviewDto,
-  AdminUserReviewsResponseDto,
   AdminUserStatusEnvelopeDto,
   AdminUserStatusResponseDto,
   AdminUsersResponseDto,

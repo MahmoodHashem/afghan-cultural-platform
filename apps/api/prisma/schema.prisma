@@ -105,7 +105,7 @@ enum ReportReason {
 enum ReportResolutionAction {
   DISMISS
   HIDE_CONTENT
-  HIDE_REVIEW
+  HIDE_COMMENT
   REQUEST_CORRECTIONS
   REMOVE_IMAGE
   REMOVE_YOUTUBE_VIDEO
@@ -129,12 +129,12 @@ enum SourceType {
   @@map("source_type")
 }
 
-enum PublicReviewStatus {
+enum EntryCommentStatus {
   ACTIVE
   HIDDEN
   DELETED
 
-  @@map("public_review_status")
+  @@map("entry_comment_status")
 }
 
 enum AuditAction {
@@ -150,7 +150,7 @@ enum AuditAction {
   CORRECTION_REJECTED
   REPORT_SUBMITTED
   REPORT_RESOLVED
-  REVIEW_HIDDEN
+  COMMENT_HIDDEN
   USER_ROLE_CHANGED
   USER_SUSPENDED
   USER_REACTIVATED
@@ -186,8 +186,9 @@ model User {
   reportsSubmitted               Report[]                 @relation("ReportSubmittedBy")
   reportsReviewed                Report[]                 @relation("ReportReviewedBy")
   likes                          Like[]                   @relation("LikeUser")
-  publicReviews                  PublicReview[]           @relation("PublicReviewUser")
-  hiddenPublicReviews            PublicReview[]           @relation("PublicReviewHiddenBy")
+  entryComments                  EntryComment[]           @relation("EntryCommentAuthor")
+  hiddenEntryComments            EntryComment[]           @relation("EntryCommentHiddenBy")
+  commentLikes                   CommentLike[]            @relation("CommentLikeUser")
   bookmarks                      Bookmark[]               @relation("BookmarkUser")
   refreshSessions                RefreshSession[]         @relation("RefreshSessionUser")
   emailVerificationTokens        EmailVerificationToken[] @relation("EmailVerificationTokenUser")
@@ -267,7 +268,7 @@ model CulturalEntry {
   contentVersions       ContentVersion[]       @relation("EntryContentVersions")
   moderationReviews     ModerationReview[]     @relation("EntryModerationReviews")
   likes                 Like[]                 @relation("EntryLikes")
-  publicReviews         PublicReview[]         @relation("EntryPublicReviews")
+  comments              EntryComment[]         @relation("EntryComments")
   bookmarks             Bookmark[]             @relation("EntryBookmarks")
   correctionSuggestions CorrectionSuggestion[] @relation("EntryCorrectionSuggestions")
   reports               Report[]               @relation("EntryReports")
@@ -561,30 +562,52 @@ model Like {
   @@map("likes")
 }
 
-model PublicReview {
+model EntryComment {
   id         String             @id @default(uuid()) @map("id") @db.Uuid
   entryId    String             @map("entry_id") @db.Uuid
-  userId     String             @map("user_id") @db.Uuid
+  authorId   String             @map("author_id") @db.Uuid
+  parentId   String?            @map("parent_id") @db.Uuid
   body       String             @map("body")
-  status     PublicReviewStatus @default(ACTIVE) @map("status")
+  status     EntryCommentStatus @default(ACTIVE) @map("status")
   hiddenById String?            @map("hidden_by_id") @db.Uuid
   hiddenAt   DateTime?          @map("hidden_at") @db.Timestamptz(3)
   deletedAt  DateTime?          @map("deleted_at") @db.Timestamptz(3)
   createdAt  DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt  DateTime           @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  entry    CulturalEntry @relation("EntryPublicReviews", fields: [entryId], references: [id], onDelete: Restrict)
-  user     User          @relation("PublicReviewUser", fields: [userId], references: [id], onDelete: Restrict)
-  hiddenBy User?         @relation("PublicReviewHiddenBy", fields: [hiddenById], references: [id], onDelete: SetNull)
-  reports  Report[]      @relation("PublicReviewReports")
+  entry    CulturalEntry  @relation("EntryComments", fields: [entryId], references: [id], onDelete: Restrict)
+  author   User           @relation("EntryCommentAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+  hiddenBy User?          @relation("EntryCommentHiddenBy", fields: [hiddenById], references: [id], onDelete: SetNull)
+  parent   EntryComment?  @relation("EntryCommentReplies", fields: [parentId], references: [id], onDelete: Restrict)
+  replies  EntryComment[] @relation("EntryCommentReplies")
+  likes    CommentLike[]  @relation("CommentLikes")
+  reports  Report[]       @relation("EntryCommentReports")
 
   @@index([entryId])
-  @@index([userId])
+  @@index([authorId])
+  @@index([parentId])
   @@index([status])
-  @@index([entryId, status])
-  @@index([userId, status])
+  @@index([entryId, status, parentId, createdAt])
+  @@index([parentId, status, createdAt])
+  @@index([authorId, status, createdAt])
   @@index([createdAt])
-  @@map("public_reviews")
+  @@map("entry_comments")
+}
+
+model CommentLike {
+  id        String   @id @default(uuid()) @map("id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  commentId String   @map("comment_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user    User         @relation("CommentLikeUser", fields: [userId], references: [id], onDelete: Cascade)
+  comment EntryComment @relation("CommentLikes", fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, commentId])
+  @@index([userId])
+  @@index([commentId])
+  @@index([userId, createdAt])
+  @@map("comment_likes")
 }
 
 model Bookmark {
@@ -639,7 +662,7 @@ model CorrectionSuggestion {
 model Report {
   id               String                  @id @default(uuid()) @map("id") @db.Uuid
   entryId          String                  @map("entry_id") @db.Uuid
-  publicReviewId   String?                 @map("public_review_id") @db.Uuid
+  entryCommentId   String?                 @map("entry_comment_id") @db.Uuid
   reportedById     String                  @map("reported_by_id") @db.Uuid
   reviewedById     String?                 @map("reviewed_by_id") @db.Uuid
   reason           ReportReason            @map("reason")
@@ -652,13 +675,13 @@ model Report {
   updatedAt        DateTime                @updatedAt @map("updated_at") @db.Timestamptz(3)
 
   entry        CulturalEntry @relation("EntryReports", fields: [entryId], references: [id], onDelete: Restrict)
-  publicReview PublicReview? @relation("PublicReviewReports", fields: [publicReviewId], references: [id], onDelete: Restrict)
+  entryComment EntryComment? @relation("EntryCommentReports", fields: [entryCommentId], references: [id], onDelete: Restrict)
   reportedBy   User          @relation("ReportSubmittedBy", fields: [reportedById], references: [id], onDelete: Restrict)
   reviewedBy   User?         @relation("ReportReviewedBy", fields: [reviewedById], references: [id], onDelete: SetNull)
   auditLogs    AuditLog[]    @relation("AuditReport")
 
   @@index([entryId])
-  @@index([publicReviewId])
+  @@index([entryCommentId])
   @@index([reportedById])
   @@index([reviewedById])
   @@index([status])

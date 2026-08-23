@@ -1,28 +1,45 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
-class ReviewAuthorDto {
+import { EntryCommentStatus } from "@/generated/prisma/enums";
+
+class CommentAuthorDto {
   @ApiProperty()
   id!: string;
 
   @ApiProperty()
   displayName!: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ nullable: true })
   profileImageUrl!: string | null;
+
+  @ApiProperty()
+  isEntryAuthor!: boolean;
 }
 
-class PublicReviewDto {
+class EntryCommentDto {
   @ApiProperty()
   id!: string;
 
   @ApiProperty()
   entryId!: string;
 
-  @ApiProperty()
-  body!: string;
+  @ApiPropertyOptional({ nullable: true })
+  parentId!: string | null;
 
-  @ApiProperty({ type: ReviewAuthorDto })
-  author!: ReviewAuthorDto;
+  @ApiPropertyOptional({ nullable: true })
+  body!: string | null;
+
+  @ApiProperty({ enum: EntryCommentStatus })
+  status!: EntryCommentStatus;
+
+  @ApiPropertyOptional({ type: CommentAuthorDto, nullable: true })
+  author!: CommentAuthorDto | null;
+
+  @ApiProperty()
+  likeCount!: number;
+
+  @ApiProperty()
+  directReplyCount!: number;
 
   @ApiProperty()
   createdAt!: Date;
@@ -31,43 +48,68 @@ class PublicReviewDto {
   updatedAt!: Date;
 }
 
-class PublicReviewListResponseDto {
-  @ApiProperty({ type: [PublicReviewDto] })
-  data!: PublicReviewDto[];
+class CommentPaginationMetaDto {
+  @ApiProperty()
+  page!: number;
+
+  @ApiProperty()
+  limit!: number;
+
+  @ApiProperty()
+  total!: number;
+
+  @ApiProperty()
+  totalPages!: number;
 }
 
-class PublicReviewResponseDto {
-  @ApiProperty({ type: PublicReviewDto })
-  data!: PublicReviewDto;
+class EntryCommentListResponseDto {
+  @ApiProperty({ type: [EntryCommentDto] })
+  data!: EntryCommentDto[];
+
+  @ApiProperty({ type: CommentPaginationMetaDto })
+  meta!: CommentPaginationMetaDto;
+
+  @ApiProperty({ description: "All active root comments and replies on the entry" })
+  commentCount!: number;
 }
 
-class LikeStateDto {
-  @ApiProperty()
-  entryId!: string;
+class EntryCommentResponseDto {
+  @ApiProperty({ type: EntryCommentDto })
+  data!: EntryCommentDto;
+}
 
-  @ApiProperty()
-  likeCount!: number;
+class CommentInteractionStateResponseDto {
+  @ApiProperty({
+    example: { entryId: "uuid", likedCommentIds: ["uuid"] },
+  })
+  data!: { entryId: string; likedCommentIds: string[] };
+}
 
-  @ApiProperty()
-  isLikedByCurrentUser!: boolean;
+class CommentLikeStateResponseDto {
+  @ApiProperty({
+    example: { commentId: "uuid", likeCount: 4, isLikedByCurrentUser: true },
+  })
+  data!: { commentId: string; likeCount: number; isLikedByCurrentUser: boolean };
 }
 
 class LikeStateResponseDto {
-  @ApiProperty({ type: LikeStateDto })
-  data!: LikeStateDto;
+  @ApiProperty({
+    example: { entryId: "uuid", likeCount: 12, isLikedByCurrentUser: true },
+  })
+  data!: { entryId: string; likeCount: number; isLikedByCurrentUser: boolean };
 }
 
 class CommunityMessageResponseDto {
   @ApiProperty()
-  data!: {
-    message: string;
-  };
+  data!: { message: string };
 }
 
 export {
+  CommentInteractionStateResponseDto,
+  CommentLikeStateResponseDto,
   CommunityMessageResponseDto,
+  EntryCommentDto,
+  EntryCommentListResponseDto,
+  EntryCommentResponseDto,
   LikeStateResponseDto,
-  PublicReviewDto,
-  PublicReviewListResponseDto,
-  PublicReviewResponseDto,
 };

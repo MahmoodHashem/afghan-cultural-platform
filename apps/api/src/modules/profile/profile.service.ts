@@ -2,11 +2,11 @@ import { BadRequestException, Inject, Injectable, NotFoundException } from "@nes
 
 import { PrismaService } from "@/database/prisma.service";
 import type { Prisma } from "@/generated/prisma/client";
-import { EntryStatus, PublicReviewStatus } from "@/generated/prisma/enums";
+import { EntryCommentStatus, EntryStatus } from "@/generated/prisma/enums";
 import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.type";
 import type {
   ProfileBookmarksQueryDto,
-  ProfileReviewsQueryDto,
+  ProfileCommentsQueryDto,
 } from "@/modules/profile/dto/profile-query.dto";
 import type { UpdateProfileDto } from "@/modules/profile/dto/update-profile.dto";
 import { PROFILE_ERROR_CODES } from "@/modules/profile/profile.constants";
@@ -42,9 +42,10 @@ const profileEntrySummarySelect = {
   updatedAt: true,
 } as const;
 
-const profileReviewSelect = {
+const profileCommentSelect = {
   id: true,
   entryId: true,
+  parentId: true,
   body: true,
   status: true,
   createdAt: true,
@@ -64,7 +65,7 @@ const profileBookmarkSelect = {
 } as const;
 
 type ProfileUserPayload = Prisma.UserGetPayload<{ select: typeof profileUserSelect }>;
-type ProfileReviewPayload = Prisma.PublicReviewGetPayload<{ select: typeof profileReviewSelect }>;
+type ProfileCommentPayload = Prisma.EntryCommentGetPayload<{ select: typeof profileCommentSelect }>;
 type ProfileBookmarkPayload = Prisma.BookmarkGetPayload<{ select: typeof profileBookmarkSelect }>;
 
 type NormalizedPaginationQuery = {
@@ -136,7 +137,7 @@ class ProfileService {
   }
 
   async getMyStats(user: AuthenticatedUser) {
-    const [entryStatusCounts, reviewCount, bookmarkCount] = await this.prisma.$transaction([
+    const [entryStatusCounts, commentCount, bookmarkCount] = await this.prisma.$transaction([
       this.prisma.culturalEntry.groupBy({
         by: ["status"],
         where: {
@@ -149,10 +150,10 @@ class ProfileService {
           _all: true,
         },
       }),
-      this.prisma.publicReview.count({
+      this.prisma.entryComment.count({
         where: {
-          userId: user.id,
-          status: PublicReviewStatus.ACTIVE,
+          authorId: user.id,
+          status: EntryCommentStatus.ACTIVE,
         },
       }),
       this.prisma.bookmark.count({
@@ -168,35 +169,35 @@ class ProfileService {
     return {
       data: {
         entries,
-        reviews: reviewCount,
+        comments: commentCount,
         bookmarks: bookmarkCount,
         needsAttention: entries.pendingReview + entries.changesRequested,
       },
     };
   }
 
-  async listMyReviews(user: AuthenticatedUser, query: ProfileReviewsQueryDto) {
+  async listMyComments(user: AuthenticatedUser, query: ProfileCommentsQueryDto) {
     const normalizedQuery = this.normalizePagination(query);
-    const where: Prisma.PublicReviewWhereInput = {
-      userId: user.id,
+    const where: Prisma.EntryCommentWhereInput = {
+      authorId: user.id,
       ...(query.status ? { status: query.status } : {}),
     };
 
-    const [reviews, total] = await this.prisma.$transaction([
-      this.prisma.publicReview.findMany({
+    const [comments, total] = await this.prisma.$transaction([
+      this.prisma.entryComment.findMany({
         where,
-        select: profileReviewSelect,
+        select: profileCommentSelect,
         orderBy: {
           [query.sortBy ?? "createdAt"]: query.sortDirection ?? "desc",
         },
         skip: this.skip(normalizedQuery),
         take: normalizedQuery.limit,
       }),
-      this.prisma.publicReview.count({ where }),
+      this.prisma.entryComment.count({ where }),
     ]);
 
     return {
-      data: reviews.map(mapProfileReview),
+      data: comments.map(mapProfileComment),
       meta: this.createMeta(normalizedQuery, total),
     };
   }
@@ -454,15 +455,16 @@ function mapProfileUser(user: ProfileUserPayload) {
   };
 }
 
-function mapProfileReview(review: ProfileReviewPayload) {
+function mapProfileComment(comment: ProfileCommentPayload) {
   return {
-    id: review.id,
-    entryId: review.entryId,
-    body: review.body,
-    status: review.status,
-    entry: review.entry,
-    createdAt: review.createdAt,
-    updatedAt: review.updatedAt,
+    id: comment.id,
+    entryId: comment.entryId,
+    parentId: comment.parentId,
+    body: comment.body,
+    status: comment.status,
+    entry: comment.entry,
+    createdAt: comment.createdAt,
+    updatedAt: comment.updatedAt,
   };
 }
 

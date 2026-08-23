@@ -1,4 +1,5 @@
 import type { Prisma } from "@/generated/prisma/client";
+import { EntryCommentStatus } from "@/generated/prisma/enums";
 
 const sourceSelect = {
   id: true,
@@ -256,6 +257,7 @@ const publicEntryCardSelect = {
     select: {
       bookmarks: true,
       likes: true,
+      comments: { where: { status: EntryCommentStatus.ACTIVE } },
     },
   },
   geographicScope: true,
@@ -515,6 +517,7 @@ function mapPublicEntryCard(entry: PublicEntryCardPayload) {
     updatedAt: entry.updatedAt,
     bookmarkCount: entry._count.bookmarks,
     likeCount: entry._count.likes,
+    commentCount: entry._count.comments,
   };
 }
 

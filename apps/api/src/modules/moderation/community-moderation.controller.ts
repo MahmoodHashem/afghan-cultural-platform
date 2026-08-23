@@ -59,20 +59,20 @@ class CommunityModerationController {
     return this.contentModerationService.submitReport(user, entryId, null, input);
   }
 
-  @Post("reviews/:reviewId/reports")
-  @ApiOperation({ summary: "Report an active public review" })
-  @ApiCreatedResponse({ description: "Review report created" })
+  @Post("comments/:commentId/reports")
+  @ApiOperation({ summary: "Report an active entry comment" })
+  @ApiCreatedResponse({ description: "Comment report created" })
   @ApiUnauthorizedResponse({ description: "Missing or invalid bearer token" })
   @ApiForbiddenResponse({ description: "AUTH_EMAIL_VERIFICATION_REQUIRED" })
   @ApiNotFoundResponse({ description: "REPORT_TARGET_NOT_FOUND" })
   @ApiConflictResponse({ description: "REPORT_ALREADY_OPEN" })
-  reportReview(
+  reportComment(
     @CurrentUser() user: AuthenticatedUser,
     @Param("entryId", ParseUUIDPipe) entryId: string,
-    @Param("reviewId", ParseUUIDPipe) reviewId: string,
+    @Param("commentId", ParseUUIDPipe) commentId: string,
     @Body() input: SubmitReportDto,
   ) {
-    return this.contentModerationService.submitReport(user, entryId, reviewId, input);
+    return this.contentModerationService.submitReport(user, entryId, commentId, input);
   }
 }
 

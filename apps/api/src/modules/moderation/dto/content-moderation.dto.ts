@@ -23,11 +23,11 @@ import {
 } from "@/generated/prisma/enums";
 
 const CORRECTION_SECTIONS = ["TITLE", "SUMMARY", "CONTENT"] as const;
-const REPORT_TARGET_TYPES = ["ENTRY", "REVIEW"] as const;
+const REPORT_TARGET_TYPES = ["ENTRY", "COMMENT"] as const;
 const REPORT_RESOLUTION_ACTIONS = [
   ReportResolutionAction.DISMISS,
   ReportResolutionAction.HIDE_CONTENT,
-  ReportResolutionAction.HIDE_REVIEW,
+  ReportResolutionAction.HIDE_COMMENT,
   ReportResolutionAction.ARCHIVE_CONTENT,
 ] as const;
 

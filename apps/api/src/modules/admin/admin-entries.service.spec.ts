@@ -58,7 +58,7 @@ describe("AdminEntriesService", () => {
     expect(response.data[0]).toMatchObject({
       id: entryId,
       thumbnailUrl: "https://example.com/thumb.jpg",
-      counts: { likes: 3, bookmarks: 2, reviews: 1, openReports: 1 },
+      counts: { likes: 3, bookmarks: 2, comments: 1, openReports: 1 },
     });
     expect(response.statusCounts).toHaveLength(Object.values(EntryStatus).length);
     expect(prisma.culturalEntry.findMany).toHaveBeenCalledWith(
@@ -267,6 +267,6 @@ function createListEntry() {
     images: [
       { thumbnailUrl: "https://example.com/thumb.jpg", secureUrl: "https://example.com/image.jpg" },
     ],
-    _count: { likes: 3, bookmarks: 2, publicReviews: 1, reports: 1 },
+    _count: { likes: 3, bookmarks: 2, comments: 1, reports: 1 },
   };
 }

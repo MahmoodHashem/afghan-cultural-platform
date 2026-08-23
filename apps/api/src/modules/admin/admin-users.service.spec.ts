@@ -18,7 +18,7 @@ type PrismaMock = {
   correctionSuggestion: DelegateMock;
   culturalEntry: DelegateMock;
   like: DelegateMock;
-  publicReview: DelegateMock;
+  entryComment: DelegateMock;
   refreshSession: DelegateMock;
   report: DelegateMock;
   user: DelegateMock;
@@ -51,7 +51,7 @@ describe("AdminUsersService", () => {
         lastLoginAt: null,
         createdAt: new Date(),
         oauthAccounts: [{ provider: AuthProvider.GOOGLE }],
-        _count: { culturalEntries: 3, publicReviews: 2, bookmarks: 4 },
+        _count: { culturalEntries: 3, entryComments: 2, bookmarks: 4 },
       },
     ]);
     prisma.user.count.mockResolvedValue(1);
@@ -70,7 +70,7 @@ describe("AdminUsersService", () => {
     expect(response.data[0]).toMatchObject({
       email: "user@example.com",
       authMethods: ["PASSWORD", AuthProvider.GOOGLE],
-      counts: { entries: 3, reviews: 2, bookmarks: 4 },
+      counts: { entries: 3, comments: 2, bookmarks: 4 },
     });
     expect(response.data[0]).not.toHaveProperty("passwordHash");
     expect(prisma.user.findMany).toHaveBeenCalledWith(
@@ -221,7 +221,7 @@ function createPrismaMock(): PrismaMock {
     correctionSuggestion: delegate(),
     culturalEntry: delegate(),
     like: delegate(),
-    publicReview: delegate(),
+    entryComment: delegate(),
     refreshSession: delegate(),
     report: delegate(),
     user: delegate(),

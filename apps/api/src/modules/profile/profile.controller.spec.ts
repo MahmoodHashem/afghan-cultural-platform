@@ -7,7 +7,7 @@ import { ValidationPipe } from "@nestjs/common";
 import { IS_PUBLIC_ROUTE_KEY, REQUIRE_VERIFIED_EMAIL_KEY } from "@/modules/auth/auth.constants";
 import {
   ProfileBookmarksQueryDto,
-  ProfileReviewsQueryDto,
+  ProfileCommentsQueryDto,
 } from "@/modules/profile/dto/profile-query.dto";
 import { ProfileController } from "@/modules/profile/profile.controller";
 
@@ -34,7 +34,7 @@ describe("ProfileController query DTO validation", () => {
   });
 
   it.each([
-    ["reviews", ProfileReviewsQueryDto],
+    ["comments", ProfileCommentsQueryDto],
     ["bookmarks", ProfileBookmarksQueryDto],
   ] as const)("accepts and transforms pagination for %s", async (_name, metatype) => {
     await expect(

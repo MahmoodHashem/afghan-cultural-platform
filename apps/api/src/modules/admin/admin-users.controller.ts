@@ -27,16 +27,16 @@ import { AdminUsersService } from "@/modules/admin/admin-users.service";
 import { UpdateAdminUserStatusDto } from "@/modules/admin/dto/admin-user-actions.dto";
 import {
   AdminUserActivityQueryDto,
+  AdminUserCommentsQueryDto,
   AdminUserEntriesQueryDto,
-  AdminUserReviewsQueryDto,
   AdminUsersQueryDto,
 } from "@/modules/admin/dto/admin-users-query.dto";
 import {
   AdminRevokeSessionsEnvelopeDto,
   AdminUserActivityResponseDto,
+  AdminUserCommentsResponseDto,
   AdminUserDetailResponseDto,
   AdminUserEntriesResponseDto,
-  AdminUserReviewsResponseDto,
   AdminUserStatusEnvelopeDto,
   AdminUsersResponseDto,
 } from "@/modules/admin/dto/admin-users-response.dto";
@@ -48,7 +48,7 @@ import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.
 @ApiExtraModels(
   AdminUsersQueryDto,
   AdminUserEntriesQueryDto,
-  AdminUserReviewsQueryDto,
+  AdminUserCommentsQueryDto,
   AdminUserActivityQueryDto,
   UpdateAdminUserStatusDto,
 )
@@ -91,15 +91,15 @@ class AdminUsersController {
     return this.adminUsersService.listUserEntries(userId, query);
   }
 
-  @Get(":id/reviews")
-  @ApiOperation({ summary: "List one user's public reviews" })
-  @ApiOkResponse({ type: AdminUserReviewsResponseDto })
+  @Get(":id/comments")
+  @ApiOperation({ summary: "List one user's comments" })
+  @ApiOkResponse({ type: AdminUserCommentsResponseDto })
   @ApiNotFoundResponse({ description: "ADMIN_USER_NOT_FOUND" })
-  listUserReviews(
+  listUserComments(
     @Param("id", ParseUUIDPipe) userId: string,
-    @Query() query: AdminUserReviewsQueryDto,
+    @Query() query: AdminUserCommentsQueryDto,
   ) {
-    return this.adminUsersService.listUserReviews(userId, query);
+    return this.adminUsersService.listUserComments(userId, query);
   }
 
   @Get(":id/activity")

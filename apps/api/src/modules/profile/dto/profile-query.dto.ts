@@ -2,13 +2,13 @@ import { ApiPropertyOptional } from "@nestjs/swagger";
 import { Transform } from "class-transformer";
 import { IsEnum, IsIn, IsInt, IsOptional, Max, Min } from "class-validator";
 
-import { EntryStatus, PublicReviewStatus } from "@/generated/prisma/enums";
+import { EntryCommentStatus, EntryStatus } from "@/generated/prisma/enums";
 
 const PROFILE_SORT_DIRECTIONS = ["asc", "desc"] as const;
-const PROFILE_REVIEW_SORT_FIELDS = ["createdAt", "updatedAt"] as const;
+const PROFILE_COMMENT_SORT_FIELDS = ["createdAt", "updatedAt"] as const;
 const PROFILE_BOOKMARK_SORT_FIELDS = ["createdAt"] as const;
 
-class ProfileReviewsQueryDto {
+class ProfileCommentsQueryDto {
   @ApiPropertyOptional({ minimum: 1, default: 1 })
   @IsOptional()
   @Transform(({ value }) => Number(value))
@@ -24,15 +24,15 @@ class ProfileReviewsQueryDto {
   @Max(100)
   limit?: number = 20;
 
-  @ApiPropertyOptional({ enum: PublicReviewStatus })
+  @ApiPropertyOptional({ enum: EntryCommentStatus })
   @IsOptional()
-  @IsEnum(PublicReviewStatus)
-  status?: PublicReviewStatus;
+  @IsEnum(EntryCommentStatus)
+  status?: EntryCommentStatus;
 
-  @ApiPropertyOptional({ enum: PROFILE_REVIEW_SORT_FIELDS, default: "createdAt" })
+  @ApiPropertyOptional({ enum: PROFILE_COMMENT_SORT_FIELDS, default: "createdAt" })
   @IsOptional()
-  @IsIn(PROFILE_REVIEW_SORT_FIELDS)
-  sortBy?: (typeof PROFILE_REVIEW_SORT_FIELDS)[number] = "createdAt";
+  @IsIn(PROFILE_COMMENT_SORT_FIELDS)
+  sortBy?: (typeof PROFILE_COMMENT_SORT_FIELDS)[number] = "createdAt";
 
   @ApiPropertyOptional({ enum: PROFILE_SORT_DIRECTIONS, default: "desc" })
   @IsOptional()
@@ -76,9 +76,9 @@ class ProfileEntryStatsQueryDto {
 
 export {
   PROFILE_BOOKMARK_SORT_FIELDS,
-  PROFILE_REVIEW_SORT_FIELDS,
+  PROFILE_COMMENT_SORT_FIELDS,
   PROFILE_SORT_DIRECTIONS,
   ProfileBookmarksQueryDto,
+  ProfileCommentsQueryDto,
   ProfileEntryStatsQueryDto,
-  ProfileReviewsQueryDto,
 };

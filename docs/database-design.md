@@ -44,7 +44,7 @@ Version one contains 24 approved entities, including `EntryReference` for manual
 
 | Entity               | Decision               | Reason                                                                                                                                          |
 | -------------------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| User                 | Keep                   | Required for accounts, profiles, roles, moderation attribution, reviews, corrections, reports, and audit actions.                               |
+| User                 | Keep                   | Required for accounts, profiles, roles, moderation attribution, comments, corrections, reports, and audit actions.                              |
 | OAuthAccount         | Keep                   | Required for linking Google and Facebook social-login accounts to platform users.                                                               |
 | CulturalEntry        | Keep                   | Main cultural content object.                                                                                                                   |
 | ContentVersion       | Keep                   | Required to preserve submitted and published history.                                                                                           |
@@ -59,8 +59,9 @@ Version one contains 24 approved entities, including `EntryReference` for manual
 | Image                | Keep                   | Required for Cloudinary image metadata and moderation removal without deleting the entry.                                                       |
 | YouTubeVideo         | Keep                   | Separate one-to-one optional record keeps video validation/removal isolated from the entry.                                                     |
 | Source               | Keep                   | Required for references, oral sources, interviews, and personal experience.                                                                     |
-| Like                 | Keep                   | Required binary appreciation, separate from public reviews, with one like per user per entry.                                                    |
-| PublicReview         | Keep                   | Required public comments, separate from likes and corrections.                                                                                  |
+| Like                 | Keep                   | Required binary appreciation for entries, separate from comments, with one like per user per entry.                                              |
+| EntryComment         | Keep                   | Public comments and nested replies, separate from entry likes and corrections.                                                                   |
+| CommentLike          | Keep                   | Binary appreciation for comments with one like per user and comment.                                                                             |
 | Bookmark             | Keep                   | Allows a registered user to privately save a published Cultural Entry.                                                                          |
 | CorrectionSuggestion | Keep                   | Required workflow for suggested factual/content corrections.                                                                                    |
 | Report               | Keep                   | Required private content complaint workflow.                                                                                                    |
@@ -88,7 +89,8 @@ Version one contains 24 entities:
 13. `YouTubeVideo`
 14. `Source`
 15. `Like`
-16. `PublicReview`
+16. `EntryComment`
+17. `CommentLike`
 17. `Bookmark`
 18. `CorrectionSuggestion`
 19. `Report`
@@ -192,6 +194,7 @@ Meaning and Persian UI labels:
 
 - `DISMISS`
 - `HIDE_CONTENT`
+- `HIDE_COMMENT`
 - `REQUEST_CORRECTIONS`
 - `REMOVE_IMAGE`
 - `REMOVE_YOUTUBE_VIDEO`
@@ -210,13 +213,13 @@ Meaning and Persian UI labels:
 - `MUSEUM_OR_INSTITUTION`
 - `OTHER`
 
-### PublicReviewStatus
+### EntryCommentStatus
 
 - `ACTIVE`
 - `HIDDEN`
 - `DELETED`
 
-This is the review-status equivalent needed for v1 because users may delete their own reviews and moderators may hide inappropriate reviews.
+This status preserves discussion history while authors may delete comments and moderators may hide inappropriate comments.
 
 ### AuditAction
 
@@ -228,6 +231,7 @@ This is the review-status equivalent needed for v1 because users may delete thei
 - `ENTRY_ARCHIVED`
 - `ENTRY_RESTORED`
 - `CORRECTION_ACCEPTED`
+- `COMMENT_HIDDEN`
 - `REPORT_RESOLVED`
 - `USER_ROLE_CHANGED`
 - `USER_SUSPENDED`
@@ -262,9 +266,9 @@ More audit actions can be added later only when new v1 workflows require them.
 
 **Indexes:** `role`, `status`, `provinceId`, `createdAt`.
 
-**Relations:** OAuth accounts, entries, content versions created, moderation reviews, correction suggestions, reports, likes, public reviews, bookmarks, refresh sessions, email verification tokens, password reset tokens, audit logs as actor or target.
+**Relations:** OAuth accounts, entries, content versions created, moderation reviews, correction suggestions, reports, entry likes, entry comments, comment likes, bookmarks, refresh sessions, email verification tokens, password reset tokens, audit logs as actor or target.
 
-**Deletion behavior:** Version one uses suspension only and does not support physical user deletion. Published cultural history, content versions, audit logs, reviews, reports, and moderation records remain preserved.
+**Deletion behavior:** Version one uses suspension only and does not support physical user deletion. Published cultural history, content versions, audit logs, comments, reports, and moderation records remain preserved.
 
 ### OAuthAccount
 
@@ -328,7 +332,7 @@ More audit actions can be added later only when new v1 workflows require them.
 
 **Indexes:** `status`, `geographicScope`, `provinceId`, `districtId`, `categoryId`, `contentTypeId`, `authorId`, `publishedAt`, `createdAt`, `(status, publishedAt)`, `(status, provinceId)`, `(geographicScope, provinceId)`, `(status, categoryId)`, `(status, contentTypeId)`.
 
-**Relations:** Author, optional province, optional district, category, content type, tags through `EntryTag`, images, optional YouTube video, sources, outgoing and incoming internal references through `EntryReference`, content versions, moderation reviews, likes, public reviews, bookmarks, correction suggestions, reports.
+**Relations:** Author, optional province, optional district, category, content type, tags through `EntryTag`, images, optional YouTube video, sources, outgoing and incoming internal references through `EntryReference`, content versions, moderation reviews, entry likes, entry comments, bookmarks, correction suggestions, reports.
 
 **Deletion behavior:** Do not physically delete published cultural entries. Use status transitions: `DRAFT` may be hard-deleted by the author before submission; submitted/published entries should use `REJECTED`, `HIDDEN`, or `ARCHIVED`. Audit logs and content versions remain preserved.
 
@@ -639,7 +643,7 @@ are not imported by taxonomy seeding.
 
 ### Like
 
-**Purpose:** Stores a binary user like for a published Cultural Entry, separate from public reviews.
+**Purpose:** Stores a binary user like for a published Cultural Entry, separate from comments.
 
 | Field     | Type     | Required | Default    | Notes                    |
 | --------- | -------- | -------- | ---------- | ------------------------ |
@@ -658,30 +662,50 @@ are not imported by taxonomy seeding.
 
 **Business rules:** Only authenticated, active, email-verified users may like or unlike. Only published entries may be liked. Like and unlike operations are idempotent. Public responses expose only the aggregate count; user identities are private. Authenticated interaction state may expose whether the current user liked the entry.
 
-### PublicReview
+### EntryComment
 
-**Purpose:** Stores public comments about an entry, separate from likes and corrections.
+**Purpose:** Stores public comments and replies about an entry, separate from entry likes and corrections.
 
-| Field      | Type               | Required | Default       | Notes                            |
-| ---------- | ------------------ | -------- | ------------- | -------------------------------- |
-| id         | UUID               | Yes      | `uuid()`    | Primary key.                     |
-| entryId    | UUID               | Yes      | None          | Reviewed entry.                  |
-| userId     | UUID               | Yes      | None          | Reviewer.                        |
-| body       | String             | Yes      | None          | Public review text.              |
-| status     | PublicReviewStatus | Yes      | `ACTIVE`    | Active, hidden, or user-deleted. |
-| hiddenById | UUID               | No       | None          | Moderator/admin who hid it.      |
-| hiddenAt   | DateTime           | No       | None          | UTC.                             |
-| deletedAt  | DateTime           | No       | None          | UTC.                             |
-| createdAt  | DateTime           | Yes      | `now()`     | UTC.                             |
-| updatedAt  | DateTime           | Yes      | `updatedAt` | UTC.                             |
+| Field      | Type               | Required | Default       | Notes                                      |
+| ---------- | ------------------ | -------- | ------------- | ------------------------------------------ |
+| id         | UUID               | Yes      | `uuid()`      | Primary key.                               |
+| entryId    | UUID               | Yes      | None          | Published entry receiving the comment.     |
+| authorId   | UUID               | Yes      | None          | Comment author.                            |
+| parentId   | UUID               | No       | None          | Immutable parent; null for a root comment. |
+| body       | String             | Yes      | None          | Normalized text, 5–1000 characters.        |
+| status     | EntryCommentStatus | Yes      | `ACTIVE`      | Active, hidden, or author-deleted.          |
+| hiddenById | UUID               | No       | None          | Moderator/admin who hid it.                |
+| hiddenAt   | DateTime           | No       | None          | UTC.                                       |
+| deletedAt  | DateTime           | No       | None          | UTC.                                       |
+| createdAt  | DateTime           | Yes      | `now()`       | UTC.                                       |
+| updatedAt  | DateTime           | Yes      | `updatedAt`   | UTC.                                       |
 
-**Unique constraints:** One active public review per user per entry must be enforced with a PostgreSQL partial unique index on `(user_id, entry_id) WHERE status = 'ACTIVE'`. Prisma cannot define this directly in `schema.prisma`, so the generated migration must include a manual SQL index with a clear explanatory comment. Do not add a normal Prisma `@@unique([userId, entryId])` because users must be able to create a new review after a previous review becomes `DELETED` or `HIDDEN`.
+**Unique constraints:** None. One user may create multiple root comments and replies on the same entry.
 
-**Indexes:** `entryId`, `userId`, `status`, `(entryId, status)`, `createdAt`.
+**Indexes:** `entryId`, `authorId`, `parentId`, `status`, `(entryId, status, parentId, createdAt)`, `(parentId, status, createdAt)`, `(authorId, status, createdAt)`, `createdAt`.
 
-**Relations:** Cultural entry, user, optional hider.
+**Relations:** Cultural entry, author, optional hider, optional parent, replies, likes, and reports.
 
-**Deletion behavior:** Use status-based soft deletion (`DELETED`) rather than physical deletion so moderation and dashboard history remain consistent.
+**Deletion behavior:** Use status-based soft deletion (`DELETED`) rather than physical deletion. A deleted or hidden ancestor is returned without body or author only when needed to connect visible descendants; inactive leaves are omitted. Hiding or deleting removes its likes but preserves reports and thread structure.
+
+**Business rules:** Only published entries accept comments. Authenticated, active, email-verified users may create, edit, delete, like, and report comments. Parents must be active comments on the same entry. Reply depth is unlimited. Authors may reply to themselves but cannot like their own comments. Public counts include active roots and replies.
+
+### CommentLike
+
+**Purpose:** Stores a binary like for an active entry comment.
+
+| Field     | Type     | Required | Default   | Notes                    |
+| --------- | -------- | -------- | --------- | ------------------------ |
+| id        | UUID     | Yes      | `uuid()`  | Primary key.             |
+| userId    | UUID     | Yes      | None      | User who liked.          |
+| commentId | UUID     | Yes      | None      | Active comment liked.    |
+| createdAt | DateTime | Yes      | `now()`   | UTC timestamp.           |
+
+**Unique constraints:** `(userId, commentId)` prevents duplicate likes at the database level.
+
+**Indexes:** `userId`, `commentId`, `(userId, createdAt)`.
+
+**Deletion behavior:** Unlike removes the row. Hiding or deleting the comment removes all associated likes transactionally.
 
 ### Bookmark
 
@@ -742,6 +766,7 @@ are not imported by taxonomy seeding.
 | ---------------- | ---------------------- | -------- | ------------- | -------------------------------- |
 | id               | UUID                   | Yes      | `uuid()`    | Primary key.                     |
 | entryId          | UUID                   | Yes      | None          | Reported entry.                  |
+| entryCommentId   | UUID                   | No       | None          | Reported comment, null for an entry report. |
 | reportedById     | UUID                   | Yes      | None          | Reporter.                        |
 | reviewedById     | UUID                   | No       | None          | Moderator/admin handling report. |
 | reason           | ReportReason           | Yes      | None          | Required reason.                 |
@@ -755,9 +780,9 @@ are not imported by taxonomy seeding.
 
 **Unique constraints:** None for v1. A duplicate-report prevention rule can be added later if needed.
 
-**Indexes:** `entryId`, `reportedById`, `reviewedById`, `status`, `reason`, `createdAt`, `(status, createdAt)`.
+**Indexes:** `entryId`, `entryCommentId`, `reportedById`, `reviewedById`, `status`, `reason`, `createdAt`, `(status, createdAt)`.
 
-**Relations:** Cultural entry, reporting user, reviewing user.
+**Relations:** Cultural entry, optional entry comment, reporting user, reviewing user.
 
 **Deletion behavior:** Preserve privately. Reports must not be publicly displayed and should not be destroyed when content is archived.
 
@@ -870,7 +895,9 @@ are not imported by taxonomy seeding.
 - `CulturalEntry` to `EntryReference`: one entry has zero to many outgoing references as a source and zero to many incoming references as a target.
 - `CulturalEntry` to `ModerationReview`: one entry has zero to many moderation reviews.
 - `CulturalEntry` to `Like`: one entry has zero to many likes.
-- `CulturalEntry` to `PublicReview`: one entry has zero to many public reviews.
+- `CulturalEntry` to `EntryComment`: one entry has zero to many root comments and replies.
+- `EntryComment` to itself: one comment has an optional parent and zero to many direct replies.
+- `EntryComment` to `CommentLike`: one comment has zero to many likes.
 - `CulturalEntry` to `Bookmark`: one entry has zero to many bookmarks.
 - `CulturalEntry` to `CorrectionSuggestion`: one entry has zero to many correction suggestions.
 - `CulturalEntry` to `Report`: one entry has zero to many reports.
@@ -878,7 +905,7 @@ are not imported by taxonomy seeding.
 - `User` to `Bookmark`: one user has zero to many private bookmarks.
 - `User` to `Like`: one user has zero to many likes.
 - `User` to `EmailVerificationToken`: one user has zero to many email verification tokens.
-- `User` to moderation, correction, report, like, and review records: a user may create or review many records depending on role.
+- `User` to moderation, correction, report, entry-like, comment, and comment-like records: a user may create or review many records depending on role.
 
 ## Important Constraints And Business Rules
 
@@ -896,8 +923,8 @@ are not imported by taxonomy seeding.
 - `CulturalEntry.geographicScope = NATIONAL` requires `provinceId = null` and `districtId = null`.
 - `CulturalEntry.geographicScope = NONE` requires `provinceId = null` and `districtId = null`.
 - Province filters must return only entries with `geographicScope = PROVINCE` and the matching province. National entries are available through a separate `geographicScope = NATIONAL` filter, and `NONE` entries must not be assigned to a province.
-- A user may have one like per entry; likes remain separate from reviews.
-- A user may have one active public review per entry.
+- A user may have one entry like per entry and one comment like per comment.
+- A user may create multiple comments and replies on one entry.
 - A user may have one bookmark per entry.
 - Version one supports one optional YouTube video per entry.
 - A moderator cannot approve their own entry; enforce in service logic and test it.
@@ -918,7 +945,7 @@ are not imported by taxonomy seeding.
 - Audit logs must remain preserved.
 - Hidden, rejected, and archived entries must not appear in public search or public listing.
 - Bookmarks are private convenience data and do not change popularity, moderation status, or view count.
-- Public reviews do not directly change entry content.
+- Entry comments do not directly change entry content.
 - Reports do not automatically remove content.
 - Images require ownership or permission confirmation before publication. Version one allows up to six images per entry, with a maximum size of 5 MB each.
 - Sources are allowed as zero or many records; written sources are optional because some cultural knowledge is based on oral history or personal experience.
@@ -929,7 +956,7 @@ are not imported by taxonomy seeding.
 
 ### Users
 
-Suspension is the version-one account control. A suspended user remains in the database but cannot log in or perform protected actions. Their published entries, reviews, reports, moderation actions, and audit history remain preserved. Version one does not support physical user deletion.
+Suspension is the version-one account control. A suspended user remains in the database but cannot log in or perform protected actions. Their published entries, comments, reports, moderation actions, and audit history remain preserved. Version one does not support physical user deletion.
 
 When a user is suspended:
 
@@ -960,7 +987,9 @@ This avoids deletion rules that destroy published cultural history.
 | CulturalEntry -> ModerationReview              | Preserve.                                                                                                                                                              |
 | CulturalEntry -> CorrectionSuggestion          | Preserve.                                                                                                                                                              |
 | CulturalEntry -> Report                        | Preserve privately.                                                                                                                                                    |
-| CulturalEntry -> PublicReview                  | Preserve with status; do not cascade from published entries.                                                                                                           |
+| CulturalEntry -> EntryComment                  | Preserve with status; do not cascade from published entries.                                                                                                           |
+| EntryComment -> EntryComment                   | Preserve parent paths; parent IDs are immutable and use restricted deletion.                                                                                            |
+| EntryComment -> CommentLike                    | Cascade lightweight likes if the comment is ever physically removed; normal hide/delete removes likes explicitly.                                                      |
 | User -> Bookmark                               | Cascade-delete is acceptable because bookmarks are private convenience data.                                                                                           |
 | CulturalEntry -> Bookmark                      | Published entries should normally be archived, not physically deleted; if a draft is hard-deleted, bookmark cascade is irrelevant because drafts cannot be bookmarked. |
 | CulturalEntry -> Image                         | Draft cascade allowed; submitted/published entries use`isRemoved`.                                                                                                   |
@@ -1100,7 +1129,8 @@ Use PostgreSQL `ILIKE` over normalized text for v1. Consider trigram indexes onl
 - Reports: `(Report.status, Report.createdAt)`, `Report.reason`, `Report.entryId`, `Report.reportedById`
 - Corrections: `(CorrectionSuggestion.status, CorrectionSuggestion.submittedAt)`, `CorrectionSuggestion.entryId`, `CorrectionSuggestion.submittedById`
 - Likes: `Like.userId`, `Like.entryId`, unique `(Like.userId, Like.entryId)`
-- Public reviews: `(PublicReview.entryId, PublicReview.status)`, `(PublicReview.userId, PublicReview.status)`
+- Entry comments: `(EntryComment.entryId, EntryComment.status, EntryComment.parentId, EntryComment.createdAt)`, `(EntryComment.parentId, EntryComment.status, EntryComment.createdAt)`
+- Comment likes: unique `(CommentLike.userId, CommentLike.commentId)` and indexes on both foreign keys
 - Bookmarks: `Bookmark.userId`, `Bookmark.entryId`, `(Bookmark.userId, Bookmark.createdAt)`, unique `(Bookmark.userId, Bookmark.entryId)`
 - OAuth accounts: `OAuthAccount.userId`, `OAuthAccount.provider`, `OAuthAccount.providerEmail`, unique `(OAuthAccount.provider, OAuthAccount.providerAccountId)`, unique `(OAuthAccount.userId, OAuthAccount.provider)`
 - Email verification tokens: `EmailVerificationToken.userId`, `EmailVerificationToken.expiresAt`, `EmailVerificationToken.usedAt`, unique `EmailVerificationToken.tokenHash`
@@ -1117,7 +1147,8 @@ erDiagram
   User ||--o{ CorrectionSuggestion : submits
   User ||--o{ Report : submits
   User ||--o{ Like : likes
-  User ||--o{ PublicReview : reviews
+  User ||--o{ EntryComment : comments
+  User ||--o{ CommentLike : likes
   User ||--o{ Bookmark : saves
   User ||--o{ RefreshSession : has
   User ||--o{ EmailVerificationToken : verifies
@@ -1136,7 +1167,9 @@ erDiagram
   CulturalEntry ||--o| YouTubeVideo : has
   CulturalEntry ||--o{ Source : cites
   CulturalEntry ||--o{ Like : receives
-  CulturalEntry ||--o{ PublicReview : receives
+  CulturalEntry ||--o{ EntryComment : receives
+  EntryComment ||--o{ EntryComment : replies
+  EntryComment ||--o{ CommentLike : receives
   CulturalEntry ||--o{ Bookmark : bookmarked_as
   CulturalEntry ||--o{ CorrectionSuggestion : receives
   CulturalEntry ||--o{ Report : receives
@@ -1157,7 +1190,7 @@ The following previously open decisions are now approved for Phase B:
 
 - Districts: use managed `District` records. `provinceId` is required on `District`. On `CulturalEntry`, `districtId` is optional and allowed only when `geographicScope = PROVINCE`; `villageOrLocation` remains optional free text.
 - User deletion: version one does not support physical deletion. Use suspension only. Historical data must be preserved.
-- Public reviews: use status-based soft deletion with `ACTIVE`, `HIDDEN`, and `DELETED`.
+- Entry comments: use status-based soft deletion with `ACTIVE`, `HIDDEN`, and `DELETED`; retain tombstones only for visible thread paths.
 - Audit logs: keep `metadata` as flexible JSON.
 - Sources: allow zero or many sources. Written sources are optional because some cultural knowledge is based on oral history or personal experience.
 - Email verification: mandatory in version one.
@@ -1181,8 +1214,8 @@ No unresolved product-level database decisions remain before Prisma implementati
 9. Implement unique `(provider, providerAccountId)` and unique `(userId, provider)` for `OAuthAccount`.
 10. Add `EmailVerificationToken` with hashed token storage, single-use tracking, expiration, and indexes.
 11. Add required unique `CulturalEntry.key`, keep required unique Persian `CulturalEntry.slug`, and implement key immutability plus published-entry slug immutability in service logic.
-12. Add the manual SQL partial unique index for one active public review per user and entry.
+12. Add the comment self-relation and database uniqueness for comment likes; do not limit comments per user and entry.
 13. Add the first migration only after models are approved.
 14. Generate Prisma Client after schema implementation.
-15. Add focused tests for status transitions, self-approval prevention, accepted correction versioning, like uniqueness and idempotency, review uniqueness, bookmark uniqueness, OAuth account uniqueness, email verification token behavior, entry-reference constraints, geography-scope validation, and deletion/preservation behavior.
+15. Add focused tests for status transitions, self-approval prevention, accepted correction versioning, entry/comment like uniqueness and idempotency, nested comment visibility, bookmark uniqueness, OAuth account uniqueness, email verification token behavior, entry-reference constraints, geography-scope validation, and deletion/preservation behavior.
 16. Keep Prisma access inside NestJS services and transactions.

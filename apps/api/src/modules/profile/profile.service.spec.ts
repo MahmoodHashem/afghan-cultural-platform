@@ -5,7 +5,7 @@ jest.mock("@/database/prisma.service", () => ({
 import { BadRequestException, NotFoundException } from "@nestjs/common";
 
 import type { PrismaService } from "@/database/prisma.service";
-import { EntryStatus, PublicReviewStatus, UserRole, UserStatus } from "@/generated/prisma/enums";
+import { EntryCommentStatus, EntryStatus, UserRole, UserStatus } from "@/generated/prisma/enums";
 import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.type";
 import { PROFILE_ERROR_CODES } from "@/modules/profile/profile.constants";
 import { ProfileService } from "@/modules/profile/profile.service";
@@ -26,7 +26,7 @@ type PrismaMock = {
   bookmark: DelegateMock;
   culturalEntry: DelegateMock;
   province: DelegateMock;
-  publicReview: DelegateMock;
+  entryComment: DelegateMock;
   user: DelegateMock;
   $transaction: jest.Mock;
 };
@@ -84,7 +84,7 @@ describe("ProfileService", () => {
       { status: EntryStatus.PENDING_REVIEW, _count: { _all: 1 } },
       { status: EntryStatus.PUBLISHED, _count: { _all: 3 } },
     ]);
-    prisma.publicReview.count.mockResolvedValue(4);
+    prisma.entryComment.count.mockResolvedValue(4);
     prisma.bookmark.count.mockResolvedValue(5);
 
     const response = await service.getMyStats(user);
@@ -92,35 +92,36 @@ describe("ProfileService", () => {
     expect(response.data.entries.all).toBe(6);
     expect(response.data.entries.published).toBe(3);
     expect(response.data.needsAttention).toBe(1);
-    expect(response.data.reviews).toBe(4);
+    expect(response.data.comments).toBe(4);
     expect(response.data.bookmarks).toBe(5);
   });
 
-  it("lists current-user reviews with pagination metadata", async () => {
-    prisma.publicReview.findMany.mockResolvedValue([
+  it("lists current-user comments with pagination metadata", async () => {
+    prisma.entryComment.findMany.mockResolvedValue([
       {
         id: "44444444-4444-4444-4444-444444444444",
         entryId: publishedEntry.id,
+        parentId: null,
         body: "دیدگاه نمونه",
-        status: PublicReviewStatus.ACTIVE,
+        status: EntryCommentStatus.ACTIVE,
         entry: publishedEntry,
         createdAt: new Date("2026-01-04T00:00:00.000Z"),
         updatedAt: new Date("2026-01-04T00:00:00.000Z"),
       },
     ]);
-    prisma.publicReview.count.mockResolvedValue(1);
+    prisma.entryComment.count.mockResolvedValue(1);
 
-    const response = await service.listMyReviews(user, {
+    const response = await service.listMyComments(user, {
       page: 1,
       limit: 10,
-      status: PublicReviewStatus.ACTIVE,
+      status: EntryCommentStatus.ACTIVE,
     });
 
-    expect(prisma.publicReview.findMany).toHaveBeenCalledWith(
+    expect(prisma.entryComment.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: {
-          userId: user.id,
-          status: PublicReviewStatus.ACTIVE,
+          authorId: user.id,
+          status: EntryCommentStatus.ACTIVE,
         },
         skip: 0,
         take: 10,
@@ -246,7 +247,7 @@ function createPrismaMock(): PrismaMock {
     bookmark: createDelegateMock(),
     culturalEntry: createDelegateMock(),
     province: createDelegateMock(),
-    publicReview: createDelegateMock(),
+    entryComment: createDelegateMock(),
     user: createDelegateMock(),
     $transaction: jest.fn(),
   };

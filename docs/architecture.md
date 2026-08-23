@@ -91,7 +91,7 @@ apps/web/src/
 │   ├── auth/
 │   ├── entries/
 │   ├── bookmarks/
-│   ├── reviews/
+│   ├── comments/
 │   ├── corrections/
 │   ├── reports/
 │   ├── moderation/
@@ -413,16 +413,18 @@ Owns:
 - Public aggregate like counts
 - Private current-user like state
 
-Likes are binary and remain separate from public reviews. The API never exposes the list of users who liked an entry.
+Entry likes are binary and remain separate from comments. Comment likes are also binary, scoped to a comment, and never expose liker identities.
 
-### Reviews
+### Entry Comments
 
 Owns:
 
-- Public reviews
-- Review editing
-- Soft deletion
-- Moderator hiding
+- Multiple comments per user and published entry
+- Unlimited nested replies through immutable parent IDs
+- Comment editing and status-based soft deletion
+- Idempotent comment likes with database uniqueness
+- Branch pagination and tombstones for hidden/deleted ancestors with visible descendants
+- Comment reporting and moderator hiding
 
 ### Taxonomy
 
@@ -517,7 +519,7 @@ Corrections ────────► Audit
 Reports ────────────► Entries
 Reports ────────────► Audit
 
-Reviews ────────────► Entries
+Comments ───────────► Entries
 
 Admin ──────────────► Users
 Admin ──────────────► Entries
@@ -603,7 +605,7 @@ Use kebab-case:
 ```text
 create-entry.dto.ts
 entries.service.ts
-public-reviews/
+entry-comments/
 persian-normalizer.ts
 ```
 
@@ -709,7 +711,7 @@ Adding one of these technologies requires a documented architecture decision.
 10. Public content pages
 11. Search and filtering
 12. Bookmarks
-13. Likes and reviews
+13. Entry likes, comments, and comment likes
 14. Corrections and reports
 15. Administration and audit logs
 16. Testing and deployment

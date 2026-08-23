@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
-import { EntryStatus, PublicReviewStatus, UserRole, UserStatus } from "@/generated/prisma/enums";
+import { EntryCommentStatus, EntryStatus, UserRole, UserStatus } from "@/generated/prisma/enums";
 
 class ProfileProvinceDto {
   @ApiProperty()
@@ -90,7 +90,7 @@ class ProfileStatsDto {
   entries!: ProfileEntryStatusCountsDto;
 
   @ApiProperty()
-  reviews!: number;
+  comments!: number;
 
   @ApiProperty()
   bookmarks!: number;
@@ -141,18 +141,21 @@ class ProfileEntrySummaryDto {
   updatedAt!: Date;
 }
 
-class ProfileReviewDto {
+class ProfileCommentDto {
   @ApiProperty()
   id!: string;
 
   @ApiProperty()
   entryId!: string;
 
+  @ApiPropertyOptional({ nullable: true })
+  parentId!: string | null;
+
   @ApiProperty()
   body!: string;
 
-  @ApiProperty({ enum: PublicReviewStatus })
-  status!: PublicReviewStatus;
+  @ApiProperty({ enum: EntryCommentStatus })
+  status!: EntryCommentStatus;
 
   @ApiProperty({ type: ProfileEntrySummaryDto })
   entry!: ProfileEntrySummaryDto;
@@ -164,9 +167,9 @@ class ProfileReviewDto {
   updatedAt!: Date;
 }
 
-class ProfileReviewsResponseDto {
-  @ApiProperty({ type: [ProfileReviewDto] })
-  data!: ProfileReviewDto[];
+class ProfileCommentsResponseDto {
+  @ApiProperty({ type: [ProfileCommentDto] })
+  data!: ProfileCommentDto[];
 
   @ApiProperty({ type: ProfileListMetaDto })
   meta!: ProfileListMetaDto;
@@ -216,7 +219,7 @@ class ProfileBookmarkStatusResponseDto {
 export {
   ProfileBookmarkStatusResponseDto,
   ProfileBookmarksResponseDto,
+  ProfileCommentsResponseDto,
   ProfileResponseDto,
-  ProfileReviewsResponseDto,
   ProfileStatsResponseDto,
 };

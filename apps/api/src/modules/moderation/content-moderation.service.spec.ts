@@ -6,8 +6,8 @@ import type { PrismaService } from "@/database/prisma.service";
 import {
   AuditAction,
   CorrectionStatus,
+  EntryCommentStatus,
   EntryStatus,
-  PublicReviewStatus,
   ReportReason,
   ReportResolutionAction,
   ReportStatus,
@@ -25,7 +25,7 @@ const ids = {
   moderator: "33333333-3333-4333-8333-333333333333",
   correction: "44444444-4444-4444-8444-444444444444",
   report: "55555555-5555-4555-8555-555555555555",
-  review: "66666666-6666-4666-8666-666666666666",
+  comment: "66666666-6666-4666-8666-666666666666",
 };
 
 const moderator: AuthenticatedUser = {
@@ -87,48 +87,48 @@ describe("ContentModerationService", () => {
     });
   });
 
-  it("creates a review report only after validating its published entry and active review", async () => {
+  it("creates a comment report only after validating its published entry and active comment", async () => {
     prisma.culturalEntry.findFirst.mockResolvedValue({ id: ids.entry });
-    prisma.publicReview.findFirst.mockResolvedValue({ id: ids.review });
+    prisma.entryComment.findFirst.mockResolvedValue({ id: ids.comment });
     prisma.report.findFirst.mockResolvedValue(null);
-    prisma.report.create.mockResolvedValue(reportPayload({ publicReviewId: ids.review }));
+    prisma.report.create.mockResolvedValue(reportPayload({ entryCommentId: ids.comment }));
 
-    const response = await service.submitReport(moderator, ids.entry, ids.review, {
+    const response = await service.submitReport(moderator, ids.entry, ids.comment, {
       reason: ReportReason.SPAM,
       explanation: "این دیدگاه تبلیغ نامرتبط و تکراری دارد.",
     });
 
-    expect(response.data.targetType).toBe("REVIEW");
+    expect(response.data.targetType).toBe("COMMENT");
     expect(response.data).not.toHaveProperty("reportedBy");
   });
 
-  it("hides an active review while resolving its report transactionally", async () => {
+  it("hides an active comment and removes its likes while resolving its report", async () => {
     prisma.report.findUnique
-      .mockResolvedValueOnce(reportPayload({ publicReviewId: ids.review }))
+      .mockResolvedValueOnce(reportPayload({ entryCommentId: ids.comment }))
       .mockResolvedValueOnce(
         reportPayload({
-          publicReviewId: ids.review,
+          entryCommentId: ids.comment,
           status: ReportStatus.RESOLVED,
-          resolutionAction: ReportResolutionAction.HIDE_REVIEW,
+          resolutionAction: ReportResolutionAction.HIDE_COMMENT,
         }),
       );
     prisma.report.updateMany.mockResolvedValue({ count: 1 });
-    prisma.publicReview.updateMany.mockResolvedValue({ count: 1 });
+    prisma.entryComment.updateMany.mockResolvedValue({ count: 1 });
 
     const response = await service.resolveReport(moderator, ids.report, {
-      resolutionAction: ReportResolutionAction.HIDE_REVIEW,
+      resolutionAction: ReportResolutionAction.HIDE_COMMENT,
       notes: "دیدگاه با قواعد انتشار سازگار نیست.",
     });
 
-    expect(prisma.publicReview.updateMany).toHaveBeenCalledWith(
+    expect(prisma.entryComment.updateMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { id: ids.review, status: PublicReviewStatus.ACTIVE },
+        where: { id: ids.comment, status: EntryCommentStatus.ACTIVE },
       }),
     );
     expect(response.data.status).toBe(ReportStatus.RESOLVED);
     expect(audit.createWithClient).toHaveBeenCalledWith(
       prisma,
-      expect.objectContaining({ action: AuditAction.REVIEW_HIDDEN }),
+      expect.objectContaining({ action: AuditAction.COMMENT_HIDDEN }),
     );
   });
 
@@ -149,6 +149,7 @@ function createPrismaMock() {
   const delegate = () => ({
     count: jest.fn(),
     create: jest.fn(),
+    deleteMany: jest.fn(),
     findFirst: jest.fn(),
     findMany: jest.fn(),
     findUnique: jest.fn(),
@@ -158,7 +159,8 @@ function createPrismaMock() {
     culturalEntry: delegate(),
     correctionSuggestion: delegate(),
     contentVersion: delegate(),
-    publicReview: delegate(),
+    entryComment: delegate(),
+    commentLike: delegate(),
     report: delegate(),
     auditLog: delegate(),
     $transaction: jest.fn(),
@@ -201,11 +203,11 @@ function correctionPayload() {
 }
 
 function reportPayload(overrides: Record<string, unknown> = {}) {
-  const publicReviewId = overrides.publicReviewId === undefined ? null : overrides.publicReviewId;
+  const entryCommentId = overrides.entryCommentId === undefined ? null : overrides.entryCommentId;
   return {
     id: ids.report,
     entryId: ids.entry,
-    publicReviewId,
+    entryCommentId,
     reviewedById: null,
     reason: ReportReason.SPAM,
     explanation: "این محتوا برای بررسی گزارش شده است.",
@@ -223,13 +225,13 @@ function reportPayload(overrides: Record<string, unknown> = {}) {
       status: EntryStatus.PUBLISHED,
       publishedAt: new Date(),
     },
-    publicReview: publicReviewId
+    entryComment: entryCommentId
       ? {
-          id: ids.review,
+          id: ids.comment,
           body: "دیدگاه گزارش‌شده",
-          status: PublicReviewStatus.ACTIVE,
+          status: EntryCommentStatus.ACTIVE,
           createdAt: new Date(),
-          user: { id: ids.user, displayName: "Reader" },
+          author: { id: ids.user, displayName: "Reader" },
         }
       : null,
     reviewedBy: null,

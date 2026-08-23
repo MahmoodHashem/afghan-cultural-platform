@@ -56,7 +56,7 @@ const adminEntryListSelect = {
     select: {
       likes: true,
       bookmarks: true,
-      publicReviews: true,
+      comments: true,
       reports: { where: { status: ReportStatus.OPEN } },
     },
   },
@@ -123,7 +123,7 @@ const adminEntryDetailSelect = {
     select: {
       likes: true,
       bookmarks: true,
-      publicReviews: true,
+      comments: true,
       reports: { where: { status: ReportStatus.OPEN } },
       correctionSuggestions: true,
     },
@@ -207,7 +207,7 @@ class AdminEntriesService {
         counts: {
           likes: entry._count.likes,
           bookmarks: entry._count.bookmarks,
-          reviews: entry._count.publicReviews,
+          comments: entry._count.comments,
           openReports: entry._count.reports,
           corrections: entry._count.correctionSuggestions,
         },
@@ -404,7 +404,7 @@ function mapAdminEntryListItem(entry: AdminEntryListPayload) {
     counts: {
       likes: entry._count.likes,
       bookmarks: entry._count.bookmarks,
-      reviews: entry._count.publicReviews,
+      comments: entry._count.comments,
       openReports: entry._count.reports,
     },
     submittedAt: entry.submittedAt,

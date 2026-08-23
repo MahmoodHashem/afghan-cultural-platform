@@ -6,8 +6,8 @@ import { AdminUsersController } from "@/modules/admin/admin-users.controller";
 import { UpdateAdminUserStatusDto } from "@/modules/admin/dto/admin-user-actions.dto";
 import {
   AdminUserActivityQueryDto,
+  AdminUserCommentsQueryDto,
   AdminUserEntriesQueryDto,
-  AdminUserReviewsQueryDto,
   AdminUsersQueryDto,
 } from "@/modules/admin/dto/admin-users-query.dto";
 
@@ -20,8 +20,8 @@ describe("AdminUsersController runtime DTO metadata", () => {
       Reflect.getMetadata("design:paramtypes", AdminUsersController.prototype, "listUserEntries"),
     ).toEqual([String, AdminUserEntriesQueryDto]);
     expect(
-      Reflect.getMetadata("design:paramtypes", AdminUsersController.prototype, "listUserReviews"),
-    ).toEqual([String, AdminUserReviewsQueryDto]);
+      Reflect.getMetadata("design:paramtypes", AdminUsersController.prototype, "listUserComments"),
+    ).toEqual([String, AdminUserCommentsQueryDto]);
     expect(
       Reflect.getMetadata("design:paramtypes", AdminUsersController.prototype, "listUserActivity"),
     ).toEqual([String, AdminUserActivityQueryDto]);

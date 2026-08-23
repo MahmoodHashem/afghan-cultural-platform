@@ -7,8 +7,8 @@ import { ValidationPipe } from "@nestjs/common";
 import { IS_PUBLIC_ROUTE_KEY, REQUIRE_VERIFIED_EMAIL_KEY } from "@/modules/auth/auth.constants";
 import { CommunityController } from "@/modules/community/community.controller";
 import {
-  CreatePublicReviewDto,
-  UpdatePublicReviewDto,
+  CreateEntryCommentDto,
+  UpdateEntryCommentDto,
 } from "@/modules/community/dto/community-feedback.dto";
 
 describe("CommunityController like authorization metadata", () => {
@@ -21,15 +21,21 @@ describe("CommunityController like authorization metadata", () => {
     ).toBeUndefined();
   });
 
-  it.each(["likeEntry", "unlikeEntry"] as const)(
-    "requires authentication and verified email for %s",
-    (methodName) => {
-      const handler = CommunityController.prototype[methodName];
+  it.each([
+    "likeEntry",
+    "unlikeEntry",
+    "createComment",
+    "updateComment",
+    "deleteComment",
+    "likeComment",
+    "unlikeComment",
+    "getCommentInteractions",
+  ] as const)("requires authentication and verified email for %s", (methodName) => {
+    const handler = CommunityController.prototype[methodName];
 
-      expect(Reflect.getMetadata(IS_PUBLIC_ROUTE_KEY, handler)).toBeUndefined();
-      expect(Reflect.getMetadata(REQUIRE_VERIFIED_EMAIL_KEY, handler)).toBe(true);
-    },
-  );
+    expect(Reflect.getMetadata(IS_PUBLIC_ROUTE_KEY, handler)).toBeUndefined();
+    expect(Reflect.getMetadata(REQUIRE_VERIFIED_EMAIL_KEY, handler)).toBe(true);
+  });
 });
 
 describe("CommunityController request DTO validation", () => {
@@ -40,8 +46,13 @@ describe("CommunityController request DTO validation", () => {
   });
 
   it.each([
-    ["create review", CreatePublicReviewDto, { body: "A sufficiently detailed public review." }],
-    ["update review", UpdatePublicReviewDto, { body: "An updated and detailed public review." }],
+    ["create comment", CreateEntryCommentDto, { body: "A useful comment." }],
+    [
+      "create reply",
+      CreateEntryCommentDto,
+      { body: "A useful reply.", parentId: "11111111-1111-4111-8111-111111111111" },
+    ],
+    ["update comment", UpdateEntryCommentDto, { body: "An updated comment." }],
   ] as const)("accepts the documented body for %s", async (_name, metatype, body) => {
     await expect(
       validationPipe.transform(body, {

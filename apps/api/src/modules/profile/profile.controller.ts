@@ -28,13 +28,13 @@ import { RequireVerifiedEmail } from "@/modules/auth/decorators/require-verified
 import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.type";
 import {
   ProfileBookmarksQueryDto,
-  ProfileReviewsQueryDto,
+  ProfileCommentsQueryDto,
 } from "@/modules/profile/dto/profile-query.dto";
 import {
   ProfileBookmarkStatusResponseDto,
   ProfileBookmarksResponseDto,
+  ProfileCommentsResponseDto,
   ProfileResponseDto,
-  ProfileReviewsResponseDto,
   ProfileStatsResponseDto,
 } from "@/modules/profile/dto/profile-response.dto";
 import { UpdateProfileDto } from "@/modules/profile/dto/update-profile.dto";
@@ -42,7 +42,7 @@ import { ProfileService } from "@/modules/profile/profile.service";
 
 @ApiTags("Profile")
 @ApiBearerAuth()
-@ApiExtraModels(ProfileBookmarksQueryDto, ProfileReviewsQueryDto, UpdateProfileDto)
+@ApiExtraModels(ProfileBookmarksQueryDto, ProfileCommentsQueryDto, UpdateProfileDto)
 @Controller("profile/me")
 class ProfileController {
   constructor(@Inject(ProfileService) private readonly profileService: ProfileService) {}
@@ -80,7 +80,7 @@ class ProfileController {
   @ApiOperation({
     summary: "Get current-user profile stats",
     description:
-      "Returns real owner counts for entries by status, active reviews, visible bookmarks, and contribution items needing attention.",
+      "Returns real owner counts for entries by status, comments, visible bookmarks, and contribution items needing attention.",
   })
   @ApiOkResponse({ type: ProfileStatsResponseDto })
   @ApiUnauthorizedResponse({ description: "Missing or invalid bearer token" })
@@ -88,17 +88,17 @@ class ProfileController {
     return this.profileService.getMyStats(user);
   }
 
-  @Get("reviews")
+  @Get("comments")
   @ApiOperation({
-    summary: "List current-user public reviews",
+    summary: "List current-user comments",
     description:
-      "Returns the authenticated user's own reviews with safe entry summaries and pagination. This endpoint is private to the owner profile.",
+      "Returns the authenticated user's comments and replies with safe entry summaries and pagination.",
   })
-  @ApiOkResponse({ type: ProfileReviewsResponseDto })
+  @ApiOkResponse({ type: ProfileCommentsResponseDto })
   @ApiBadRequestResponse({ description: "Validation failed" })
   @ApiUnauthorizedResponse({ description: "Missing or invalid bearer token" })
-  listMyReviews(@CurrentUser() user: AuthenticatedUser, @Query() query: ProfileReviewsQueryDto) {
-    return this.profileService.listMyReviews(user, query);
+  listMyComments(@CurrentUser() user: AuthenticatedUser, @Query() query: ProfileCommentsQueryDto) {
+    return this.profileService.listMyComments(user, query);
   }
 
   @Get("bookmarks")

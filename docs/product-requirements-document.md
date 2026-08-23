@@ -15,7 +15,7 @@ The product is a centralized Persian-language crowdsourced web platform for coll
 
 Registered users can contribute cultural articles, stories, images, sources, and YouTube videos. Submitted content is not published immediately. A moderator reviews each contribution and may approve it, reject it, or return it to the contributor for correction.
 
-Visitors can search and browse approved content by keyword, province, category, tag, and content type. Registered users can also like content, save bookmarks, write reviews, suggest corrections, and report inaccurate or inappropriate information.
+Visitors can search and browse approved content by keyword, province, category, tag, and content type. Registered users can also like content, save bookmarks, join entry discussions, suggest corrections, and report inaccurate or inappropriate information.
 
 The main product process is:
 
@@ -115,7 +115,7 @@ The first version will include:
     
 - Search and filters
     
-- Public reviews
+- Public entry comments and replies
     
 - Correction suggestions
     
@@ -253,7 +253,7 @@ A visitor can:
     
 - View sources
     
-- View public reviews
+- View public comments and replies
     
 - Register or log in
     
@@ -262,7 +262,7 @@ A visitor cannot:
 
 - Create content
     
-- Write reviews
+- Write comments and replies
     
 - Suggest corrections
     
@@ -297,7 +297,7 @@ A user can:
     
 - Edit and resubmit returned content
     
-- Write public reviews
+- Write public comments and replies
     
 - Suggest corrections
     
@@ -338,7 +338,7 @@ A moderator can:
     
 - Hide inappropriate content
     
-- Hide inappropriate public reviews
+- Hide inappropriate comments
     
 - View content versions
     
@@ -400,7 +400,7 @@ ADMIN
 |Create cultural content|No|Yes|Yes|Yes|
 |Save drafts|No|Yes|Yes|Yes|
 |Submit content|No|Yes|Yes|Yes|
-|Write public reviews|No|Yes|Yes|Yes|
+|Write comments and replies|No|Yes|Yes|Yes|
 |Suggest corrections|No|Yes|Yes|Yes|
 |Report content|No|Yes|Yes|Yes|
 |Review submissions|No|No|Yes|Yes|
@@ -942,19 +942,27 @@ Private information such as email addresses shall not be publicly displayed.
 
 ---
 
-## 13.7 Public Reviews
+## 13.7 Entry Comments
 
-**FR-PRV-01:** A registered user shall be able to write a public review.
+**FR-COM-01:** An authenticated, active, email-verified user shall be able to write multiple comments on a published Cultural Entry.
 
-**FR-PRV-02:** A user shall be able to edit or delete their own review.
+**FR-COM-02:** A user shall be able to reply to any active comment, including their own, with no fixed nesting-depth limit.
 
-**FR-PRV-03:** Public reviews shall display the author’s public name and date.
+**FR-COM-03:** A user shall be able to edit or soft-delete any of their own active comments.
 
-**FR-PRV-04:** A moderator shall be able to hide an inappropriate review.
+**FR-COM-04:** Active comments shall display safe author information, entry-author status, dates, like count, and direct reply count.
 
-**FR-PRV-05:** Public reviews shall not be treated as formal corrections.
+**FR-COM-05:** Comment bodies shall contain 5–1000 normalized characters.
 
-**FR-PRV-06:** Users who identify factual problems should be directed to the correction-suggestion form.
+**FR-COM-06:** A verified user shall be able to like or unlike an active comment once, but shall not like their own comment.
+
+**FR-COM-07:** Root comments shall support newest, oldest, and most-liked ordering; direct replies shall use oldest-first ordering and offset pagination.
+
+**FR-COM-08:** A moderator shall be able to hide an inappropriate comment through the existing report system.
+
+**FR-COM-09:** Hidden or deleted comments shall appear as body- and author-free tombstones only when needed to preserve a path to visible descendants; inactive leaves shall be omitted.
+
+**FR-COM-10:** Comments shall not be treated as formal corrections. Users identifying factual problems should use the correction-suggestion form.
 
 ---
 
@@ -1105,7 +1113,7 @@ The user dashboard should contain:
     
 - My reports
     
-- My public reviews
+- My comments and replies
     
 
 There will be no notification centre.
@@ -1130,7 +1138,7 @@ The moderator dashboard should contain:
     
 - Hidden content
     
-- Hidden public reviews
+- Hidden comments
     
 - Recently completed moderation actions
     
@@ -1357,16 +1365,16 @@ Moderator dismisses, hides, corrects, archives, or escalates content
 User sees report status in dashboard
 ```
 
-## 17.7 Public Review Flow
+## 17.7 Entry Comment Flow
 
 ```text
 User opens published content
         ↓
-Writes a public review
+Writes a comment or reply
         ↓
-Review appears publicly
+Comment appears publicly
         ↓
-Moderator may hide reviews that violate rules
+Readers may like or report it; moderators may hide comments that violate rules
 ```
 
 ---
@@ -1415,7 +1423,7 @@ Moderator may hide reviews that violate rules
     
 8. Previous versions must remain available to moderators and administrators.
     
-9. Public reviews do not directly change Cultural Entries.
+9. Entry comments do not directly change Cultural Entries.
     
 10. Reports do not automatically remove content.
     
@@ -1724,7 +1732,7 @@ The first version will be considered complete when:
     
 12. Visitors can filter by province for province-scoped entries, by geographic scope for national/non-geographic entries, and by category, tag, and content type.
     
-13. Users can write public reviews.
+13. Users can write multiple comments and nested replies on published entries.
     
 14. Users can suggest corrections.
     
@@ -1810,7 +1818,7 @@ Before creating database and interface designs, the following details still need
     
 4. Whether one Cultural Entry may contain multiple YouTube links or only one.
     
-5. Whether public reviews appear immediately or require moderation.
+5. Whether comments should use pre-publication moderation in a future version; v1 publishes active comments immediately and uses report-driven moderation.
     
 6. Whether the original contributor can request removal of published content.
     

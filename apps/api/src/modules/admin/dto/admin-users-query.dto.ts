@@ -14,8 +14,8 @@ import {
 
 import {
   AuthProvider,
+  EntryCommentStatus,
   EntryStatus,
-  PublicReviewStatus,
   UserRole,
   UserStatus,
 } from "@/generated/prisma/enums";
@@ -96,11 +96,11 @@ class AdminUserEntriesQueryDto extends AdminPaginationQueryDto {
   sortDirection?: (typeof ADMIN_USER_SORT_DIRECTIONS)[number] = "desc";
 }
 
-class AdminUserReviewsQueryDto extends AdminPaginationQueryDto {
-  @ApiPropertyOptional({ enum: PublicReviewStatus })
+class AdminUserCommentsQueryDto extends AdminPaginationQueryDto {
+  @ApiPropertyOptional({ enum: EntryCommentStatus })
   @IsOptional()
-  @IsEnum(PublicReviewStatus)
-  status?: PublicReviewStatus;
+  @IsEnum(EntryCommentStatus)
+  status?: EntryCommentStatus;
 }
 
 class AdminUserActivityQueryDto extends AdminPaginationQueryDto {}
@@ -111,7 +111,7 @@ export {
   ADMIN_USER_SORT_FIELDS,
   AdminPaginationQueryDto,
   AdminUserActivityQueryDto,
+  AdminUserCommentsQueryDto,
   AdminUserEntriesQueryDto,
-  AdminUserReviewsQueryDto,
   AdminUsersQueryDto,
 };

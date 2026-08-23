@@ -35,7 +35,7 @@ class AdminEntryAuthorDto {
 class AdminEntryCountsDto {
   @ApiProperty() likes!: number;
   @ApiProperty() bookmarks!: number;
-  @ApiProperty() reviews!: number;
+  @ApiProperty() comments!: number;
   @ApiProperty() openReports!: number;
 }
 

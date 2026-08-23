@@ -14,8 +14,8 @@ import { ADMIN_USER_ERROR_CODES } from "@/modules/admin/admin.constants";
 import type { UpdateAdminUserStatusDto } from "@/modules/admin/dto/admin-user-actions.dto";
 import type {
   AdminUserActivityQueryDto,
+  AdminUserCommentsQueryDto,
   AdminUserEntriesQueryDto,
-  AdminUserReviewsQueryDto,
   AdminUsersQueryDto,
 } from "@/modules/admin/dto/admin-users-query.dto";
 import { AuditService } from "@/modules/audit/audit.service";
@@ -43,7 +43,7 @@ const adminUserListSelect = {
   _count: {
     select: {
       culturalEntries: true,
-      publicReviews: true,
+      entryComments: true,
       bookmarks: true,
     },
   },
@@ -84,7 +84,7 @@ const adminUserEntrySelect = {
   updatedAt: true,
 } as const;
 
-const adminUserReviewSelect = {
+const adminUserCommentSelect = {
   id: true,
   body: true,
   status: true,
@@ -198,7 +198,7 @@ class AdminUsersService {
         })),
         stats: {
           entries: createEntryStatusCounts(entryStatusCounts),
-          reviews: user._count.publicReviews,
+          comments: user._count.entryComments,
           bookmarks: user._count.bookmarks,
           likes,
           reportsSubmitted,
@@ -234,27 +234,27 @@ class AdminUsersService {
     };
   }
 
-  async listUserReviews(userId: string, query: AdminUserReviewsQueryDto) {
+  async listUserComments(userId: string, query: AdminUserCommentsQueryDto) {
     await this.ensureUserExists(userId);
     const pagination = this.normalizePagination(query);
-    const where: Prisma.PublicReviewWhereInput = {
-      userId,
+    const where: Prisma.EntryCommentWhereInput = {
+      authorId: userId,
       ...(query.status ? { status: query.status } : {}),
     };
 
-    const [reviews, total] = await this.prisma.$transaction([
-      this.prisma.publicReview.findMany({
+    const [comments, total] = await this.prisma.$transaction([
+      this.prisma.entryComment.findMany({
         where,
-        select: adminUserReviewSelect,
+        select: adminUserCommentSelect,
         orderBy: [{ createdAt: "desc" }, { id: "asc" }],
         skip: this.skip(pagination),
         take: pagination.limit,
       }),
-      this.prisma.publicReview.count({ where }),
+      this.prisma.entryComment.count({ where }),
     ]);
 
     return {
-      data: reviews,
+      data: comments,
       meta: this.createMeta(pagination, total),
     };
   }
@@ -497,7 +497,7 @@ function mapAdminUserListItem(user: AdminUserListPayload | AdminUserDetailPayloa
     authMethods,
     counts: {
       entries: user._count.culturalEntries,
-      reviews: user._count.publicReviews,
+      comments: user._count.entryComments,
       bookmarks: user._count.bookmarks,
     },
     lastLoginAt: user.lastLoginAt,
