@@ -1,4 +1,12 @@
-import type { TaxonomyItem } from "../types/public-entry";
+type ProvinceWithImage = {
+  name: string;
+  slug: string;
+  image?: {
+    secureUrl: string;
+    thumbnailUrl: string;
+    altText: string;
+  } | null;
+};
 
 const provinceImageBySlug: Record<string, string> = {
   badakhshan: "/images/provinces/badakhshan.jpg",
@@ -28,19 +36,24 @@ const provinceImageBySlug: Record<string, string> = {
 
 const provincePlaceholderImage = "/images/province-placeholder.png";
 
-function getProvinceImage(province: Pick<TaxonomyItem, "name" | "slug">) {
-  const mappedImage = provinceImageBySlug[province.slug];
-
-  if (mappedImage) {
+function getProvinceImage(province: ProvinceWithImage, variant: "detail" | "thumbnail" = "detail") {
+  if (province.image) {
     return {
-      src: mappedImage,
-      alt: `نمای فرهنگی ولایت ${province.name}`,
+      src: variant === "thumbnail" ? province.image.thumbnailUrl : province.image.secureUrl,
+      alt: province.image.altText,
+      managed: true,
     };
+  }
+
+  const mappedImage = provinceImageBySlug[province.slug];
+  if (mappedImage) {
+    return { src: mappedImage, alt: `نمای فرهنگی ولایت ${province.name}`, managed: false };
   }
 
   return {
     src: provincePlaceholderImage,
     alt: "نمایی از میراث فرهنگی افغانستان",
+    managed: false,
   };
 }
 

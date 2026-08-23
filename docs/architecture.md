@@ -442,6 +442,17 @@ taxonomy/
 
 Taxonomy records remain grouped in one module to avoid creating many small top-level modules.
 
+The Admin province list treats Afghanistan's seeded 34 provinces as a fixed taxonomy: provinces
+may be edited, ordered, enabled, or disabled, but are not created or physically deleted through the
+dashboard. Each province has an Admin detail page for its public description, optional managed
+Cloudinary image, usage counts, and nested district management. Districts are managed records in
+v1; free-text `villageOrLocation` remains available only for location detail that does not warrant a
+district record.
+
+Province images use the shared media infrastructure and one optional managed image per province.
+Public pages prefer the managed image and fall back to the bundled province asset or generic
+placeholder. The Cloudinary public ID remains backend-only.
+
 ### Cultural Entry Geographic Scope
 
 Cultural Entries use the v1 `GeographicScope` enum:

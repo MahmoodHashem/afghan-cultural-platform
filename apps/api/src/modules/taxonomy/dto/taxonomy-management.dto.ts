@@ -50,9 +50,24 @@ class BaseTaxonomyDto {
   isActive?: boolean;
 }
 
-class CreateProvinceDto extends BaseTaxonomyDto {}
+class CreateProvinceDto extends BaseTaxonomyDto {
+  @ApiPropertyOptional({ maxLength: 500 })
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  description?: string;
+}
 
-class UpdateProvinceDto extends PartialType(BaseTaxonomyDto) {}
+class UpdateProvinceDto extends PartialType(CreateProvinceDto) {}
+
+class UpdateProvinceImageDto {
+  @ApiProperty({ minLength: 2, maxLength: 220 })
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(2)
+  @MaxLength(220)
+  altText!: string;
+}
 
 class CreateDistrictDto extends BaseTaxonomyDto {
   @ApiProperty()
@@ -114,5 +129,6 @@ export {
   UpdateDescribedTaxonomyDto,
   UpdateDistrictDto,
   UpdateProvinceDto,
+  UpdateProvinceImageDto,
   UpdateTagDto,
 };

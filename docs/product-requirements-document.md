@@ -1054,7 +1054,10 @@ Private information such as email addresses shall not be publicly displayed.
 
 **FR-ADM-04:** The administrator shall be able to suspend users.
 
-**FR-ADM-05:** The administrator shall be able to manage provinces.
+**FR-ADM-05:** The administrator shall be able to edit, reorder, enable, and disable the fixed seeded
+province taxonomy. Each province supports a public description, one optional managed image, usage
+counts, and nested district management. Provinces and districts are never physically deleted while
+they may be referenced by Cultural Entries.
 
 **FR-ADM-06:** The administrator shall be able to manage categories.
 
@@ -1813,11 +1816,12 @@ Before creating database and interface designs, the following details still need
     
 7. Whether administrators can edit published content directly or must create a new version.
     
-8. Whether districts will be managed in the first version or only free-text locations will be used.
+8. Whether approved content publishes immediately or requires final administrator confirmation.
     
-9. Whether approved content publishes immediately or requires final administrator confirmation.
+9. Which exact content types and categories will be included at launch.
     
-10. Which exact content types and categories will be included at launch.
-    
+
+Districts are confirmed as Admin-managed records in v1. Free-text location remains available for
+village or local detail that does not map to a managed district.
 
 This updated document defines a realistic first version with a Persian-only interface, YouTube-link videos, no notification module, and three manageable roles: **User, Moderator, and Administrator**.

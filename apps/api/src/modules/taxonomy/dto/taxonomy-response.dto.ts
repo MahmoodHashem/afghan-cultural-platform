@@ -42,6 +42,47 @@ class DescribedTaxonomyItemDto extends TaxonomyItemDto {
   description!: string | null;
 }
 
+class ProvinceImageDto {
+  @ApiProperty()
+  secureUrl!: string;
+
+  @ApiProperty()
+  thumbnailUrl!: string;
+
+  @ApiProperty()
+  altText!: string;
+
+  @ApiPropertyOptional({ nullable: true })
+  width!: number | null;
+
+  @ApiPropertyOptional({ nullable: true })
+  height!: number | null;
+}
+
+class ProvinceItemDto extends TaxonomyItemDto {
+  @ApiPropertyOptional({ nullable: true })
+  description!: string | null;
+
+  @ApiPropertyOptional({ type: ProvinceImageDto, nullable: true })
+  image!: ProvinceImageDto | null;
+}
+
+class AdminProvinceItemDto extends ProvinceItemDto {
+  @ApiProperty()
+  entryCount!: number;
+
+  @ApiProperty()
+  districtCount!: number;
+}
+
+class AdminProvinceDetailDto extends AdminProvinceItemDto {
+  @ApiProperty()
+  publishedEntryCount!: number;
+
+  @ApiProperty()
+  activeDistrictCount!: number;
+}
+
 class AdminCategoryItemDto extends DescribedTaxonomyItemDto {
   @ApiProperty()
   entryCount!: number;
@@ -58,6 +99,11 @@ class DistrictItemDto extends TaxonomyItemDto {
 
   @ApiPropertyOptional()
   province?: TaxonomyItemDto;
+}
+
+class AdminDistrictItemDto extends DistrictItemDto {
+  @ApiProperty()
+  entryCount!: number;
 }
 
 class TagItemDto {
@@ -104,6 +150,22 @@ class AdminCategoryListResponseDto {
   meta!: PaginationMetaDto;
 }
 
+class AdminProvinceListResponseDto {
+  @ApiProperty({ type: [AdminProvinceItemDto] })
+  data!: AdminProvinceItemDto[];
+
+  @ApiProperty({ type: PaginationMetaDto })
+  meta!: PaginationMetaDto;
+}
+
+class AdminDistrictListResponseDto {
+  @ApiProperty({ type: [AdminDistrictItemDto] })
+  data!: AdminDistrictItemDto[];
+
+  @ApiProperty({ type: PaginationMetaDto })
+  meta!: PaginationMetaDto;
+}
+
 class AdminContentTypeListResponseDto {
   @ApiProperty({ type: [AdminContentTypeItemDto] })
   data!: AdminContentTypeItemDto[];
@@ -137,11 +199,18 @@ export {
   AdminCategoryListResponseDto,
   AdminContentTypeItemDto,
   AdminContentTypeListResponseDto,
+  AdminDistrictItemDto,
+  AdminDistrictListResponseDto,
+  AdminProvinceDetailDto,
+  AdminProvinceItemDto,
+  AdminProvinceListResponseDto,
   AdminTagItemDto,
   AdminTagListResponseDto,
   DescribedTaxonomyItemDto,
   DistrictItemDto,
   PaginationMetaDto,
+  ProvinceImageDto,
+  ProvinceItemDto,
   TagItemDto,
   TaxonomyItemDto,
   TaxonomyItemResponseDto,

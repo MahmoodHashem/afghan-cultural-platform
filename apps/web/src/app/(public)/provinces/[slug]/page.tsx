@@ -15,6 +15,7 @@ import {
 } from "@/features/entries/utils/public-entry-query";
 import { sortTaxonomyItems } from "@/features/entries/utils/taxonomy";
 import { findTaxonomyItemByRouteSegment } from "@/features/entries/utils/taxonomy-route";
+import { getProvinceImage } from "@/lib/images/province-images";
 import { createPersianPathSegment } from "@/lib/utils/persian";
 
 type ProvinceDetailPageProps = {
@@ -37,13 +38,16 @@ export async function generateMetadata({ params }: ProvinceDetailPageProps): Pro
     };
   }
 
+  const description = province.description || `مطالب مربوط به ${province.name}.`;
+  const image = getProvinceImage(province);
+
   return {
     title: `${province.name} | ولایت‌ها | میراث افغانستان`,
-    description: `مطالب مربوط به ${province.name}.`,
+    description,
     openGraph: {
       title: `${province.name} | میراث افغانستان`,
-      description: `مطالب مربوط به ${province.name}.`,
-      images: ["/images/HERAT02.jpg"],
+      description,
+      images: [image.src],
     },
   };
 }

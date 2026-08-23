@@ -30,14 +30,27 @@ class CloudinaryMediaService {
   }
 
   async uploadEntryImage(file: Express.Multer.File): Promise<UploadedCloudinaryImage> {
+    return this.uploadImage(file, "afghan-cultural-platform/entries", 480, 320);
+  }
+
+  async uploadProvinceImage(file: Express.Multer.File): Promise<UploadedCloudinaryImage> {
+    return this.uploadImage(file, "afghan-cultural-platform/provinces", 720, 480);
+  }
+
+  private async uploadImage(
+    file: Express.Multer.File,
+    folder: string,
+    thumbnailWidth: number,
+    thumbnailHeight: number,
+  ): Promise<UploadedCloudinaryImage> {
     try {
-      const upload = await this.uploadBuffer(file.buffer);
+      const upload = await this.uploadBuffer(file.buffer, folder);
 
       return {
         publicId: upload.public_id,
         url: upload.url,
         secureUrl: upload.secure_url,
-        thumbnailUrl: this.createThumbnailUrl(upload.public_id),
+        thumbnailUrl: this.createThumbnailUrl(upload.public_id, thumbnailWidth, thumbnailHeight),
         width: upload.width,
         height: upload.height,
         format: upload.format,
@@ -77,12 +90,12 @@ class CloudinaryMediaService {
     }
   }
 
-  private uploadBuffer(buffer: Buffer): Promise<UploadApiResponse> {
+  private uploadBuffer(buffer: Buffer, folder: string): Promise<UploadApiResponse> {
     return new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         {
           allowed_formats: ["jpg", "jpeg", "png", "webp"],
-          folder: "afghan-cultural-platform/entries",
+          folder,
           overwrite: false,
           resource_type: "image",
           unique_filename: true,
@@ -101,15 +114,15 @@ class CloudinaryMediaService {
     });
   }
 
-  private createThumbnailUrl(publicId: string): string {
+  private createThumbnailUrl(publicId: string, width: number, height: number): string {
     return cloudinary.url(publicId, {
       crop: "fill",
       fetch_format: "auto",
       gravity: "auto",
-      height: 320,
+      height,
       quality: "auto:good",
       secure: true,
-      width: 480,
+      width,
     });
   }
 }

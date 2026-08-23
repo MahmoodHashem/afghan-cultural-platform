@@ -406,23 +406,35 @@ More audit actions can be added later only when new v1 workflows require them.
 
 **Purpose:** Admin-managed geographic taxonomy and public filter.
 
-| Field     | Type     | Required | Default       | Notes                                       |
-| --------- | -------- | -------- | ------------- | ------------------------------------------- |
-| id        | UUID     | Yes      | `uuid()`    | Primary key.                                |
-| name      | String   | Yes      | None          | Persian display name.                       |
-| slug      | String   | Yes      | None          | Public URL/filter slug.                     |
-| sortOrder | Int      | Yes      | `0`         | Admin ordering.                             |
-| isActive  | Boolean  | Yes      | `true`      | Hide from new submissions without deleting. |
-| createdAt | DateTime | Yes      | `now()`     | UTC.                                        |
-| updatedAt | DateTime | Yes      | `updatedAt` | UTC.                                        |
+| Field                   | Type     | Required | Default       | Notes                                                     |
+| ----------------------- | -------- | -------- | ------------- | --------------------------------------------------------- |
+| id                      | UUID     | Yes      | `uuid()`      | Primary key.                                              |
+| name                    | String   | Yes      | None          | Persian display name.                                     |
+| slug                    | String   | Yes      | None          | Backend-generated public URL/filter slug.                 |
+| description             | String   | No       | `null`        | Public province introduction, maximum 500 characters.     |
+| imageCloudinaryPublicId | String   | No       | `null`        | Unique backend-only Cloudinary asset identity.            |
+| imageSecureUrl          | String   | No       | `null`        | Managed source image URL.                                 |
+| imageThumbnailUrl       | String   | No       | `null`        | Managed card/list delivery URL.                           |
+| imageAltText            | String   | No       | `null`        | Required when a managed image exists; maximum 220 chars.  |
+| imageWidth              | Int      | No       | `null`        | Source width for stable rendering.                        |
+| imageHeight             | Int      | No       | `null`        | Source height for stable rendering.                       |
+| sortOrder               | Int      | Yes      | `0`           | Admin ordering.                                           |
+| isActive                | Boolean  | Yes      | `true`        | Hide from new submissions without deleting.               |
+| createdAt               | DateTime | Yes      | `now()`       | UTC.                                                      |
+| updatedAt               | DateTime | Yes      | `updatedAt`   | UTC.                                                      |
 
-**Unique constraints:** `name`, `slug`.
+**Unique constraints:** `name`, `slug`, optional `imageCloudinaryPublicId`.
 
 **Indexes:** `isActive`, `sortOrder`.
 
 **Relations:** Users as optional profile province, cultural entries, districts.
 
 **Deletion behavior:** Restrict deletion while referenced by users, districts, or entries. Prefer `isActive = false`.
+
+**Image behavior:** A province has at most one managed Cloudinary image. Image metadata is either
+fully empty or contains a public ID, secure URL, thumbnail URL, and alt text. Public responses omit
+the Cloudinary public ID. Existing bundled frontend province images remain a display fallback and
+are not imported by taxonomy seeding.
 
 ### District
 

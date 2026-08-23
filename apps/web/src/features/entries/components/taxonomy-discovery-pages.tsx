@@ -21,11 +21,11 @@ import type { ComponentType, ReactNode } from "react";
 import { PageBreadcrumb } from "@/components/layout/page-breadcrumb";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { getProvinceImage } from "@/lib/images/province-images";
 import { cn } from "@/lib/utils";
 import { formatPersianNumber } from "@/lib/utils/formatters";
 import type { EntryListResponse, TaxonomyItem } from "../types/public-entry";
 import type { EntryBreadcrumbContext } from "../utils/entry-breadcrumb";
-import { getProvinceImage } from "../utils/province-images";
 import { taxonomyItemHref } from "../utils/taxonomy-route";
 import type { FilterTabItem } from "./filter-tabs";
 import { FilterableEntryResults } from "./filterable-entry-results";
@@ -183,7 +183,7 @@ function ProvinceDetailContent({
                 {province.name}
               </h1>
               <p className="max-w-2xl text-[16px] leading-8 text-muted-foreground">
-                مطالب مربوط به {province.name} را ببینید.
+                {province.description || `مطالب مربوط به ${province.name} را ببینید.`}
               </p>
             </div>
             <StatsCards

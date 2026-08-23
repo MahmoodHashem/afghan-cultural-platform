@@ -2,9 +2,11 @@ jest.mock("@/database/prisma.service", () => ({
   PrismaService: class PrismaService {},
 }));
 
-import { ConflictException, NotFoundException } from "@nestjs/common";
+import { BadRequestException, ConflictException, NotFoundException } from "@nestjs/common";
+import type { ConfigService } from "@nestjs/config";
 
 import type { PrismaService } from "@/database/prisma.service";
+import type { CloudinaryMediaService } from "@/modules/media/cloudinary-media.service";
 import { TAXONOMY_ERROR_CODES } from "@/modules/taxonomy/taxonomy.constants";
 import { TaxonomyService } from "@/modules/taxonomy/taxonomy.service";
 
@@ -22,6 +24,7 @@ type PrismaMock = {
   district: DelegateMock;
   category: DelegateMock;
   contentType: DelegateMock;
+  culturalEntry: DelegateMock;
   tag: DelegateMock;
   $transaction: jest.Mock;
 };
@@ -36,17 +39,42 @@ const taxonomyItem = {
   updatedAt: new Date("2026-01-01T00:00:00.000Z"),
 };
 
+const provinceItem = {
+  ...taxonomyItem,
+  description: null,
+  imageCloudinaryPublicId: null,
+  imageSecureUrl: null,
+  imageThumbnailUrl: null,
+  imageAltText: null,
+  imageWidth: null,
+  imageHeight: null,
+};
+
 describe("TaxonomyService", () => {
   let prisma: PrismaMock;
   let service: TaxonomyService;
+  let mediaService: {
+    uploadProvinceImage: jest.Mock;
+    deleteImage: jest.Mock;
+  };
 
   beforeEach(() => {
     prisma = createPrismaMock();
-    service = new TaxonomyService(prisma as unknown as PrismaService);
+    mediaService = {
+      uploadProvinceImage: jest.fn(),
+      deleteImage: jest.fn(),
+    };
+    service = new TaxonomyService(
+      prisma as unknown as PrismaService,
+      mediaService as unknown as CloudinaryMediaService,
+      {
+        get: jest.fn((_key: string, fallback: unknown) => fallback),
+      } as unknown as ConfigService,
+    );
   });
 
   it("lists only active public provinces", async () => {
-    prisma.province.findMany.mockResolvedValue([taxonomyItem]);
+    prisma.province.findMany.mockResolvedValue([provinceItem]);
     prisma.province.count.mockResolvedValue(1);
 
     const response = await service.listPublicProvinces({
@@ -63,10 +91,12 @@ describe("TaxonomyService", () => {
       }),
     );
     expect(response.meta.total).toBe(1);
+    expect(response.data[0]).toMatchObject({ description: null, image: null });
+    expect(response.data[0]).not.toHaveProperty("imageCloudinaryPublicId");
   });
 
   it("uses stable pagination and sorting defaults when query values are omitted", async () => {
-    prisma.province.findMany.mockResolvedValue([taxonomyItem]);
+    prisma.province.findMany.mockResolvedValue([provinceItem]);
     prisma.province.count.mockResolvedValue(1);
 
     const response = await service.listPublicProvinces({});
@@ -89,7 +119,7 @@ describe("TaxonomyService", () => {
   it("generates a slug and creates a province when name and slug are unique", async () => {
     prisma.province.findFirst.mockResolvedValue(null);
     prisma.province.create.mockResolvedValue({
-      ...taxonomyItem,
+      ...provinceItem,
       name: "کابل",
       slug: "kabl",
     });
@@ -109,6 +139,61 @@ describe("TaxonomyService", () => {
       }),
     );
     expect(response.data.slug).toBe("kabl");
+  });
+
+  it("stores and returns a trimmed province description", async () => {
+    prisma.province.findUnique.mockResolvedValue(provinceItem);
+    prisma.province.update.mockResolvedValue({
+      ...provinceItem,
+      description: "ولایت کابل در مرکز افغانستان قرار دارد.",
+    });
+
+    const response = await service.updateProvince(taxonomyItem.id, {
+      description: "  ولایت کابل در مرکز افغانستان قرار دارد.  ",
+    });
+
+    expect(prisma.province.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: { description: "ولایت کابل در مرکز افغانستان قرار دارد." },
+      }),
+    );
+    expect(response.data.description).toContain("مرکز افغانستان");
+  });
+
+  it("returns province usage counts in the Admin listing", async () => {
+    prisma.province.findMany.mockResolvedValue([
+      { ...provinceItem, _count: { entries: 8, districts: 3 } },
+    ]);
+    prisma.province.count.mockResolvedValue(1);
+
+    const response = await service.listAdminProvinces({ page: 1, limit: 50 });
+
+    expect(response.data[0]).toMatchObject({ entryCount: 8, districtCount: 3 });
+    expect(response.data[0]).not.toHaveProperty("_count");
+  });
+
+  it("returns province detail aggregates without exposing Cloudinary identity", async () => {
+    prisma.province.findUnique.mockResolvedValue({
+      ...provinceItem,
+      imageCloudinaryPublicId: "afghan-cultural-platform/provinces/kabul",
+      imageSecureUrl: "https://res.cloudinary.com/demo/kabul.jpg",
+      imageThumbnailUrl: "https://res.cloudinary.com/demo/kabul-thumb.jpg",
+      imageAltText: "نمای ولایت کابل",
+      _count: { entries: 9, districts: 4 },
+    });
+    prisma.culturalEntry.count.mockResolvedValue(6);
+    prisma.district.count.mockResolvedValue(3);
+
+    const response = await service.getAdminProvince(taxonomyItem.id);
+
+    expect(response.data).toMatchObject({
+      entryCount: 9,
+      districtCount: 4,
+      publishedEntryCount: 6,
+      activeDistrictCount: 3,
+      image: { altText: "نمای ولایت کابل" },
+    });
+    expect(response.data).not.toHaveProperty("imageCloudinaryPublicId");
   });
 
   it("rejects duplicate province names", async () => {
@@ -132,7 +217,7 @@ describe("TaxonomyService", () => {
   });
 
   it("creates a district scoped to its province", async () => {
-    prisma.province.findUnique.mockResolvedValue(taxonomyItem);
+    prisma.province.findUnique.mockResolvedValue(provinceItem);
     prisma.district.findFirst.mockResolvedValue(null);
     prisma.district.create.mockResolvedValue({
       ...taxonomyItem,
@@ -152,6 +237,106 @@ describe("TaxonomyService", () => {
           provinceId: taxonomyItem.id,
         }),
       }),
+    );
+  });
+
+  it("returns entry counts for Admin districts scoped to one province", async () => {
+    prisma.district.findMany.mockResolvedValue([
+      {
+        ...taxonomyItem,
+        provinceId: taxonomyItem.id,
+        province: taxonomyItem,
+        _count: { entries: 5 },
+      },
+    ]);
+    prisma.district.count.mockResolvedValue(1);
+
+    const response = await service.listAdminDistricts({ provinceId: taxonomyItem.id });
+
+    expect(prisma.district.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: expect.objectContaining({ provinceId: taxonomyItem.id }) }),
+    );
+    expect(response.data[0]).toMatchObject({ entryCount: 5 });
+  });
+
+  it("uploads a valid province image and removes the replaced Cloudinary asset", async () => {
+    prisma.province.findUnique.mockResolvedValue({
+      ...provinceItem,
+      imageCloudinaryPublicId: "afghan-cultural-platform/provinces/old",
+    });
+    mediaService.uploadProvinceImage.mockResolvedValue({
+      publicId: "afghan-cultural-platform/provinces/new",
+      secureUrl: "https://res.cloudinary.com/demo/new.jpg",
+      thumbnailUrl: "https://res.cloudinary.com/demo/new-thumb.jpg",
+      width: 1200,
+      height: 800,
+    });
+    prisma.province.update.mockResolvedValue({
+      ...provinceItem,
+      imageCloudinaryPublicId: "afghan-cultural-platform/provinces/new",
+      imageSecureUrl: "https://res.cloudinary.com/demo/new.jpg",
+      imageThumbnailUrl: "https://res.cloudinary.com/demo/new-thumb.jpg",
+      imageAltText: "نمای فرهنگی کابل",
+      imageWidth: 1200,
+      imageHeight: 800,
+    });
+
+    const response = await service.uploadProvinceImage(
+      taxonomyItem.id,
+      { altText: " نمای فرهنگی کابل " },
+      createImageFile("image/jpeg", Buffer.from([0xff, 0xd8, 0xff, 0x00])),
+    );
+
+    expect(response.data.image).toMatchObject({ altText: "نمای فرهنگی کابل" });
+    expect(mediaService.deleteImage).toHaveBeenCalledWith("afghan-cultural-platform/provinces/old");
+  });
+
+  it("rejects files whose declared MIME does not match their signature", async () => {
+    prisma.province.findUnique.mockResolvedValue(provinceItem);
+
+    await expect(
+      service.uploadProvinceImage(
+        taxonomyItem.id,
+        { altText: "نمای کابل" },
+        createImageFile("image/png", Buffer.from([0xff, 0xd8, 0xff, 0x00])),
+      ),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(mediaService.uploadProvinceImage).not.toHaveBeenCalled();
+  });
+
+  it("cleans up a newly uploaded province image when the database write fails", async () => {
+    prisma.province.findUnique.mockResolvedValue(provinceItem);
+    mediaService.uploadProvinceImage.mockResolvedValue({
+      publicId: "afghan-cultural-platform/provinces/new",
+      secureUrl: "https://res.cloudinary.com/demo/new.jpg",
+      thumbnailUrl: "https://res.cloudinary.com/demo/new-thumb.jpg",
+    });
+    prisma.province.update.mockRejectedValue(new Error("database unavailable"));
+
+    await expect(
+      service.uploadProvinceImage(
+        taxonomyItem.id,
+        { altText: "نمای کابل" },
+        createImageFile("image/jpeg", Buffer.from([0xff, 0xd8, 0xff, 0x00])),
+      ),
+    ).rejects.toThrow("database unavailable");
+    expect(mediaService.deleteImage).toHaveBeenCalledWith("afghan-cultural-platform/provinces/new");
+  });
+
+  it("deletes the Cloudinary province image before clearing its metadata", async () => {
+    prisma.province.findUnique.mockResolvedValue({
+      ...provinceItem,
+      imageCloudinaryPublicId: "afghan-cultural-platform/provinces/kabul",
+    });
+    prisma.province.update.mockResolvedValue(provinceItem);
+
+    await service.deleteProvinceImage(taxonomyItem.id);
+
+    expect(mediaService.deleteImage).toHaveBeenCalledWith(
+      "afghan-cultural-platform/provinces/kabul",
+    );
+    expect(prisma.province.update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ imageSecureUrl: null }) }),
     );
   });
 
@@ -281,6 +466,7 @@ function createPrismaMock(): PrismaMock {
     district: createDelegateMock(),
     category: createDelegateMock(),
     contentType: createDelegateMock(),
+    culturalEntry: createDelegateMock(),
     tag: createDelegateMock(),
     $transaction: jest.fn(),
   };
@@ -316,4 +502,19 @@ async function expectAuthCode(action: () => Promise<unknown>, expectedCode: stri
       error: expectedCode,
     });
   }
+}
+
+function createImageFile(mimetype: string, buffer: Buffer): Express.Multer.File {
+  return {
+    fieldname: "image",
+    originalname: "province.jpg",
+    encoding: "7bit",
+    mimetype,
+    size: buffer.length,
+    destination: "",
+    filename: "province.jpg",
+    path: "",
+    buffer,
+    stream: undefined as never,
+  };
 }

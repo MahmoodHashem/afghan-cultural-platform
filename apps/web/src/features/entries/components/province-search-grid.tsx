@@ -9,10 +9,10 @@ import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { getProvinceImage } from "@/lib/images/province-images";
 import { formatPersianNumber } from "@/lib/utils/formatters";
 import { createPersianPathSegment, normalizePersianSearch } from "@/lib/utils/persian";
 import type { TaxonomyItem } from "../types/public-entry";
-import { getProvinceImage } from "../utils/province-images";
 
 type CountedProvince = TaxonomyItem & {
   entryCount: number;
@@ -74,7 +74,7 @@ function ProvinceSearchGrid({ provinces }: { provinces: CountedProvince[] }) {
 }
 
 function ProvinceCard({ province }: { province: CountedProvince }) {
-  const image = getProvinceImage(province);
+  const image = getProvinceImage(province, "thumbnail");
 
   return (
     <motion.div

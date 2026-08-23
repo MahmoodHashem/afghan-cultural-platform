@@ -1,7 +1,18 @@
-import { ConflictException, Inject, Injectable, NotFoundException } from "@nestjs/common";
+import {
+  BadRequestException,
+  ConflictException,
+  Inject,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 
 import { PrismaService } from "@/database/prisma.service";
 import type { Prisma } from "@/generated/prisma/client";
+import { EntryStatus } from "@/generated/prisma/enums";
+import { CloudinaryMediaService } from "@/modules/media/cloudinary-media.service";
+import { isSupportedImageFile } from "@/modules/media/image-file.utils";
 import type {
   CreateDescribedTaxonomyDto,
   CreateDistrictDto,
@@ -12,6 +23,7 @@ import type {
   UpdateDescribedTaxonomyDto,
   UpdateDistrictDto,
   UpdateProvinceDto,
+  UpdateProvinceImageDto,
   UpdateTagDto,
 } from "@/modules/taxonomy/dto/taxonomy-management.dto";
 import type {
@@ -54,6 +66,27 @@ const taxonomySelect = {
   updatedAt: true,
 } as const;
 
+const provinceSelect = {
+  ...taxonomySelect,
+  description: true,
+  imageCloudinaryPublicId: true,
+  imageSecureUrl: true,
+  imageThumbnailUrl: true,
+  imageAltText: true,
+  imageWidth: true,
+  imageHeight: true,
+} as const;
+
+const adminProvinceSelect = {
+  ...provinceSelect,
+  _count: {
+    select: {
+      entries: true,
+      districts: true,
+    },
+  },
+} as const;
+
 const describedTaxonomySelect = {
   ...taxonomySelect,
   description: true,
@@ -73,6 +106,15 @@ const districtSelect = {
   provinceId: true,
   province: {
     select: taxonomySelect,
+  },
+} as const;
+
+const adminDistrictSelect = {
+  ...districtSelect,
+  _count: {
+    select: {
+      entries: true,
+    },
   },
 } as const;
 
@@ -109,60 +151,224 @@ type NormalizedTaxonomyQuery = {
 
 @Injectable()
 class TaxonomyService {
-  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(TaxonomyService.name);
+
+  constructor(
+    @Inject(PrismaService) private readonly prisma: PrismaService,
+    @Inject(CloudinaryMediaService) private readonly mediaService: CloudinaryMediaService,
+    @Inject(ConfigService) private readonly configService: ConfigService,
+  ) {}
 
   async listPublicProvinces(query: TaxonomyQueryDto) {
-    return this.listProvinces({
+    const response = await this.listProvinces({
       ...query,
       isActive: true,
     });
+
+    return {
+      ...response,
+      data: response.data.map((province) => this.mapProvince(province)),
+    };
   }
 
   async listAdminProvinces(query: AdminTaxonomyQueryDto) {
-    return this.listProvinces(query);
+    const normalizedQuery = this.normalizeQuery(query);
+    const where: Prisma.ProvinceWhereInput = {
+      ...(query.isActive === undefined ? {} : { isActive: query.isActive }),
+      ...this.searchWhere(query.search),
+    };
+    const [items, total] = await this.prisma.$transaction([
+      this.prisma.province.findMany({
+        where,
+        select: adminProvinceSelect,
+        orderBy: this.provinceOrderBy(normalizedQuery),
+        skip: this.skip(normalizedQuery),
+        take: normalizedQuery.limit,
+      }),
+      this.prisma.province.count({ where }),
+    ]);
+
+    return this.listResponse(
+      items.map(({ _count, ...province }) => ({
+        ...this.mapProvince(province),
+        entryCount: _count.entries,
+        districtCount: _count.districts,
+      })),
+      total,
+      normalizedQuery,
+    );
+  }
+
+  async getAdminProvince(id: string) {
+    const [province, publishedEntryCount, activeDistrictCount] = await this.prisma.$transaction([
+      this.prisma.province.findUnique({
+        where: { id },
+        select: adminProvinceSelect,
+      }),
+      this.prisma.culturalEntry.count({
+        where: { provinceId: id, status: EntryStatus.PUBLISHED },
+      }),
+      this.prisma.district.count({
+        where: { provinceId: id, isActive: true },
+      }),
+    ]);
+
+    if (!province) {
+      throw this.notFound(TAXONOMY_ERROR_CODES.PROVINCE_NOT_FOUND, "Province was not found.");
+    }
+
+    const { _count, ...provinceData } = province;
+
+    return {
+      data: {
+        ...this.mapProvince(provinceData),
+        entryCount: _count.entries,
+        districtCount: _count.districts,
+        publishedEntryCount,
+        activeDistrictCount,
+      },
+    };
   }
 
   async createProvince(input: CreateProvinceDto) {
-    const data = this.createBaseData(input);
+    const data = {
+      ...this.createBaseData(input),
+      description: input.description?.trim() || null,
+    };
 
     await this.ensureTaxonomyNameAndSlugAreUnique("province", data.name, data.slug);
 
-    return this.withUniqueConstraintHandling(async () => ({
-      data: await this.prisma.province.create({
+    return this.withUniqueConstraintHandling(async () => {
+      const province = await this.prisma.province.create({
         data,
-        select: taxonomySelect,
-      }),
-    }));
+        select: provinceSelect,
+      });
+
+      return { data: this.mapProvince(province) };
+    });
   }
 
   async updateProvince(id: string, input: UpdateProvinceDto) {
     await this.ensureProvinceExists(id);
 
-    const data = this.createBaseUpdateData(input);
+    const data = {
+      ...this.createBaseUpdateData(input),
+      ...(input.description === undefined
+        ? {}
+        : { description: input.description?.trim() || null }),
+    };
 
     if (data.name || data.slug) {
       await this.ensureTaxonomyNameAndSlugAreUnique("province", data.name, data.slug, id);
     }
 
-    return this.withUniqueConstraintHandling(async () => ({
-      data: await this.prisma.province.update({
+    return this.withUniqueConstraintHandling(async () => {
+      const province = await this.prisma.province.update({
         where: { id },
         data,
-        select: taxonomySelect,
-      }),
-    }));
+        select: provinceSelect,
+      });
+
+      return { data: this.mapProvince(province) };
+    });
   }
 
   async setProvinceActive(id: string, input: SetTaxonomyActiveDto) {
     await this.ensureProvinceExists(id);
 
+    const province = await this.prisma.province.update({
+      where: { id },
+      data: { isActive: input.isActive },
+      select: provinceSelect,
+    });
+
     return {
-      data: await this.prisma.province.update({
-        where: { id },
-        data: { isActive: input.isActive },
-        select: taxonomySelect,
-      }),
+      data: this.mapProvince(province),
     };
+  }
+
+  async uploadProvinceImage(
+    id: string,
+    input: UpdateProvinceImageDto,
+    file: Express.Multer.File | undefined,
+  ) {
+    const province = await this.ensureProvinceExists(id);
+    this.validateProvinceImageFile(file);
+    const altText = this.normalizeProvinceImageAltText(input.altText);
+    const uploadedImage = await this.mediaService.uploadProvinceImage(file);
+
+    try {
+      const updatedProvince = await this.prisma.province.update({
+        where: { id },
+        data: {
+          imageCloudinaryPublicId: uploadedImage.publicId,
+          imageSecureUrl: uploadedImage.secureUrl,
+          imageThumbnailUrl: uploadedImage.thumbnailUrl,
+          imageAltText: altText,
+          imageWidth: uploadedImage.width ?? null,
+          imageHeight: uploadedImage.height ?? null,
+        },
+        select: provinceSelect,
+      });
+
+      if (
+        province.imageCloudinaryPublicId &&
+        province.imageCloudinaryPublicId !== uploadedImage.publicId
+      ) {
+        await this.cleanupCloudinaryImage(province.imageCloudinaryPublicId);
+      }
+
+      return { data: this.mapProvince(updatedProvince) };
+    } catch (error) {
+      await this.cleanupCloudinaryImage(uploadedImage.publicId);
+      throw error;
+    }
+  }
+
+  async updateProvinceImage(id: string, input: UpdateProvinceImageDto) {
+    const province = await this.ensureProvinceExists(id);
+
+    if (!province.imageCloudinaryPublicId) {
+      throw this.notFound(
+        TAXONOMY_ERROR_CODES.PROVINCE_IMAGE_NOT_FOUND,
+        "Province image was not found.",
+      );
+    }
+
+    const updatedProvince = await this.prisma.province.update({
+      where: { id },
+      data: { imageAltText: this.normalizeProvinceImageAltText(input.altText) },
+      select: provinceSelect,
+    });
+
+    return { data: this.mapProvince(updatedProvince) };
+  }
+
+  async deleteProvinceImage(id: string): Promise<MessageResponse> {
+    const province = await this.ensureProvinceExists(id);
+
+    if (!province.imageCloudinaryPublicId) {
+      throw this.notFound(
+        TAXONOMY_ERROR_CODES.PROVINCE_IMAGE_NOT_FOUND,
+        "Province image was not found.",
+      );
+    }
+
+    await this.prisma.province.update({
+      where: { id },
+      data: {
+        imageCloudinaryPublicId: null,
+        imageSecureUrl: null,
+        imageThumbnailUrl: null,
+        imageAltText: null,
+        imageWidth: null,
+        imageHeight: null,
+      },
+    });
+
+    await this.cleanupCloudinaryImage(province.imageCloudinaryPublicId);
+
+    return { data: { message: "Province image deleted successfully." } };
   }
 
   async reorderProvinces(input: ReorderTaxonomyDto): Promise<MessageResponse> {
@@ -172,14 +378,17 @@ class TaxonomyService {
   }
 
   async listPublicDistricts(query: DistrictQueryDto) {
-    return this.listDistricts({
-      ...query,
-      isActive: true,
-    });
+    return this.listDistricts(
+      {
+        ...query,
+        isActive: true,
+      },
+      false,
+    );
   }
 
   async listAdminDistricts(query: AdminDistrictQueryDto) {
-    return this.listDistricts(query);
+    return this.listDistricts(query, true);
   }
 
   async createDistrict(input: CreateDistrictDto) {
@@ -428,7 +637,7 @@ class TaxonomyService {
 
   private async listProvinces(
     query: AdminTaxonomyQueryDto,
-  ): Promise<ListResponse<Prisma.ProvinceGetPayload<{ select: typeof taxonomySelect }>>> {
+  ): Promise<ListResponse<Prisma.ProvinceGetPayload<{ select: typeof provinceSelect }>>> {
     const normalizedQuery = this.normalizeQuery(query);
     const where: Prisma.ProvinceWhereInput = {
       ...(query.isActive === undefined ? {} : { isActive: query.isActive }),
@@ -437,7 +646,7 @@ class TaxonomyService {
     const [items, total] = await this.prisma.$transaction([
       this.prisma.province.findMany({
         where,
-        select: taxonomySelect,
+        select: provinceSelect,
         orderBy: this.provinceOrderBy(normalizedQuery),
         skip: this.skip(normalizedQuery),
         take: normalizedQuery.limit,
@@ -448,7 +657,7 @@ class TaxonomyService {
     return this.listResponse(items, total, normalizedQuery);
   }
 
-  private async listDistricts(query: AdminDistrictQueryDto) {
+  private async listDistricts(query: AdminDistrictQueryDto, includeEntryCount: boolean) {
     const normalizedQuery = this.normalizeQuery(query);
     const provinceId = await this.resolveProvinceId(query.provinceId, query.provinceSlug);
     const where: Prisma.DistrictWhereInput = {
@@ -456,6 +665,28 @@ class TaxonomyService {
       ...(provinceId ? { provinceId } : {}),
       ...this.searchWhere(query.search),
     };
+    if (includeEntryCount) {
+      const [items, total] = await this.prisma.$transaction([
+        this.prisma.district.findMany({
+          where,
+          select: adminDistrictSelect,
+          orderBy: this.districtOrderBy(normalizedQuery),
+          skip: this.skip(normalizedQuery),
+          take: normalizedQuery.limit,
+        }),
+        this.prisma.district.count({ where }),
+      ]);
+
+      return this.listResponse(
+        items.map(({ _count, ...district }) => ({
+          ...district,
+          entryCount: _count.entries,
+        })),
+        total,
+        normalizedQuery,
+      );
+    }
+
     const [items, total] = await this.prisma.$transaction([
       this.prisma.district.findMany({
         where,
@@ -755,7 +986,7 @@ class TaxonomyService {
   private async ensureProvinceExists(id: string) {
     const province = await this.prisma.province.findUnique({
       where: { id },
-      select: taxonomySelect,
+      select: provinceSelect,
     });
 
     if (!province) {
@@ -1053,6 +1284,77 @@ class TaxonomyService {
     };
   }
 
+  private mapProvince(province: Prisma.ProvinceGetPayload<{ select: typeof provinceSelect }>) {
+    const {
+      imageCloudinaryPublicId: _imageCloudinaryPublicId,
+      imageSecureUrl,
+      imageThumbnailUrl,
+      imageAltText,
+      imageWidth,
+      imageHeight,
+      ...provinceData
+    } = province;
+
+    return {
+      ...provinceData,
+      image:
+        imageSecureUrl && imageThumbnailUrl && imageAltText
+          ? {
+              secureUrl: imageSecureUrl,
+              thumbnailUrl: imageThumbnailUrl,
+              altText: imageAltText,
+              width: imageWidth,
+              height: imageHeight,
+            }
+          : null,
+    };
+  }
+
+  private validateProvinceImageFile(
+    file: Express.Multer.File | undefined,
+  ): asserts file is Express.Multer.File {
+    if (!file) {
+      throw this.badRequest(TAXONOMY_ERROR_CODES.IMAGE_INVALID_TYPE, "Image file is required.");
+    }
+
+    const maxImageSizeBytes = this.configService.get<number>("MAX_IMAGE_SIZE_MB", 5) * 1024 * 1024;
+
+    if (file.size > maxImageSizeBytes || file.buffer.length > maxImageSizeBytes) {
+      throw this.badRequest(TAXONOMY_ERROR_CODES.IMAGE_TOO_LARGE, "Image file is too large.");
+    }
+
+    if (!isSupportedImageFile(file)) {
+      throw this.badRequest(
+        TAXONOMY_ERROR_CODES.IMAGE_INVALID_TYPE,
+        "Only valid JPEG, PNG, and WebP images are supported.",
+      );
+    }
+  }
+
+  private normalizeProvinceImageAltText(value: string): string {
+    const altText = value.trim();
+
+    if (altText.length < 2) {
+      throw this.badRequest(
+        TAXONOMY_ERROR_CODES.PROVINCE_IMAGE_ALT_REQUIRED,
+        "Province image alt text is required.",
+      );
+    }
+
+    return altText;
+  }
+
+  private async cleanupCloudinaryImage(publicId: string): Promise<void> {
+    try {
+      await this.mediaService.deleteImage(publicId);
+    } catch (error) {
+      this.logger.error(
+        `Failed to clean up province Cloudinary asset ${publicId}.`,
+        error instanceof Error ? error.stack : String(error),
+      );
+    }
+  }
+
   private async withUniqueConstraintHandling<TResponse>(action: () => Promise<TResponse>) {
     try {
       return await action();
@@ -1079,6 +1381,13 @@ class TaxonomyService {
 
   private conflict(code: string, message: string) {
     return new ConflictException({
+      error: code,
+      message,
+    });
+  }
+
+  private badRequest(code: string, message: string) {
+    return new BadRequestException({
       error: code,
       message,
     });

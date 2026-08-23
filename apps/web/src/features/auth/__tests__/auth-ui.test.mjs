@@ -94,7 +94,7 @@ const filterTabs = read("src/features/entries/components/filter-tabs.tsx");
 const shadcnTabs = read("src/components/ui/tabs.tsx");
 const entryBreadcrumb = read("src/features/entries/utils/entry-breadcrumb.ts");
 const provinceSearchGrid = read("src/features/entries/components/province-search-grid.tsx");
-const provinceImages = read("src/features/entries/utils/province-images.ts");
+const provinceImages = read("src/lib/images/province-images.ts");
 const homePage = read("src/app/page.tsx");
 const homeApi = read("src/features/home/api/home-api.ts");
 const homeContent = read("src/features/home/components/home-content.tsx");
@@ -196,9 +196,21 @@ const adminTagsToolbar = read("src/features/admin/components/admin-tags-toolbar.
 const adminTagForm = read("src/features/admin/components/admin-tag-form-sheet.tsx");
 const adminTagStatus = read("src/features/admin/components/admin-tag-status-dialog.tsx");
 const adminTagsUrl = read("src/features/admin/utils/admin-tags-url.ts");
+const adminProvincesRoute = read("src/app/(admin)/admin/provinces/page.tsx");
+const adminProvinceDetailRoute = read("src/app/(admin)/admin/provinces/[id]/page.tsx");
+const adminProvincesApi = read("src/features/admin/api/admin-provinces-api.ts");
+const adminProvincesHooks = read("src/features/admin/hooks/use-admin-provinces.ts");
+const adminProvincesPage = read("src/features/admin/components/admin-provinces-page.tsx");
+const adminProvinceDetailPage = read(
+  "src/features/admin/components/admin-province-detail-page.tsx",
+);
+const adminProvincesTable = read("src/features/admin/components/admin-provinces-table.tsx");
+const adminDistrictsTable = read("src/features/admin/components/admin-districts-table.tsx");
+const adminProvinceImageDialog = read(
+  "src/features/admin/components/admin-province-image-dialog.tsx",
+);
 const shadcnSidebar = read("src/components/ui/sidebar.tsx");
 const adminPageRoutes = [
-  "src/app/(admin)/admin/provinces/page.tsx",
   "src/app/(admin)/admin/moderators/page.tsx",
   "src/app/(admin)/admin/reports/page.tsx",
   "src/app/(admin)/admin/audit/page.tsx",
@@ -1259,10 +1271,35 @@ test("admin topics provide URL filters, animated ordering, and accessible manage
   assert.match(adminTopicsUrl, /createAdminTopicsHref/);
 });
 
+test("admin provinces use fixed taxonomy management with nested district routes", () => {
+  assert.match(adminProvincesRoute, /AdminProvincesView/);
+  assert.match(adminProvinceDetailRoute, /AdminProvinceDetailPage/);
+  assert.match(adminProvincesPage, /تغییر ترتیب/);
+  assert.doesNotMatch(adminProvincesPage, /ولایت جدید/);
+  assert.match(adminProvincesTable, /tableFeatures/);
+  assert.match(adminProvincesTable, /layout="position"/);
+  assert.match(adminProvinceDetailPage, /AdminDistrictsTable/);
+  assert.match(adminProvinceDetailPage, /افزودن ولسوالی/);
+  assert.match(adminDistrictsTable, /tableFeatures/);
+});
+
+test("admin province profile uses confirmed image and taxonomy API contracts", () => {
+  assert.match(adminProvincesApi, /\/taxonomy\/admin\/provinces\/\$\{provinceId\}\/image/);
+  assert.match(adminProvincesApi, /FormData/);
+  assert.match(adminProvincesApi, /\/taxonomy\/admin\/districts/);
+  assert.match(adminProvincesHooks, /placeholderData: keepPreviousData/);
+  assert.match(adminProvincesHooks, /adminEntriesQueryKeys\.taxonomy/);
+  assert.doesNotMatch(adminProvincesHooks, /onMutate/);
+  assert.match(adminProvinceImageDialog, /image\/jpeg,image\/png,image\/webp/);
+  assert.match(adminProvinceImageDialog, /متن جایگزین تصویر/);
+  assert.match(provinceDetailPage, /province\.description/);
+  assert.match(provinceImages, /province\.image\.secureUrl/);
+});
+
 test("remaining admin destinations are deliberately minimal placeholders", () => {
   assert.match(adminPlaceholder, /این بخش در مرحله بعد پیاده‌سازی می‌شود/);
   assert.doesNotMatch(adminPlaceholder, /chart|table|statistics/i);
-  assert.equal(adminPageRoutes.length, 5);
+  assert.equal(adminPageRoutes.length, 4);
   for (const route of adminPageRoutes) {
     assert.match(route, /AdminPlaceholderPage/);
     assert.match(route, /createAdminMetadata/);

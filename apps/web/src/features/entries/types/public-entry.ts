@@ -11,6 +11,14 @@ type TaxonomyItem = {
   slug: string;
   sortOrder?: number;
   isActive?: boolean;
+  description?: string | null;
+  image?: {
+    secureUrl: string;
+    thumbnailUrl: string;
+    altText: string;
+    width: number | null;
+    height: number | null;
+  } | null;
 };
 
 type PublicEntryImage = {

@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Inject,
   Param,
@@ -8,10 +9,16 @@ import {
   Patch,
   Post,
   Query,
+  UploadedFile,
+  UseInterceptors,
 } from "@nestjs/common";
+import { FileInterceptor } from "@nestjs/platform-express";
 import {
+  ApiBadRequestResponse,
   ApiBearerAuth,
+  ApiBody,
   ApiConflictResponse,
+  ApiConsumes,
   ApiExtraModels,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
@@ -20,6 +27,7 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
+import { memoryStorage } from "multer";
 
 import { UserRole } from "@/generated/prisma/enums";
 import { Public } from "@/modules/auth/decorators/public.decorator";
@@ -27,13 +35,13 @@ import { Roles } from "@/modules/auth/decorators/roles.decorator";
 import {
   CreateDescribedTaxonomyDto,
   CreateDistrictDto,
-  CreateProvinceDto,
   CreateTagDto,
   ReorderTaxonomyDto,
   SetTaxonomyActiveDto,
   UpdateDescribedTaxonomyDto,
   UpdateDistrictDto,
   UpdateProvinceDto,
+  UpdateProvinceImageDto,
   UpdateTagDto,
 } from "@/modules/taxonomy/dto/taxonomy-management.dto";
 import {
@@ -45,11 +53,14 @@ import {
 import {
   AdminCategoryListResponseDto,
   AdminContentTypeListResponseDto,
+  AdminDistrictListResponseDto,
+  type AdminProvinceDetailDto,
+  AdminProvinceListResponseDto,
   AdminTagListResponseDto,
   type DescribedTaxonomyItemDto,
   type DistrictItemDto,
+  type ProvinceItemDto,
   type TagItemDto,
-  type TaxonomyItemDto,
   TaxonomyItemResponseDto,
   TaxonomyListResponseDto,
   TaxonomyMessageResponseDto,
@@ -62,7 +73,6 @@ import { TaxonomyService } from "@/modules/taxonomy/taxonomy.service";
   AdminTaxonomyQueryDto,
   CreateDescribedTaxonomyDto,
   CreateDistrictDto,
-  CreateProvinceDto,
   CreateTagDto,
   DistrictQueryDto,
   ReorderTaxonomyDto,
@@ -70,6 +80,7 @@ import { TaxonomyService } from "@/modules/taxonomy/taxonomy.service";
   TaxonomyQueryDto,
   UpdateDescribedTaxonomyDto,
   UpdateDistrictDto,
+  UpdateProvinceImageDto,
   UpdateProvinceDto,
   UpdateTagDto,
 )
@@ -80,7 +91,7 @@ class TaxonomyController {
   @Public()
   @Get("provinces")
   @ApiOperation({ summary: "List active provinces" })
-  @ApiOkResponse({ type: TaxonomyListResponseDto<TaxonomyItemDto> })
+  @ApiOkResponse({ type: TaxonomyListResponseDto<ProvinceItemDto> })
   listPublicProvinces(@Query() query: TaxonomyQueryDto) {
     return this.taxonomyService.listPublicProvinces(query);
   }
@@ -121,21 +132,21 @@ class TaxonomyController {
   @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: "Admin list provinces" })
-  @ApiOkResponse({ type: TaxonomyListResponseDto<TaxonomyItemDto> })
+  @ApiOkResponse({ type: AdminProvinceListResponseDto })
   @ApiUnauthorizedResponse({ description: "Missing or invalid bearer token" })
   @ApiForbiddenResponse({ description: "AUTH_INSUFFICIENT_ROLE" })
   listAdminProvinces(@Query() query: AdminTaxonomyQueryDto) {
     return this.taxonomyService.listAdminProvinces(query);
   }
 
-  @Post("admin/provinces")
+  @Get("admin/provinces/:id")
   @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Admin create province" })
-  @ApiOkResponse({ type: TaxonomyItemResponseDto<TaxonomyItemDto> })
-  @ApiConflictResponse({ description: "TAXONOMY_DUPLICATE_NAME or TAXONOMY_DUPLICATE_SLUG" })
-  createProvince(@Body() body: CreateProvinceDto) {
-    return this.taxonomyService.createProvince(body);
+  @ApiOperation({ summary: "Get an Admin province profile" })
+  @ApiOkResponse({ type: TaxonomyItemResponseDto<AdminProvinceDetailDto> })
+  @ApiNotFoundResponse({ description: "TAXONOMY_PROVINCE_NOT_FOUND" })
+  getAdminProvince(@Param("id", ParseUUIDPipe) id: string) {
+    return this.taxonomyService.getAdminProvince(id);
   }
 
   @Patch("admin/provinces/reorder")
@@ -151,7 +162,7 @@ class TaxonomyController {
   @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: "Admin update province" })
-  @ApiOkResponse({ type: TaxonomyItemResponseDto<TaxonomyItemDto> })
+  @ApiOkResponse({ type: TaxonomyItemResponseDto<ProvinceItemDto> })
   @ApiConflictResponse({ description: "TAXONOMY_DUPLICATE_NAME or TAXONOMY_DUPLICATE_SLUG" })
   @ApiNotFoundResponse({ description: "TAXONOMY_PROVINCE_NOT_FOUND" })
   updateProvince(@Param("id", ParseUUIDPipe) id: string, @Body() body: UpdateProvinceDto) {
@@ -162,16 +173,72 @@ class TaxonomyController {
   @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: "Admin enable or disable province" })
-  @ApiOkResponse({ type: TaxonomyItemResponseDto<TaxonomyItemDto> })
+  @ApiOkResponse({ type: TaxonomyItemResponseDto<ProvinceItemDto> })
   setProvinceActive(@Param("id", ParseUUIDPipe) id: string, @Body() body: SetTaxonomyActiveDto) {
     return this.taxonomyService.setProvinceActive(id, body);
+  }
+
+  @Post("admin/provinces/:id/image")
+  @Roles(UserRole.ADMIN)
+  @ApiBearerAuth()
+  @UseInterceptors(FileInterceptor("image", { storage: memoryStorage() }))
+  @ApiOperation({ summary: "Upload or replace an Admin-managed province image" })
+  @ApiConsumes("multipart/form-data")
+  @ApiBody({
+    schema: {
+      type: "object",
+      required: ["image", "altText"],
+      properties: {
+        image: { type: "string", format: "binary" },
+        altText: { type: "string", minLength: 2, maxLength: 220 },
+      },
+    },
+  })
+  @ApiOkResponse({ type: TaxonomyItemResponseDto<ProvinceItemDto> })
+  @ApiBadRequestResponse({
+    description: "IMAGE_TOO_LARGE, IMAGE_INVALID_TYPE, IMAGE_UPLOAD_FAILED, or validation failed",
+  })
+  @ApiNotFoundResponse({ description: "TAXONOMY_PROVINCE_NOT_FOUND" })
+  uploadProvinceImage(
+    @Param("id", ParseUUIDPipe) id: string,
+    @Body() body: UpdateProvinceImageDto,
+    @UploadedFile() image: Express.Multer.File | undefined,
+  ) {
+    return this.taxonomyService.uploadProvinceImage(id, body, image);
+  }
+
+  @Patch("admin/provinces/:id/image")
+  @Roles(UserRole.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "Update province image alternative text" })
+  @ApiOkResponse({ type: TaxonomyItemResponseDto<ProvinceItemDto> })
+  @ApiNotFoundResponse({
+    description: "TAXONOMY_PROVINCE_NOT_FOUND or TAXONOMY_PROVINCE_IMAGE_NOT_FOUND",
+  })
+  updateProvinceImage(
+    @Param("id", ParseUUIDPipe) id: string,
+    @Body() body: UpdateProvinceImageDto,
+  ) {
+    return this.taxonomyService.updateProvinceImage(id, body);
+  }
+
+  @Delete("admin/provinces/:id/image")
+  @Roles(UserRole.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "Remove an Admin-managed province image" })
+  @ApiOkResponse({ type: TaxonomyMessageResponseDto })
+  @ApiNotFoundResponse({
+    description: "TAXONOMY_PROVINCE_NOT_FOUND or TAXONOMY_PROVINCE_IMAGE_NOT_FOUND",
+  })
+  deleteProvinceImage(@Param("id", ParseUUIDPipe) id: string) {
+    return this.taxonomyService.deleteProvinceImage(id);
   }
 
   @Get("admin/districts")
   @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: "Admin list districts" })
-  @ApiOkResponse({ type: TaxonomyListResponseDto<DistrictItemDto> })
+  @ApiOkResponse({ type: AdminDistrictListResponseDto })
   listAdminDistricts(@Query() query: AdminDistrictQueryDto) {
     return this.taxonomyService.listAdminDistricts(query);
   }

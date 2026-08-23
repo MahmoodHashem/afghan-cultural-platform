@@ -58,9 +58,9 @@ function AdminTopicFormSheet({
     if (!open) return;
     form.reset(
       topic
-          ? {
-              name: topic.name,
-              description: topic.description ?? "",
+        ? {
+            name: topic.name,
+            description: topic.description ?? "",
             sortOrder: topic.sortOrder,
             isActive: topic.isActive,
           }

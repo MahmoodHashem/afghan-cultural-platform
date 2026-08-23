@@ -359,13 +359,20 @@ model ModerationReview {
 }
 
 model Province {
-  id        String   @id @default(uuid()) @map("id") @db.Uuid
-  name      String   @unique @map("name")
-  slug      String   @unique @map("slug")
-  sortOrder Int      @default(0) @map("sort_order")
-  isActive  Boolean  @default(true) @map("is_active")
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  id                      String   @id @default(uuid()) @map("id") @db.Uuid
+  name                    String   @unique @map("name")
+  slug                    String   @unique @map("slug")
+  description             String?  @map("description")
+  imageCloudinaryPublicId String?  @unique @map("image_cloudinary_public_id")
+  imageSecureUrl          String?  @map("image_secure_url")
+  imageThumbnailUrl       String?  @map("image_thumbnail_url")
+  imageAltText            String?  @map("image_alt_text")
+  imageWidth              Int?     @map("image_width")
+  imageHeight             Int?     @map("image_height")
+  sortOrder               Int      @default(0) @map("sort_order")
+  isActive                Boolean  @default(true) @map("is_active")
+  createdAt               DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt               DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
 
   profileUsers User[]          @relation("UserProvince")
   entries      CulturalEntry[] @relation("EntryProvince")
