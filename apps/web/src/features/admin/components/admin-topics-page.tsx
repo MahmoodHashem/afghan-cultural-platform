@@ -12,6 +12,10 @@ import { AdminTopicStatusDialog } from "@/features/admin/components/admin-topic-
 import { AdminTopicsTable } from "@/features/admin/components/admin-topics-table";
 import { AdminTopicsToolbar } from "@/features/admin/components/admin-topics-toolbar";
 import {
+  type AdminDescribedTaxonomyKind,
+  describedTaxonomyConfigs,
+} from "@/features/admin/constants/admin-described-taxonomy";
+import {
   useAdminTopics,
   useCreateAdminTopic,
   useReorderAdminTopics,
@@ -31,18 +35,19 @@ import {
 
 const EMPTY_META = { page: 1, limit: 20, total: 0, totalPages: 0 };
 
-function AdminTopicsPage() {
+function AdminTopicsPage({ kind = "topics" }: { kind?: AdminDescribedTaxonomyKind }) {
+  const config = describedTaxonomyConfigs[kind];
   const router = useRouter();
   const searchParams = useSearchParams();
   const query = parseAdminTopicsQuery(searchParams);
-  const topicsQuery = useAdminTopics(query);
-  const createMutation = useCreateAdminTopic();
+  const topicsQuery = useAdminTopics(kind, query);
+  const createMutation = useCreateAdminTopic(kind);
   const [editingTopic, setEditingTopic] = useState<AdminTopic | null>(null);
   const [formOpen, setFormOpen] = useState(false);
-  const updateMutation = useUpdateAdminTopic(editingTopic?.id ?? "");
+  const updateMutation = useUpdateAdminTopic(kind, editingTopic?.id ?? "");
   const [statusTopic, setStatusTopic] = useState<AdminTopic | null>(null);
-  const statusMutation = useSetAdminTopicActive(statusTopic?.id ?? "");
-  const reorderMutation = useReorderAdminTopics();
+  const statusMutation = useSetAdminTopicActive(kind, statusTopic?.id ?? "");
+  const reorderMutation = useReorderAdminTopics(kind);
   const [reorderTopics, setReorderTopics] = useState<AdminTopic[] | null>(null);
   const [isNavigating, startTransition] = useTransition();
   const topics = reorderTopics ?? topicsQuery.data?.data ?? [];
@@ -57,12 +62,12 @@ function AdminTopicsPage() {
   const updateQuery = useCallback(
     (updates: Partial<AdminTopicsQuery>) => {
       startTransition(() => {
-        router.replace(createAdminTopicsHref(searchParams, { page: 1, ...updates }), {
+        router.replace(createAdminTopicsHref(searchParams, { page: 1, ...updates }, config.route), {
           scroll: false,
         });
       });
     },
-    [router, searchParams],
+    [config.route, router, searchParams],
   );
 
   const mutationPending =
@@ -74,8 +79,8 @@ function AdminTopicsPage() {
   return (
     <div className="space-y-6">
       <AdminPageHeader
-        title="موضوع‌ها"
-        description="ساخت و ویرایش موضوع‌های اصلی برای دسته‌بندی مطالب فرهنگی"
+        title={config.title}
+        description={config.description}
         actions={
           reorderMode ? (
             <>
@@ -128,7 +133,7 @@ function AdminTopicsPage() {
                 }}
               >
                 <PlusIcon className="size-4" aria-hidden="true" />
-                موضوع جدید
+                {config.singular} جدید
               </Button>
             </>
           )
@@ -138,13 +143,12 @@ function AdminTopicsPage() {
       <Card className="gap-0 overflow-hidden rounded-xl py-0">
         {!reorderMode ? (
           <AdminTopicsToolbar
+            config={config}
             query={query}
             total={topicsQuery.data?.meta.total ?? 0}
             pending={isNavigating || topicsQuery.isFetching}
             onChange={updateQuery}
-            onClear={() =>
-              startTransition(() => router.replace("/admin/topics", { scroll: false }))
-            }
+            onClear={() => startTransition(() => router.replace(config.route, { scroll: false }))}
           />
         ) : (
           <div className="border-b border-primary/20 bg-primary/5 px-4 py-3 text-[13px] leading-6 text-primary md:px-5">
@@ -161,7 +165,7 @@ function AdminTopicsPage() {
               <ExclamationTriangleIcon className="size-5" aria-hidden="true" />
             </span>
             <div className="space-y-1">
-              <h2 className="text-[16px] font-semibold">فهرست موضوع‌ها بارگذاری نشد</h2>
+              <h2 className="text-[16px] font-semibold">فهرست {config.plural} بارگذاری نشد</h2>
               <p className="text-[13px] text-muted-foreground">
                 ارتباط با سرور برقرار نشد. دوباره تلاش کنید.
               </p>
@@ -172,6 +176,7 @@ function AdminTopicsPage() {
           </section>
         ) : (
           <AdminTopicsTable
+            config={config}
             topics={topics}
             meta={topicsQuery.data?.meta ?? EMPTY_META}
             loading={topicsQuery.isLoading}
@@ -196,7 +201,9 @@ function AdminTopicsPage() {
             }}
             onPageChange={(page) =>
               startTransition(() =>
-                router.replace(createAdminTopicsHref(searchParams, { page }), { scroll: false }),
+                router.replace(createAdminTopicsHref(searchParams, { page }, config.route), {
+                  scroll: false,
+                }),
               )
             }
           />
@@ -204,6 +211,7 @@ function AdminTopicsPage() {
       </Card>
 
       <AdminTopicFormSheet
+        config={config}
         topic={editingTopic}
         open={formOpen}
         pending={createMutation.isPending || updateMutation.isPending}
@@ -219,6 +227,7 @@ function AdminTopicsPage() {
       />
 
       <AdminTopicStatusDialog
+        config={config}
         topic={statusTopic}
         open={Boolean(statusTopic)}
         pending={statusMutation.isPending}
@@ -237,7 +246,6 @@ function AdminTopicsPage() {
 function toTopicInput(values: AdminTopicFormValues): AdminTopicInput {
   return {
     name: values.name.trim(),
-    slug: values.slug.trim() || undefined,
     description: values.description.trim() || undefined,
     sortOrder: values.sortOrder,
     isActive: values.isActive,

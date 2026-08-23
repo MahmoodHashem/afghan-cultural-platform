@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  ArrowDownIcon,
-  ArrowUpIcon,
-  CheckCircleIcon,
-  NoSymbolIcon,
-  PencilSquareIcon,
-} from "@heroicons/react/24/outline";
+import { CheckCircleIcon, NoSymbolIcon, PencilSquareIcon } from "@heroicons/react/24/outline";
 import { createColumnHelper, tableFeatures, useTable } from "@tanstack/react-table";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import Link from "next/link";
@@ -15,49 +9,51 @@ import { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { AdminDescribedTaxonomyConfig } from "@/features/admin/constants/admin-described-taxonomy";
-import type { AdminTopic, AdminTopicsResponse } from "@/features/admin/types/admin-topics";
+import type { AdminTag, AdminTagsResponse } from "@/features/admin/types/admin-tags";
 import { formatPersianDate, formatPersianNumber } from "@/lib/utils/formatters";
 
-const topicTableFeatures = tableFeatures({});
-const topicColumnHelper = createColumnHelper<typeof topicTableFeatures, AdminTopic>();
-const TOPIC_GRID_COLUMNS =
-  "minmax(13rem,1.5fr) minmax(9rem,.8fr) minmax(6rem,.45fr) minmax(6rem,.55fr) minmax(7rem,.65fr) 7rem";
-const TOPIC_SKELETON_KEYS = ["topic-1", "topic-2", "topic-3", "topic-4", "topic-5", "topic-6"];
+const tagTableFeatures = tableFeatures({});
+const tagColumnHelper = createColumnHelper<typeof tagTableFeatures, AdminTag>();
+const TAG_GRID_COLUMNS =
+  "minmax(11rem,1.25fr) minmax(9rem,.85fr) minmax(9rem,.85fr) minmax(5rem,.4fr) minmax(6rem,.55fr) minmax(7rem,.65fr) 6rem";
+const SKELETON_KEYS = ["tag-1", "tag-2", "tag-3", "tag-4", "tag-5", "tag-6"];
 
-function AdminTopicsTable({
-  config,
-  topics,
+function AdminTagsTable({
+  tags,
   meta,
   loading,
   updating,
-  reorderMode,
   onEdit,
   onStatusAction,
-  onMove,
   onPageChange,
 }: {
-  config: AdminDescribedTaxonomyConfig;
-  topics: AdminTopic[];
-  meta: AdminTopicsResponse["meta"];
+  tags: AdminTag[];
+  meta: AdminTagsResponse["meta"];
   loading: boolean;
   updating: boolean;
-  reorderMode: boolean;
-  onEdit: (topic: AdminTopic) => void;
-  onStatusAction: (topic: AdminTopic) => void;
-  onMove: (index: number, direction: -1 | 1) => void;
+  onEdit: (tag: AdminTag) => void;
+  onStatusAction: (tag: AdminTag) => void;
   onPageChange: (page: number) => void;
 }) {
   const prefersReducedMotion = useReducedMotion();
   const columns = useMemo(
     () =>
-      topicColumnHelper.columns([
-        topicColumnHelper.display({
-          id: "topic",
-          header: "موضوع",
-          cell: ({ row }) => <TopicIdentity topic={row.original} />,
+      tagColumnHelper.columns([
+        tagColumnHelper.accessor("name", {
+          header: "برچسب",
+          cell: ({ row }) => (
+            <span className="truncate text-[14px] font-semibold">{row.original.name}</span>
+          ),
         }),
-        topicColumnHelper.accessor("slug", {
+        tagColumnHelper.accessor("normalizedName", {
+          header: "نام یکسان‌شده",
+          cell: ({ row }) => (
+            <span className="truncate text-[12px] text-muted-foreground">
+              {row.original.normalizedName}
+            </span>
+          ),
+        }),
+        tagColumnHelper.accessor("slug", {
           header: "نشانی",
           cell: ({ row }) => (
             <span dir="ltr" className="truncate text-[12px] text-muted-foreground">
@@ -65,24 +61,24 @@ function AdminTopicsTable({
             </span>
           ),
         }),
-        topicColumnHelper.accessor("entryCount", {
+        tagColumnHelper.accessor("entryCount", {
           header: "مطالب",
           cell: ({ row }) => (
             <Button
               variant="link"
               size="sm"
               className="h-auto p-0 text-[13px]"
-              render={<Link href={`/admin/entries?${config.entryFilter}=${row.original.id}`} />}
+              render={<Link href={`/admin/entries?tagId=${row.original.id}`} />}
             >
               {formatPersianNumber(row.original.entryCount)}
             </Button>
           ),
         }),
-        topicColumnHelper.accessor("isActive", {
+        tagColumnHelper.accessor("isActive", {
           header: "وضعیت",
-          cell: ({ row }) => <TopicStatusBadge active={row.original.isActive} />,
+          cell: ({ row }) => <TagStatusBadge active={row.original.isActive} />,
         }),
-        topicColumnHelper.accessor("updatedAt", {
+        tagColumnHelper.accessor("updatedAt", {
           header: "آخرین ویرایش",
           cell: ({ row }) => (
             <span className="text-[12px] text-muted-foreground">
@@ -90,59 +86,50 @@ function AdminTopicsTable({
             </span>
           ),
         }),
-        topicColumnHelper.display({
+        tagColumnHelper.display({
           id: "actions",
-          header: reorderMode ? "جابه‌جایی" : "عملیات",
-          cell: ({ row }) =>
-            reorderMode ? (
-              <ReorderActions
-                index={row.index}
-                lastIndex={topics.length - 1}
-                disabled={updating}
-                onMove={onMove}
-              />
-            ) : (
-              <TopicRowActions
-                topic={row.original}
-                disabled={updating}
-                onEdit={onEdit}
-                onStatusAction={onStatusAction}
-              />
-            ),
+          header: "عملیات",
+          cell: ({ row }) => (
+            <TagRowActions
+              tag={row.original}
+              disabled={updating}
+              onEdit={onEdit}
+              onStatusAction={onStatusAction}
+            />
+          ),
         }),
       ]),
-    [config.entryFilter, onEdit, onMove, onStatusAction, reorderMode, topics.length, updating],
+    [onEdit, onStatusAction, updating],
   );
-  const table = useTable({ data: topics, columns, features: topicTableFeatures });
+  const table = useTable({ data: tags, columns, features: tagTableFeatures });
 
   return (
     <div className="relative overflow-hidden" aria-busy={loading || updating}>
       <AnimatePresence initial={false} mode="wait">
         <motion.div
-          key={loading ? "loading" : topics.length === 0 ? "empty" : "results"}
+          key={loading ? "loading" : tags.length === 0 ? "empty" : "results"}
           initial={prefersReducedMotion ? false : { opacity: 0 }}
           animate={{ opacity: updating ? 0.65 : 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: prefersReducedMotion ? 0 : 0.16 }}
         >
-          {loading ? <TopicsSkeleton /> : null}
-          {!loading && topics.length === 0 ? (
+          {loading ? <TagsSkeleton /> : null}
+          {!loading && tags.length === 0 ? (
             <div className="flex min-h-64 items-center justify-center px-6 text-center">
               <div className="space-y-2">
-                <h2 className="text-[16px] font-semibold">موردی پیدا نشد</h2>
+                <h2 className="text-[16px] font-semibold">برچسبی پیدا نشد</h2>
                 <p className="text-[13px] text-muted-foreground">
                   عبارت جست‌وجو یا فیلترها را تغییر دهید.
                 </p>
               </div>
             </div>
           ) : null}
-
-          {!loading && topics.length > 0 ? (
+          {!loading && tags.length > 0 ? (
             <>
               <div className="hidden lg:block">
                 <table
                   className="grid w-full"
-                  aria-label={`فهرست ${config.plural}`}
+                  aria-label="فهرست برچسب‌ها"
                   aria-rowcount={meta.total + 1}
                 >
                   <thead className="grid bg-muted/35">
@@ -150,7 +137,7 @@ function AdminTopicsTable({
                       <tr
                         key={group.id}
                         className="grid h-11 border-b border-border"
-                        style={{ gridTemplateColumns: TOPIC_GRID_COLUMNS }}
+                        style={{ gridTemplateColumns: TAG_GRID_COLUMNS }}
                       >
                         {group.headers.map((header) => (
                           <th
@@ -172,10 +159,9 @@ function AdminTopicsTable({
                           key={row.original.id}
                           initial={prefersReducedMotion ? false : { opacity: 0, y: 5 }}
                           animate={{ opacity: 1, y: 0 }}
-                          exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -4 }}
-                          transition={{ duration: prefersReducedMotion ? 0 : 0.18 }}
-                          className="grid min-h-20 border-b border-border transition-colors hover:bg-muted/45"
-                          style={{ gridTemplateColumns: TOPIC_GRID_COLUMNS }}
+                          exit={{ opacity: 0, y: -4 }}
+                          className="grid min-h-18 border-b border-border transition-colors hover:bg-muted/45"
+                          style={{ gridTemplateColumns: TAG_GRID_COLUMNS }}
                         >
                           {row.getAllCells().map((cell) => (
                             <td
@@ -191,51 +177,46 @@ function AdminTopicsTable({
                   </tbody>
                 </table>
               </div>
-
               <div className="divide-y divide-border lg:hidden">
                 <AnimatePresence initial={false} mode="popLayout">
-                  {topics.map((topic, index) => (
+                  {tags.map((tag) => (
                     <motion.article
                       layout="position"
-                      key={topic.id}
+                      key={tag.id}
                       initial={prefersReducedMotion ? false : { opacity: 0, y: 5 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0 }}
                       className="space-y-3 p-4"
                     >
                       <div className="flex items-start justify-between gap-3">
-                        <TopicIdentity topic={topic} />
-                        {reorderMode ? (
-                          <ReorderActions
-                            index={index}
-                            lastIndex={topics.length - 1}
-                            disabled={updating}
-                            onMove={onMove}
-                          />
-                        ) : (
-                          <TopicRowActions
-                            topic={topic}
-                            disabled={updating}
-                            onEdit={onEdit}
-                            onStatusAction={onStatusAction}
-                          />
-                        )}
+                        <div className="min-w-0">
+                          <p className="truncate font-semibold">{tag.name}</p>
+                          <p dir="ltr" className="truncate text-[12px] text-muted-foreground">
+                            {tag.slug}
+                          </p>
+                        </div>
+                        <TagRowActions
+                          tag={tag}
+                          disabled={updating}
+                          onEdit={onEdit}
+                          onStatusAction={onStatusAction}
+                        />
                       </div>
                       <div className="flex flex-wrap items-center gap-2 text-[12px] text-muted-foreground">
-                        <TopicStatusBadge active={topic.isActive} />
+                        <TagStatusBadge active={tag.isActive} />
                         <Link
-                          href={`/admin/entries?${config.entryFilter}=${topic.id}`}
+                          href={`/admin/entries?tagId=${tag.id}`}
                           className="text-primary hover:underline"
                         >
-                          {formatPersianNumber(topic.entryCount)} مطلب
+                          {formatPersianNumber(tag.entryCount)} مطلب
                         </Link>
-                        <span dir="ltr">{topic.slug}</span>
+                        <span>{tag.normalizedName}</span>
                       </div>
                     </motion.article>
                   ))}
                 </AnimatePresence>
               </div>
-              {!reorderMode ? <TopicsPagination meta={meta} onPageChange={onPageChange} /> : null}
+              <TagsPagination meta={meta} onPageChange={onPageChange} />
             </>
           ) : null}
         </motion.div>
@@ -244,18 +225,7 @@ function AdminTopicsTable({
   );
 }
 
-function TopicIdentity({ topic }: { topic: AdminTopic }) {
-  return (
-    <div className="min-w-0 space-y-1">
-      <p className="truncate text-[14px] font-semibold text-foreground">{topic.name}</p>
-      <p className="line-clamp-2 text-[12px] leading-5 text-muted-foreground">
-        {topic.description || "بدون توضیح"}
-      </p>
-    </div>
-  );
-}
-
-function TopicStatusBadge({ active }: { active: boolean }) {
+function TagStatusBadge({ active }: { active: boolean }) {
   return (
     <Badge
       variant="outline"
@@ -267,17 +237,16 @@ function TopicStatusBadge({ active }: { active: boolean }) {
     </Badge>
   );
 }
-
-function TopicRowActions({
-  topic,
+function TagRowActions({
+  tag,
   disabled,
   onEdit,
   onStatusAction,
 }: {
-  topic: AdminTopic;
+  tag: AdminTag;
   disabled: boolean;
-  onEdit: (topic: AdminTopic) => void;
-  onStatusAction: (topic: AdminTopic) => void;
+  onEdit: (tag: AdminTag) => void;
+  onStatusAction: (tag: AdminTag) => void;
 }) {
   return (
     <div className="flex items-center gap-1">
@@ -286,8 +255,8 @@ function TopicRowActions({
         variant="ghost"
         size="icon-sm"
         disabled={disabled}
-        onClick={() => onEdit(topic)}
-        aria-label={`ویرایش ${topic.name}`}
+        onClick={() => onEdit(tag)}
+        aria-label={`ویرایش ${tag.name}`}
       >
         <PencilSquareIcon className="size-4" aria-hidden="true" />
       </Button>
@@ -296,10 +265,10 @@ function TopicRowActions({
         variant="ghost"
         size="icon-sm"
         disabled={disabled}
-        onClick={() => onStatusAction(topic)}
-        aria-label={`${topic.isActive ? "غیرفعال‌کردن" : "فعال‌کردن"} ${topic.name}`}
+        onClick={() => onStatusAction(tag)}
+        aria-label={`${tag.isActive ? "غیرفعال‌کردن" : "فعال‌کردن"} ${tag.name}`}
       >
-        {topic.isActive ? (
+        {tag.isActive ? (
           <NoSymbolIcon className="size-4 text-destructive" aria-hidden="true" />
         ) : (
           <CheckCircleIcon className="size-4 text-primary" aria-hidden="true" />
@@ -308,49 +277,11 @@ function TopicRowActions({
     </div>
   );
 }
-
-function ReorderActions({
-  index,
-  lastIndex,
-  disabled,
-  onMove,
-}: {
-  index: number;
-  lastIndex: number;
-  disabled: boolean;
-  onMove: (index: number, direction: -1 | 1) => void;
-}) {
-  return (
-    <div className="flex items-center gap-1">
-      <Button
-        type="button"
-        variant="outline"
-        size="icon-sm"
-        disabled={disabled || index === 0}
-        onClick={() => onMove(index, -1)}
-        aria-label="انتقال به بالا"
-      >
-        <ArrowUpIcon className="size-4" aria-hidden="true" />
-      </Button>
-      <Button
-        type="button"
-        variant="outline"
-        size="icon-sm"
-        disabled={disabled || index === lastIndex}
-        onClick={() => onMove(index, 1)}
-        aria-label="انتقال به پایین"
-      >
-        <ArrowDownIcon className="size-4" aria-hidden="true" />
-      </Button>
-    </div>
-  );
-}
-
-function TopicsPagination({
+function TagsPagination({
   meta,
   onPageChange,
 }: {
-  meta: AdminTopicsResponse["meta"];
+  meta: AdminTagsResponse["meta"];
   onPageChange: (page: number) => void;
 }) {
   if (meta.totalPages <= 1) return null;
@@ -380,21 +311,17 @@ function TopicsPagination({
     </div>
   );
 }
-
-function TopicsSkeleton() {
+function TagsSkeleton() {
   return (
-    <div className="space-y-0" role="status" aria-label="در حال بارگذاری">
-      {TOPIC_SKELETON_KEYS.map((key) => (
+    <div role="status" aria-label="در حال بارگذاری برچسب‌ها">
+      {SKELETON_KEYS.map((key) => (
         <div
           key={key}
-          className="flex min-h-20 items-center gap-5 border-b border-border px-4 py-3"
+          className="flex min-h-18 items-center gap-5 border-b border-border px-4 py-3"
         >
-          <div className="flex-1 space-y-2">
-            <Skeleton className="h-4 w-32" />
-            <Skeleton className="h-3 w-64 max-w-full" />
-          </div>
+          <Skeleton className="h-4 w-32" />
           <Skeleton className="hidden h-4 w-28 sm:block" />
-          <Skeleton className="h-6 w-14 rounded-full" />
+          <Skeleton className="ms-auto h-6 w-14 rounded-full" />
           <Skeleton className="size-8" />
         </div>
       ))}
@@ -402,4 +329,4 @@ function TopicsSkeleton() {
   );
 }
 
-export { AdminTopicsTable };
+export { AdminTagsTable };

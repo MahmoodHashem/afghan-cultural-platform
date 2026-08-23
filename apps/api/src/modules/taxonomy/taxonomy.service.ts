@@ -59,7 +59,7 @@ const describedTaxonomySelect = {
   description: true,
 } as const;
 
-const adminCategorySelect = {
+const adminDescribedTaxonomySelect = {
   ...describedTaxonomySelect,
   _count: {
     select: {
@@ -84,6 +84,15 @@ const tagSelect = {
   isActive: true,
   createdAt: true,
   updatedAt: true,
+} as const;
+
+const adminTagSelect = {
+  ...tagSelect,
+  _count: {
+    select: {
+      entries: true,
+    },
+  },
 } as const;
 
 const DEFAULT_PAGE = 1;
@@ -250,7 +259,7 @@ class TaxonomyService {
     const [items, total] = await this.prisma.$transaction([
       this.prisma.category.findMany({
         where,
-        select: adminCategorySelect,
+        select: adminDescribedTaxonomySelect,
         orderBy: this.categoryOrderBy(normalizedQuery),
         skip: this.skip(normalizedQuery),
         take: normalizedQuery.limit,
@@ -291,7 +300,27 @@ class TaxonomyService {
   }
 
   async listAdminContentTypes(query: AdminTaxonomyQueryDto) {
-    return this.listDescribedTaxonomies("contentType", query);
+    const normalizedQuery = this.normalizeQuery(query);
+    const where: Prisma.ContentTypeWhereInput = {
+      ...(query.isActive === undefined ? {} : { isActive: query.isActive }),
+      ...this.searchWhere(query.search),
+    };
+    const [items, total] = await this.prisma.$transaction([
+      this.prisma.contentType.findMany({
+        where,
+        select: adminDescribedTaxonomySelect,
+        orderBy: this.contentTypeOrderBy(normalizedQuery),
+        skip: this.skip(normalizedQuery),
+        take: normalizedQuery.limit,
+      }),
+      this.prisma.contentType.count({ where }),
+    ]);
+
+    return this.listResponse(
+      items.map(({ _count, ...item }) => ({ ...item, entryCount: _count.entries })),
+      total,
+      normalizedQuery,
+    );
   }
 
   async createContentType(input: CreateDescribedTaxonomyDto) {
@@ -320,7 +349,24 @@ class TaxonomyService {
   }
 
   async listAdminTags(query: AdminTaxonomyQueryDto) {
-    return this.listTags(query);
+    const normalizedQuery = this.normalizeQuery(query);
+    const where = this.tagWhere(query);
+    const [items, total] = await this.prisma.$transaction([
+      this.prisma.tag.findMany({
+        where,
+        select: adminTagSelect,
+        orderBy: this.tagOrderBy(normalizedQuery),
+        skip: this.skip(normalizedQuery),
+        take: normalizedQuery.limit,
+      }),
+      this.prisma.tag.count({ where }),
+    ]);
+
+    return this.listResponse(
+      items.map(({ _count, ...item }) => ({ ...item, entryCount: _count.entries })),
+      total,
+      normalizedQuery,
+    );
   }
 
   async createTag(input: CreateTagDto) {
@@ -468,18 +514,7 @@ class TaxonomyService {
     query: AdminTaxonomyQueryDto,
   ): Promise<ListResponse<Prisma.TagGetPayload<{ select: typeof tagSelect }>>> {
     const normalizedQuery = this.normalizeQuery(query);
-    const where: Prisma.TagWhereInput = {
-      ...(query.isActive === undefined ? {} : { isActive: query.isActive }),
-      ...(query.search
-        ? {
-            OR: [
-              { name: { contains: query.search.trim() } },
-              { slug: { contains: query.search.trim() } },
-              { normalizedName: { contains: normalizeTaxonomyName(query.search) } },
-            ],
-          }
-        : {}),
-    };
+    const where = this.tagWhere(query);
     const [items, total] = await this.prisma.$transaction([
       this.prisma.tag.findMany({
         where,
@@ -492,6 +527,21 @@ class TaxonomyService {
     ]);
 
     return this.listResponse(items, total, normalizedQuery);
+  }
+
+  private tagWhere(query: AdminTaxonomyQueryDto): Prisma.TagWhereInput {
+    return {
+      ...(query.isActive === undefined ? {} : { isActive: query.isActive }),
+      ...(query.search
+        ? {
+            OR: [
+              { name: { contains: query.search.trim() } },
+              { slug: { contains: query.search.trim() } },
+              { normalizedName: { contains: normalizeTaxonomyName(query.search) } },
+            ],
+          }
+        : {}),
+    };
   }
 
   private async createDescribedTaxonomy(

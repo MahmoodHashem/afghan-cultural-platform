@@ -72,7 +72,7 @@ function HomeHero() {
       <HeroCarousel activeSlide={activeSlide} />
       <div className="absolute inset-0 bg-linear-to-b from-black/45 via-black/20 to-black/65" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_42%,rgba(214,168,75,0.22),transparent_34%),linear-gradient(90deg,rgba(0,0,0,0.56),transparent_62%)]" />
-    
+
       <PublicHeader variant="hero" />
 
       <div className="relative z-10 flex min-h-[76svh] items-end">

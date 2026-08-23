@@ -5,7 +5,7 @@ const moderationReasonSchema = z.object({
     .string()
     .trim()
     .min(1, "دلیل تصمیم را بنویسید.")
-    .max(1200, "دلیل تصمیم نباید بیشتر از ۱۲۰۰ نویسه باشد."),
+    .max(1200, "دلیل تصمیم نباید بیشتر از ۱۲۰۰ حرف باشد."),
 });
 
 type ModerationReasonValues = z.infer<typeof moderationReasonSchema>;

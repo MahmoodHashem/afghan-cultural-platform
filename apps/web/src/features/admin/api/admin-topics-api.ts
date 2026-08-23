@@ -1,3 +1,4 @@
+import type { AdminDescribedTaxonomyConfig } from "@/features/admin/constants/admin-described-taxonomy";
 import type {
   AdminTopicInput,
   AdminTopicMutationResult,
@@ -8,16 +9,23 @@ import type {
 import { apiRequest } from "@/lib/api/api-client";
 import { setOptionalSearchParam } from "@/lib/utils/url-search-params";
 
-async function listAdminTopics(query: AdminTopicsQuery, signal?: AbortSignal) {
-  return apiRequest<AdminTopicsResponse>(`/taxonomy/admin/categories${createQueryString(query)}`, {
+async function listAdminTopics(
+  resource: AdminDescribedTaxonomyConfig["endpoint"],
+  query: AdminTopicsQuery,
+  signal?: AbortSignal,
+) {
+  return apiRequest<AdminTopicsResponse>(`/taxonomy/admin/${resource}${createQueryString(query)}`, {
     method: "GET",
     signal,
   });
 }
 
-async function createAdminTopic(input: AdminTopicInput) {
+async function createAdminTopic(
+  resource: AdminDescribedTaxonomyConfig["endpoint"],
+  input: AdminTopicInput,
+) {
   const response = await apiRequest<{ data: AdminTopicMutationResult }>(
-    "/taxonomy/admin/categories",
+    `/taxonomy/admin/${resource}`,
     {
       method: "POST",
       body: input,
@@ -26,25 +34,36 @@ async function createAdminTopic(input: AdminTopicInput) {
   return response.data;
 }
 
-async function updateAdminTopic(topicId: string, input: AdminTopicInput) {
+async function updateAdminTopic(
+  resource: AdminDescribedTaxonomyConfig["endpoint"],
+  topicId: string,
+  input: AdminTopicInput,
+) {
   const response = await apiRequest<{ data: AdminTopicMutationResult }>(
-    `/taxonomy/admin/categories/${topicId}`,
+    `/taxonomy/admin/${resource}/${topicId}`,
     { method: "PATCH", body: input },
   );
   return response.data;
 }
 
-async function setAdminTopicActive(topicId: string, isActive: boolean) {
+async function setAdminTopicActive(
+  resource: AdminDescribedTaxonomyConfig["endpoint"],
+  topicId: string,
+  isActive: boolean,
+) {
   const response = await apiRequest<{ data: AdminTopicMutationResult }>(
-    `/taxonomy/admin/categories/${topicId}/active`,
+    `/taxonomy/admin/${resource}/${topicId}/active`,
     { method: "PATCH", body: { isActive } },
   );
   return response.data;
 }
 
-async function reorderAdminTopics(input: AdminTopicReorderInput) {
+async function reorderAdminTopics(
+  resource: AdminDescribedTaxonomyConfig["endpoint"],
+  input: AdminTopicReorderInput,
+) {
   const response = await apiRequest<{ data: { message: string } }>(
-    "/taxonomy/admin/categories/reorder",
+    `/taxonomy/admin/${resource}/reorder`,
     { method: "PATCH", body: input },
   );
   return response.data;

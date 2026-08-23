@@ -9,10 +9,11 @@ const topicErrorMessages: Record<string, string> = {
   AUTH_INSUFFICIENT_ROLE: "برای مدیریت موضوع‌ها دسترسی لازم را ندارید.",
 };
 
-function getAdminTopicErrorMessage(error: unknown) {
+function getAdminTopicErrorMessage(error: unknown, singular = "موضوع") {
   if (!isApiError(error)) return "ارتباط با سرور برقرار نشد.";
+  const knownMessage = topicErrorMessages[error.code]?.replaceAll("موضوع", singular);
   return (
-    topicErrorMessages[error.code] ??
+    knownMessage ??
     (error.requestId
       ? `ثبت تغییرات ممکن نشد. شناسه درخواست: ${error.requestId}`
       : "ثبت تغییرات ممکن نشد.")

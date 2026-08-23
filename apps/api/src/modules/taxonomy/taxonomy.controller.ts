@@ -44,6 +44,8 @@ import {
 } from "@/modules/taxonomy/dto/taxonomy-query.dto";
 import {
   AdminCategoryListResponseDto,
+  AdminContentTypeListResponseDto,
+  AdminTagListResponseDto,
   type DescribedTaxonomyItemDto,
   type DistrictItemDto,
   type TagItemDto,
@@ -260,7 +262,7 @@ class TaxonomyController {
   @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: "Admin list content types" })
-  @ApiOkResponse({ type: TaxonomyListResponseDto<DescribedTaxonomyItemDto> })
+  @ApiOkResponse({ type: AdminContentTypeListResponseDto })
   listAdminContentTypes(@Query() query: AdminTaxonomyQueryDto) {
     return this.taxonomyService.listAdminContentTypes(query);
   }
@@ -308,7 +310,7 @@ class TaxonomyController {
   @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: "Admin list tags" })
-  @ApiOkResponse({ type: TaxonomyListResponseDto<TagItemDto> })
+  @ApiOkResponse({ type: AdminTagListResponseDto })
   listAdminTags(@Query() query: AdminTaxonomyQueryDto) {
     return this.taxonomyService.listAdminTags(query);
   }

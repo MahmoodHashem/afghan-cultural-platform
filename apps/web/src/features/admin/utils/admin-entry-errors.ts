@@ -3,7 +3,7 @@ import { ApiError } from "@/lib/api/api-error";
 const messages: Record<string, string> = {
   ADMIN_ENTRY_NOT_FOUND: "این مطلب پیدا نشد.",
   ADMIN_ENTRY_INVALID_STATUS: "وضعیت فعلی مطلب برای این کار مناسب نیست.",
-  ADMIN_ENTRY_REASON_REQUIRED: "دلیل این تصمیم را دست‌کم در سه نویسه بنویسید.",
+  ADMIN_ENTRY_REASON_REQUIRED: "دلیل این تصمیم را دست‌کم در سه حرف بنویسید.",
   ADMIN_ENTRY_ALREADY_ARCHIVED: "این مطلب پیش‌تر بایگانی شده است.",
   ADMIN_ENTRY_ALREADY_RESTORED: "این مطلب پیش‌تر به حالت منتشرشده برگشته است.",
   ADMIN_ENTRY_LIFECYCLE_CONFLICT: "وضعیت مطلب هم‌زمان تغییر کرده است. صفحه را تازه کنید.",

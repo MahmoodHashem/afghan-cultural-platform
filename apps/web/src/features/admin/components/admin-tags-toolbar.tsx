@@ -14,8 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { AdminDescribedTaxonomyConfig } from "@/features/admin/constants/admin-described-taxonomy";
-import type { AdminTopicsQuery } from "@/features/admin/types/admin-topics";
+import type { AdminTagsQuery } from "@/features/admin/types/admin-tags";
 import { cn } from "@/lib/utils";
 import { formatPersianNumber } from "@/lib/utils/formatters";
 
@@ -25,31 +24,28 @@ const activeOptions = [
   { value: "false", label: "غیرفعال" },
 ] as const;
 const sortOptions = [
-  { value: "sortOrder:asc", label: "ترتیب نمایش" },
   { value: "name:asc", label: "نام از الف تا ی" },
   { value: "createdAt:desc", label: "جدیدترین" },
   { value: "updatedAt:desc", label: "آخرین ویرایش" },
+  { value: "slug:asc", label: "نشانی لاتین" },
 ] as const;
 
-function AdminTopicsToolbar({
-  config,
+function AdminTagsToolbar({
   query,
   total,
   pending,
   onChange,
   onClear,
 }: {
-  config: AdminDescribedTaxonomyConfig;
-  query: AdminTopicsQuery;
+  query: AdminTagsQuery;
   total: number;
   pending: boolean;
-  onChange: (updates: Partial<AdminTopicsQuery>) => void;
+  onChange: (updates: Partial<AdminTagsQuery>) => void;
   onClear: () => void;
 }) {
   const [search, setSearch] = useState(query.search ?? "");
   const prefersReducedMotion = useReducedMotion();
   const hasFilters = Boolean(query.search || query.isActive !== undefined);
-
   useEffect(() => setSearch(query.search ?? ""), [query.search]);
 
   return (
@@ -64,16 +60,16 @@ function AdminTopicsToolbar({
             }}
           >
             <label
-              htmlFor="admin-topic-search"
+              htmlFor="admin-tag-search"
               className="flex h-10 min-w-0 flex-1 items-center gap-2 rounded-lg border border-input bg-card px-3 transition-shadow focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/35"
             >
               <MagnifyingGlassIcon
                 className="size-4 shrink-0 text-muted-foreground"
                 aria-hidden="true"
               />
-              <span className="sr-only">جست‌وجوی {config.singular}</span>
+              <span className="sr-only">جست‌وجوی برچسب</span>
               <Input
-                id="admin-topic-search"
+                id="admin-tag-search"
                 type="search"
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
@@ -87,7 +83,6 @@ function AdminTopicsToolbar({
             </Button>
           </form>
         </search>
-
         <div className="flex items-center justify-between gap-3 xl:justify-end">
           <p
             className="flex min-w-20 items-center justify-end gap-1 text-[13px] text-muted-foreground"
@@ -100,21 +95,20 @@ function AdminTopicsToolbar({
                   className="col-start-1 row-start-1"
                   initial={prefersReducedMotion ? false : { opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -6 }}
-                  transition={{ duration: prefersReducedMotion ? 0 : 0.16 }}
+                  exit={{ opacity: 0, y: -6 }}
                 >
                   {formatPersianNumber(total)}
                 </motion.span>
               </AnimatePresence>
-            </span>
-            {config.singular}
+            </span>{" "}
+            برچسب
           </p>
           <AnimatePresence initial={false}>
             {hasFilters ? (
               <motion.div
                 initial={prefersReducedMotion ? false : { opacity: 0, width: 0 }}
                 animate={{ opacity: 1, width: "auto" }}
-                exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, width: 0 }}
+                exit={{ opacity: 0, width: 0 }}
                 className="overflow-hidden"
               >
                 <Button
@@ -133,34 +127,33 @@ function AdminTopicsToolbar({
           </AnimatePresence>
         </div>
       </div>
-
       <div className="flex items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:thin]">
         <span className="flex shrink-0 items-center gap-1.5 text-[12px] font-semibold text-muted-foreground">
           <FunnelIcon className="size-4" aria-hidden="true" />
           فیلترها
         </span>
-        <TopicToolbarSelect
+        <TagToolbarSelect
           label="وضعیت"
-          placeholder="همه وضعیت‌ها"
           value={query.isActive === undefined ? undefined : String(query.isActive)}
+          placeholder="همه وضعیت‌ها"
           options={activeOptions}
           disabled={pending}
           onChange={(value) =>
             onChange({ isActive: value === undefined ? undefined : value === "true" })
           }
         />
-        <TopicToolbarSelect
+        <TagToolbarSelect
           label="مرتب‌سازی"
+          value={`${query.sortBy ?? "name"}:${query.sortDirection ?? "asc"}`}
           placeholder="مرتب‌سازی"
-          value={`${query.sortBy ?? "sortOrder"}:${query.sortDirection ?? "asc"}`}
           options={sortOptions}
           includeAll={false}
           disabled={pending}
           onChange={(value) => {
             const [sortBy, sortDirection] = value?.split(":") ?? [];
             onChange({
-              sortBy: sortBy as AdminTopicsQuery["sortBy"],
-              sortDirection: sortDirection as AdminTopicsQuery["sortDirection"],
+              sortBy: sortBy as AdminTagsQuery["sortBy"],
+              sortDirection: sortDirection as AdminTagsQuery["sortDirection"],
             });
           }}
         />
@@ -169,18 +162,18 @@ function AdminTopicsToolbar({
   );
 }
 
-function TopicToolbarSelect({
+function TagToolbarSelect({
   label,
-  placeholder,
   value,
+  placeholder,
   options,
   includeAll = true,
   disabled,
   onChange,
 }: {
   label: string;
-  placeholder: string;
   value?: string;
+  placeholder: string;
   options: ReadonlyArray<{ value: string; label: string }>;
   includeAll?: boolean;
   disabled: boolean;
@@ -217,4 +210,4 @@ function TopicToolbarSelect({
   );
 }
 
-export { AdminTopicsToolbar };
+export { AdminTagsToolbar };

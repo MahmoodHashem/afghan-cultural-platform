@@ -219,6 +219,50 @@ describe("TaxonomyService", () => {
     expect(response.data[0]).not.toHaveProperty("_count");
   });
 
+  it("returns entry usage counts in the admin content-type listing", async () => {
+    prisma.contentType.findMany.mockResolvedValue([
+      { ...taxonomyItem, description: "مقاله فرهنگی", _count: { entries: 7 } },
+    ]);
+    prisma.contentType.count.mockResolvedValue(1);
+
+    const response = await service.listAdminContentTypes({ page: 1, limit: 20 });
+
+    expect(prisma.contentType.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        select: expect.objectContaining({ _count: { select: { entries: true } } }),
+      }),
+    );
+    expect(response.data[0]).toMatchObject({ entryCount: 7 });
+  });
+
+  it("returns assignment counts and normalized search in the admin tag listing", async () => {
+    prisma.tag.findMany.mockResolvedValue([
+      {
+        id: taxonomyItem.id,
+        name: "فرهنگ کابل",
+        slug: "farhang-kabul",
+        normalizedName: "فرهنگ کابل",
+        isActive: true,
+        createdAt: taxonomyItem.createdAt,
+        updatedAt: taxonomyItem.updatedAt,
+        _count: { entries: 3 },
+      },
+    ]);
+    prisma.tag.count.mockResolvedValue(1);
+
+    const response = await service.listAdminTags({ search: "فرهنگ كابل" });
+
+    expect(prisma.tag.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          OR: expect.arrayContaining([{ normalizedName: { contains: "فرهنگ کابل" } }]),
+        }),
+        select: expect.objectContaining({ _count: { select: { entries: true } } }),
+      }),
+    );
+    expect(response.data[0]).toMatchObject({ entryCount: 3 });
+  });
+
   it("rejects duplicate reorder items", async () => {
     await expect(
       service.reorderCategories({

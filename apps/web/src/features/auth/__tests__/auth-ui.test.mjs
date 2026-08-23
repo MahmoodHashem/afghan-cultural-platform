@@ -185,10 +185,19 @@ const adminTopicsToolbar = read("src/features/admin/components/admin-topics-tool
 const adminTopicForm = read("src/features/admin/components/admin-topic-form-sheet.tsx");
 const adminTopicStatus = read("src/features/admin/components/admin-topic-status-dialog.tsx");
 const adminTopicsUrl = read("src/features/admin/utils/admin-topics-url.ts");
+const adminDescribedTaxonomy = read("src/features/admin/constants/admin-described-taxonomy.ts");
+const adminContentTypesRoute = read("src/app/(admin)/admin/content-types/page.tsx");
+const adminTagsRoute = read("src/app/(admin)/admin/tags/page.tsx");
+const adminTagsApi = read("src/features/admin/api/admin-tags-api.ts");
+const adminTagsHooks = read("src/features/admin/hooks/use-admin-tags.ts");
+const adminTagsPage = read("src/features/admin/components/admin-tags-page.tsx");
+const adminTagsTable = read("src/features/admin/components/admin-tags-table.tsx");
+const adminTagsToolbar = read("src/features/admin/components/admin-tags-toolbar.tsx");
+const adminTagForm = read("src/features/admin/components/admin-tag-form-sheet.tsx");
+const adminTagStatus = read("src/features/admin/components/admin-tag-status-dialog.tsx");
+const adminTagsUrl = read("src/features/admin/utils/admin-tags-url.ts");
 const shadcnSidebar = read("src/components/ui/sidebar.tsx");
 const adminPageRoutes = [
-  "src/app/(admin)/admin/content-types/page.tsx",
-  "src/app/(admin)/admin/tags/page.tsx",
   "src/app/(admin)/admin/provinces/page.tsx",
   "src/app/(admin)/admin/moderators/page.tsx",
   "src/app/(admin)/admin/reports/page.tsx",
@@ -1190,13 +1199,48 @@ test("admin entry detail exposes inspection panels and confirmed archive restore
 
 test("admin topics use the guarded taxonomy management contracts", () => {
   assert.match(adminTopicsRoute, /AdminTopicsView/);
-  assert.match(adminTopicsApi, /\/taxonomy\/admin\/categories/);
+  assert.match(adminDescribedTaxonomy, /endpoint: "categories"/);
+  assert.match(adminTopicsApi, /\/taxonomy\/admin\/\$\{resource\}/);
   assert.match(adminTopicsApi, /\/reorder/);
   assert.match(adminTopicsApi, /\/active/);
   assert.match(adminTopicsHooks, /useMutation/);
   assert.match(adminTopicsHooks, /placeholderData: keepPreviousData/);
   assert.match(adminTopicsHooks, /adminEntriesQueryKeys\.taxonomy/);
   assert.doesNotMatch(adminTopicsHooks, /onMutate/);
+});
+
+test("admin content types reuse the described-taxonomy architecture without duplicated UI", () => {
+  assert.match(adminContentTypesRoute, /AdminTopicsPage kind="contentTypes"/);
+  assert.match(adminDescribedTaxonomy, /endpoint: "content-types"/);
+  assert.match(adminDescribedTaxonomy, /entryFilter: "contentTypeId"/);
+  assert.match(adminTopicsPage, /describedTaxonomyConfigs\[kind\]/);
+  assert.match(adminTopicsHooks, /adminTopicsQueryKeys\.list\(kind, query\)/);
+});
+
+test("admin tags use their supported CRUD contracts and normalized tag fields", () => {
+  assert.match(adminTagsRoute, /AdminTagsView/);
+  assert.match(adminTagsApi, /\/taxonomy\/admin\/tags/);
+  assert.match(adminTagsApi, /\/active/);
+  assert.match(adminTagsHooks, /placeholderData: keepPreviousData/);
+  assert.match(adminTagsHooks, /adminEntriesQueryKeys\.taxonomy/);
+  assert.doesNotMatch(adminTagsHooks, /onMutate/);
+  assert.match(adminTagsTable, /normalizedName/);
+  assert.match(adminTagsTable, /tagId=/);
+});
+
+test("admin tags provide URL filters, animated rows, and confirmed soft disable", () => {
+  assert.match(adminTagsPage, /useSearchParams/);
+  assert.match(adminTagsPage, /scroll: false/);
+  assert.match(adminTagsToolbar, /جست‌وجو با نام یا نشانی/);
+  assert.match(adminTagsTable, /tableFeatures/);
+  assert.match(adminTagsTable, /layout="position"/);
+  assert.match(adminTagsTable, /useReducedMotion/);
+  assert.match(adminTagForm, /useForm/);
+  assert.match(adminTagForm, /zodResolver/);
+  assert.match(adminTagForm, /DialogContent/);
+  assert.match(adminTagStatus, /برچسب مطالب قبلی حذف نخواهد شد/);
+  assert.match(adminTagsUrl, /parseAdminTagsQuery/);
+  assert.match(adminTagsUrl, /createAdminTagsHref/);
 });
 
 test("admin topics provide URL filters, animated ordering, and accessible management surfaces", () => {
@@ -1218,7 +1262,7 @@ test("admin topics provide URL filters, animated ordering, and accessible manage
 test("remaining admin destinations are deliberately minimal placeholders", () => {
   assert.match(adminPlaceholder, /این بخش در مرحله بعد پیاده‌سازی می‌شود/);
   assert.doesNotMatch(adminPlaceholder, /chart|table|statistics/i);
-  assert.equal(adminPageRoutes.length, 7);
+  assert.equal(adminPageRoutes.length, 5);
   for (const route of adminPageRoutes) {
     assert.match(route, /AdminPlaceholderPage/);
     assert.match(route, /createAdminMetadata/);

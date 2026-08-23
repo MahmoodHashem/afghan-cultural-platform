@@ -10,36 +10,31 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import type { AdminDescribedTaxonomyConfig } from "@/features/admin/constants/admin-described-taxonomy";
-import type { AdminTopic } from "@/features/admin/types/admin-topics";
+import type { AdminTag } from "@/features/admin/types/admin-tags";
 
-function AdminTopicStatusDialog({
-  config,
-  topic,
+function AdminTagStatusDialog({
+  tag,
   open,
   pending,
   onOpenChange,
   onConfirm,
 }: {
-  config: AdminDescribedTaxonomyConfig;
-  topic: AdminTopic | null;
+  tag: AdminTag | null;
   open: boolean;
   pending: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void;
 }) {
-  const enabling = topic ? !topic.isActive : false;
+  const enabling = tag ? !tag.isActive : false;
   return (
     <AlertDialog open={open} onOpenChange={pending ? undefined : onOpenChange}>
       <AlertDialogContent className="max-w-md rounded-xl p-5 sm:max-w-md">
         <AlertDialogHeader className="place-items-start text-start">
-          <AlertDialogTitle>
-            {enabling ? `فعال‌کردن ${config.singular}` : `غیرفعال‌کردن ${config.singular}`}
-          </AlertDialogTitle>
+          <AlertDialogTitle>{enabling ? "فعال‌کردن برچسب" : "غیرفعال‌کردن برچسب"}</AlertDialogTitle>
           <AlertDialogDescription className="leading-7">
             {enabling
-              ? `${config.singular} «${topic?.name ?? ""}» دوباره در انتخاب‌ها و صفحه‌های عمومی دیده می‌شود.`
-              : `${config.singular} «${topic?.name ?? ""}» از انتخاب‌های جدید و صفحه‌های عمومی کنار گذاشته می‌شود. مطالب قبلی حذف نخواهند شد.`}
+              ? `برچسب «${tag?.name ?? ""}» دوباره برای مطالب جدید قابل انتخاب می‌شود.`
+              : `برچسب «${tag?.name ?? ""}» از انتخاب‌های جدید کنار گذاشته می‌شود. برچسب مطالب قبلی حذف نخواهد شد.`}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="mt-3 sm:justify-start">
@@ -64,4 +59,4 @@ function AdminTopicStatusDialog({
   );
 }
 
-export { AdminTopicStatusDialog };
+export { AdminTagStatusDialog };

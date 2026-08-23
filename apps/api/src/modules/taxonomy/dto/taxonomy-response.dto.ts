@@ -47,6 +47,11 @@ class AdminCategoryItemDto extends DescribedTaxonomyItemDto {
   entryCount!: number;
 }
 
+class AdminContentTypeItemDto extends DescribedTaxonomyItemDto {
+  @ApiProperty()
+  entryCount!: number;
+}
+
 class DistrictItemDto extends TaxonomyItemDto {
   @ApiProperty()
   provinceId!: string;
@@ -78,6 +83,11 @@ class TagItemDto {
   updatedAt!: Date;
 }
 
+class AdminTagItemDto extends TagItemDto {
+  @ApiProperty()
+  entryCount!: number;
+}
+
 class TaxonomyListResponseDto<TItem> {
   @ApiProperty()
   data!: TItem[];
@@ -89,6 +99,22 @@ class TaxonomyListResponseDto<TItem> {
 class AdminCategoryListResponseDto {
   @ApiProperty({ type: [AdminCategoryItemDto] })
   data!: AdminCategoryItemDto[];
+
+  @ApiProperty({ type: PaginationMetaDto })
+  meta!: PaginationMetaDto;
+}
+
+class AdminContentTypeListResponseDto {
+  @ApiProperty({ type: [AdminContentTypeItemDto] })
+  data!: AdminContentTypeItemDto[];
+
+  @ApiProperty({ type: PaginationMetaDto })
+  meta!: PaginationMetaDto;
+}
+
+class AdminTagListResponseDto {
+  @ApiProperty({ type: [AdminTagItemDto] })
+  data!: AdminTagItemDto[];
 
   @ApiProperty({ type: PaginationMetaDto })
   meta!: PaginationMetaDto;
@@ -109,6 +135,10 @@ class TaxonomyMessageResponseDto {
 export {
   AdminCategoryItemDto,
   AdminCategoryListResponseDto,
+  AdminContentTypeItemDto,
+  AdminContentTypeListResponseDto,
+  AdminTagItemDto,
+  AdminTagListResponseDto,
   DescribedTaxonomyItemDto,
   DistrictItemDto,
   PaginationMetaDto,

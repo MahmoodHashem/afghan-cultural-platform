@@ -10,6 +10,10 @@ import {
   setAdminTopicActive,
   updateAdminTopic,
 } from "@/features/admin/api/admin-topics-api";
+import {
+  type AdminDescribedTaxonomyKind,
+  describedTaxonomyConfigs,
+} from "@/features/admin/constants/admin-described-taxonomy";
 import { adminEntriesQueryKeys } from "@/features/admin/constants/admin-entries-query-keys";
 import { adminTopicsQueryKeys } from "@/features/admin/constants/admin-topics-query-keys";
 import type {
@@ -19,66 +23,74 @@ import type {
 } from "@/features/admin/types/admin-topics";
 import { getAdminTopicErrorMessage } from "@/features/admin/utils/admin-topic-errors";
 
-function useAdminTopics(query: AdminTopicsQuery) {
+function useAdminTopics(kind: AdminDescribedTaxonomyKind, query: AdminTopicsQuery) {
+  const config = describedTaxonomyConfigs[kind];
   return useQuery({
-    queryKey: adminTopicsQueryKeys.list(query),
-    queryFn: ({ signal }) => listAdminTopics(query, signal),
+    queryKey: adminTopicsQueryKeys.list(kind, query),
+    queryFn: ({ signal }) => listAdminTopics(config.endpoint, query, signal),
     placeholderData: keepPreviousData,
     staleTime: 30_000,
   });
 }
 
-function useCreateAdminTopic() {
+function useCreateAdminTopic(kind: AdminDescribedTaxonomyKind) {
+  const config = describedTaxonomyConfigs[kind];
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input: AdminTopicInput) => createAdminTopic(input),
+    mutationFn: (input: AdminTopicInput) => createAdminTopic(config.endpoint, input),
     onSuccess: async () => {
-      toast.success("موضوع جدید ساخته شد.");
-      await invalidateTopicQueries(queryClient);
+      toast.success(`${config.singular} جدید ساخته شد.`);
+      await invalidateTopicQueries(queryClient, kind);
     },
-    onError: (error) => toast.error(getAdminTopicErrorMessage(error)),
+    onError: (error) => toast.error(getAdminTopicErrorMessage(error, config.singular)),
   });
 }
 
-function useUpdateAdminTopic(topicId: string) {
+function useUpdateAdminTopic(kind: AdminDescribedTaxonomyKind, topicId: string) {
+  const config = describedTaxonomyConfigs[kind];
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input: AdminTopicInput) => updateAdminTopic(topicId, input),
+    mutationFn: (input: AdminTopicInput) => updateAdminTopic(config.endpoint, topicId, input),
     onSuccess: async () => {
-      toast.success("تغییرات موضوع ذخیره شد.");
-      await invalidateTopicQueries(queryClient);
+      toast.success(`تغییرات ${config.singular} ذخیره شد.`);
+      await invalidateTopicQueries(queryClient, kind);
     },
-    onError: (error) => toast.error(getAdminTopicErrorMessage(error)),
+    onError: (error) => toast.error(getAdminTopicErrorMessage(error, config.singular)),
   });
 }
 
-function useSetAdminTopicActive(topicId: string) {
+function useSetAdminTopicActive(kind: AdminDescribedTaxonomyKind, topicId: string) {
+  const config = describedTaxonomyConfigs[kind];
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (isActive: boolean) => setAdminTopicActive(topicId, isActive),
+    mutationFn: (isActive: boolean) => setAdminTopicActive(config.endpoint, topicId, isActive),
     onSuccess: async (_, isActive) => {
-      toast.success(isActive ? "موضوع فعال شد." : "موضوع غیرفعال شد.");
-      await invalidateTopicQueries(queryClient);
+      toast.success(isActive ? `${config.singular} فعال شد.` : `${config.singular} غیرفعال شد.`);
+      await invalidateTopicQueries(queryClient, kind);
     },
-    onError: (error) => toast.error(getAdminTopicErrorMessage(error)),
+    onError: (error) => toast.error(getAdminTopicErrorMessage(error, config.singular)),
   });
 }
 
-function useReorderAdminTopics() {
+function useReorderAdminTopics(kind: AdminDescribedTaxonomyKind) {
+  const config = describedTaxonomyConfigs[kind];
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input: AdminTopicReorderInput) => reorderAdminTopics(input),
+    mutationFn: (input: AdminTopicReorderInput) => reorderAdminTopics(config.endpoint, input),
     onSuccess: async () => {
-      toast.success("ترتیب موضوع‌ها ذخیره شد.");
-      await invalidateTopicQueries(queryClient);
+      toast.success(`ترتیب ${config.plural} ذخیره شد.`);
+      await invalidateTopicQueries(queryClient, kind);
     },
-    onError: (error) => toast.error(getAdminTopicErrorMessage(error)),
+    onError: (error) => toast.error(getAdminTopicErrorMessage(error, config.singular)),
   });
 }
 
-async function invalidateTopicQueries(queryClient: ReturnType<typeof useQueryClient>) {
+async function invalidateTopicQueries(
+  queryClient: ReturnType<typeof useQueryClient>,
+  kind: AdminDescribedTaxonomyKind,
+) {
   await Promise.all([
-    queryClient.invalidateQueries({ queryKey: adminTopicsQueryKeys.lists() }),
+    queryClient.invalidateQueries({ queryKey: adminTopicsQueryKeys.lists(kind) }),
     queryClient.invalidateQueries({ queryKey: adminEntriesQueryKeys.taxonomy() }),
   ]);
 }

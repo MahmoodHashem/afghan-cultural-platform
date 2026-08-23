@@ -18,6 +18,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
+import type { AdminDescribedTaxonomyConfig } from "@/features/admin/constants/admin-described-taxonomy";
 import {
   type AdminTopicFormInput,
   type AdminTopicFormValues,
@@ -28,19 +29,20 @@ import { isApiError } from "@/lib/api/api-error";
 
 const EMPTY_VALUES: AdminTopicFormValues = {
   name: "",
-  slug: "",
   description: "",
   sortOrder: 0,
   isActive: true,
 };
 
 function AdminTopicFormSheet({
+  config,
   topic,
   open,
   pending,
   onOpenChange,
   onSubmit,
 }: {
+  config: AdminDescribedTaxonomyConfig;
   topic: AdminTopic | null;
   open: boolean;
   pending: boolean;
@@ -56,10 +58,9 @@ function AdminTopicFormSheet({
     if (!open) return;
     form.reset(
       topic
-        ? {
-            name: topic.name,
-            slug: topic.slug,
-            description: topic.description ?? "",
+          ? {
+              name: topic.name,
+              description: topic.description ?? "",
             sortOrder: topic.sortOrder,
             isActive: topic.isActive,
           }
@@ -86,11 +87,9 @@ function AdminTopicFormSheet({
       <SheetContent side="right" className="w-full gap-0 sm:max-w-md">
         <SheetHeader className="border-b border-border px-5 py-5">
           <SheetTitle className="text-[18px] font-semibold">
-            {topic ? "ویرایش موضوع" : "موضوع جدید"}
+            {topic ? `ویرایش ${config.singular}` : `${config.singular} جدید`}
           </SheetTitle>
-          <SheetDescription className="leading-6">
-            موضوع‌ها در سایت برای دسته‌بندی مطالب فرهنگی استفاده می‌شوند.
-          </SheetDescription>
+          <SheetDescription className="leading-6">{config.formDescription}</SheetDescription>
         </SheetHeader>
 
         <form
@@ -98,40 +97,30 @@ function AdminTopicFormSheet({
           onSubmit={submit}
           className="flex-1 space-y-5 overflow-y-auto p-5"
         >
-          <TopicField label="نام موضوع" error={form.formState.errors.name?.message} required>
+          <TopicField
+            label={`نام ${config.singular}`}
+            error={form.formState.errors.name?.message}
+            required
+          >
             <Input
               {...form.register("name")}
               autoFocus
               aria-invalid={Boolean(form.formState.errors.name)}
-              placeholder="برای نمونه: مکان‌های تاریخی"
-              disabled={pending}
-            />
-          </TopicField>
-
-          <TopicField
-            label="نشانی لاتین"
-            hint="اگر خالی بماند، سرور آن را از نام موضوع می‌سازد."
-            error={form.formState.errors.slug?.message}
-          >
-            <Input
-              {...form.register("slug")}
-              dir="ltr"
-              aria-invalid={Boolean(form.formState.errors.slug)}
-              placeholder="historical-places"
+              placeholder={config.namePlaceholder}
               disabled={pending}
             />
           </TopicField>
 
           <TopicField
             label="توضیح کوتاه"
-            hint="این توضیح در صفحه موضوع‌ها به خواننده کمک می‌کند."
+            hint="این توضیح در صفحه‌های مربوط به خواننده کمک می‌کند."
             error={form.formState.errors.description?.message}
           >
             <Textarea
               {...form.register("description")}
               aria-invalid={Boolean(form.formState.errors.description)}
               className="min-h-28 resize-none"
-              placeholder="یک توضیح روشن و کوتاه درباره این موضوع..."
+              placeholder={`یک توضیح روشن و کوتاه درباره این ${config.singular}...`}
               disabled={pending}
             />
           </TopicField>
@@ -159,9 +148,9 @@ function AdminTopicFormSheet({
               className="mt-0.5"
             />
             <span className="space-y-0.5">
-              <span className="block text-[13px] font-semibold">موضوع فعال باشد</span>
+              <span className="block text-[13px] font-semibold">{config.singular} فعال باشد</span>
               <span className="block text-[12px] leading-6 text-muted-foreground">
-                موضوع‌های فعال در انتخاب‌ها و صفحه‌های عمومی دیده می‌شوند.
+                موارد فعال در انتخاب‌ها و صفحه‌های عمومی دیده می‌شوند.
               </span>
             </span>
           </label>
@@ -169,7 +158,7 @@ function AdminTopicFormSheet({
 
         <SheetFooter className="border-t border-border bg-muted/25 p-4 sm:flex-row sm:justify-start">
           <Button type="submit" form="admin-topic-form" disabled={pending}>
-            {pending ? "در حال ذخیره..." : topic ? "ذخیره تغییرات" : "ساخت موضوع"}
+            {pending ? "در حال ذخیره..." : topic ? "ذخیره تغییرات" : `ساخت ${config.singular}`}
           </Button>
           <Button
             type="button"
@@ -214,7 +203,7 @@ function TopicField({
 }
 
 function isTopicField(field: string): field is keyof AdminTopicFormInput {
-  return ["name", "slug", "description", "sortOrder", "isActive"].includes(field);
+  return ["name", "description", "sortOrder", "isActive"].includes(field);
 }
 
 export { AdminTopicFormSheet };
