@@ -70,10 +70,9 @@ function HomeHero() {
   return (
     <section className="relative min-h-[90svh] overflow-hidden bg-foreground text-white">
       <HeroCarousel activeSlide={activeSlide} />
-      <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/20 to-black/65" />
+      <div className="absolute inset-0 bg-linear-to-b from-black/45 via-black/20 to-black/65" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_42%,rgba(214,168,75,0.22),transparent_34%),linear-gradient(90deg,rgba(0,0,0,0.56),transparent_62%)]" />
-      <div className="absolute inset-x-0 bottom-0 h-40 bg-linear-to-b from-transparent via-background/30 to-background" />
-
+    
       <PublicHeader variant="hero" />
 
       <div className="relative z-10 flex min-h-[76svh] items-end">

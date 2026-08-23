@@ -13,7 +13,7 @@ function AppProviders({ children }: { children: ReactNode }) {
       <AuthProvider>
         <MotionConfig reducedMotion="user">{children}</MotionConfig>
       </AuthProvider>
-      <Toaster />
+      <Toaster toastOptions={{ closeButton: true }} />
     </QueryProvider>
   );
 }

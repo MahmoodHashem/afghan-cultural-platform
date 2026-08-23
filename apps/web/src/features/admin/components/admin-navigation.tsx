@@ -57,12 +57,12 @@ function AdminNavigation() {
                   }
                   isActive={isActive}
                   tooltip={{ children: item.title, side: "left" }}
-                  className="relative isolate h-10 gap-3 rounded-md px-3 text-[14px] data-active:bg-transparent data-active:font-semibold data-active:text-sidebar-accent-foreground group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:text-center"
+                  className="relative isolate h-10 gap-3 rounded-md px-3 text-[14px] data-active:bg-transparent data-active:font-semibold data-active:text-sidebar-accent-foreground group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:text-center hover:bg-sidebar-accent/30"
                 >
                   {isActive ? (
                     <motion.span
                       layoutId="admin-active-navigation"
-                      className="absolute inset-0 z-0 rounded-md border-s-2 border-primary bg-sidebar-accent group-data-[collapsible=icon]:border-s-0"
+                      className="absolute inset-0 z-0 rounded-md rounded-s-none border-s-2 border-primary bg-sidebar-accent group-data-[collapsible=icon]:border-s-0"
                       transition={
                         prefersReducedMotion
                           ? { duration: 0 }
