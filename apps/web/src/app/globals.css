@@ -142,6 +142,14 @@
     direction: rtl;
   }
 
+  /* Base UI positions visually hidden controls with a negative physical margin.
+     In RTL documents that creates a one-pixel horizontal overflow. */
+  html[dir="rtl"] [data-base-ui-focus-guard],
+  html[dir="rtl"] input[id^="base-ui-"][id$="-hidden-input"] {
+    /* biome-ignore lint/complexity/noImportantStyles: Base UI sets this accessibility style inline. */
+    margin: 0 !important;
+  }
+
   body {
     @apply bg-background text-foreground;
     font-family: "Estedad Variable", "Vazirmatn", Tahoma, sans-serif;
