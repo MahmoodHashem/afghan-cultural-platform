@@ -22,6 +22,11 @@ const oauthButtons = read("src/features/auth/components/oauth-buttons.tsx");
 const oauthRedirect = read("src/features/auth/utils/oauth-redirect.ts");
 const oauthCallbackPage = read("src/app/auth/callback/page.tsx");
 const oauthCallbackCompletion = read("src/features/auth/components/oauth-callback-completion.tsx");
+const verifyEmailPage = read("src/app/(auth)/verify-email/page.tsx");
+const emailVerificationCompletion = read(
+  "src/features/auth/components/email-verification-completion.tsx",
+);
+const emailVerificationButton = read("src/features/auth/components/email-verification-button.tsx");
 const authErrorMessages = read("src/features/auth/utils/auth-error-messages.ts");
 const authRedirects = read("src/features/auth/utils/redirects.ts");
 const apiClient = read("src/lib/api/api-client.ts");
@@ -316,6 +321,33 @@ test("OAuth errors use controlled Persian messages", () => {
   assert.match(oauthCallbackCompletion, /getAuthErrorMessageByCode/);
 });
 
+test("profile email verification uses the confirmed backend contracts", () => {
+  assert.match(ownerProfilePage, /EmailVerificationButton email=\{user\.email\} compact/);
+  assert.doesNotMatch(ownerProfilePage, /VerifiedEmailBanner email=\{profileUser\.email\}/);
+  assert.match(emailVerificationButton, /useResendEmailVerification/);
+  assert.match(emailVerificationButton, /RESEND_COOLDOWN_SECONDS = 60/);
+  assert.match(emailVerificationButton, /تأیید ایمیل/);
+  assert.match(verifiedEmailBanner, /EmailVerificationButton email=\{emailAddress\}/);
+  assert.match(authApi, /"\/auth\/resend-verification"/);
+  assert.match(authApi, /body: \{ email \}/);
+  assert.match(authMutations, /useResendEmailVerification/);
+});
+
+test("verification callback consumes the token once and refreshes authenticated state", () => {
+  assert.match(verifyEmailPage, /index: false/);
+  assert.match(verifyEmailPage, /EmailVerificationCompletion/);
+  assert.match(emailVerificationCompletion, /searchParams\.get\("token"\)/);
+  assert.match(emailVerificationCompletion, /startedRef\.current/);
+  assert.match(emailVerificationCompletion, /router\.replace\("\/verify-email"/);
+  assert.match(authApi, /"\/auth\/verify-email"/);
+  assert.match(authApi, /body: \{ token \}/);
+  assert.match(authMutations, /refreshAuthSessionOnce/);
+  assert.match(authMutations, /updateUser\(user\)/);
+  assert.match(authErrorMessages, /AUTH_VERIFICATION_TOKEN_INVALID/);
+  assert.match(authErrorMessages, /AUTH_VERIFICATION_TOKEN_EXPIRED/);
+  assert.doesNotMatch(emailVerificationCompletion, /localStorage|sessionStorage|console\./);
+});
+
 test("auth bootstrap restores the refresh-cookie session globally", () => {
   assert.match(authStore, /status: "initializing"/);
   assert.match(authProvider, /bootstrapAuthSession/);
@@ -448,7 +480,7 @@ test("verified-email and role gates are opt-in frontend UX gates", () => {
   assert.match(routeGates, /!user\?\.emailVerified/);
   assert.match(routeGates, /function RequireRole/);
   assert.match(routeGates, /roles\.includes\(user\.role\)/);
-  assert.match(verifiedEmailBanner, /می‌توانید وارد حساب شوید/);
+  assert.match(verifiedEmailBanner, /برای افزودن مطلب، نوشتن دیدگاه و فرستادن گزارش/);
 });
 
 test("create entry route is private, verified-email gated, and noindexed", () => {

@@ -7,6 +7,10 @@ const authErrorMessages: Record<string, string> = {
   AUTH_UNAUTHORIZED: "برای ادامه باید وارد حساب شوید.",
   AUTH_INSUFFICIENT_ROLE: "شما به این بخش دسترسی ندارید.",
   AUTH_EMAIL_VERIFICATION_REQUIRED: "برای این کار باید ایمیل خود را تأیید کنید.",
+  AUTH_VERIFICATION_TOKEN_INVALID:
+    "این پیوند تأیید معتبر نیست یا قبلاً استفاده شده است. از پروفایل خود یک پیوند تازه بگیرید.",
+  AUTH_VERIFICATION_TOKEN_EXPIRED:
+    "مهلت این پیوند تأیید تمام شده است. از پروفایل خود یک پیوند تازه بگیرید.",
   AUTH_EMAIL_ALREADY_REGISTERED: "این ایمیل قبلاً ثبت شده است.",
   AUTH_PASSWORD_TOO_WEAK: "رمز عبور شرایط امنیتی لازم را ندارد.",
   AUTH_GOOGLE_EMAIL_NOT_VERIFIED: "ایمیل حساب گوگل شما تأیید نشده است.",

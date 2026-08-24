@@ -129,7 +129,6 @@ function CommentThread({ entryId, comment, depth = 0, now }: CommentThreadProps)
                   initial={reducedMotion ? false : { opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={reducedMotion ? undefined : { opacity: 0, height: 0 }}
-                  
                   className="mt-4 overflow-hidden"
                 >
                   <CommentComposer

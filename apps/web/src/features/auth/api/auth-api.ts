@@ -29,6 +29,13 @@ type MessageResponse = {
   };
 };
 
+type VerifyEmailResponse = {
+  data: {
+    message: string;
+    user: AuthSession["user"];
+  };
+};
+
 type OAuthProvider = "google" | "facebook";
 
 async function loginWithEmail(input: LoginWithEmailInput, signal?: AbortSignal) {
@@ -90,6 +97,30 @@ async function logoutAllSessions(signal?: AbortSignal) {
   return response.data;
 }
 
+async function verifyEmail(token: string, signal?: AbortSignal) {
+  const response = await apiRequest<VerifyEmailResponse>("/auth/verify-email", {
+    method: "POST",
+    body: { token },
+    signal,
+    accessToken: null,
+    skipAuthRefresh: true,
+  });
+
+  return response.data;
+}
+
+async function resendEmailVerification(email: string, signal?: AbortSignal) {
+  const response = await apiRequest<MessageResponse>("/auth/resend-verification", {
+    method: "POST",
+    body: { email },
+    signal,
+    accessToken: null,
+    skipAuthRefresh: true,
+  });
+
+  return response.data;
+}
+
 function createOAuthStartUrl(provider: OAuthProvider, nextPath?: string) {
   const url = new URL(`${getPublicApiBaseUrl()}/auth/${provider}`);
 
@@ -109,4 +140,6 @@ export {
   logoutCurrentSession,
   refreshAuthSession,
   registerWithEmail,
+  resendEmailVerification,
+  verifyEmail,
 };

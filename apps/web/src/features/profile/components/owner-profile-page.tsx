@@ -29,6 +29,7 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList } from "@/components/ui/tabs";
+import { EmailVerificationButton } from "@/features/auth/components/email-verification-button";
 import { VerifiedEmailBanner } from "@/features/auth/components/verified-email-banner";
 import type { OwnEntry } from "@/features/entries/api/entry-drafts-api";
 import type {
@@ -105,7 +106,7 @@ function OwnerProfilePage() {
   const profileUser = ownerProfile.data ?? createProfileFallback(user);
 
   return (
-    <section className="content-container space-y-7 p-6 rounded-xl  bg-card">
+    <section className="content-container space-y-7 p-6 rounded-xl  bg-card mb-10">
       <OwnerProfileHeader user={profileUser} isProfileLoading={ownerProfile.isLoading} />
       <div className="flex flex-col items-center gap-6">
         <ProfileNavigationTabs activeTab={profileQuery.tab} query={profileQuery} />
@@ -162,6 +163,7 @@ function OwnerProfileHeader({
             <p className="text-[13px] font-medium text-muted-foreground" dir="ltr">
               {user.email}
             </p>
+            {!user.emailVerified ? <EmailVerificationButton email={user.email} compact /> : null}
             {isProfileLoading ? <Skeleton className="h-4 w-36" /> : null}
             {user.biography ? (
               <p className="max-w-xl text-center text-[14px] leading-7 text-muted-foreground">

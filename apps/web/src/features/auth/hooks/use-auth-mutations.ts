@@ -10,6 +10,8 @@ import {
   logoutCurrentSession,
   type RegisterWithEmailInput,
   registerWithEmail,
+  resendEmailVerification,
+  verifyEmail,
 } from "@/features/auth/api/auth-api";
 import { markAuthLogoutStarted, refreshAuthSessionOnce } from "@/lib/auth/auth-coordinator";
 import {
@@ -102,6 +104,33 @@ function useLogoutAll() {
   });
 }
 
+function useResendEmailVerification() {
+  return useMutation({
+    mutationFn: (email: string) => resendEmailVerification(email),
+  });
+}
+
+function useVerifyEmail() {
+  const queryClient = useQueryClient();
+  const updateUser = useAuthStore((state) => state.updateUser);
+
+  return useMutation({
+    mutationFn: (token: string) => verifyEmail(token),
+    onSuccess: async ({ user }) => {
+      updateUser(user);
+
+      try {
+        const session = await refreshAuthSessionOnce();
+        setCurrentUserQuery(queryClient, session.user);
+      } catch {
+        // Verification remains successful even when this browser has no active refresh session.
+      }
+
+      await queryClient.invalidateQueries({ queryKey: ["profile"] });
+    },
+  });
+}
+
 export {
   currentUserQueryKey,
   useCurrentUser,
@@ -110,4 +139,6 @@ export {
   useLogoutAll,
   useRefreshAuthSession,
   useRegister,
+  useResendEmailVerification,
+  useVerifyEmail,
 };
