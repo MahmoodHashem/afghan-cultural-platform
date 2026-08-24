@@ -41,7 +41,7 @@ async function getContributionTaxonomyData(): Promise<ContributionTaxonomyData> 
     fetchTaxonomy<ContributionDistrict>("/taxonomy/districts?limit=500"),
     fetchTaxonomy<TaxonomyItem>("/taxonomy/categories?limit=100"),
     fetchTaxonomy<TaxonomyItem>("/taxonomy/content-types?limit=100"),
-    fetchTaxonomy<TaxonomyItem>("/taxonomy/tags?limit=200"),
+    fetchTaxonomy<TaxonomyItem>("/taxonomy/tags?limit=100"),
   ]);
 
   return {
