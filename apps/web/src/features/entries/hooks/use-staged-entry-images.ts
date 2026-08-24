@@ -90,7 +90,7 @@ export function useStagedEntryImages({
       altText: title ? `تصویر مربوط به ${title}` : "",
       caption: "",
       photographerOrSource: "",
-      permissionConfirmed: false,
+      permissionConfirmed: true,
       status: "pending" as const,
     }));
 

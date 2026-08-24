@@ -8,7 +8,7 @@ import {
   TrashIcon,
 } from "@heroicons/react/24/outline";
 import Image from "next/image";
-import type { RefObject } from "react";
+import { type DragEvent, type RefObject, useRef, useState } from "react";
 import type { Control, FieldErrors, UseFieldArrayReturn, UseFormRegister } from "react-hook-form";
 import { Controller } from "react-hook-form";
 
@@ -209,10 +209,45 @@ export function ImagesSection({
   onMoveImage,
   onRemoveImage,
 }: ImagesSectionProps) {
+  const [isDragging, setIsDragging] = useState(false);
+  const dragDepthRef = useRef(0);
+  const isImageLimitReached = images.length >= 6;
+
+  function handleDragEnter(event: DragEvent<HTMLButtonElement>) {
+    event.preventDefault();
+
+    if (isImageLimitReached) {
+      return;
+    }
+
+    dragDepthRef.current += 1;
+    setIsDragging(true);
+  }
+
+  function handleDragLeave(event: DragEvent<HTMLButtonElement>) {
+    event.preventDefault();
+    dragDepthRef.current = Math.max(0, dragDepthRef.current - 1);
+
+    if (dragDepthRef.current === 0) {
+      setIsDragging(false);
+    }
+  }
+
+  function handleDrop(event: DragEvent<HTMLButtonElement>) {
+    event.preventDefault();
+    dragDepthRef.current = 0;
+    setIsDragging(false);
+
+    if (!isImageLimitReached) {
+      onAddImages(event.dataTransfer.files);
+    }
+  }
+
   return (
     <div className="space-y-5">
       <input
         ref={imageInputRef}
+        id="entry-images"
         type="file"
         accept="image/jpeg,image/png,image/webp"
         multiple
@@ -222,21 +257,33 @@ export function ImagesSection({
           event.target.value = "";
         }}
       />
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="max-w-xl text-small leading-7 text-muted-foreground">
-          تا ۶ تصویر JPEG، PNG یا WebP می‌توانید اضافه کنید. بارگذاری واقعی بعد از ذخیره پیش‌نویس
-          انجام می‌شود.
-        </p>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => imageInputRef.current?.click()}
-          disabled={images.length >= 6}
-        >
-          <PhotoIcon aria-hidden="true" />
-          افزودن تصویر
-        </Button>
-      </div>
+      <button
+        type="button"
+        onClick={() => imageInputRef.current?.click()}
+        onDragEnter={handleDragEnter}
+        onDragOver={(event) => event.preventDefault()}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        disabled={isImageLimitReached}
+        className={cn(
+          "flex min-h-44 w-full flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-border bg-background/40 px-6 py-8 text-center transition-colors hover:border-primary/40 hover:bg-primary/[0.03] focus-visible:border-primary focus-visible:ring-3 focus-visible:ring-primary/15 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60",
+          isDragging && "border-primary bg-primary/5",
+        )}
+        aria-label="انتخاب یا رها کردن تصاویر مطلب"
+      >
+        <span className="flex size-11 items-center justify-center rounded-full bg-primary/10 text-primary">
+          <PhotoIcon className="size-6" aria-hidden="true" />
+        </span>
+        <span className="font-semibold text-foreground">
+          {isDragging ? "تصویرها را اینجا رها کنید" : "تصویرها را بکشید و اینجا رها کنید"}
+        </span>
+        <span className="text-small text-muted-foreground">
+          یا برای انتخاب تصویر کلیک کنید
+        </span>
+        <span className="text-[12px] leading-6 text-muted-foreground">
+          حداکثر ۶ تصویر JPEG، PNG یا WebP؛ بارگذاری پس از ذخیره پیش‌نویس انجام می‌شود.
+        </span>
+      </button>
       <ImageList
         images={images}
         onChange={onChangeImage}
