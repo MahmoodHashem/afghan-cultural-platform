@@ -274,7 +274,7 @@ function CountsPanel({ entry }: { entry: AdminEntryDetail }) {
   const items = [
     [EyeIcon, "بازدید", entry.viewCount],
     [HeartIcon, "پسند", entry.counts.likes],
-    [ChatBubbleLeftRightIcon, "دیدگاه", entry.counts.reviews],
+    [ChatBubbleLeftRightIcon, "دیدگاه", entry.counts.comments],
     [FlagIcon, "گزارش باز", entry.counts.openReports],
   ] as const;
   return (

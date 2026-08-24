@@ -7,26 +7,28 @@ import { createTiptapHeadings, TiptapDocument } from "@/components/common/tiptap
 import { PageBreadcrumb, type PageBreadcrumbItem } from "@/components/layout/page-breadcrumb";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { EntryReviews } from "@/features/engagement/components/entry-reviews";
+import { EntryComments } from "@/features/engagement/components/entry-comments";
+import type { EntryCommentListResponse } from "@/features/engagement/types/entry-engagement";
 import { EntryActionRail } from "@/features/entries/components/entry-action-rail";
 import { EntryDetailHeaderContext } from "@/features/entries/components/entry-detail-header-context";
 import { EntryTableOfContents } from "@/features/entries/components/entry-table-of-contents";
 import { CommunityModerationActions } from "@/features/moderation/components/community-moderation-actions";
 import { formatPersianDate } from "@/lib/utils/formatters";
-import type { PublicEntryDetail, PublicReview } from "../types/public-entry";
+import type { PublicEntryDetail } from "../types/public-entry";
 import { getEntryLocationLabel } from "../utils/geography";
 
 function EntryDetailContent({
   entry,
-  reviews,
+  comments,
   breadcrumbItems,
 }: {
   entry: PublicEntryDetail;
-  reviews: PublicReview[];
+  comments: EntryCommentListResponse;
   breadcrumbItems: PageBreadcrumbItem[];
 }) {
   const heroImage = entry.images[0] ?? entry.coverImage;
   const tableOfContents = createTiptapHeadings(entry.contentJson);
+  const commentsRenderedAt = new Date().toISOString();
 
   return (
     <main className="min-h-screen bg-background">
@@ -87,7 +89,7 @@ function EntryDetailContent({
           <EntryActionRail
             entryId={entry.id}
             title={entry.title}
-            initialReviews={reviews}
+            initialComments={comments}
             likeCount={entry.likeCount}
             bookmarkCount={entry.bookmarkCount}
           />
@@ -99,7 +101,11 @@ function EntryDetailContent({
             {entry.youtubeVideo ? <YouTubeEmbed entry={entry} /> : null}
             {entry.sources.length > 0 ? <SourcesList entry={entry} /> : null}
             <CommunityModerationActions entryId={entry.id} />
-            <EntryReviews entryId={entry.id} initialReviews={reviews} />
+            <EntryComments
+              entryId={entry.id}
+              initialComments={comments}
+              renderedAt={commentsRenderedAt}
+            />
           </div>
 
           <aside className="space-y-5 lg:sticky lg:top-24 bg-card p-3 rounded-lg divide-y divide-border">

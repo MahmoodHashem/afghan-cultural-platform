@@ -1,6 +1,6 @@
 import type { EntryStatus } from "@/features/entries/api/entry-drafts-api";
 
-type ProfileTab = "entries" | "reviews" | "bookmarks";
+type ProfileTab = "entries" | "comments" | "bookmarks";
 
 type ProfileQuery = {
   tab: ProfileTab;
@@ -12,7 +12,7 @@ type ProfileSearchParams = {
   get: (key: string) => string | null;
 };
 
-const PROFILE_TABS: ProfileTab[] = ["entries", "reviews", "bookmarks"];
+const PROFILE_TABS: ProfileTab[] = ["entries", "comments", "bookmarks"];
 
 const ENTRY_STATUS_VALUES: EntryStatus[] = [
   "DRAFT",
@@ -63,6 +63,7 @@ function isEntryStatus(value: string): value is EntryStatus {
 }
 
 function parseProfileTab(value: string | null): ProfileTab {
+  if (value === "reviews") return "comments";
   if (value && isProfileTab(value)) {
     return value;
   }

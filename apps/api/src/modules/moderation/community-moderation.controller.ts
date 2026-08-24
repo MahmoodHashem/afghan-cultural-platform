@@ -3,6 +3,7 @@ import {
   ApiBearerAuth,
   ApiConflictResponse,
   ApiCreatedResponse,
+  ApiExtraModels,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiOperation,
@@ -14,12 +15,13 @@ import { CurrentUser } from "@/modules/auth/decorators/current-user.decorator";
 import { RequireVerifiedEmail } from "@/modules/auth/decorators/require-verified-email.decorator";
 import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.type";
 import { ContentModerationService } from "@/modules/moderation/content-moderation.service";
-import type {
+import {
   SubmitCorrectionDto,
   SubmitReportDto,
 } from "@/modules/moderation/dto/content-moderation.dto";
 
 @ApiTags("Community moderation")
+@ApiExtraModels(SubmitCorrectionDto, SubmitReportDto)
 @ApiBearerAuth()
 @RequireVerifiedEmail()
 @Controller("entries/:entryId")

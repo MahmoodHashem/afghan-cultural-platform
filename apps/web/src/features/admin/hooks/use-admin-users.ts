@@ -6,8 +6,8 @@ import { toast } from "sonner";
 import {
   getAdminUser,
   listAdminUserActivity,
+  listAdminUserComments,
   listAdminUserEntries,
-  listAdminUserReviews,
   listAdminUsers,
   revokeAdminUserSessions,
   updateAdminUserStatus,
@@ -15,8 +15,8 @@ import {
 import { adminUsersQueryKeys } from "@/features/admin/constants/admin-users-query-keys";
 import type {
   AdminUserActivityQuery,
+  AdminUserCommentsQuery,
   AdminUserEntriesQuery,
-  AdminUserReviewsQuery,
   AdminUsersQuery,
   UpdateAdminUserStatusInput,
 } from "@/features/admin/types/admin-users";
@@ -49,10 +49,10 @@ function useAdminUserEntries(userId: string, query: AdminUserEntriesQuery, enabl
   });
 }
 
-function useAdminUserReviews(userId: string, query: AdminUserReviewsQuery, enabled = true) {
+function useAdminUserComments(userId: string, query: AdminUserCommentsQuery, enabled = true) {
   return useQuery({
-    queryKey: adminUsersQueryKeys.reviews(userId, query),
-    queryFn: ({ signal }) => listAdminUserReviews(userId, query, signal),
+    queryKey: adminUsersQueryKeys.comments(userId, query),
+    queryFn: ({ signal }) => listAdminUserComments(userId, query, signal),
     enabled: enabled && Boolean(userId),
     staleTime: 30_000,
   });
@@ -103,8 +103,8 @@ function useRevokeAdminUserSessions(userId: string) {
 export {
   useAdminUser,
   useAdminUserActivity,
+  useAdminUserComments,
   useAdminUserEntries,
-  useAdminUserReviews,
   useAdminUsers,
   useRevokeAdminUserSessions,
   useUpdateAdminUserStatus,

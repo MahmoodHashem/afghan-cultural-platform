@@ -15,16 +15,16 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { useEngagementAccess } from "@/features/engagement/hooks/use-engagement-access";
+import { useEntryComments } from "@/features/engagement/hooks/use-entry-comments";
 import { useEntryBookmark, useEntryLike } from "@/features/engagement/hooks/use-entry-interactions";
-import { useEntryReviews } from "@/features/engagement/hooks/use-entry-reviews";
-import type { PublicReview } from "@/features/entries/types/public-entry";
+import type { EntryCommentListResponse } from "@/features/engagement/types/entry-engagement";
 import { cn } from "@/lib/utils";
 import { formatPersianNumber } from "@/lib/utils/formatters";
 
 type EntryActionRailProps = {
   entryId: string;
   title: string;
-  initialReviews: PublicReview[];
+  initialComments: EntryCommentListResponse;
   likeCount: number;
   bookmarkCount: number;
 };
@@ -32,7 +32,7 @@ type EntryActionRailProps = {
 function EntryActionRail({
   entryId,
   title,
-  initialReviews,
+  initialComments,
   likeCount,
   bookmarkCount,
 }: EntryActionRailProps) {
@@ -40,7 +40,8 @@ function EntryActionRail({
   const { isAuthenticated, status, ensureVerifiedAccess } = useEngagementAccess();
   const like = useEntryLike({ entryId, initialCount: likeCount, isAuthenticated });
   const bookmark = useEntryBookmark({ entryId, initialCount: bookmarkCount, isAuthenticated });
-  const reviews = useEntryReviews(entryId, initialReviews);
+  const comments = useEntryComments(entryId, "newest", initialComments);
+  const commentCount = comments.data?.pages[0]?.commentCount ?? initialComments.commentCount;
 
   useEffect(() => {
     let animationFrameId = 0;
@@ -104,7 +105,7 @@ function EntryActionRail({
       <div className="flex items-center justify-around gap-2 rounded-xl border border-border bg-card/95 px-2 py-1 shadow-[0_2px_10px_rgba(0,0,0,.05)] backdrop-blur-sm lg:flex-col lg:gap-4 lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none lg:backdrop-blur-none">
         <ActionButton
           label="دیدگاه‌ها"
-          count={reviews.data?.length ?? initialReviews.length}
+          count={commentCount}
           onClick={() => scrollToSection("entry-comments")}
           icon={<ChatBubbleOvalLeftEllipsisIcon className="size-6" aria-hidden="true" />}
         />

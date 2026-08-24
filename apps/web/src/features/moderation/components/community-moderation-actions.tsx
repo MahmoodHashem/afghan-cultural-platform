@@ -178,12 +178,12 @@ function CorrectionSheet({
 
 function ReportSheet({
   entryId,
-  reviewId,
+  commentId,
   open,
   onOpenChange,
 }: {
   entryId: string;
-  reviewId?: string;
+  commentId?: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
@@ -195,7 +195,7 @@ function ReportSheet({
   async function submit() {
     if (!isValid || mutation.isPending) return;
     try {
-      await mutation.mutateAsync({ entryId, reviewId, reason, explanation });
+      await mutation.mutateAsync({ entryId, commentId, reason, explanation });
       onOpenChange(false);
       setExplanation("");
     } catch {
@@ -208,7 +208,7 @@ function ReportSheet({
       <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-md" dir="rtl">
         <SheetHeader className="border-b border-border p-5 pe-14">
           <SheetTitle className="text-[20px] font-bold">
-            {reviewId ? "گزارش دیدگاه" : "گزارش مطلب"}
+            {commentId ? "گزارش دیدگاه" : "گزارش مطلب"}
           </SheetTitle>
           <SheetDescription className="leading-7">
             گزارش‌ها تنها برای بررسی محتوایی استفاده می‌شوند.
@@ -254,27 +254,6 @@ function ReportSheet({
   );
 }
 
-function ReviewReportButton({ entryId, reviewId }: { entryId: string; reviewId: string }) {
-  const { ensureVerifiedAccess } = useEngagementAccess();
-  const [open, setOpen] = useState(false);
-
-  return (
-    <>
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        className="text-muted-foreground"
-        onClick={() => ensureVerifiedAccess("report") && setOpen(true)}
-      >
-        <FlagIcon className="size-4" aria-hidden="true" />
-        گزارش
-      </Button>
-      <ReportSheet entryId={entryId} reviewId={reviewId} open={open} onOpenChange={setOpen} />
-    </>
-  );
-}
-
 function FieldLabel({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="space-y-2">
@@ -284,4 +263,4 @@ function FieldLabel({ label, children }: { label: string; children: React.ReactN
   );
 }
 
-export { CommunityModerationActions, ReviewReportButton };
+export { CommunityModerationActions, ReportSheet };

@@ -27,7 +27,7 @@ const reportReasonLabels: Record<ReportReason, string> = {
 const reportActionLabels: Record<ReportResolutionAction, string> = {
   DISMISS: "بستن گزارش و نگه‌داشتن محتوا",
   HIDE_CONTENT: "پنهان‌کردن مطلب",
-  HIDE_REVIEW: "پنهان‌کردن دیدگاه",
+  HIDE_COMMENT: "پنهان‌کردن دیدگاه",
   ARCHIVE_CONTENT: "بایگانی‌کردن مطلب",
 };
 
@@ -43,7 +43,7 @@ const historyActionLabels: Record<string, string> = {
   CORRECTION_REJECTED: "پیشنهاد اصلاح رد شد",
   REPORT_SUBMITTED: "گزارش تازه ثبت شد",
   REPORT_RESOLVED: "گزارش بررسی شد",
-  REVIEW_HIDDEN: "دیدگاه پنهان شد",
+  COMMENT_HIDDEN: "دیدگاه پنهان شد",
 };
 
 export { correctionSectionLabels, historyActionLabels, reportActionLabels, reportReasonLabels };

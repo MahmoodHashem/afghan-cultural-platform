@@ -15,18 +15,18 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   adminAccountAuditLabels,
+  adminCommentStatusLabels,
   adminEntryStatusLabels,
-  adminReviewStatusLabels,
 } from "@/features/admin/constants/admin-user-meta";
 import {
   useAdminUserActivity,
+  useAdminUserComments,
   useAdminUserEntries,
-  useAdminUserReviews,
 } from "@/features/admin/hooks/use-admin-users";
 import type { AdminPaginationMeta } from "@/features/admin/types/admin-users";
 import { formatPersianDate, formatPersianNumber } from "@/lib/utils/formatters";
 
-type AdminUserRecordTab = "entries" | "reviews" | "activity";
+type AdminUserRecordTab = "entries" | "comments" | "activity";
 
 function AdminUserRecords({
   userId,
@@ -42,7 +42,7 @@ function AdminUserRecords({
   onPageChange: (page: number) => void;
 }) {
   const entries = useAdminUserEntries(userId, { page, limit: 10 }, tab === "entries");
-  const reviews = useAdminUserReviews(userId, { page, limit: 10 }, tab === "reviews");
+  const comments = useAdminUserComments(userId, { page, limit: 10 }, tab === "comments");
   const activity = useAdminUserActivity(userId, { page, limit: 10 }, tab === "activity");
 
   return (
@@ -50,7 +50,7 @@ function AdminUserRecords({
       <Tabs
         value={tab}
         onValueChange={(value) => {
-          if (value === "entries" || value === "reviews" || value === "activity") {
+          if (value === "entries" || value === "comments" || value === "activity") {
             onTabChange(value);
           }
         }}
@@ -61,7 +61,7 @@ function AdminUserRecords({
               <DocumentTextIcon className="size-4" aria-hidden="true" />
               مطالب
             </TabsTrigger>
-            <TabsTrigger value="reviews" className="px-2">
+            <TabsTrigger value="comments" className="px-2">
               <ChatBubbleLeftRightIcon className="size-4" aria-hidden="true" />
               دیدگاه‌ها
             </TabsTrigger>
@@ -118,41 +118,41 @@ function AdminUserRecords({
           </RecordsState>
         </TabsContent>
 
-        <TabsContent value="reviews" className="m-0">
+        <TabsContent value="comments" className="m-0">
           <RecordsState
-            loading={reviews.isLoading}
-            error={reviews.isError}
-            empty={reviews.data?.data.length === 0}
+            loading={comments.isLoading}
+            error={comments.isError}
+            empty={comments.data?.data.length === 0}
             emptyMessage="این کاربر هنوز دیدگاهی ننوشته است."
-            onRetry={() => void reviews.refetch()}
+            onRetry={() => void comments.refetch()}
           >
             <div className="divide-y divide-border">
-              {reviews.data?.data.map((review) => (
-                <article key={review.id} className="space-y-2 p-4">
+              {comments.data?.data.map((comment) => (
+                <article key={comment.id} className="space-y-2 p-4">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <p className="text-[12px] font-semibold text-primary">
-                      برای {review.entry.title}
+                      برای {comment.entry.title}
                     </p>
                     <div className="flex items-center gap-2">
                       <Badge variant="outline" className="rounded-full">
-                        {adminReviewStatusLabels[review.status]}
+                        {adminCommentStatusLabels[comment.status]}
                       </Badge>
                       <time
                         className="text-[12px] text-muted-foreground"
-                        dateTime={review.createdAt}
+                        dateTime={comment.createdAt}
                       >
-                        {formatPersianDate(review.createdAt)}
+                        {formatPersianDate(comment.createdAt)}
                       </time>
                     </div>
                   </div>
                   <p className="line-clamp-3 text-[13px] leading-7 text-foreground">
-                    {review.body}
+                    {comment.body}
                   </p>
                 </article>
               ))}
             </div>
-            {reviews.data ? (
-              <RecordPagination meta={reviews.data.meta} onPageChange={onPageChange} />
+            {comments.data ? (
+              <RecordPagination meta={comments.data.meta} onPageChange={onPageChange} />
             ) : null}
           </RecordsState>
         </TabsContent>

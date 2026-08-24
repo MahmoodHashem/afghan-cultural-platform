@@ -33,8 +33,8 @@ import { VerifiedEmailBanner } from "@/features/auth/components/verified-email-b
 import type { OwnEntry } from "@/features/entries/api/entry-drafts-api";
 import type {
   ProfileBookmark,
+  ProfileComment,
   ProfileOwner,
-  ProfileReview,
 } from "@/features/profile/api/profile-api";
 import {
   canDeleteOwnEntry,
@@ -46,10 +46,10 @@ import {
 import {
   useDeleteOwnDraftMutation,
   useOwnerBookmarks,
+  useOwnerComments,
   useOwnerEntries,
   useOwnerEntryStats,
   useOwnerProfile,
-  useOwnerReviews,
 } from "@/features/profile/hooks/use-owner-entries";
 import {
   createProfileHref,
@@ -70,14 +70,14 @@ const profileTabs: Array<{
   icon: typeof DocumentTextIcon;
 }> = [
   { value: "entries", label: "مطالب من", icon: DocumentTextIcon },
-  { value: "reviews", label: "دیدگاه‌ها", icon: ChatBubbleLeftRightIcon },
+  { value: "comments", label: "دیدگاه‌ها", icon: ChatBubbleLeftRightIcon },
   { value: "bookmarks", label: "ذخیره‌ها", icon: BookmarkIcon },
 ];
 
 const ownerEntrySkeletonKeys = ["first", "second", "third", "fourth"] as const;
 const ownerFeedbackSkeletonKeys = ["first", "second", "third"] as const;
 
-const PUBLIC_REVIEW_STATUS_META = {
+const ENTRY_COMMENT_STATUS_META = {
   ACTIVE: {
     label: "منتشرشده",
     className: "border-emerald-200 bg-emerald-50 text-emerald-700",
@@ -90,7 +90,7 @@ const PUBLIC_REVIEW_STATUS_META = {
     label: "حذف‌شده",
     className: "border-destructive/25 bg-destructive/10 text-destructive",
   },
-} satisfies Record<ProfileReview["status"], { label: string; className: string }>;
+} satisfies Record<ProfileComment["status"], { label: string; className: string }>;
 
 function OwnerProfilePage() {
   const searchParams = useSearchParams();
@@ -111,7 +111,7 @@ function OwnerProfilePage() {
         <ProfileNavigationTabs activeTab={profileQuery.tab} query={profileQuery} />
         <div className="w-full outline-none">
           {profileQuery.tab === "entries" ? <OwnerEntriesPanel query={profileQuery} /> : null}
-          {profileQuery.tab === "reviews" ? <OwnerReviewsPanel query={profileQuery} /> : null}
+          {profileQuery.tab === "comments" ? <OwnerCommentsPanel query={profileQuery} /> : null}
           {profileQuery.tab === "bookmarks" ? <OwnerBookmarksPanel query={profileQuery} /> : null}
         </div>
       </div>
@@ -179,7 +179,7 @@ function OwnerProfileHeader({
 function ProfileStats({ stats }: { stats: ReturnType<typeof useOwnerEntryStats> }) {
   const items = [
     { label: "مطلب", value: stats.entries },
-    { label: "دیدگاه", value: stats.reviews },
+    { label: "دیدگاه", value: stats.comments },
     { label: "ذخیره", value: stats.bookmarks },
   ];
 
@@ -295,30 +295,30 @@ function OwnerEntriesVerificationState() {
   );
 }
 
-function OwnerReviewsPanel({ query }: { query: ProfileQuery }) {
-  const ownerReviews = useOwnerReviews(query);
+function OwnerCommentsPanel({ query }: { query: ProfileQuery }) {
+  const ownerComments = useOwnerComments(query);
 
   return (
     <div className="space-y-4 p-4">
-      <SimpleProfileToolbar total={ownerReviews.data?.meta.total ?? 0} label="دیدگاه" />
-      {ownerReviews.isLoading ? <OwnerFeedbackListSkeleton /> : null}
-      {ownerReviews.isError ? (
+      <SimpleProfileToolbar total={ownerComments.data?.meta.total ?? 0} label="دیدگاه" />
+      {ownerComments.isLoading ? <OwnerFeedbackListSkeleton /> : null}
+      {ownerComments.isError ? (
         <ProfileErrorState
           title="دیدگاه‌ها بارگذاری نشد"
-          onRetry={() => void ownerReviews.refetch()}
+          onRetry={() => void ownerComments.refetch()}
         />
       ) : null}
-      {ownerReviews.data && ownerReviews.data.data.length === 0 ? (
+      {ownerComments.data && ownerComments.data.data.length === 0 ? (
         <ProfileEmptyState
           icon={ChatBubbleLeftRightIcon}
           title="هنوز دیدگاهی ننوشته‌اید"
           description="دیدگاه‌هایی که زیر مطالب منتشرشده می‌نویسید، اینجا دیده می‌شوند."
         />
       ) : null}
-      {ownerReviews.data && ownerReviews.data.data.length > 0 ? (
+      {ownerComments.data && ownerComments.data.data.length > 0 ? (
         <>
-          <OwnerReviewList reviews={ownerReviews.data.data} />
-          <ProfilePagination meta={ownerReviews.data.meta} query={query} />
+          <OwnerCommentList comments={ownerComments.data.data} />
+          <ProfilePagination meta={ownerComments.data.meta} query={query} />
         </>
       ) : null}
     </div>
@@ -412,27 +412,27 @@ function OwnerEntryToolbar({ query, total }: { query: ProfileQuery; total: numbe
   );
 }
 
-function OwnerReviewList({ reviews }: { reviews: ProfileReview[] }) {
+function OwnerCommentList({ comments }: { comments: ProfileComment[] }) {
   return (
     <motion.ul layout className="space-y-3">
-      {reviews.map((review) => (
+      {comments.map((comment) => (
         <motion.li
-          key={review.id}
+          key={comment.id}
           layout
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -6 }}
           transition={{ duration: 0.18, ease: "easeOut" }}
         >
-          <OwnerReviewRow review={review} />
+          <OwnerCommentRow comment={comment} />
         </motion.li>
       ))}
     </motion.ul>
   );
 }
 
-function OwnerReviewRow({ review }: { review: ProfileReview }) {
-  const reviewStatusMeta = PUBLIC_REVIEW_STATUS_META[review.status];
+function OwnerCommentRow({ comment }: { comment: ProfileComment }) {
+  const commentStatusMeta = ENTRY_COMMENT_STATUS_META[comment.status];
 
   return (
     <article className="group rounded-xl p-4 transition-all duration-200 hover:border-primary/25 hover:shadow-[0_14px_34px_rgba(31,41,55,0.07)]">
@@ -441,25 +441,26 @@ function OwnerReviewRow({ review }: { review: ProfileReview }) {
           <div className="flex flex-wrap items-center gap-2">
             <Badge
               variant="outline"
-              className={cn("rounded-full px-3 py-1", reviewStatusMeta.className)}
+              className={cn("rounded-full px-3 py-1", commentStatusMeta.className)}
             >
-              {reviewStatusMeta.label}
+              {commentStatusMeta.label}
             </Badge>
             <span className="text-[13px] text-muted-foreground">
-              {formatPersianDate(review.updatedAt)}
+              {comment.parentId ? "پاسخ · " : null}
+              {formatPersianDate(comment.updatedAt)}
             </span>
           </div>
-          <p className="line-clamp-3 text-[15px] leading-8 text-foreground">{review.body}</p>
+          <p className="line-clamp-3 text-[15px] leading-8 text-foreground">{comment.body}</p>
           <Link
-            href={`/entries/${encodeURIComponent(review.entry.slug)}`}
+            href={`/entries/${encodeURIComponent(comment.entry.slug)}`}
             className="line-clamp-1 text-[14px] font-semibold text-primary transition-colors hover:text-primary-hover"
           >
-            {review.entry.title}
+            {comment.entry.title}
           </Link>
         </div>
-        {review.entry.status === "PUBLISHED" ? (
+        {comment.entry.status === "PUBLISHED" ? (
           <Link
-            href={`/entries/${encodeURIComponent(review.entry.slug)}`}
+            href={`/entries/${encodeURIComponent(comment.entry.slug)}`}
             className={cn(buttonVariants({ variant: "outline", size: "sm" }), "rounded-full")}
           >
             <EyeIcon className="size-4" aria-hidden="true" />

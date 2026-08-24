@@ -51,8 +51,12 @@ const entryTableOfContents = read("src/features/entries/components/entry-table-o
 const engagementApi = read("src/features/engagement/api/entry-engagement-api.ts");
 const engagementAccess = read("src/features/engagement/hooks/use-engagement-access.ts");
 const engagementInteractions = read("src/features/engagement/hooks/use-entry-interactions.ts");
-const engagementReviewsHook = read("src/features/engagement/hooks/use-entry-reviews.ts");
-const engagementReviews = read("src/features/engagement/components/entry-reviews.tsx");
+const engagementCommentsHook = read("src/features/engagement/hooks/use-entry-comments.ts");
+const engagementComments = read("src/features/engagement/components/entry-comments.tsx");
+const commentComposer = read("src/features/engagement/components/comment-composer.tsx");
+const commentThread = read("src/features/engagement/components/comment-thread.tsx");
+const commentMenu = read("src/features/engagement/components/comment-menu.tsx");
+const commentSchema = read("src/features/engagement/schemas/entry-comment-schema.ts");
 const engagementQueryKeys = read("src/features/engagement/constants/engagement-query-keys.ts");
 const engagementErrors = read("src/features/engagement/utils/engagement-errors.ts");
 const contributionTaxonomyApi = read("src/features/entries/api/contribution-taxonomy-api.ts");
@@ -398,7 +402,8 @@ test("owner profile entries integrate the existing private entry endpoints", () 
 });
 
 test("profile tabs and filters are owned by URL search params", () => {
-  assert.match(profileQueryUtils, /type ProfileTab = "entries" \| "reviews" \| "bookmarks"/);
+  assert.match(profileQueryUtils, /type ProfileTab = "entries" \| "comments" \| "bookmarks"/);
+  assert.match(profileQueryUtils, /value === "reviews"/);
   assert.match(profileQueryUtils, /status\?: EntryStatus/);
   assert.match(profileQueryUtils, /createProfileHref/);
   assert.match(profileQueryUtils, /\/profile/);
@@ -416,24 +421,24 @@ test("profile status labels use approved Persian wording", () => {
   assert.match(profileEntryStatus, /ARCHIVED:[\s\S]*بایگانی‌شده/);
 });
 
-test("profile stats use the backend profile counts for entries reviews and bookmarks", () => {
+test("profile stats use the backend profile counts for entries comments and bookmarks", () => {
   assert.match(profileApi, /async function getMyProfileStats/);
   assert.match(profileApi, /\/profile\/me\/stats/);
   assert.match(profileEntryHooks, /getMyProfileStats/);
   assert.match(ownerProfilePage, /stats\.entries/);
-  assert.match(ownerProfilePage, /stats\.reviews/);
+  assert.match(ownerProfilePage, /stats\.comments/);
   assert.match(ownerProfilePage, /stats\.bookmarks/);
   assert.doesNotMatch(ownerProfilePage, /۸ دیدگاه|۲۴ ذخیره/);
 });
 
-test("reviews and bookmarks tabs integrate profile backend endpoints", () => {
-  assert.match(profileApi, /async function listMyProfileReviews/);
-  assert.match(profileApi, /\/profile\/me\/reviews/);
+test("comments and bookmarks tabs integrate profile backend endpoints", () => {
+  assert.match(profileApi, /async function listMyProfileComments/);
+  assert.match(profileApi, /\/profile\/me\/comments/);
   assert.match(profileApi, /async function listMyProfileBookmarks/);
   assert.match(profileApi, /\/profile\/me\/bookmarks/);
-  assert.match(profileEntryHooks, /useOwnerReviews/);
+  assert.match(profileEntryHooks, /useOwnerComments/);
   assert.match(profileEntryHooks, /useOwnerBookmarks/);
-  assert.match(ownerProfilePage, /OwnerReviewsPanel/);
+  assert.match(ownerProfilePage, /OwnerCommentsPanel/);
   assert.match(ownerProfilePage, /OwnerBookmarksPanel/);
   assert.doesNotMatch(ownerProfilePage, /فعلاً داده ساختگی نشان نمی‌دهد/);
 });
@@ -770,7 +775,7 @@ test("category detail supports province and national filters without popularity 
 
 test("entry detail page renders published entry data by Persian slug", () => {
   assert.match(entryDetailPage, /getPublishedEntryBySlug\(slug\)/);
-  assert.match(entryDetailPage, /getPublicEntryReviews\(entry\.id\)/);
+  assert.match(entryDetailPage, /getPublicEntryComments\(entry\.id, entry\.commentCount\)/);
   assert.match(entryDetailPage, /searchParams/);
   assert.match(entryDetailPage, /createEntryDetailBreadcrumbItems/);
   assert.match(entryDetailContent, /breadcrumbItems: PageBreadcrumbItem\[\]/);
@@ -778,7 +783,8 @@ test("entry detail page renders published entry data by Persian slug", () => {
   assert.match(entryDetailPage, /notFound\(\)/);
   assert.match(entryDetailPage, /generateMetadata/);
   assert.match(exploreApi, /\/entries\/\$\{encodeURIComponent\(normalizeSlug\(slug\)\)\}/);
-  assert.match(exploreApi, /\/entries\/\$\{entryId\}\/reviews/);
+  assert.match(exploreApi, /\/entries\/\$\{entryId\}\/comments/);
+  assert.match(exploreApi, /cache: "no-store"/);
   assert.match(entryDetailContent, /TiptapDocument/);
   assert.match(tiptapDocumentRenderer, /function TiptapDocument/);
   assert.match(tiptapDocumentRenderer, /case "paragraph"/);
@@ -840,30 +846,39 @@ test("entry detail includes reading navigation and sticky article tools", () => 
   assert.match(entryActionRail, /scrollHeight - window\.innerHeight/);
 });
 
-test("entry detail supports public reviews and verified-user feedback", () => {
-  assert.match(entryDetailContent, /EntryReviews/);
+test("entry detail supports threaded comments and verified-user feedback", () => {
+  assert.match(entryDetailContent, /EntryComments/);
   assert.doesNotMatch(entryDetailContent, /EntryFeedback|averageRating|ratingCount/);
   assert.doesNotMatch(engagementApi, /\/rating/);
-  assert.match(engagementReviews, /دیدگاه‌های خوانندگان/);
-  assert.match(engagementReviews, /review\.author\.id === user\?\.id/);
-  assert.match(engagementReviews, /ویرایش دیدگاه شما/);
-  assert.match(engagementReviews, /حذف دیدگاه/);
-  assert.match(engagementReviews, /ReviewsSkeleton/);
-  assert.match(engagementReviews, /reviewsQuery\.isError/);
-  assert.match(engagementReviews, /هنوز دیدگاهی نوشته نشده است/);
+  assert.match(engagementComments, /دیدگاه‌ها/);
+  assert.match(engagementComments, /جدیدترین/);
+  assert.match(engagementComments, /قدیمی‌ترین/);
+  assert.match(engagementComments, /بیشترین پسند/);
+  assert.match(engagementComments, /CommentListSkeleton/);
+  assert.match(engagementComments, /commentsQuery\.isError/);
+  assert.match(engagementComments, /هنوز دیدگاهی نوشته نشده است/);
+  assert.match(commentThread, /CommentReplies/);
+  assert.match(commentThread, /مشاهده \{formatPersianNumber\(comment\.directReplyCount\)\} پاسخ/);
+  assert.match(commentThread, /isEntryAuthor/);
+  assert.match(commentThread, /useReducedMotion/);
+  assert.match(commentMenu, /CommentDeleteDialog/);
+  assert.match(commentMenu, /ReportSheet/);
 });
 
-test("entry engagement API uses confirmed like bookmark and review contracts", () => {
+test("entry engagement API uses confirmed like bookmark and comment contracts", () => {
   assert.match(engagementApi, /\/entries\/\$\{entryId\}\/like/);
   assert.match(engagementApi, /method: "PUT"/);
   assert.match(engagementApi, /method: "DELETE"/);
   assert.match(engagementApi, /\/profile\/me\/bookmarks\/\$\{entryId\}/);
-  assert.match(engagementApi, /\/entries\/\$\{entryId\}\/reviews/);
-  assert.match(engagementApi, /\/entries\/\$\{entryId\}\/reviews\/me/);
-  assert.match(engagementApi, /function createEntryReview/);
-  assert.match(engagementApi, /function updateOwnEntryReview/);
-  assert.match(engagementApi, /function deleteOwnEntryReview/);
-  assert.doesNotMatch(engagementApi, /current-review|interaction-state|toggle-like/);
+  assert.match(engagementApi, /\/entries\/\$\{entryId\}\/comments/);
+  assert.match(engagementApi, /\/comments\/\$\{commentId\}\/replies/);
+  assert.match(engagementApi, /\/comment-interactions/);
+  assert.match(engagementApi, /function createEntryComment/);
+  assert.match(engagementApi, /function updateEntryComment/);
+  assert.match(engagementApi, /function deleteEntryComment/);
+  assert.match(engagementApi, /function likeComment/);
+  assert.match(engagementApi, /function unlikeComment/);
+  assert.doesNotMatch(engagementApi, /current-review|toggle-like/);
 });
 
 test("like and bookmark mutations optimistically update rollback and reconcile", () => {
@@ -891,24 +906,29 @@ test("engagement access redirects guests and explains verification requirements"
   assert.match(engagementErrors, /NETWORK_ERROR/);
 });
 
-test("review mutations preserve server truth and synchronize Profile caches", () => {
-  assert.match(engagementReviewsHook, /useCreateEntryReview/);
-  assert.match(engagementReviewsHook, /useUpdateEntryReview/);
-  assert.match(engagementReviewsHook, /useDeleteEntryReview/);
-  assert.match(engagementReviewsHook, /profileQueryKeys\.reviewLists\(\)/);
-  assert.match(engagementReviewsHook, /profileQueryKeys\.stats\(\)/);
-  assert.match(engagementReviewsHook, /engagementQueryKeys\.reviews\(entryId\)/);
-  assert.match(engagementReviews, /submitLock\.current/);
-  assert.match(engagementReviews, /deleteLock\.current/);
-  assert.match(engagementReviews, /fieldErrors\.find/);
-  assert.match(engagementReviews, /reset\(\{ body: review\.body \}\)/);
+test("comment mutations preserve server truth and synchronize focused caches", () => {
+  assert.match(engagementCommentsHook, /useCreateComment/);
+  assert.match(engagementCommentsHook, /useUpdateComment/);
+  assert.match(engagementCommentsHook, /useDeleteComment/);
+  assert.match(engagementCommentsHook, /useCommentLike/);
+  assert.match(engagementCommentsHook, /profileQueryKeys\.commentLists\(\)/);
+  assert.match(engagementCommentsHook, /profileQueryKeys\.stats\(\)/);
+  assert.match(engagementCommentsHook, /engagementQueryKeys\.commentReplies/);
+  assert.match(engagementCommentsHook, /cancelQueries/);
+  assert.match(engagementCommentsHook, /restoreCommentListSnapshots/);
+  assert.match(commentComposer, /fieldErrors\.find/);
+  assert.match(commentComposer, /mode !== "edit"/);
+  assert.match(commentSchema, /min\(5/);
+  assert.match(commentSchema, /max\(1000/);
 });
 
 test("engagement query keys are scoped and Profile invalidation remains precise", () => {
   assert.match(engagementQueryKeys, /entry-engagement/);
   assert.match(engagementQueryKeys, /like:/);
   assert.match(engagementQueryKeys, /bookmark:/);
-  assert.match(engagementQueryKeys, /reviews:/);
+  assert.match(engagementQueryKeys, /commentRoots:/);
+  assert.match(engagementQueryKeys, /commentReplies:/);
+  assert.match(engagementQueryKeys, /commentInteractions:/);
   assert.match(engagementInteractions, /profileQueryKeys\.bookmarkLists\(\)/);
   assert.match(engagementInteractions, /profileQueryKeys\.stats\(\)/);
   assert.doesNotMatch(engagementInteractions, /clear\(\)|removeQueries\(\)/);
@@ -1002,7 +1022,7 @@ test("remaining moderator routes use the existing role and verification gates", 
 test("correction and report APIs use confirmed backend contracts", () => {
   assert.match(contentModerationApi, /\/entries\/\$\{entryId\}\/corrections/);
   assert.match(contentModerationApi, /\/entries\/\$\{entryId\}\/reports/);
-  assert.match(contentModerationApi, /reviews\/\$\{reviewId\}\/reports/);
+  assert.match(contentModerationApi, /comments\/\$\{commentId\}\/reports/);
   assert.match(contentModerationApi, /\/moderation\/corrections/);
   assert.match(contentModerationApi, /\/moderation\/reports/);
   assert.match(contentModerationApi, /\/moderation\/history/);
@@ -1018,8 +1038,8 @@ test("moderator correction review presents original and proposed content", () =>
 
 test("reports share one queue and only expose supported resolution actions", () => {
   assert.match(contentModerationQueues, /ENTRY/);
-  assert.match(contentModerationQueues, /REVIEW/);
-  assert.match(contentModerationDetails, /"DISMISS", "HIDE_REVIEW"/);
+  assert.match(contentModerationQueues, /COMMENT/);
+  assert.match(contentModerationDetails, /"DISMISS", "HIDE_COMMENT"/);
   assert.match(contentModerationDetails, /"DISMISS", "HIDE_CONTENT", "ARCHIVE_CONTENT"/);
   assert.doesNotMatch(contentModerationDetails, /ESCALATE_TO_ADMIN|REMOVE_IMAGE|REMOVE_YOUTUBE/);
 });
@@ -1029,13 +1049,13 @@ test("community moderation actions preserve failures and require verified access
   assert.match(communityModerationActions, /useSubmitCorrection/);
   assert.match(communityModerationActions, /useSubmitReport/);
   assert.match(communityModerationActions, /values stay intact|Keep the explanation/);
-  assert.match(engagementReviews, /ReviewReportButton/);
+  assert.match(commentMenu, /ReportSheet/);
 });
 
 test("content moderation invalidates focused query families", () => {
   assert.match(contentModerationHooks, /contentModerationKeys\.corrections\(\)/);
   assert.match(contentModerationHooks, /contentModerationKeys\.reports\(\)/);
-  assert.match(contentModerationHooks, /\["entry-reviews"\]/);
+  assert.match(contentModerationHooks, /engagementQueryKeys\.comments/);
   assert.doesNotMatch(contentModerationHooks, /queryClient\.clear\(\)/);
 });
 
@@ -1126,7 +1146,7 @@ test("admin users use real server contracts and TanStack Table v9", () => {
   assert.match(adminUserDetailRoute, /AdminUserDetailPage/);
   assert.match(adminUsersApi, /\/admin\/users/);
   assert.match(adminUsersApi, /\/entries/);
-  assert.match(adminUsersApi, /\/reviews/);
+  assert.match(adminUsersApi, /\/comments/);
   assert.match(adminUsersApi, /\/activity/);
   assert.match(adminUsersApi, /\/status/);
   assert.match(adminUsersApi, /revoke-sessions/);
@@ -1150,7 +1170,7 @@ test("admin user filters and detail records preserve useful URL state", () => {
   assert.match(adminUserDetailPage, /parseTab/);
   assert.match(adminUserDetailPage, /scroll: false/);
   assert.match(adminUserRecords, /value="entries"/);
-  assert.match(adminUserRecords, /value="reviews"/);
+  assert.match(adminUserRecords, /value="comments"/);
   assert.match(adminUserRecords, /value="activity"/);
 });
 

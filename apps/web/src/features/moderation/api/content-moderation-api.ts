@@ -21,9 +21,9 @@ function submitCorrection({ entryId, ...body }: SubmitCorrectionInput) {
   });
 }
 
-function submitContentReport({ entryId, reviewId, ...body }: SubmitReportInput) {
-  const path = reviewId
-    ? `/entries/${entryId}/reviews/${reviewId}/reports`
+function submitContentReport({ entryId, commentId, ...body }: SubmitReportInput) {
+  const path = commentId
+    ? `/entries/${entryId}/comments/${commentId}/reports`
     : `/entries/${entryId}/reports`;
   return apiRequest<{ data: ContentReport }>(path, { method: "POST", body });
 }

@@ -1,8 +1,8 @@
 import type {
   AdminAccountAuditAction,
   AdminAuthMethod,
+  AdminCommentStatus,
   AdminEntryStatus,
-  AdminReviewStatus,
   AdminUserRole,
   AdminUserStatus,
 } from "@/features/admin/types/admin-users";
@@ -34,7 +34,7 @@ const adminEntryStatusLabels: Record<AdminEntryStatus, string> = {
   ARCHIVED: "بایگانی‌شده",
 };
 
-const adminReviewStatusLabels: Record<AdminReviewStatus, string> = {
+const adminCommentStatusLabels: Record<AdminCommentStatus, string> = {
   ACTIVE: "فعال",
   HIDDEN: "پنهان",
   DELETED: "حذف‌شده",
@@ -50,8 +50,8 @@ const adminAccountAuditLabels: Record<AdminAccountAuditAction, string> = {
 export {
   adminAccountAuditLabels,
   adminAuthMethodLabels,
+  adminCommentStatusLabels,
   adminEntryStatusLabels,
-  adminReviewStatusLabels,
   adminUserRoleLabels,
   adminUserStatusLabels,
 };

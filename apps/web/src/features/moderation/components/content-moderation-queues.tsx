@@ -93,7 +93,7 @@ function ReportsQueue() {
           <TabsList>
             <TabsTrigger value="ALL">همه</TabsTrigger>
             <TabsTrigger value="ENTRY">مطالب</TabsTrigger>
-            <TabsTrigger value="REVIEW">دیدگاه‌ها</TabsTrigger>
+            <TabsTrigger value="COMMENT">دیدگاه‌ها</TabsTrigger>
           </TabsList>
         </Tabs>
       }
@@ -105,7 +105,7 @@ function ReportsQueue() {
               <div className="flex flex-wrap items-center gap-2">
                 <h2 className="line-clamp-1 font-bold text-foreground">{report.entry.title}</h2>
                 <Badge variant="outline">
-                  {report.targetType === "REVIEW" ? "دیدگاه" : "مطلب"}
+                  {report.targetType === "COMMENT" ? "دیدگاه" : "مطلب"}
                 </Badge>
               </div>
               <p className="line-clamp-1 text-[13px] text-muted-foreground">{report.explanation}</p>

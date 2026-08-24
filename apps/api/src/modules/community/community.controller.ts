@@ -15,6 +15,7 @@ import {
   ApiBadRequestResponse,
   ApiBearerAuth,
   ApiBody,
+  ApiExtraModels,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -28,7 +29,7 @@ import { Public } from "@/modules/auth/decorators/public.decorator";
 import { RequireVerifiedEmail } from "@/modules/auth/decorators/require-verified-email.decorator";
 import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.type";
 import { CommunityService } from "@/modules/community/community.service";
-import type {
+import {
   CommentPaginationQueryDto,
   EntryCommentQueryDto,
 } from "@/modules/community/dto/comment-query.dto";
@@ -46,6 +47,12 @@ import {
 } from "@/modules/community/dto/community-response.dto";
 
 @ApiTags("Entry comments and engagement")
+@ApiExtraModels(
+  EntryCommentQueryDto,
+  CommentPaginationQueryDto,
+  CreateEntryCommentDto,
+  UpdateEntryCommentDto,
+)
 @Controller("entries/:entryId")
 class CommunityController {
   constructor(@Inject(CommunityService) private readonly communityService: CommunityService) {}

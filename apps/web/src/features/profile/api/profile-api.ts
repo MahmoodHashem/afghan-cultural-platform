@@ -5,7 +5,7 @@ import { setOptionalSearchParam } from "@/lib/utils/url-search-params";
 
 type UserRole = "USER" | "MODERATOR" | "ADMIN";
 type UserStatus = "ACTIVE" | "SUSPENDED";
-type PublicReviewStatus = "ACTIVE" | "HIDDEN" | "DELETED";
+type EntryCommentStatus = "ACTIVE" | "HIDDEN" | "DELETED";
 
 type ProfileProvince = {
   id: string;
@@ -42,7 +42,7 @@ type ProfileEntryStatusCounts = {
 
 type ProfileStats = {
   entries: ProfileEntryStatusCounts;
-  reviews: number;
+  comments: number;
   bookmarks: number;
   needsAttention: number;
 };
@@ -57,11 +57,12 @@ type ProfileEntrySummary = {
   updatedAt: string;
 };
 
-type ProfileReview = {
+type ProfileComment = {
   id: string;
   entryId: string;
+  parentId: string | null;
   body: string;
-  status: PublicReviewStatus;
+  status: EntryCommentStatus;
   entry: ProfileEntrySummary;
   createdAt: string;
   updatedAt: string;
@@ -87,8 +88,8 @@ type ProfileStatsResponse = {
   data: ProfileStats;
 };
 
-type ProfileReviewsResponse = {
-  data: ProfileReview[];
+type ProfileCommentsResponse = {
+  data: ProfileComment[];
   meta: PaginationMeta;
 };
 
@@ -115,9 +116,9 @@ async function getMyProfileStats(signal?: AbortSignal) {
   return response.data;
 }
 
-async function listMyProfileReviews(query: ProfileListQuery = {}, signal?: AbortSignal) {
-  const response = await apiRequest<ProfileReviewsResponse>(
-    `/profile/me/reviews${createProfileListQueryString(query)}`,
+async function listMyProfileComments(query: ProfileListQuery = {}, signal?: AbortSignal) {
+  const response = await apiRequest<ProfileCommentsResponse>(
+    `/profile/me/comments${createProfileListQueryString(query)}`,
     {
       method: "GET",
       signal,
@@ -153,11 +154,11 @@ function createProfileListQueryString(query: ProfileListQuery) {
 export type {
   ProfileBookmark,
   ProfileBookmarksResponse,
+  ProfileComment,
+  ProfileCommentsResponse,
   ProfileEntrySummary,
   ProfileListQuery,
   ProfileOwner,
-  ProfileReview,
-  ProfileReviewsResponse,
   ProfileStats,
 };
-export { getMyProfile, getMyProfileStats, listMyProfileBookmarks, listMyProfileReviews };
+export { getMyProfile, getMyProfileStats, listMyProfileBookmarks, listMyProfileComments };

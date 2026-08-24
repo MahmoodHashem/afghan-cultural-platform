@@ -1,7 +1,7 @@
 type CorrectionSection = "TITLE" | "SUMMARY" | "CONTENT";
 type CorrectionStatus = "PENDING" | "ACCEPTED" | "REJECTED";
 type ReportStatus = "OPEN" | "UNDER_REVIEW" | "RESOLVED";
-type ReportTargetType = "ENTRY" | "REVIEW";
+type ReportTargetType = "ENTRY" | "COMMENT";
 type ReportReason =
   | "INACCURATE_INFORMATION"
   | "OFFENSIVE_OR_DISCRIMINATORY_CONTENT"
@@ -14,7 +14,7 @@ type ReportReason =
   | "INVALID_YOUTUBE_LINK"
   | "SPAM"
   | "OTHER";
-type ReportResolutionAction = "DISMISS" | "HIDE_CONTENT" | "HIDE_REVIEW" | "ARCHIVE_CONTENT";
+type ReportResolutionAction = "DISMISS" | "HIDE_CONTENT" | "HIDE_COMMENT" | "ARCHIVE_CONTENT";
 
 type ModerationEntrySummary = {
   id: string;
@@ -45,7 +45,7 @@ type CorrectionSuggestion = {
 type ContentReport = {
   id: string;
   entryId: string;
-  publicReviewId: string | null;
+  entryCommentId: string | null;
   targetType: ReportTargetType;
   reason: ReportReason;
   explanation: string;
@@ -56,12 +56,12 @@ type ContentReport = {
   createdAt: string;
   updatedAt: string;
   entry: ModerationEntrySummary;
-  publicReview: {
+  entryComment: {
     id: string;
     body: string;
     status: string;
     createdAt: string;
-    user: { id: string; displayName: string };
+    author: { id: string; displayName: string };
   } | null;
   reviewedBy: { id: string; displayName: string } | null;
 };
@@ -93,7 +93,7 @@ type SubmitCorrectionInput = {
 
 type SubmitReportInput = {
   entryId: string;
-  reviewId?: string;
+  commentId?: string;
   reason: ReportReason;
   explanation: string;
 };

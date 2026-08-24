@@ -19,7 +19,7 @@ const activityMetadata: Record<AdminAuditAction, { label: string; tone: AdminAct
   CORRECTION_REJECTED: { label: "رد اصلاح", tone: "red" },
   REPORT_SUBMITTED: { label: "ثبت گزارش", tone: "orange" },
   REPORT_RESOLVED: { label: "حل گزارش", tone: "green" },
-  REVIEW_HIDDEN: { label: "پنهان‌کردن دیدگاه", tone: "red" },
+  COMMENT_HIDDEN: { label: "پنهان‌کردن دیدگاه", tone: "red" },
   USER_ROLE_CHANGED: { label: "تغییر نقش", tone: "neutral" },
   USER_SUSPENDED: { label: "تعلیق کاربر", tone: "red" },
 };
@@ -58,7 +58,7 @@ function createActivityDescription(activity: AdminOverviewActivity) {
     CORRECTION_REJECTED: `پیشنهاد اصلاح ${entryTitle} رد شد.`,
     REPORT_SUBMITTED: `گزارشی برای ${entryTitle} ثبت شد.`,
     REPORT_RESOLVED: `گزارش مربوط به ${entryTitle} بررسی شد.`,
-    REVIEW_HIDDEN: `یک دیدگاه مربوط به ${entryTitle} پنهان شد.`,
+    COMMENT_HIDDEN: `یک دیدگاه مربوط به ${entryTitle} پنهان شد.`,
     USER_ROLE_CHANGED: `نقش ${targetUser} تغییر کرد.`,
     USER_SUSPENDED: `حساب ${targetUser} تعلیق شد.`,
   };

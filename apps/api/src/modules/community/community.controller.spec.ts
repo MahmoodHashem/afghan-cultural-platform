@@ -7,6 +7,10 @@ import { ValidationPipe } from "@nestjs/common";
 import { IS_PUBLIC_ROUTE_KEY, REQUIRE_VERIFIED_EMAIL_KEY } from "@/modules/auth/auth.constants";
 import { CommunityController } from "@/modules/community/community.controller";
 import {
+  CommentPaginationQueryDto,
+  EntryCommentQueryDto,
+} from "@/modules/community/dto/comment-query.dto";
+import {
   CreateEntryCommentDto,
   UpdateEntryCommentDto,
 } from "@/modules/community/dto/community-feedback.dto";
@@ -60,6 +64,30 @@ describe("CommunityController request DTO validation", () => {
         type: "body",
       }),
     ).resolves.toMatchObject(body);
+  });
+});
+
+describe("CommunityController runtime DTO metadata", () => {
+  it("retains query DTO classes for whitelist validation", () => {
+    expect(
+      Reflect.getMetadata("design:paramtypes", CommunityController.prototype, "listComments"),
+    ).toEqual([String, EntryCommentQueryDto]);
+    expect(
+      Reflect.getMetadata("design:paramtypes", CommunityController.prototype, "listReplies"),
+    ).toEqual([String, String, CommentPaginationQueryDto]);
+  });
+
+  it("retains body DTO classes for comment writes", () => {
+    expect(
+      Reflect.getMetadata("design:paramtypes", CommunityController.prototype, "createComment").at(
+        -1,
+      ),
+    ).toBe(CreateEntryCommentDto);
+    expect(
+      Reflect.getMetadata("design:paramtypes", CommunityController.prototype, "updateComment").at(
+        -1,
+      ),
+    ).toBe(UpdateEntryCommentDto);
   });
 });
 

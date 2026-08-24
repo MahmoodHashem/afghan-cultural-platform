@@ -55,6 +55,7 @@ type PublicEntryCard = {
   updatedAt: string;
   likeCount: number;
   bookmarkCount: number;
+  commentCount: number;
 };
 
 type PublicEntrySource = {
@@ -114,15 +115,6 @@ type PublicEntrySeo = {
   plainTextExcerpt: string;
 };
 
-type PublicReview = {
-  id: string;
-  entryId: string;
-  body: string;
-  author: PublicEntryAuthor;
-  createdAt: string;
-  updatedAt: string;
-};
-
 type PublicEntryDetail = PublicEntryCard & {
   contentJson: unknown;
   plainTextContent: string;
@@ -145,10 +137,6 @@ type EntryDetailResponse = {
   data: PublicEntryDetail;
 };
 
-type PublicReviewListResponse = {
-  data: PublicReview[];
-};
-
 type TaxonomyListResponse<TItem> = {
   data: TItem[];
   meta: PaginationMeta;
@@ -160,8 +148,6 @@ export type {
   PaginationMeta,
   PublicEntryCard,
   PublicEntryDetail,
-  PublicReview,
-  PublicReviewListResponse,
   TaxonomyItem,
   TaxonomyListResponse,
 };

@@ -153,7 +153,8 @@ function AdminUserDetailSkeleton() {
 }
 
 function parseTab(value: string | null): AdminUserRecordTab {
-  return value === "reviews" || value === "activity" ? value : "entries";
+  if (value === "reviews") return "comments";
+  return value === "comments" || value === "activity" ? value : "entries";
 }
 
 function parsePage(value: string | null) {

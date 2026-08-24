@@ -35,7 +35,7 @@ function AdminUserSummary({
 }) {
   const stats = [
     { label: "همه مطالب", value: user.stats.entries.total, icon: DocumentTextIcon },
-    { label: "دیدگاه‌ها", value: user.stats.reviews, icon: ChatBubbleLeftRightIcon },
+    { label: "دیدگاه‌ها", value: user.stats.comments, icon: ChatBubbleLeftRightIcon },
     { label: "ذخیره‌ها", value: user.stats.bookmarks, icon: BookmarkIcon },
     { label: "پسندها", value: user.stats.likes, icon: HandThumbUpIcon },
   ];

@@ -12,14 +12,14 @@ import {
   getMyProfile,
   getMyProfileStats,
   listMyProfileBookmarks,
-  listMyProfileReviews,
+  listMyProfileComments,
   type ProfileListQuery,
 } from "@/features/profile/api/profile-api";
 import { profileQueryKeys } from "@/features/profile/constants/profile-query-keys";
 import type { ProfileQuery } from "@/features/profile/utils/profile-query";
 
 const PROFILE_ENTRIES_PAGE_SIZE = 8;
-const PROFILE_REVIEWS_PAGE_SIZE = 8;
+const PROFILE_COMMENTS_PAGE_SIZE = 8;
 const PROFILE_BOOKMARKS_PAGE_SIZE = 8;
 
 function useOwnerProfile() {
@@ -52,7 +52,7 @@ function useOwnerEntryStats() {
 
   return {
     entries: stats.data?.entries.all ?? 0,
-    reviews: stats.data?.reviews ?? 0,
+    comments: stats.data?.comments ?? 0,
     bookmarks: stats.data?.bookmarks ?? 0,
     needsAttention: stats.data?.needsAttention ?? 0,
     isLoading: stats.isLoading,
@@ -60,15 +60,15 @@ function useOwnerEntryStats() {
   };
 }
 
-function useOwnerReviews(query: ProfileQuery) {
-  const reviewsQuery: ProfileListQuery = {
+function useOwnerComments(query: ProfileQuery) {
+  const commentsQuery: ProfileListQuery = {
     page: query.page,
-    limit: PROFILE_REVIEWS_PAGE_SIZE,
+    limit: PROFILE_COMMENTS_PAGE_SIZE,
   };
 
   return useQuery({
-    queryKey: profileQueryKeys.reviews(reviewsQuery),
-    queryFn: ({ signal }) => listMyProfileReviews(reviewsQuery, signal),
+    queryKey: profileQueryKeys.comments(commentsQuery),
+    queryFn: ({ signal }) => listMyProfileComments(commentsQuery, signal),
   });
 }
 
@@ -101,12 +101,12 @@ function useDeleteOwnDraftMutation() {
 
 export {
   PROFILE_BOOKMARKS_PAGE_SIZE,
+  PROFILE_COMMENTS_PAGE_SIZE,
   PROFILE_ENTRIES_PAGE_SIZE,
-  PROFILE_REVIEWS_PAGE_SIZE,
   useDeleteOwnDraftMutation,
   useOwnerBookmarks,
+  useOwnerComments,
   useOwnerEntries,
   useOwnerEntryStats,
   useOwnerProfile,
-  useOwnerReviews,
 };

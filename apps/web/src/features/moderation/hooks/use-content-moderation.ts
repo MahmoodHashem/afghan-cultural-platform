@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+import { engagementQueryKeys } from "@/features/engagement/constants/engagement-query-keys";
 import {
   decideCorrection,
   getCorrection,
@@ -31,7 +32,8 @@ const contentModerationKeys = {
   reports: () => [...contentModerationKeys.all, "reports"] as const,
   reportList: (query: unknown) => [...contentModerationKeys.reports(), "list", query] as const,
   report: (id: string) => [...contentModerationKeys.reports(), id] as const,
-  history: (query: unknown) => [...contentModerationKeys.all, "history", query] as const,
+  histories: () => [...contentModerationKeys.all, "history"] as const,
+  history: (query: unknown) => [...contentModerationKeys.histories(), query] as const,
 };
 
 function useCorrectionQueue(query: { page: number; limit: number; status?: CorrectionStatus }) {
@@ -95,8 +97,11 @@ function useResolveReport() {
       queryClient.setQueryData(contentModerationKeys.report(input.id), response);
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: contentModerationKeys.reports() }),
-        queryClient.invalidateQueries({ queryKey: ["entry-reviews"] }),
+        queryClient.invalidateQueries({
+          queryKey: engagementQueryKeys.comments(response.data.entryId),
+        }),
         queryClient.invalidateQueries({ queryKey: ["public-entries"] }),
+        queryClient.invalidateQueries({ queryKey: contentModerationKeys.histories() }),
       ]);
     },
     onError: (error) => toast.error(getModerationErrorMessage(error)),

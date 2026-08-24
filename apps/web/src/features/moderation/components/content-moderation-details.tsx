@@ -116,8 +116,8 @@ function ReportReview({ reportId }: { reportId: string }) {
   const [notes, setNotes] = useState("");
   const report = query.data?.data;
   const actions: ReportResolutionAction[] =
-    report?.targetType === "REVIEW"
-      ? ["DISMISS", "HIDE_REVIEW"]
+    report?.targetType === "COMMENT"
+      ? ["DISMISS", "HIDE_COMMENT"]
       : ["DISMISS", "HIDE_CONTENT", "ARCHIVE_CONTENT"];
   const [action, setAction] = useState<ReportResolutionAction>("DISMISS");
 
@@ -138,17 +138,17 @@ function ReportReview({ reportId }: { reportId: string }) {
     <DetailShell
       breadcrumb="گزارش"
       title={report.entry.title}
-      subtitle={`${report.targetType === "REVIEW" ? "گزارش دیدگاه" : "گزارش مطلب"} · ${formatPersianDate(report.createdAt)}`}
+      subtitle={`${report.targetType === "COMMENT" ? "گزارش دیدگاه" : "گزارش مطلب"} · ${formatPersianDate(report.createdAt)}`}
     >
       <div className="flex flex-wrap gap-2">
         <Badge variant="outline">{reportReasonLabels[report.reason]}</Badge>
-        <Badge variant="outline">{report.targetType === "REVIEW" ? "دیدگاه" : "مطلب"}</Badge>
+        <Badge variant="outline">{report.targetType === "COMMENT" ? "دیدگاه" : "مطلب"}</Badge>
       </div>
       <ContextBlock title="توضیح گزارش" text={report.explanation} />
-      {report.publicReview ? (
+      {report.entryComment ? (
         <ContextBlock
-          title={`دیدگاه ${report.publicReview.user.displayName}`}
-          text={report.publicReview.body}
+          title={`دیدگاه ${report.entryComment.author.displayName}`}
+          text={report.entryComment.body}
         />
       ) : (
         <ContextBlock title="خلاصه مطلب گزارش‌شده" text={report.entry.summary} />

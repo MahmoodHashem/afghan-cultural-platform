@@ -7,12 +7,12 @@ import { toast } from "sonner";
 import { createLoginPath } from "@/features/auth/utils/redirects";
 import { useAuthStore } from "@/stores/auth-store";
 
-type EngagementAction = "like" | "bookmark" | "review" | "report" | "correction";
+type EngagementAction = "like" | "bookmark" | "comment" | "report" | "correction";
 
 const verificationMessages: Record<EngagementAction, string> = {
   like: "برای پسندیدن مطلب باید ایمیل خود را تأیید کنید.",
   bookmark: "برای ذخیره‌کردن مطلب باید ایمیل خود را تأیید کنید.",
-  review: "برای نوشتن دیدگاه باید ایمیل خود را تأیید کنید.",
+  comment: "برای نوشتن دیدگاه باید ایمیل خود را تأیید کنید.",
   report: "برای فرستادن گزارش باید ایمیل خود را تأیید کنید.",
   correction: "برای پیشنهاد اصلاح باید ایمیل خود را تأیید کنید.",
 };
@@ -53,7 +53,8 @@ function useEngagementAccess() {
     status,
     user,
     isAuthenticated: status === "authenticated" && Boolean(user),
-    canContribute: status === "authenticated" && Boolean(user?.emailVerified),
+    canContribute:
+      status === "authenticated" && user?.status === "ACTIVE" && Boolean(user.emailVerified),
     ensureVerifiedAccess,
   };
 }

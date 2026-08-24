@@ -2,12 +2,12 @@ import type {
   AdminListResponse,
   AdminUserActivity,
   AdminUserActivityQuery,
+  AdminUserComment,
+  AdminUserCommentsQuery,
   AdminUserDetail,
   AdminUserEntriesQuery,
   AdminUserEntry,
   AdminUserListItem,
-  AdminUserReview,
-  AdminUserReviewsQuery,
   AdminUsersQuery,
   UpdateAdminUserStatusInput,
 } from "@/features/admin/types/admin-users";
@@ -40,13 +40,13 @@ async function listAdminUserEntries(
   );
 }
 
-async function listAdminUserReviews(
+async function listAdminUserComments(
   userId: string,
-  query: AdminUserReviewsQuery,
+  query: AdminUserCommentsQuery,
   signal?: AbortSignal,
 ) {
-  return apiRequest<AdminListResponse<AdminUserReview>>(
-    `/admin/users/${userId}/reviews${createQueryString(query)}`,
+  return apiRequest<AdminListResponse<AdminUserComment>>(
+    `/admin/users/${userId}/comments${createQueryString(query)}`,
     { method: "GET", signal },
   );
 }
@@ -96,8 +96,8 @@ function createQueryString(query: Record<string, unknown>) {
 export {
   getAdminUser,
   listAdminUserActivity,
+  listAdminUserComments,
   listAdminUserEntries,
-  listAdminUserReviews,
   listAdminUsers,
   revokeAdminUserSessions,
   updateAdminUserStatus,

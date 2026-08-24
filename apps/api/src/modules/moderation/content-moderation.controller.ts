@@ -2,6 +2,7 @@ import { Body, Controller, Get, Inject, Param, ParseUUIDPipe, Post, Query } from
 import {
   ApiBearerAuth,
   ApiConflictResponse,
+  ApiExtraModels,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -14,7 +15,7 @@ import { RequireVerifiedEmail } from "@/modules/auth/decorators/require-verified
 import { Roles } from "@/modules/auth/decorators/roles.decorator";
 import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.type";
 import { ContentModerationService } from "@/modules/moderation/content-moderation.service";
-import type {
+import {
   CorrectionDecisionDto,
   CorrectionQueueQueryDto,
   CorrectionRejectionDto,
@@ -24,6 +25,14 @@ import type {
 } from "@/modules/moderation/dto/content-moderation.dto";
 
 @ApiTags("Content moderation")
+@ApiExtraModels(
+  CorrectionDecisionDto,
+  CorrectionQueueQueryDto,
+  CorrectionRejectionDto,
+  ModerationHistoryQueryDto,
+  ReportQueueQueryDto,
+  ResolveReportDto,
+)
 @ApiBearerAuth()
 @RequireVerifiedEmail()
 @Roles(UserRole.MODERATOR, UserRole.ADMIN)

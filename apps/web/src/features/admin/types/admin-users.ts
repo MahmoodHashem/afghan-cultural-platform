@@ -10,7 +10,7 @@ type AdminEntryStatus =
   | "REJECTED"
   | "HIDDEN"
   | "ARCHIVED";
-type AdminReviewStatus = "ACTIVE" | "HIDDEN" | "DELETED";
+type AdminCommentStatus = "ACTIVE" | "HIDDEN" | "DELETED";
 type AdminAccountAuditAction =
   | "USER_ROLE_CHANGED"
   | "USER_SUSPENDED"
@@ -26,7 +26,7 @@ type AdminPaginationMeta = {
 
 type AdminUserCounts = {
   entries: number;
-  reviews: number;
+  comments: number;
   bookmarks: number;
 };
 
@@ -57,7 +57,7 @@ type AdminUserEntryStatusCounts = {
 
 type AdminUserDetailStats = {
   entries: AdminUserEntryStatusCounts;
-  reviews: number;
+  comments: number;
   bookmarks: number;
   likes: number;
   reportsSubmitted: number;
@@ -87,10 +87,10 @@ type AdminUserEntry = {
   updatedAt: string;
 };
 
-type AdminUserReview = {
+type AdminUserComment = {
   id: string;
   body: string;
-  status: AdminReviewStatus;
+  status: AdminCommentStatus;
   entry: { id: string; slug: string; title: string };
   createdAt: string;
   updatedAt: string;
@@ -123,10 +123,10 @@ type AdminUserEntriesQuery = {
   sortDirection?: "asc" | "desc";
 };
 
-type AdminUserReviewsQuery = {
+type AdminUserCommentsQuery = {
   page?: number;
   limit?: number;
-  status?: AdminReviewStatus;
+  status?: AdminCommentStatus;
 };
 
 type AdminUserActivityQuery = {
@@ -148,18 +148,18 @@ export type {
   AdminAccountAuditAction,
   AdminAuthMethod,
   AdminAuthProvider,
+  AdminCommentStatus,
   AdminEntryStatus,
   AdminListResponse,
   AdminPaginationMeta,
-  AdminReviewStatus,
   AdminUserActivity,
   AdminUserActivityQuery,
+  AdminUserComment,
+  AdminUserCommentsQuery,
   AdminUserDetail,
   AdminUserEntriesQuery,
   AdminUserEntry,
   AdminUserListItem,
-  AdminUserReview,
-  AdminUserReviewsQuery,
   AdminUserRole,
   AdminUserStatus,
   AdminUsersQuery,

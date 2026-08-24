@@ -21,7 +21,7 @@ type AdminEntryAuthor = {
 type AdminEntryCounts = {
   likes: number;
   bookmarks: number;
-  reviews: number;
+  comments: number;
   openReports: number;
 };
 

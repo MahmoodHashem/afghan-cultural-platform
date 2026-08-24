@@ -1,12 +1,12 @@
 import "server-only";
 
+import type { EntryCommentListResponse } from "@/features/engagement/types/entry-engagement";
 import { getPublicApiBaseUrl } from "@/lib/api/env";
 import { setOptionalSearchParam } from "@/lib/utils/url-search-params";
 import type {
   EntryDetailResponse,
   EntryListResponse,
   PublicEntryDetail,
-  PublicReviewListResponse,
   TaxonomyItem,
   TaxonomyListResponse,
 } from "../types/public-entry";
@@ -113,19 +113,27 @@ async function getPublishedEntryBySlug(slug: string): Promise<PublicEntryDetail 
   }
 }
 
-async function getPublicEntryReviews(entryId: string) {
+async function getPublicEntryComments(entryId: string, fallbackCommentCount: number) {
+  const fallback: EntryCommentListResponse = {
+    data: [],
+    // A zero limit marks this as a transport fallback so the client retries it.
+    meta: { page: 1, limit: 0, total: 0, totalPages: 0 },
+    commentCount: fallbackCommentCount,
+  };
+
   try {
-    const response = await fetch(`${getPublicApiBaseUrl()}/entries/${entryId}/reviews`, {
-      cache: "no-store",
-    });
+    const response = await fetch(
+      `${getPublicApiBaseUrl()}/entries/${entryId}/comments?page=1&limit=10&sort=newest`,
+      { cache: "no-store" },
+    );
 
     if (!response.ok) {
-      return [];
+      return fallback;
     }
 
-    return ((await response.json()) as PublicReviewListResponse).data;
+    return (await response.json()) as EntryCommentListResponse;
   } catch {
-    return [];
+    return fallback;
   }
 }
 
@@ -187,7 +195,7 @@ export type { GeographicScope, PublicEntryListQuery, PublicEntrySort };
 export {
   getExploreTaxonomyData,
   getPublicCategories,
-  getPublicEntryReviews,
+  getPublicEntryComments,
   getPublicProvinces,
   getPublishedEntries,
   getPublishedEntryBySlug,

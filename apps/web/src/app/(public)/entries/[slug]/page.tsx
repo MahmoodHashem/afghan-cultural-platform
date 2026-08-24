@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { PageTransition } from "@/components/layout/page-transition";
 import {
-  getPublicEntryReviews,
+  getPublicEntryComments,
   getPublishedEntryBySlug,
 } from "@/features/entries/api/public-entries-api";
 import { EntryDetailContent } from "@/features/entries/components/entry-detail-content";
@@ -52,12 +52,12 @@ export default async function EntryDetailPage({ params, searchParams }: EntryDet
     notFound();
   }
 
-  const reviews = await getPublicEntryReviews(entry.id);
+  const comments = await getPublicEntryComments(entry.id, entry.commentCount);
   const breadcrumbItems = createEntryDetailBreadcrumbItems(entry.title, resolvedSearchParams);
 
   return (
     <PageTransition>
-      <EntryDetailContent entry={entry} reviews={reviews} breadcrumbItems={breadcrumbItems} />
+      <EntryDetailContent entry={entry} comments={comments} breadcrumbItems={breadcrumbItems} />
     </PageTransition>
   );
 }
