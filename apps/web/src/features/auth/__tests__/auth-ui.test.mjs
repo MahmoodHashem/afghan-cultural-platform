@@ -60,6 +60,11 @@ const engagementInteractions = read("src/features/engagement/hooks/use-entry-int
 const engagementCommentsHook = read("src/features/engagement/hooks/use-entry-comments.ts");
 const engagementComments = read("src/features/engagement/components/entry-comments.tsx");
 const commentComposer = read("src/features/engagement/components/comment-composer.tsx");
+const commentEmojiPicker = read("src/features/engagement/components/comment-emoji-picker.tsx");
+const commentEmojiPickerContent = read(
+  "src/features/engagement/components/comment-emoji-picker-content.tsx",
+);
+const shadcnEmojiPicker = read("src/components/ui/emoji-picker.tsx");
 const commentThread = read("src/features/engagement/components/comment-thread.tsx");
 const commentMenu = read("src/features/engagement/components/comment-menu.tsx");
 const commentSchema = read("src/features/engagement/schemas/entry-comment-schema.ts");
@@ -992,6 +997,14 @@ test("comment mutations preserve server truth and synchronize focused caches", (
   assert.match(engagementCommentsHook, /restoreCommentListSnapshots/);
   assert.match(commentComposer, /fieldErrors\.find/);
   assert.match(commentComposer, /mode !== "edit"/);
+  assert.match(commentComposer, /<CommentEmojiPicker/);
+  assert.match(commentComposer, /setSelectionRange\(nextCursorPosition, nextCursorPosition\)/);
+  assert.match(commentComposer, /setValue\("body", nextBody/);
+  assert.match(commentEmojiPicker, /PopoverTrigger/);
+  assert.match(commentEmojiPicker, /aria-label="افزودن شکلک"/);
+  assert.match(commentEmojiPicker, /lazy\(\(\) =>/);
+  assert.match(commentEmojiPickerContent, /onEmojiSelect/);
+  assert.match(shadcnEmojiPicker, /EmojiPickerPrimitive\.List/);
   assert.match(commentSchema, /min\(5/);
   assert.match(commentSchema, /max\(1000/);
 });

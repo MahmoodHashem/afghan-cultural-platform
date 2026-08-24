@@ -2,12 +2,13 @@
 
 import { PaperAirplaneIcon, ShieldCheckIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useId } from "react";
+import { useEffect, useId, useRef } from "react";
 import { useForm } from "react-hook-form";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { CommentEmojiPicker } from "@/features/engagement/components/comment-emoji-picker";
 import {
   type EntryCommentFormValues,
   entryCommentSchema,
@@ -44,14 +45,22 @@ function CommentComposer({
     reset,
     watch,
     setError,
+    setValue,
+    getValues,
     formState: { errors },
   } = useForm<EntryCommentFormValues>({
     resolver: zodResolver(entryCommentSchema),
     defaultValues: { body: initialBody },
   });
   const body = watch("body") ?? "";
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const selectionRef = useRef({ start: initialBody.length, end: initialBody.length });
+  const { ref: bodyFieldRef, ...bodyField } = register("body");
 
-  useEffect(() => reset({ body: initialBody }), [initialBody, reset]);
+  useEffect(() => {
+    reset({ body: initialBody });
+    selectionRef.current = { start: initialBody.length, end: initialBody.length };
+  }, [initialBody, reset]);
 
   async function submit(values: EntryCommentFormValues) {
     try {
@@ -65,6 +74,36 @@ function CommentComposer({
         }
       }
     }
+  }
+
+  function rememberSelection(element: HTMLTextAreaElement) {
+    selectionRef.current = {
+      start: element.selectionStart,
+      end: element.selectionEnd,
+    };
+  }
+
+  function insertEmoji(emoji: string) {
+    const currentBody = getValues("body") ?? "";
+    const { start, end } = selectionRef.current;
+    const nextBody = `${currentBody.slice(0, start)}${emoji}${currentBody.slice(end)}`;
+
+    if (nextBody.length > 1000) {
+      return;
+    }
+
+    const nextCursorPosition = start + emoji.length;
+    selectionRef.current = { start: nextCursorPosition, end: nextCursorPosition };
+    setValue("body", nextBody, {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true,
+    });
+
+    window.requestAnimationFrame(() => {
+      textareaRef.current?.focus();
+      textareaRef.current?.setSelectionRange(nextCursorPosition, nextCursorPosition);
+    });
   }
 
   const errorId = `${fieldId}-error`;
@@ -105,7 +144,14 @@ function CommentComposer({
               "resize-y border-border bg-background leading-8 shadow-none",
               compact ? "min-h-24" : "min-h-28 sm:min-h-32",
             )}
-            {...register("body")}
+            {...bodyField}
+            ref={(element) => {
+              bodyFieldRef(element);
+              textareaRef.current = element;
+            }}
+            onSelect={(event) => rememberSelection(event.currentTarget)}
+            onClick={(event) => rememberSelection(event.currentTarget)}
+            onKeyUp={(event) => rememberSelection(event.currentTarget)}
           />
           {errors.body ? (
             <p id={errorId} role="alert" className="mt-2 text-[13px] text-destructive">
@@ -129,6 +175,7 @@ function CommentComposer({
           </span>
         )}
         <div className="ms-auto flex items-center gap-2">
+          <CommentEmojiPicker disabled={isPending || body.length >= 1000} onSelect={insertEmoji} />
           {!compact ? (
             <span className="text-[12px] text-muted-foreground">
               {formatPersianNumber(body.length)}/۱۰۰۰

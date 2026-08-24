@@ -219,6 +219,12 @@ importers:
       date-fns:
         specifier: ^4.4.0
         version: 4.4.0
+      frimousse:
+        specifier: ^0.3.0
+        version: 0.3.0(react@19.2.4)(typescript@5.9.3)
+      lucide-react:
+        specifier: ^1.33.0
+        version: 1.33.0(react@19.2.4)
       motion:
         specifier: ^13.1.0
         version: 13.1.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -3383,6 +3389,15 @@ packages:
     resolution: {integrity: sha512-Rx/WycZ60HOaqLKAi6cHRKKI7zxWbJ31MhntmtwMoaTeF7XFH9hhBp8vITaMidfljRQ6eYWCKkaTK+ykVJHP2A==}
     engines: {node: '>= 0.8'}
 
+  frimousse@0.3.0:
+    resolution: {integrity: sha512-kO6LMoKY/cLAYEhXXtqLRaLIE6L/DagpFPrUZaLv3LsUa1/8Iza3HhwZcgN8eZ+weXnhv69eoclNUPohcCa/IQ==}
+    peerDependencies:
+      react: ^18 || ^19
+      typescript: '>=5.1.0'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+
   fs-extra@10.1.0:
     resolution: {integrity: sha512-oRXApq54ETRj4eMiFzGnHWGy+zo5raudjuxN0b8H7s/RU2oW0Wvsx9O0ACRN/kRq9E8Vu/ReskGB5o3ji+FzHQ==}
     engines: {node: '>=12'}
@@ -4071,6 +4086,11 @@ packages:
   lru.min@1.1.4:
     resolution: {integrity: sha512-DqC6n3QQ77zdFpCMASA1a3Jlb64Hv2N2DciFGkO/4L9+q/IpIAuRlKOvCXabtRW6cQf8usbmM6BE/TOPysCdIA==}
     engines: {bun: '>=1.0.0', deno: '>=1.30.0', node: '>=8.0.0'}
+
+  lucide-react@1.33.0:
+    resolution: {integrity: sha512-MTRwMy0ZlL8Ur/vOAiJ9XGHE+kFPC7brq6MxAm0GiGXEBj0qy0jA/pG4N675oSzciO/UCdX8T+5yUQdmDeTLxg==}
+    peerDependencies:
+      react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
   magic-string@0.30.17:
     resolution: {integrity: sha512-sNPKHvyjVf7gyjwS4xGTaW/mCnF8wnjtifKBEhxfZ7E/S8tQ0rssrwGNn6q8JH/ohItJfSQp9mBtQYuTlH5QnA==}
@@ -8607,6 +8627,12 @@ snapshots:
 
   fresh@2.0.0: {}
 
+  frimousse@0.3.0(react@19.2.4)(typescript@5.9.3):
+    dependencies:
+      react: 19.2.4
+    optionalDependencies:
+      typescript: 5.9.3
+
   fs-extra@10.1.0:
     dependencies:
       graceful-fs: 4.2.11
@@ -9390,6 +9416,10 @@ snapshots:
       yallist: 3.1.1
 
   lru.min@1.1.4: {}
+
+  lucide-react@1.33.0(react@19.2.4):
+    dependencies:
+      react: 19.2.4
 
   magic-string@0.30.17:
     dependencies:
