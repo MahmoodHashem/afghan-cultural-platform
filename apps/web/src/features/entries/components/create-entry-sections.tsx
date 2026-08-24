@@ -12,6 +12,7 @@ import { type DragEvent, type RefObject, useRef, useState } from "react";
 import type { Control, FieldErrors, UseFieldArrayReturn, UseFormRegister } from "react-hook-form";
 import { Controller } from "react-hook-form";
 
+import { PersianDatePicker } from "@/components/common/persian-date-picker";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -547,12 +548,21 @@ function SourceFields({
           >
             تاریخ نشر
           </label>
-          <Input
-            id={`source-date-${index}`}
-            className="mt-2 h-11"
-            {...register(`sources.${index}.publicationDate`, {
-              onChange: onDirty,
-            })}
+          <Controller
+            control={control}
+            name={`sources.${index}.publicationDate`}
+            render={({ field }) => (
+              <PersianDatePicker
+                id={`source-date-${index}`}
+                value={field.value}
+                onBlur={field.onBlur}
+                onValueChange={(value) => {
+                  field.onChange(value);
+                  onDirty();
+                }}
+                className="mt-2"
+              />
+            )}
           />
         </div>
         <div className="md:col-span-2">
