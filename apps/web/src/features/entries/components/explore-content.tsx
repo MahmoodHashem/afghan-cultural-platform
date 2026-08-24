@@ -1,9 +1,13 @@
-import { ArrowLeftIcon, ArrowRightIcon } from "@heroicons/react/24/outline";
-import Link from "next/link";
-
 import { PageBreadcrumb } from "@/components/layout/page-breadcrumb";
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import { formatPersianNumber } from "@/lib/utils/formatters";
 import type { PublicEntryListQuery } from "../api/public-entries-api";
 import type { EntryListResponse, TaxonomyItem } from "../types/public-entry";
@@ -51,14 +55,14 @@ function ExploreContent({ entries, taxonomy, query, isEntriesUnavailable }: Expl
             breadcrumbParent={breadcrumbParent}
           />
 
-          <Pagination meta={entries.meta} query={query} />
+          <ExplorePagination meta={entries.meta} query={query} />
         </div>
       </section>
     </main>
   );
 }
 
-function Pagination({
+function ExplorePagination({
   meta,
   query,
 }: {
@@ -69,47 +73,83 @@ function Pagination({
     return null;
   }
 
-  const previousPage = Math.max(1, meta.page - 1);
-  const nextPage = Math.min(meta.totalPages, meta.page + 1);
+  const paginationItems = createPaginationItems(meta.page, meta.totalPages);
 
   return (
-    <nav
-      className="flex flex-col gap-3 border-t border-border pt-6 sm:flex-row sm:items-center sm:justify-between"
-      aria-label="صفحه‌بندی"
-    >
-      <p className="text-[14px] text-muted-foreground">
+    <div className="flex flex-col gap-4 border-t border-border pt-6 sm:flex-row sm:items-center sm:justify-between">
+      <p className="text-center text-[14px] text-muted-foreground sm:text-start">
         صفحه {formatPersianNumber(meta.page)} از {formatPersianNumber(meta.totalPages)}
       </p>
-      <div className="flex gap-3">
-        <Link
-          href={createExploreHref(query, { page: previousPage })}
-          scroll={false}
-          aria-disabled={meta.page <= 1}
-          className={cn(
-            buttonVariants({ variant: "outline" }),
-            "rounded-full",
-            meta.page <= 1 && "pointer-events-none opacity-50",
+
+      <Pagination className="mx-0 w-auto sm:justify-end">
+        <PaginationContent>
+          <PaginationItem>
+            <PaginationPrevious
+              href={createExploreHref(query, { page: Math.max(1, meta.page - 1) })}
+              scroll
+              aria-disabled={meta.page <= 1}
+              tabIndex={meta.page <= 1 ? -1 : undefined}
+              className={meta.page <= 1 ? "pointer-events-none opacity-50" : undefined}
+            />
+          </PaginationItem>
+
+          {paginationItems.map((item) =>
+            typeof item === "number" ? (
+              <PaginationItem key={item}>
+                <PaginationLink
+                  href={createExploreHref(query, { page: item })}
+                  scroll
+                  isActive={item === meta.page}
+                  aria-label={`صفحه ${formatPersianNumber(item)}`}
+                >
+                  {formatPersianNumber(item)}
+                </PaginationLink>
+              </PaginationItem>
+            ) : (
+              <PaginationItem key={item}>
+                <PaginationEllipsis />
+              </PaginationItem>
+            ),
           )}
-        >
-          <ArrowRightIcon className="size-4" aria-hidden="true" />
-          قبلی
-        </Link>
-        <Link
-          href={createExploreHref(query, { page: nextPage })}
-          scroll={false}
-          aria-disabled={meta.page >= meta.totalPages}
-          className={cn(
-            buttonVariants({ variant: "outline" }),
-            "rounded-full",
-            meta.page >= meta.totalPages && "pointer-events-none opacity-50",
-          )}
-        >
-          بعدی
-          <ArrowLeftIcon className="size-4" aria-hidden="true" />
-        </Link>
-      </div>
-    </nav>
+
+          <PaginationItem>
+            <PaginationNext
+              href={createExploreHref(query, {
+                page: Math.min(meta.totalPages, meta.page + 1),
+              })}
+              scroll
+              aria-disabled={meta.page >= meta.totalPages}
+              tabIndex={meta.page >= meta.totalPages ? -1 : undefined}
+              className={
+                meta.page >= meta.totalPages ? "pointer-events-none opacity-50" : undefined
+              }
+            />
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
+    </div>
   );
+}
+
+function createPaginationItems(currentPage: number, totalPages: number) {
+  const visiblePages = [...new Set([1, currentPage - 1, currentPage, currentPage + 1, totalPages])]
+    .filter((page) => page >= 1 && page <= totalPages)
+    .sort((left, right) => left - right);
+  const items: Array<number | string> = [];
+
+  for (const page of visiblePages) {
+    const previousPage = items.at(-1);
+
+    if (typeof previousPage === "number" && page - previousPage === 2) {
+      items.push(previousPage + 1);
+    } else if (typeof previousPage === "number" && page - previousPage > 2) {
+      items.push(`ellipsis-${previousPage}-${page}`);
+    }
+
+    items.push(page);
+  }
+
+  return items;
 }
 
 function ApiNotice() {
