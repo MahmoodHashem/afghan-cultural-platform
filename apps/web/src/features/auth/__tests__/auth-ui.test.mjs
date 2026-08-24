@@ -51,6 +51,7 @@ const entryDetailPage = read("src/app/(public)/entries/[slug]/page.tsx");
 const entryDetailLoading = read("src/app/(public)/entries/[slug]/loading.tsx");
 const entryDetailContent = read("src/features/entries/components/entry-detail-content.tsx");
 const entryActionRail = read("src/features/entries/components/entry-action-rail.tsx");
+const entryScrollControls = read("src/features/entries/components/entry-scroll-controls.tsx");
 const entryHeaderContext = read("src/features/entries/components/entry-detail-header-context.tsx");
 const entryTableOfContents = read("src/features/entries/components/entry-table-of-contents.tsx");
 const engagementApi = read("src/features/engagement/api/entry-engagement-api.ts");
@@ -876,6 +877,12 @@ test("entry detail includes reading navigation and sticky article tools", () => 
   assert.match(entryActionRail, /ShareIcon/);
   assert.match(entryActionRail, /navigator\.share/);
   assert.match(entryActionRail, /scrollHeight - window\.innerHeight/);
+  assert.match(entryDetailPage, /<EntryScrollControls \/>/);
+  assert.match(entryDetailPage, /<\/PageTransition>\s*<EntryScrollControls \/>/);
+  assert.match(entryScrollControls, /رفتن به ابتدای مطلب/);
+  assert.match(entryScrollControls, /رفتن به انتهای مطلب/);
+  assert.match(entryScrollControls, /prefers-reduced-motion: reduce/);
+  assert.match(entryScrollControls, /position: fixed|fixed bottom-5/);
 });
 
 test("entry detail supports threaded comments and verified-user feedback", () => {

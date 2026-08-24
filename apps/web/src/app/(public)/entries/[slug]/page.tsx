@@ -6,6 +6,7 @@ import {
   getPublishedEntryBySlug,
 } from "@/features/entries/api/public-entries-api";
 import { EntryDetailContent } from "@/features/entries/components/entry-detail-content";
+import { EntryScrollControls } from "@/features/entries/components/entry-scroll-controls";
 import {
   createEntryDetailBreadcrumbItems,
   type EntryBreadcrumbSearchParams,
@@ -56,8 +57,11 @@ export default async function EntryDetailPage({ params, searchParams }: EntryDet
   const breadcrumbItems = createEntryDetailBreadcrumbItems(entry.title, resolvedSearchParams);
 
   return (
-    <PageTransition>
-      <EntryDetailContent entry={entry} comments={comments} breadcrumbItems={breadcrumbItems} />
-    </PageTransition>
+    <>
+      <PageTransition>
+        <EntryDetailContent entry={entry} comments={comments} breadcrumbItems={breadcrumbItems} />
+      </PageTransition>
+      <EntryScrollControls />
+    </>
   );
 }
