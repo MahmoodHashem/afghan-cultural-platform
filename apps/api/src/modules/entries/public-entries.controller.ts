@@ -27,7 +27,7 @@ class PublicEntriesController {
   @ApiOperation({
     summary: "List published Cultural Entries",
     description:
-      "Public read-only listing. Only PUBLISHED entries with a publication timestamp and public slug are returned. Full Tiptap content and moderation data are excluded.",
+      "Public read-only listing and Persian-normalized keyword search. Only PUBLISHED entries with a publication timestamp and public slug are returned. Full Tiptap content and moderation data are excluded.",
   })
   @ApiOkResponse({ type: PublicEntryListResponseDto })
   @ApiBadRequestResponse({ description: "ENTRY_QUERY_INVALID or ENTRY_FILTER_INVALID" })

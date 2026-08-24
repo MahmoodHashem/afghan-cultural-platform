@@ -12,6 +12,7 @@ function createExploreHref(
 
   setParam(searchParams, "page", nextQuery.page > 1 ? String(nextQuery.page) : undefined);
   setParam(searchParams, "sort", nextQuery.sort !== "newest" ? nextQuery.sort : undefined);
+  setParam(searchParams, "search", nextQuery.search);
   setParam(searchParams, "provinceSlug", nextQuery.provinceSlug);
   setParam(searchParams, "categorySlug", nextQuery.categorySlug);
   setParam(searchParams, "contentTypeSlug", nextQuery.contentTypeSlug);

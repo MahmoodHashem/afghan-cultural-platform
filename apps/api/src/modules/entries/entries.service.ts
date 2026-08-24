@@ -1322,6 +1322,7 @@ class EntriesService {
   }
 
   private createPublicEntryWhere(query: PublicEntryQueryDto): Prisma.CulturalEntryWhereInput {
+    const searchTerms = this.normalizePublicSearchTerms(query.search);
     const provinceId = this.normalizeUuidFilter(query.provinceId, "provinceId");
     const provinceSlug = this.normalizeSlugFilter(query.provinceSlug, "provinceSlug");
     const districtId = this.normalizeUuidFilter(query.districtId, "districtId");
@@ -1350,6 +1351,15 @@ class EntriesService {
       publishedAt: {
         not: null,
       },
+      ...(searchTerms.length > 0
+        ? {
+            AND: searchTerms.map((term) => ({
+              normalizedSearchText: {
+                contains: term,
+              },
+            })),
+          }
+        : {}),
       ...(query.geographicScope ? { geographicScope: query.geographicScope } : {}),
       ...(!query.geographicScope && hasProvinceFilter
         ? { geographicScope: GeographicScope.PROVINCE }
@@ -1479,6 +1489,20 @@ class EntriesService {
     const normalizedValue = value?.trim().toLowerCase();
 
     return normalizedValue || undefined;
+  }
+
+  private normalizePublicSearchTerms(value: string | undefined): string[] {
+    if (!value) {
+      return [];
+    }
+
+    return [
+      ...new Set(
+        normalizeEntrySearchText([value.replace(/[\u200C\u200D]/g, " ")])
+          .split(" ")
+          .filter(Boolean),
+      ),
+    ];
   }
 
   private async validateTaxonomy({

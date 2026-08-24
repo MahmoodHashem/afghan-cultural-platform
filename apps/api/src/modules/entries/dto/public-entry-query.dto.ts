@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from "@nestjs/swagger";
 import { Transform } from "class-transformer";
-import { IsEnum, IsInt, IsOptional, IsString, Max, Min } from "class-validator";
+import { IsEnum, IsInt, IsOptional, IsString, Max, MaxLength, Min } from "class-validator";
 
 import { GeographicScope } from "@/generated/prisma/enums";
 
@@ -21,6 +21,17 @@ class PublicEntryQueryDto {
   @Min(1)
   @Max(100)
   limit?: number = 20;
+
+  @ApiPropertyOptional({
+    maxLength: 120,
+    description:
+      "Persian-normalized keyword search across published entry titles, summaries, content, tags, taxonomy, and locations.",
+  })
+  @IsOptional()
+  @Transform(({ value }) => (typeof value === "string" ? value.trim() : value))
+  @IsString()
+  @MaxLength(120)
+  search?: string;
 
   @ApiPropertyOptional()
   @IsOptional()

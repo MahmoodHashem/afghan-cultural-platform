@@ -4,7 +4,7 @@ import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -48,42 +48,23 @@ function ExploreResultsPanel({
   query,
   breadcrumbParent,
 }: ExploreResultsPanelProps) {
-  const [searchValue, setSearchValue] = useState("");
-  const normalizedSearch = normalizePersianSearch(searchValue);
-  const filteredEntries = useMemo(
-    () =>
-      normalizedSearch
-        ? entries.filter((entry) => entryMatchesSearch(entry, normalizedSearch))
-        : entries,
-    [entries, normalizedSearch],
-  );
+  const isSearching = Boolean(query.search);
 
   return (
     <div className="space-y-5">
-      <ExploreSearchBar
-        query={query}
-        searchValue={searchValue}
-        taxonomy={taxonomy}
-        onSearchChange={setSearchValue}
-      />
+      <ExploreSearchBar query={query} taxonomy={taxonomy} />
       <div className="sticky top-20 z-30 hidden md:block">
         <div className="py-2">
           <ExploreFilterForm taxonomy={taxonomy} query={query} variant="bar" autoApply />
         </div>
       </div>
 
-      <ExploreToolbar
-        filteredCount={filteredEntries.length}
-        isSearching={Boolean(normalizedSearch)}
-        query={query}
-        taxonomy={taxonomy}
-        total={total}
-      />
+      <ExploreToolbar query={query} taxonomy={taxonomy} total={total} />
 
-      {filteredEntries.length > 0 ? (
+      {entries.length > 0 ? (
         <motion.div layout className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
           <AnimatePresence mode="popLayout">
-            {filteredEntries.map((entry, index) => (
+            {entries.map((entry, index) => (
               <motion.div
                 key={entry.id}
                 layout
@@ -102,7 +83,7 @@ function ExploreResultsPanel({
           </AnimatePresence>
         </motion.div>
       ) : (
-        <EmptySearchState isSearching={Boolean(normalizedSearch)} />
+        <EmptySearchState isSearching={isSearching} />
       )}
     </div>
   );
@@ -110,21 +91,55 @@ function ExploreResultsPanel({
 
 function ExploreSearchBar({
   query,
-  searchValue,
   taxonomy,
-  onSearchChange,
 }: {
   query: NormalizedExploreQuery;
-  searchValue: string;
   taxonomy: ExploreResultsPanelProps["taxonomy"];
-  onSearchChange: (value: string) => void;
 }) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const [searchValue, setSearchValue] = useState(query.search ?? "");
+  const lastNavigationSearch = useRef(normalizePersianSearch(query.search ?? ""));
   const searchInputId = "explore-result-search";
+  const normalizedQuerySearch = normalizePersianSearch(query.search ?? "");
+
+  useEffect(() => {
+    if (normalizedQuerySearch === lastNavigationSearch.current) {
+      return;
+    }
+
+    lastNavigationSearch.current = normalizedQuerySearch;
+    setSearchValue(query.search ?? "");
+  }, [normalizedQuerySearch, query.search]);
+
+  useEffect(() => {
+    const normalizedSearch = normalizePersianSearch(searchValue);
+
+    if (normalizedSearch === normalizedQuerySearch) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      lastNavigationSearch.current = normalizedSearch;
+      startTransition(() => {
+        router.replace(
+          createExploreHref(query, {
+            page: 1,
+            search: normalizedSearch || undefined,
+          }),
+          { scroll: false },
+        );
+      });
+    }, 400);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [normalizedQuerySearch, query, router, searchValue]);
 
   return (
     <div className="flex items-center gap-3">
       <label
         htmlFor={searchInputId}
+        aria-busy={isPending}
         className="group flex min-h-12 flex-1 items-center gap-3 rounded-xl border border-border bg-card px-4 transition-colors focus-within:border-primary focus-within:ring-3 focus-within:ring-ring/35"
       >
         <MagnifyingGlassIcon
@@ -134,11 +149,24 @@ function ExploreSearchBar({
         <span className="sr-only">جست‌وجو در نتایج</span>
         <Input
           id={searchInputId}
+          type="search"
+          maxLength={120}
           value={searchValue}
-          onChange={(event) => onSearchChange(event.target.value)}
+          onChange={(event) => setSearchValue(event.target.value)}
           placeholder="جست‌وجوی مکان، مشاهیر، رسم یا موضوع..."
           className="h-10 border-0 bg-transparent px-0 text-[14px] shadow-none focus-visible:border-transparent focus-visible:ring-0"
         />
+        {searchValue ? (
+          <button
+            type="button"
+            onClick={() => setSearchValue("")}
+            className="grid size-8 shrink-0 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/40"
+            aria-label="پاک کردن جست‌وجو"
+          >
+            <XMarkIcon className="size-4" aria-hidden="true" />
+          </button>
+        ) : null}
+        {isPending ? <span className="sr-only">در حال جست‌وجو</span> : null}
       </label>
       <div className="md:hidden">
         <ExploreFilterSheet taxonomy={taxonomy} query={query} />
@@ -148,14 +176,10 @@ function ExploreSearchBar({
 }
 
 function ExploreToolbar({
-  filteredCount,
-  isSearching,
   query,
   taxonomy,
   total,
 }: {
-  filteredCount: number;
-  isSearching: boolean;
   query: NormalizedExploreQuery;
   taxonomy: ExploreResultsPanelProps["taxonomy"];
   total: number;
@@ -175,11 +199,7 @@ function ExploreToolbar({
         <ClearFiltersLink query={query} />
       </div>
       <div className="flex flex-wrap items-center gap-2">
-        <p className="text-[15px] font-bold text-foreground">
-          {isSearching
-            ? `${formatPersianNumber(filteredCount)} از ${formatPersianNumber(total)} مطلب`
-            : `${formatPersianNumber(total)} مطلب`}
-        </p>
+        <p className="text-[15px] font-bold text-foreground">{formatPersianNumber(total)} مطلب</p>
       </div>
     </div>
   );
@@ -314,6 +334,7 @@ function ClearFiltersLink({ query }: { query: NormalizedExploreQuery }) {
       query.contentTypeSlug ||
       query.tagSlug ||
       query.geographicScope ||
+      query.search ||
       query.sort !== "newest",
   );
 
@@ -339,7 +360,7 @@ function EmptySearchState({ isSearching }: { isSearching: boolean }) {
       <p className="text-[20px] font-bold text-foreground">نتیجه‌ای پیدا نشد</p>
       <p className="mx-auto mt-3 max-w-xl text-[15px] leading-8 text-muted-foreground">
         {isSearching
-          ? "در نتایج فعلی چیزی با این جست‌وجو پیدا نشد."
+          ? "برای این جست‌وجو مطلبی پیدا نشد. عبارت دیگری را امتحان کنید."
           : "با این فیلترها چیزی پیدا نشد. فیلترها را تغییر دهید."}
       </p>
       <Link
@@ -351,24 +372,6 @@ function EmptySearchState({ isSearching }: { isSearching: boolean }) {
       </Link>
     </div>
   );
-}
-
-function entryMatchesSearch(
-  entry: ExploreResultsPanelProps["entries"][number],
-  normalizedSearch: string,
-) {
-  const searchableText = [
-    entry.title,
-    entry.summary,
-    entry.province?.name,
-    entry.category.name,
-    entry.contentType.name,
-    ...entry.tags.map((tag) => tag.name),
-  ]
-    .filter(Boolean)
-    .join(" ");
-
-  return normalizePersianSearch(searchableText).includes(normalizedSearch);
 }
 
 function getActiveFilters(

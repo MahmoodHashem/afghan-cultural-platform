@@ -23,6 +23,7 @@ import {
 import type { AuditService } from "@/modules/audit/audit.service";
 import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.type";
 import { CreateEntryDraftDto } from "@/modules/entries/dto/create-entry-draft.dto";
+import { PublicEntryQueryDto } from "@/modules/entries/dto/public-entry-query.dto";
 import { ENTRY_ERROR_CODES } from "@/modules/entries/entries.constants";
 import { EntriesService } from "@/modules/entries/entries.service";
 import type { CloudinaryMediaService } from "@/modules/media/cloudinary-media.service";
@@ -519,6 +520,37 @@ describe("EntriesService", () => {
         orderBy: [{ updatedAt: "desc" }, { publishedAt: "desc" }, { id: "asc" }],
       }),
     );
+  });
+
+  it("searches the complete published collection using normalized Persian terms", async () => {
+    prisma.culturalEntry.findMany.mockResolvedValue([createPublicEntryCardPayload()]);
+    prisma.culturalEntry.count.mockResolvedValue(1);
+
+    await service.listPublishedEntries({
+      page: 3,
+      limit: 12,
+      search: "  فرهنگ‌ كابل  ",
+      categorySlug: "traditions",
+    });
+
+    const expectedWhere = {
+      status: EntryStatus.PUBLISHED,
+      publishedAt: { not: null },
+      AND: [
+        { normalizedSearchText: { contains: "فرهنگ" } },
+        { normalizedSearchText: { contains: "کابل" } },
+      ],
+      category: { slug: "traditions" },
+    };
+
+    expect(prisma.culturalEntry.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expectedWhere,
+        skip: 24,
+        take: 12,
+      }),
+    );
+    expect(prisma.culturalEntry.count).toHaveBeenCalledWith({ where: expectedWhere });
   });
 
   it("filters national public entries separately from provincial entries", async () => {
@@ -1753,6 +1785,31 @@ describe("EntriesService", () => {
     expect(errors.map((error) => error.property)).toEqual(
       expect.arrayContaining(["authorId", "key", "status", "publishedAt"]),
     );
+  });
+
+  it("accepts and trims a bounded public search query", async () => {
+    const dto = plainToInstance(PublicEntryQueryDto, {
+      search: "  فرهنگ کابل  ",
+    });
+    const errors = await validate(dto, {
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    });
+
+    expect(errors).toEqual([]);
+    expect(dto.search).toBe("فرهنگ کابل");
+  });
+
+  it("rejects an oversized public search query", async () => {
+    const dto = plainToInstance(PublicEntryQueryDto, {
+      search: "ف".repeat(121),
+    });
+    const errors = await validate(dto, {
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    });
+
+    expect(errors.some((error) => error.property === "search")).toBe(true);
   });
 });
 

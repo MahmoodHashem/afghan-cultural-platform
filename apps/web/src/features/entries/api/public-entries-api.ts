@@ -18,6 +18,7 @@ type PublicEntryListQuery = {
   page?: number;
   limit?: number;
   sort?: PublicEntrySort;
+  search?: string;
   provinceSlug?: string;
   districtSlug?: string;
   categorySlug?: string;
@@ -69,6 +70,7 @@ async function getPublishedEntries(query: PublicEntryListQuery): Promise<PublicE
   searchParams.set("limit", String(query.limit ?? 12));
   searchParams.set("sort", query.sort ?? "newest");
 
+  setOptionalSearchParam(searchParams, "search", query.search);
   setOptionalSearchParam(searchParams, "provinceSlug", query.provinceSlug);
   setOptionalSearchParam(searchParams, "districtSlug", query.districtSlug);
   setOptionalSearchParam(searchParams, "categorySlug", query.categorySlug);

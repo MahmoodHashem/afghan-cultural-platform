@@ -55,6 +55,7 @@ function normalizeExploreQuery(
     page: getPositiveIntegerSearchParam(searchParams.page, 1),
     limit: 12,
     sort: getPublicEntrySort(searchParams.sort),
+    search: getOptionalSearchParam(searchParams.search),
     provinceSlug: getOptionalSearchParam(searchParams.provinceSlug),
     categorySlug: getOptionalSearchParam(searchParams.categorySlug),
     contentTypeSlug: getOptionalSearchParam(searchParams.contentTypeSlug),

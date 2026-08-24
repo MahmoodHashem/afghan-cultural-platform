@@ -735,8 +735,10 @@ test("explore page uses public entries and taxonomy APIs with URL filters", () =
   assert.match(explorePage, /getPublishedEntries\(query\)/);
   assert.match(explorePage, /getExploreTaxonomyData\(\)/);
   assert.match(explorePage, /normalizeExploreQuery/);
+  assert.match(explorePage, /search: getOptionalSearchParam\(searchParams\.search\)/);
   assert.doesNotMatch(explorePage, /console\.log/);
   assert.match(exploreApi, /\/entries\?\$\{searchParams\.toString\(\)\}/);
+  assert.match(exploreApi, /setOptionalSearchParam\(searchParams, "search", query\.search\)/);
   assert.match(exploreApi, /\/taxonomy\/provinces\?limit=100/);
   assert.match(exploreApi, /\/taxonomy\/categories\?limit=100/);
   assert.match(exploreApi, /\/taxonomy\/content-types\?limit=100/);
@@ -749,6 +751,10 @@ test("explore page uses public entries and taxonomy APIs with URL filters", () =
   assert.match(exploreFilterForm, /<Select/);
   assert.match(exploreFilterSheet, /SheetContent side="right"/);
   assert.match(exploreResultsPanel, /جست‌وجوی مکان، مشاهیر، رسم یا موضوع/);
+  assert.match(exploreResultsPanel, /router\.replace/);
+  assert.match(exploreResultsPanel, /search: normalizedSearch \|\| undefined/);
+  assert.match(exploreResultsPanel, /window\.setTimeout/);
+  assert.doesNotMatch(exploreResultsPanel, /entryMatchesSearch|entries\.filter/);
   assert.match(exploreResultsPanel, /PublicEntryCardView/);
   assert.match(exploreResultsPanel, /motion\.div/);
   assert.match(publicEntryCard, /function PublicEntryCardView/);
