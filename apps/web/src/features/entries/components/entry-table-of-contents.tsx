@@ -90,6 +90,30 @@ function EntryTableOfContents({ items }: { items: TableOfContentsItem[] }) {
                     <a
                       href={`#${item.id}`}
                       aria-current={isActive ? "location" : undefined}
+                      onClick={(event) => {
+                        const heading = document.getElementById(item.id);
+
+                        if (!heading) {
+                          return;
+                        }
+
+                        event.preventDefault();
+                        setActiveId(item.id);
+
+                        const destination = new URL(window.location.href);
+                        destination.hash = item.id;
+
+                        if (window.location.hash !== destination.hash) {
+                          window.history.pushState(window.history.state, "", destination);
+                        }
+
+                        heading.scrollIntoView({
+                          behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+                            ? "auto"
+                            : "smooth",
+                          block: "start",
+                        });
+                      }}
                       className={cn(
                         "block rounded-xl py-2 text-[14px] leading-7 transition-colors focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/35",
                         item.level === 3 ? "ps-4 pe-2" : "px-2 font-semibold",

@@ -1,7 +1,6 @@
 import type { PageBreadcrumbItem } from "@/components/layout/page-breadcrumb";
 
-const breadcrumbLabelParam = "breadcrumbLabel";
-const breadcrumbHrefParam = "breadcrumbHref";
+const entryBreadcrumbStoragePrefix = "entry-breadcrumb:";
 
 type EntryBreadcrumbParent = {
   label: string;
@@ -10,44 +9,65 @@ type EntryBreadcrumbParent = {
 
 type EntryBreadcrumbContext = EntryBreadcrumbParent | EntryBreadcrumbParent[];
 
-type EntryBreadcrumbSearchParams = Record<string, string | string[] | undefined>;
-
-function createEntryHref(entry: { slug: string }, breadcrumbParent?: EntryBreadcrumbContext) {
-  const entryPath = `/entries/${encodeURIComponent(entry.slug)}`;
-  const parents = normalizeBreadcrumbParents(
-    Array.isArray(breadcrumbParent) ? breadcrumbParent : breadcrumbParent ? [breadcrumbParent] : [],
-  );
-
-  if (parents.length === 0) {
-    return entryPath;
-  }
-
-  const searchParams = new URLSearchParams();
-
-  for (const parent of parents) {
-    searchParams.append(breadcrumbLabelParam, parent.label);
-    searchParams.append(breadcrumbHrefParam, parent.href);
-  }
-
-  return `${entryPath}?${searchParams.toString()}`;
+function createEntryHref(entry: { slug: string }) {
+  return `/entries/${encodeURIComponent(entry.slug)}`;
 }
 
 function createEntryDetailBreadcrumbItems(
   entryTitle: string,
-  searchParams: EntryBreadcrumbSearchParams,
+  breadcrumbParents: EntryBreadcrumbParent[] = [],
 ): PageBreadcrumbItem[] {
-  const parents = normalizeBreadcrumbParents(
-    zipSearchParams(
-      allSearchParams(searchParams[breadcrumbLabelParam]),
-      allSearchParams(searchParams[breadcrumbHrefParam]),
-    ),
-  );
+  const parents = normalizeBreadcrumbParents(breadcrumbParents);
 
   return [
     { label: "خانه", href: "/" },
     ...(parents.length > 0 ? parents : [{ label: "مطالب", href: "/explore" }]),
     { label: entryTitle },
   ];
+}
+
+function serializeEntryBreadcrumbContext(context?: EntryBreadcrumbContext) {
+  if (!context) {
+    return undefined;
+  }
+
+  const parents = normalizeBreadcrumbParents(Array.isArray(context) ? context : [context]);
+
+  return parents.length > 0 ? JSON.stringify(parents) : undefined;
+}
+
+function parseEntryBreadcrumbContext(value: string | null) {
+  if (!value) {
+    return [];
+  }
+
+  try {
+    const parsed: unknown = JSON.parse(value);
+
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+
+    return normalizeBreadcrumbParents(
+      parsed.flatMap((parent): EntryBreadcrumbParent[] => {
+        if (!parent || typeof parent !== "object") {
+          return [];
+        }
+
+        const candidate = parent as Record<string, unknown>;
+
+        return typeof candidate.label === "string" && typeof candidate.href === "string"
+          ? [{ label: candidate.label, href: candidate.href }]
+          : [];
+      }),
+    );
+  } catch {
+    return [];
+  }
+}
+
+function createEntryBreadcrumbStorageKey(pathname: string) {
+  return `${entryBreadcrumbStoragePrefix}${pathname}`;
 }
 
 function normalizeBreadcrumbParents(parents: EntryBreadcrumbParent[]) {
@@ -62,25 +82,15 @@ function normalizeBreadcrumbParents(parents: EntryBreadcrumbParent[]) {
     .slice(0, 3);
 }
 
-function zipSearchParams(labels: string[], hrefs: string[]) {
-  return labels.flatMap((label, index) => {
-    const href = hrefs[index];
-
-    return href ? [{ label, href }] : [];
-  });
-}
-
-function allSearchParams(value: string | string[] | undefined) {
-  if (!value) {
-    return [];
-  }
-
-  return Array.isArray(value) ? value : [value];
-}
-
 function isSafeInternalHref(href: string) {
   return href.startsWith("/") && !href.startsWith("//") && !href.includes("\\");
 }
 
-export type { EntryBreadcrumbContext, EntryBreadcrumbParent, EntryBreadcrumbSearchParams };
-export { createEntryDetailBreadcrumbItems, createEntryHref };
+export type { EntryBreadcrumbContext, EntryBreadcrumbParent };
+export {
+  createEntryBreadcrumbStorageKey,
+  createEntryDetailBreadcrumbItems,
+  createEntryHref,
+  parseEntryBreadcrumbContext,
+  serializeEntryBreadcrumbContext,
+};

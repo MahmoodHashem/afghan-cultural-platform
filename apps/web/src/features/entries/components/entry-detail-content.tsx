@@ -4,12 +4,13 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { createTiptapHeadings, TiptapDocument } from "@/components/common/tiptap-document";
-import { PageBreadcrumb, type PageBreadcrumbItem } from "@/components/layout/page-breadcrumb";
+import type { PageBreadcrumbItem } from "@/components/layout/page-breadcrumb";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { EntryComments } from "@/features/engagement/components/entry-comments";
 import type { EntryCommentListResponse } from "@/features/engagement/types/entry-engagement";
 import { EntryActionRail } from "@/features/entries/components/entry-action-rail";
+import { EntryDetailBreadcrumb } from "@/features/entries/components/entry-detail-breadcrumb";
 import { EntryDetailHeaderContext } from "@/features/entries/components/entry-detail-header-context";
 import { EntryTableOfContents } from "@/features/entries/components/entry-table-of-contents";
 import { CommunityModerationActions } from "@/features/moderation/components/community-moderation-actions";
@@ -36,7 +37,11 @@ function EntryDetailContent({
       <article>
         <section className="border-b border-border bg-card pt-24 pb-10 sm:pt-28">
           <div className="content-container">
-            <PageBreadcrumb items={breadcrumbItems} />
+            <EntryDetailBreadcrumb
+              entryPath={`/entries/${encodeURIComponent(entry.slug)}`}
+              entryTitle={entry.title}
+              fallbackItems={breadcrumbItems}
+            />
 
             <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_420px] lg:items-end">
               <div className="space-y-5">

@@ -6,7 +6,11 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatPersianDate } from "@/lib/utils/formatters";
 import type { PublicEntryCard } from "../types/public-entry";
-import { createEntryHref, type EntryBreadcrumbContext } from "../utils/entry-breadcrumb";
+import {
+  createEntryHref,
+  type EntryBreadcrumbContext,
+  serializeEntryBreadcrumbContext,
+} from "../utils/entry-breadcrumb";
 import { getEntryLocationLabel } from "../utils/geography";
 
 const fallbackImages = [
@@ -30,7 +34,8 @@ function PublicEntryCardView({
   return (
     <Card className="group overflow-hidden rounded-2xl border-border bg-card p-0 shadow-[0_2px_10px_rgba(0,0,0,.035)] transition-all duration-200 hover:-translate-y-1 hover:border-primary/25 hover:shadow-[0_14px_34px_rgba(31,41,55,0.085)]">
       <Link
-        href={entryHref(entry, breadcrumbParent)}
+        href={entryHref(entry)}
+        data-entry-breadcrumb-context={serializeEntryBreadcrumbContext(breadcrumbParent)}
         className="block outline-none focus-visible:ring-3 focus-visible:ring-ring/40"
       >
         <div className="relative aspect-[16/10] overflow-hidden bg-muted">
@@ -74,11 +79,8 @@ function PublicEntryCardView({
   );
 }
 
-function entryHref(
-  entry: Pick<PublicEntryCard, "slug">,
-  breadcrumbParent?: EntryBreadcrumbContext,
-) {
-  return createEntryHref(entry, breadcrumbParent);
+function entryHref(entry: Pick<PublicEntryCard, "slug">) {
+  return createEntryHref(entry);
 }
 
 export { entryHref, PublicEntryCardView };

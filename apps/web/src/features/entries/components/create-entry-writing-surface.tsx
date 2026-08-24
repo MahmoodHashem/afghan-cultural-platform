@@ -40,7 +40,7 @@ export function CreateEntryWritingSurface({
   return (
     <section className="space-y-12">
       <div className="space-y-2 border-b border-border pb-3">
-        <label htmlFor="entry-title" className="text-small text-muted-foreground">
+        <label htmlFor="entry-title" className="text-small text-foreground">
           عنوان مطلب
         </label>
         <FieldError message={errors.title?.message} />
@@ -56,7 +56,7 @@ export function CreateEntryWritingSurface({
       </div>
 
       <div className="space-y-2 border-b border-border">
-        <label htmlFor="entry-summary" className="text-small text-muted-foreground">
+        <label htmlFor="entry-summary" className="text-small text-foreground">
           خلاصه
         </label>
         <FieldError message={errors.summary?.message} />

@@ -73,6 +73,7 @@ const createEntryEditorLayout = read(
 );
 const createEntrySections = read("src/features/entries/components/create-entry-sections.tsx");
 const createEntrySelect = read("src/features/entries/components/create-entry-select.tsx");
+const shadcnCombobox = read("src/components/ui/combobox.tsx");
 const createEntryWritingSurface = read(
   "src/features/entries/components/create-entry-writing-surface.tsx",
 );
@@ -103,6 +104,8 @@ const filterableEntryResults = read("src/features/entries/components/filterable-
 const filterTabs = read("src/features/entries/components/filter-tabs.tsx");
 const shadcnTabs = read("src/components/ui/tabs.tsx");
 const entryBreadcrumb = read("src/features/entries/utils/entry-breadcrumb.ts");
+const entryBreadcrumbTracker = read("src/features/entries/components/entry-breadcrumb-tracker.tsx");
+const entryDetailBreadcrumb = read("src/features/entries/components/entry-detail-breadcrumb.tsx");
 const provinceSearchGrid = read("src/features/entries/components/province-search-grid.tsx");
 const provinceImages = read("src/lib/images/province-images.ts");
 const homePage = read("src/app/page.tsx");
@@ -532,6 +535,15 @@ test("create entry validation covers geography, metadata, and submission readine
 
 test("create entry uses searchable selects and multi-select tags without new storage", () => {
   assert.match(createEntrySelect, /options\.length > 10/);
+  assert.match(createEntrySelect, /SearchableCreateEntrySelect/);
+  assert.match(createEntrySelect, /<Combobox/);
+  assert.match(createEntrySelect, /<Select/);
+  assert.match(createEntrySelect, /optionMatchesSearch/);
+  assert.match(createEntrySelect, /itemToStringLabel/);
+  assert.match(createEntrySelect, /isItemEqualToValue/);
+  assert.match(shadcnCombobox, /@base-ui\/react\/combobox/);
+  assert.match(shadcnCombobox, /ComboboxPrimitive\.Input/);
+  assert.match(shadcnCombobox, /data-selected:bg-primary\/10/);
   assert.match(createEntrySelect, /selectedValues/);
   assert.match(createEntrySelect, /normalizePersianSearch/);
   assert.match(persianUtils, /replaceAll\("ي", "ی"\)/);
@@ -676,7 +688,8 @@ test("public content pages use the shared shadcn breadcrumb pattern", () => {
   assert.match(pageBreadcrumb, /BreadcrumbList/);
   assert.match(pageBreadcrumb, /aria-label="مسیر صفحه"/);
   assert.match(exploreContent, /<PageBreadcrumb items=\{\[/);
-  assert.match(entryDetailContent, /<PageBreadcrumb/);
+  assert.match(entryDetailContent, /<EntryDetailBreadcrumb/);
+  assert.match(entryDetailBreadcrumb, /<PageBreadcrumb/);
   assert.match(taxonomyDiscoveryPages, /<PageBreadcrumb/);
   assert.doesNotMatch(exploreContent, /بازگشت به خانه/);
   assert.doesNotMatch(entryDetailContent, /بازگشت به مطالب/);
@@ -809,10 +822,10 @@ test("category detail supports province and national filters without popularity 
 test("entry detail page renders published entry data by Persian slug", () => {
   assert.match(entryDetailPage, /getPublishedEntryBySlug\(slug\)/);
   assert.match(entryDetailPage, /getPublicEntryComments\(entry\.id, entry\.commentCount\)/);
-  assert.match(entryDetailPage, /searchParams/);
+  assert.doesNotMatch(entryDetailPage, /searchParams/);
   assert.match(entryDetailPage, /createEntryDetailBreadcrumbItems/);
   assert.match(entryDetailContent, /breadcrumbItems: PageBreadcrumbItem\[\]/);
-  assert.match(entryDetailContent, /<PageBreadcrumb items=\{breadcrumbItems\} \/>/);
+  assert.match(entryDetailContent, /<EntryDetailBreadcrumb/);
   assert.match(entryDetailPage, /notFound\(\)/);
   assert.match(entryDetailPage, /generateMetadata/);
   assert.match(exploreApi, /\/entries\/\$\{encodeURIComponent\(normalizeSlug\(slug\)\)\}/);
@@ -831,14 +844,19 @@ test("entry detail page renders published entry data by Persian slug", () => {
 
 test("entry cards preserve safe breadcrumb context from their source page", () => {
   assert.match(publicEntryCard, /breadcrumbParent\?: EntryBreadcrumbContext/);
-  assert.match(publicEntryCard, /createEntryHref\(entry, breadcrumbParent\)/);
-  assert.match(entryBreadcrumb, /breadcrumbLabel/);
-  assert.match(entryBreadcrumb, /breadcrumbHref/);
-  assert.match(entryBreadcrumb, /searchParams\.append\(breadcrumbLabelParam, parent\.label\)/);
-  assert.match(entryBreadcrumb, /zipSearchParams/);
+  assert.match(publicEntryCard, /createEntryHref\(entry\)/);
+  assert.match(publicEntryCard, /data-entry-breadcrumb-context/);
+  assert.match(publicEntryCard, /serializeEntryBreadcrumbContext\(breadcrumbParent\)/);
+  assert.doesNotMatch(entryBreadcrumb, /breadcrumbLabel|breadcrumbHref|URLSearchParams/);
+  assert.match(entryBreadcrumb, /entryBreadcrumbStoragePrefix/);
   assert.match(entryBreadcrumb, /isSafeInternalHref/);
   assert.match(entryBreadcrumb, /!href\.startsWith\("\/\/"\)/);
   assert.match(entryBreadcrumb, /label: "مطالب"/);
+  assert.match(publicLayout, /<EntryBreadcrumbTracker \/>/);
+  assert.match(entryBreadcrumbTracker, /window\.sessionStorage\.setItem/);
+  assert.match(entryBreadcrumbTracker, /destination\.origin !== window\.location\.origin/);
+  assert.match(entryDetailBreadcrumb, /window\.sessionStorage\.getItem/);
+  assert.match(entryDetailBreadcrumb, /createEntryDetailBreadcrumbItems\(entryTitle, parents\)/);
   assert.match(exploreContent, /href: createExploreHref\(query, \{\}\)/);
   assert.match(taxonomyDiscoveryPages, /label: "ولایت‌ها", href: "\/provinces"/);
   assert.match(taxonomyDiscoveryPages, /label: province\.name, href: provinceHref/);
@@ -856,6 +874,11 @@ test("entry detail includes reading navigation and sticky article tools", () => 
   assert.match(entryTableOfContents, /overflow-y-auto/);
   assert.match(entryTableOfContents, /aria-current=\{isActive \? "location" : undefined\}/);
   assert.match(entryTableOfContents, /border border-primary\/20\s+text-primary/);
+  assert.match(entryTableOfContents, /event\.preventDefault\(\)/);
+  assert.match(entryTableOfContents, /heading\.scrollIntoView/);
+  assert.match(entryTableOfContents, /behavior: window\.matchMedia/);
+  assert.match(entryTableOfContents, /prefers-reduced-motion: reduce/);
+  assert.match(entryTableOfContents, /window\.history\.pushState/);
   assert.match(tiptapDocumentRenderer, /createHeadingId\(headingText, key\)/);
   assert.match(tiptapDocumentRenderer, /id=\{headingId\}/);
   assert.match(

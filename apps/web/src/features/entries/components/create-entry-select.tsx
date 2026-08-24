@@ -1,8 +1,18 @@
 "use client";
 
 import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { useMemo, useState } from "react";
+import { type ReactNode, useMemo, useState } from "react";
 
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+  ComboboxTrigger,
+  ComboboxValue,
+} from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -51,16 +61,23 @@ function CreateEntrySelect({
   error,
   disabled,
 }: CreateEntrySelectProps) {
-  const [searchValue, setSearchValue] = useState("");
-  const isSearchable = options.length > 10;
-  const orderedOptions = useOrderedOptions(options, value, searchValue);
-  const filteredOptions = useFilteredOptions(orderedOptions, searchValue, isSearchable);
+  if (options.length > 10) {
+    return (
+      <SearchableCreateEntrySelect
+        id={id}
+        label={label}
+        value={value}
+        onValueChange={onValueChange}
+        options={options}
+        placeholder={placeholder}
+        error={error}
+        disabled={disabled}
+      />
+    );
+  }
 
   return (
-    <div className="space-y-2">
-      <label htmlFor={id} className="text-small font-semibold text-foreground">
-        {label}
-      </label>
+    <CreateEntrySelectField label={label} id={id} error={error}>
       <Select
         items={options}
         value={value ?? null}
@@ -68,8 +85,6 @@ function CreateEntrySelect({
           if (typeof nextValue === "string") {
             onValueChange(nextValue);
           }
-
-          setSearchValue("");
         }}
         disabled={disabled}
       >
@@ -81,54 +96,135 @@ function CreateEntrySelect({
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent align="end" alignItemWithTrigger={false} className="max-h-80 min-w-64">
-          {isSearchable ? (
-            <form
-              className="sticky top-0 z-10 border-b border-border bg-popover p-2"
-              onKeyDown={(event) => event.stopPropagation()}
-            >
-              <div className="relative">
-                <MagnifyingGlassIcon
-                  aria-hidden="true"
-                  className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-                />
-                <Input
-                  value={searchValue}
-                  onChange={(event) => setSearchValue(event.target.value)}
-                  placeholder={`جست‌وجوی ${label}...`}
-                  className="h-9 pr-9 text-small"
-                  autoComplete="off"
-                />
-              </div>
-            </form>
-          ) : null}
           <SelectGroup>
-            {filteredOptions.length > 0 ? (
-              filteredOptions.map((option) => (
-                <SelectItem
-                  key={option.value}
-                  value={option.value}
-                  className={cn(value === option.value && "bg-primary/10 text-primary")}
-                >
-                  <span className="flex flex-col text-right">
-                    <span>{option.label}</span>
-                    {option.description ? (
-                      <span className="text-[11px] text-muted-foreground">
-                        {option.description}
-                      </span>
-                    ) : null}
-                  </span>
-                </SelectItem>
-              ))
-            ) : (
-              <div className="px-3 py-6 text-center text-small text-muted-foreground">
-                نتیجه‌ای پیدا نشد
-              </div>
-            )}
+            {options.map((option) => (
+              <SelectItem
+                key={option.value}
+                value={option.value}
+                className={cn(value === option.value && "bg-primary/10 text-primary")}
+              >
+                <span className="flex flex-col text-right">
+                  <span>{option.label}</span>
+                </span>
+              </SelectItem>
+            ))}
           </SelectGroup>
         </SelectContent>
       </Select>
+    </CreateEntrySelectField>
+  );
+}
+
+function SearchableCreateEntrySelect({
+  id,
+  label,
+  value,
+  onValueChange,
+  options,
+  placeholder,
+  error,
+  disabled,
+}: CreateEntrySelectProps) {
+  const [searchValue, setSearchValue] = useState("");
+  const orderedOptions = useOrderedOptions(options, value, searchValue);
+  const selectedOption = useMemo(
+    () => options.find((option) => option.value === value) ?? null,
+    [options, value],
+  );
+
+  return (
+    <CreateEntrySelectField label={label} id={id} error={error}>
+      <Combobox
+        items={orderedOptions}
+        value={selectedOption}
+        inputValue={searchValue}
+        onInputValueChange={setSearchValue}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSearchValue("");
+          }
+        }}
+        onValueChange={(nextOption) => {
+          if (nextOption) {
+            onValueChange(nextOption.value);
+          }
+          setSearchValue("");
+        }}
+        disabled={disabled}
+        itemToStringLabel={(option) => option.label}
+        isItemEqualToValue={(option, selected) => option.value === selected.value}
+        filter={(option, query) => optionMatchesSearch(option, query)}
+      >
+        <ComboboxTrigger
+          id={id}
+          aria-invalid={Boolean(error)}
+          className={cn("h-11 border-border bg-card", error && "border-destructive")}
+        >
+          <span className="flex min-w-0 flex-1 text-start">
+            <ComboboxValue placeholder={placeholder} />
+          </span>
+        </ComboboxTrigger>
+        <ComboboxContent aria-label={label} align="end" className="max-h-80 min-w-64">
+          <div className="border-b border-border bg-popover p-2">
+            <div className="relative">
+              <MagnifyingGlassIcon
+                aria-hidden="true"
+                className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+              />
+              <ComboboxInput
+                placeholder={`جست‌وجوی ${label}...`}
+                aria-label={`جست‌وجوی ${label}`}
+                className="pr-9 text-small"
+                autoComplete="off"
+              />
+            </div>
+          </div>
+          <ComboboxEmpty>نتیجه‌ای پیدا نشد</ComboboxEmpty>
+          <ComboboxList>
+            {(option: SelectOption) => (
+              <ComboboxItem key={option.value} value={option}>
+                <span>{option.label}</span>
+
+              </ComboboxItem>
+            )}
+          </ComboboxList>
+        </ComboboxContent>
+      </Combobox>
+    </CreateEntrySelectField>
+  );
+}
+
+function CreateEntrySelectField({
+  id,
+  label,
+  error,
+  children,
+}: {
+  id: string;
+  label: string;
+  error?: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="space-y-2">
+      <label htmlFor={id} className="text-small font-semibold text-foreground">
+        {label}
+      </label>
+      {children}
       {error ? <p className="text-small text-destructive">{error}</p> : null}
     </div>
+  );
+}
+
+function optionMatchesSearch(option: SelectOption, search: string) {
+  const normalizedSearch = normalizePersianSearch(search);
+
+  if (!normalizedSearch) {
+    return true;
+  }
+
+  return normalizePersianSearch(`${option.label} ${option.description ?? ""}`).includes(
+    normalizedSearch,
   );
 }
 

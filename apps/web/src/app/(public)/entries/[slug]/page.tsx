@@ -7,16 +7,12 @@ import {
 } from "@/features/entries/api/public-entries-api";
 import { EntryDetailContent } from "@/features/entries/components/entry-detail-content";
 import { EntryScrollControls } from "@/features/entries/components/entry-scroll-controls";
-import {
-  createEntryDetailBreadcrumbItems,
-  type EntryBreadcrumbSearchParams,
-} from "@/features/entries/utils/entry-breadcrumb";
+import { createEntryDetailBreadcrumbItems } from "@/features/entries/utils/entry-breadcrumb";
 
 type EntryDetailPageProps = {
   params: Promise<{
     slug: string;
   }>;
-  searchParams?: Promise<EntryBreadcrumbSearchParams>;
 };
 
 export async function generateMetadata({ params }: EntryDetailPageProps): Promise<Metadata> {
@@ -44,9 +40,8 @@ export async function generateMetadata({ params }: EntryDetailPageProps): Promis
   };
 }
 
-export default async function EntryDetailPage({ params, searchParams }: EntryDetailPageProps) {
+export default async function EntryDetailPage({ params }: EntryDetailPageProps) {
   const { slug } = await params;
-  const resolvedSearchParams = searchParams ? await searchParams : {};
   const entry = await getPublishedEntryBySlug(slug);
 
   if (!entry) {
@@ -54,7 +49,7 @@ export default async function EntryDetailPage({ params, searchParams }: EntryDet
   }
 
   const comments = await getPublicEntryComments(entry.id, entry.commentCount);
-  const breadcrumbItems = createEntryDetailBreadcrumbItems(entry.title, resolvedSearchParams);
+  const breadcrumbItems = createEntryDetailBreadcrumbItems(entry.title);
 
   return (
     <>
