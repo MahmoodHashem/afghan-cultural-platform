@@ -78,6 +78,7 @@ const createEntryWritingSurface = read(
   "src/features/entries/components/create-entry-writing-surface.tsx",
 );
 const stagedEntryImagesHook = read("src/features/entries/hooks/use-staged-entry-images.ts");
+const youtubeMetadataHook = read("src/features/entries/hooks/use-youtube-metadata.ts");
 const createEntrySchema = read("src/features/entries/schemas/create-entry-schema.ts");
 const tiptapContentUtils = read("src/features/entries/utils/tiptap-content.ts");
 const tiptapDocumentRenderer = read("src/components/common/tiptap-document.tsx");
@@ -560,6 +561,11 @@ test("create entry API integration uses existing backend draft contracts", () =>
   assert.match(entryDraftsApi, /\/me\/entries\/\$\{entryId\}\/sources/);
   assert.match(entryDraftsApi, /\/me\/entries\/\$\{entryId\}\/images/);
   assert.match(entryDraftsApi, /\/me\/entries\/\$\{entryId\}\/youtube-video/);
+  assert.match(entryDraftsApi, /\/entries\/youtube-metadata/);
+  assert.match(youtubeMetadataHook, /YOUTUBE_METADATA_DEBOUNCE_MS = 650/);
+  assert.match(youtubeMetadataHook, /signal/);
+  assert.match(createEntrySections, /lastProcessedVideoIdRef/);
+  assert.match(createEntrySections, /عنوان و توضیح ویدیو دریافت شد/);
   assert.match(contributionTaxonomyApi, /\/taxonomy\/districts\?limit=500/);
   assert.match(createEntryForm, /submitEntryForReview\(savedDraft\.id\)/);
   assert.match(createEntryForm, /toast\.success\("مطلب برای بررسی فرستاده شد\."\)/);

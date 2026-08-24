@@ -31,6 +31,7 @@ type EnvironmentVariables = {
   CLOUDINARY_CLOUD_NAME: string;
   CLOUDINARY_API_KEY: string;
   CLOUDINARY_API_SECRET: string;
+  YOUTUBE_API_KEY: string;
   MAX_IMAGES_PER_ENTRY: number;
   MAX_IMAGE_SIZE_MB: number;
 };
@@ -80,6 +81,7 @@ const envValidationSchema = Joi.object<EnvironmentVariables>({
   CLOUDINARY_CLOUD_NAME: Joi.string().trim().min(1).required(),
   CLOUDINARY_API_KEY: Joi.string().trim().min(1).required(),
   CLOUDINARY_API_SECRET: Joi.string().trim().min(1).required(),
+  YOUTUBE_API_KEY: Joi.string().trim().min(1).required(),
   MAX_IMAGES_PER_ENTRY: Joi.number().integer().positive().default(6),
   MAX_IMAGE_SIZE_MB: Joi.number().integer().positive().default(5),
 });

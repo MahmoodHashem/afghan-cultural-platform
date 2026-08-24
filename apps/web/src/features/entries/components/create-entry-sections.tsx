@@ -8,9 +8,16 @@ import {
   TrashIcon,
 } from "@heroicons/react/24/outline";
 import Image from "next/image";
-import { type DragEvent, type RefObject, useRef, useState } from "react";
-import type { Control, FieldErrors, UseFieldArrayReturn, UseFormRegister } from "react-hook-form";
-import { Controller } from "react-hook-form";
+import { type DragEvent, type RefObject, useEffect, useRef, useState } from "react";
+import type {
+  Control,
+  FieldErrors,
+  UseFieldArrayReturn,
+  UseFormGetValues,
+  UseFormRegister,
+  UseFormSetValue,
+} from "react-hook-form";
+import { Controller, useWatch } from "react-hook-form";
 
 import { PersianDatePicker } from "@/components/common/persian-date-picker";
 import { Button } from "@/components/ui/button";
@@ -18,6 +25,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import type { GeographicScope } from "@/features/entries/api/entry-drafts-api";
+import { useYouTubeMetadata } from "@/features/entries/hooks/use-youtube-metadata";
 import {
   type CreateEntryFormValues,
   geographicScopeLabels,
@@ -25,6 +33,7 @@ import {
   sourceTypeLabels,
 } from "@/features/entries/schemas/create-entry-schema";
 import type { StagedImage } from "@/features/entries/types/create-entry-form";
+import { getEntryFormErrorMessage } from "@/features/entries/utils/create-entry-errors";
 import { cn } from "@/lib/utils";
 import { formatPersianNumber } from "@/lib/utils/formatters";
 import { EmptyRow, FieldError } from "./create-entry-editor-layout";
@@ -278,9 +287,7 @@ export function ImagesSection({
         <span className="font-semibold text-foreground">
           {isDragging ? "تصویرها را اینجا رها کنید" : "تصویرها را بکشید و اینجا رها کنید"}
         </span>
-        <span className="text-small text-muted-foreground">
-          یا برای انتخاب تصویر کلیک کنید
-        </span>
+        <span className="text-small text-muted-foreground">یا برای انتخاب تصویر کلیک کنید</span>
         <span className="text-[12px] leading-6 text-muted-foreground">
           حداکثر ۶ تصویر JPEG، PNG یا WebP؛ بارگذاری پس از ذخیره پیش‌نویس انجام می‌شود.
         </span>
@@ -368,56 +375,158 @@ export function SourcesSection({
 }
 
 type YouTubeSectionProps = {
+  control: Control<CreateEntryFormValues>;
   errors: FieldErrors<CreateEntryFormValues>;
-  register: UseFormRegister<CreateEntryFormValues>;
+  getValues: UseFormGetValues<CreateEntryFormValues>;
+  setValue: UseFormSetValue<CreateEntryFormValues>;
   onDirty: () => void;
 };
 
-export function YouTubeSection({ errors, register, onDirty }: YouTubeSectionProps) {
+export function YouTubeSection({
+  control,
+  errors,
+  getValues,
+  setValue,
+  onDirty,
+}: YouTubeSectionProps) {
+  const youtubeUrl = useWatch({ control, name: "youtubeUrl" }) ?? "";
+  const metadataQuery = useYouTubeMetadata(youtubeUrl);
+  const lastAppliedMetadataRef = useRef<{ title: string; description: string } | null>(null);
+  const lastProcessedVideoIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    const metadata = metadataQuery.data;
+
+    if (!metadata || lastProcessedVideoIdRef.current === metadata.videoId) {
+      return;
+    }
+
+    const lastApplied = lastAppliedMetadataRef.current;
+    const currentTitle = getValues("youtubeTitle") ?? "";
+    const currentDescription = getValues("youtubeDescription") ?? "";
+    let changed = false;
+
+    if (!currentTitle.trim() || currentTitle === lastApplied?.title) {
+      setValue("youtubeTitle", metadata.title, { shouldDirty: true, shouldValidate: true });
+      changed = true;
+    }
+
+    if (!currentDescription.trim() || currentDescription === lastApplied?.description) {
+      setValue("youtubeDescription", metadata.description, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+      changed = true;
+    }
+
+    lastAppliedMetadataRef.current = {
+      title: metadata.title,
+      description: metadata.description,
+    };
+    lastProcessedVideoIdRef.current = metadata.videoId;
+
+    if (changed) {
+      onDirty();
+    }
+  }, [getValues, metadataQuery.data, onDirty, setValue]);
+
   return (
     <div className="grid gap-4 md:grid-cols-2">
       <div className="md:col-span-2">
         <label htmlFor="youtube-url" className="text-small font-semibold text-foreground">
           نشانی یوتیوب
         </label>
-        <Input
-          id="youtube-url"
-          dir="ltr"
-          placeholder="https://www.youtube.com/watch?v=..."
-          className="mt-2 h-11 text-left"
-          aria-invalid={Boolean(errors.youtubeUrl)}
-          {...register("youtubeUrl", {
-            onChange: onDirty,
-          })}
+        <Controller
+          control={control}
+          name="youtubeUrl"
+          render={({ field }) => (
+            <Input
+              {...field}
+              id="youtube-url"
+              dir="ltr"
+              placeholder="https://www.youtube.com/watch?v=..."
+              className="mt-2 h-11 text-left"
+              aria-invalid={Boolean(errors.youtubeUrl)}
+              onChange={(event) => {
+                field.onChange(event);
+                onDirty();
+              }}
+            />
+          )}
         />
         <FieldError message={errors.youtubeUrl?.message} />
+        <YouTubeMetadataStatus query={metadataQuery} />
       </div>
       <div>
         <label htmlFor="youtube-title" className="text-small font-semibold text-foreground">
           عنوان ویدیو
         </label>
-        <Input
-          id="youtube-title"
-          className="mt-2 h-11"
-          {...register("youtubeTitle", {
-            onChange: onDirty,
-          })}
+        <Controller
+          control={control}
+          name="youtubeTitle"
+          render={({ field }) => (
+            <Input
+              {...field}
+              id="youtube-title"
+              className="mt-2 h-11"
+              onChange={(event) => {
+                field.onChange(event);
+                onDirty();
+              }}
+            />
+          )}
         />
       </div>
       <div>
         <label htmlFor="youtube-description" className="text-small font-semibold text-foreground">
           توضیح کوتاه
         </label>
-        <Input
-          id="youtube-description"
-          className="mt-2 h-11"
-          {...register("youtubeDescription", {
-            onChange: onDirty,
-          })}
+        <Controller
+          control={control}
+          name="youtubeDescription"
+          render={({ field }) => (
+            <Textarea
+              {...field}
+              id="youtube-description"
+              className="mt-2 min-h-24"
+              onChange={(event) => {
+                field.onChange(event);
+                onDirty();
+              }}
+            />
+          )}
         />
       </div>
     </div>
   );
+}
+
+function YouTubeMetadataStatus({ query }: { query: ReturnType<typeof useYouTubeMetadata> }) {
+  if (query.isWaiting || query.isFetching) {
+    return (
+      <p className="mt-2 text-[12px] text-muted-foreground" role="status" aria-live="polite">
+        در حال دریافت جزئیات ویدیو...
+      </p>
+    );
+  }
+
+  if (query.isError) {
+    return (
+      <p className="mt-2 text-[12px] text-destructive" role="status" aria-live="polite">
+        {getEntryFormErrorMessage(query.error)}
+      </p>
+    );
+  }
+
+  if (query.data) {
+    return (
+      <p className="mt-2 text-[12px] text-primary" role="status" aria-live="polite">
+        عنوان و توضیح ویدیو دریافت شد؛ در صورت نیاز می‌توانید آن‌ها را ویرایش کنید.
+      </p>
+    );
+  }
+
+  return null;
 }
 
 type SourceFieldsProps = {

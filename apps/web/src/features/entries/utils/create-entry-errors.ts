@@ -20,6 +20,9 @@ export function getEntryFormErrorMessage(error: unknown) {
     IMAGE_INVALID_TYPE: "نوع فایل تصویر پشتیبانی نمی‌شود.",
     IMAGE_PERMISSION_REQUIRED: "اجازه استفاده از تصویر را تأیید کنید.",
     YOUTUBE_URL_INVALID: "نشانی یوتیوب معتبر نیست.",
+    YOUTUBE_VIDEO_NOT_FOUND: "این ویدیو پیدا نشد یا در دسترس عموم نیست.",
+    YOUTUBE_METADATA_UNAVAILABLE:
+      "فعلاً دریافت خودکار جزئیات ویدیو ممکن نیست؛ می‌توانید آن‌ها را دستی وارد کنید.",
     TOO_MANY_REQUESTS: "تعداد درخواست‌ها زیاد است؛ کمی بعد دوباره تلاش کنید.",
     NETWORK_ERROR: "ارتباط با سرور برقرار نشد.",
   };

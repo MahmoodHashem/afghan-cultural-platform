@@ -42,6 +42,15 @@ type EntryYouTubeVideoInput = {
   description?: string | null;
 };
 
+type YouTubeMetadata = {
+  videoId: string;
+  url: string;
+  title: string;
+  description: string;
+  thumbnailUrl: string | null;
+  channelTitle: string | null;
+};
+
 type EntryImageInput = {
   file: File;
   altText: string;
@@ -179,6 +188,10 @@ type EntryYouTubeVideoResponse = {
   data: EntryYouTubeVideo | null;
 };
 
+type YouTubeMetadataResponse = {
+  data: YouTubeMetadata;
+};
+
 type EntrySubmissionResponse = {
   data: {
     entry: OwnEntry;
@@ -301,6 +314,16 @@ async function upsertEntryYouTubeVideo(entryId: string, input: EntryYouTubeVideo
   return response.data;
 }
 
+async function getYouTubeMetadata(url: string, signal?: AbortSignal) {
+  const response = await apiRequest<YouTubeMetadataResponse>("/entries/youtube-metadata", {
+    method: "POST",
+    body: { url },
+    signal,
+  });
+
+  return response.data;
+}
+
 async function uploadEntryImage(entryId: string, input: EntryImageInput) {
   const formData = new FormData();
   formData.set("image", input.file);
@@ -351,6 +374,7 @@ export type {
   OwnEntryListResponse,
   SortDirection,
   SourceType,
+  YouTubeMetadata,
 };
 export {
   createEntryDraft,
@@ -359,6 +383,7 @@ export {
   deleteEntrySource,
   deleteOwnDraft,
   getOwnEntry,
+  getYouTubeMetadata,
   listOwnEntries,
   replaceEntryTags,
   submitEntryForReview,

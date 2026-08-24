@@ -1,16 +1,8 @@
 "use client";
 
 import { DayPicker, faIR } from "@daypicker/persian";
-import {
-  type DayButton,
-  getDefaultClassNames,
-  type Locale,
-} from "@daypicker/react";
-import {
-  ChevronDownIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-} from "@heroicons/react/20/solid";
+import { type DayButton, getDefaultClassNames, type Locale } from "@daypicker/react";
+import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
 import * as React from "react";
 
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -67,14 +59,8 @@ function Calendar({
           "flex h-(--cell-size) w-full items-center justify-center gap-1.5 text-sm font-medium",
           defaultClassNames.dropdowns,
         ),
-        dropdown_root: cn(
-          "relative rounded-(--cell-radius)",
-          defaultClassNames.dropdown_root,
-        ),
-        dropdown: cn(
-          "absolute inset-0 bg-popover opacity-0",
-          defaultClassNames.dropdown,
-        ),
+        dropdown_root: cn("relative rounded-(--cell-radius)", defaultClassNames.dropdown_root),
+        dropdown: cn("absolute inset-0 bg-popover opacity-0", defaultClassNames.dropdown),
         caption_label: cn(
           "flex items-center gap-1 rounded-(--cell-radius) text-sm font-medium select-none [&>svg]:size-3.5 [&>svg]:text-muted-foreground",
           defaultClassNames.caption_label,
@@ -90,10 +76,7 @@ function Calendar({
           "group/day relative aspect-square h-full w-full rounded-(--cell-radius) p-0 text-center select-none",
           defaultClassNames.day,
         ),
-        today: cn(
-          "rounded-(--cell-radius) bg-muted text-foreground",
-          defaultClassNames.today,
-        ),
+        today: cn("rounded-(--cell-radius) bg-muted text-foreground", defaultClassNames.today),
         outside: cn(
           "text-muted-foreground opacity-45 aria-selected:text-muted-foreground",
           defaultClassNames.outside,
@@ -104,12 +87,7 @@ function Calendar({
       }}
       components={{
         Root: ({ className: rootClassName, rootRef, ...rootProps }) => (
-          <div
-            data-slot="calendar"
-            ref={rootRef}
-            className={cn(rootClassName)}
-            {...rootProps}
-          />
+          <div data-slot="calendar" ref={rootRef} className={cn(rootClassName)} {...rootProps} />
         ),
         Chevron: ({ className: chevronClassName, orientation, ...chevronProps }) => {
           const Icon =
@@ -120,16 +98,10 @@ function Calendar({
                 : ChevronDownIcon;
 
           return (
-            <Icon
-              className={cn("size-4", chevronClassName)}
-              aria-hidden="true"
-              {...chevronProps}
-            />
+            <Icon className={cn("size-4", chevronClassName)} aria-hidden="true" {...chevronProps} />
           );
         },
-        DayButton: (dayButtonProps) => (
-          <CalendarDayButton locale={locale} {...dayButtonProps} />
-        ),
+        DayButton: (dayButtonProps) => <CalendarDayButton locale={locale} {...dayButtonProps} />,
         ...components,
       }}
       {...props}

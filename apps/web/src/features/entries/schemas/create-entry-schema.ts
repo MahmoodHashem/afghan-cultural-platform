@@ -3,6 +3,7 @@ import { z } from "zod";
 import type { RichTextContent } from "@/components/common/rich-text-editor";
 import type { GeographicScope, SourceType } from "@/features/entries/api/entry-drafts-api";
 import { hasTiptapPlainText, isTiptapDocument } from "@/features/entries/utils/tiptap-content";
+import { isSupportedYouTubeUrl } from "@/features/entries/utils/youtube-url";
 
 const GEOGRAPHIC_SCOPE_VALUES = ["PROVINCE", "NATIONAL", "NONE"] as const;
 const SOURCE_TYPE_VALUES = [
@@ -64,14 +65,7 @@ const createEntryFormSchema = z
       .string()
       .max(500, "نشانی ویدیو کوتاه‌تر باشد.")
       .optional()
-      .refine(
-        (value) =>
-          !value ||
-          /^https:\/\/(www\.)?youtube\.com\/watch\?v=/.test(value) ||
-          /^https:\/\/youtu\.be\//.test(value) ||
-          /^https:\/\/(www\.)?youtube\.com\/shorts\//.test(value),
-        "نشانی یوتیوب معتبر وارد کنید.",
-      ),
+      .refine((value) => !value || isSupportedYouTubeUrl(value), "نشانی یوتیوب معتبر وارد کنید."),
     youtubeTitle: z.string().max(220, "عنوان ویدیو کوتاه‌تر باشد.").optional(),
     youtubeDescription: z.string().max(1000, "توضیح ویدیو کوتاه‌تر باشد.").optional(),
   })

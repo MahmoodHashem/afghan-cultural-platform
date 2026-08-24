@@ -155,6 +155,7 @@ describe("authorization guards", () => {
     process.env.CLOUDINARY_CLOUD_NAME ??= "test-cloud";
     process.env.CLOUDINARY_API_KEY ??= "test-key";
     process.env.CLOUDINARY_API_SECRET ??= "test-secret";
+    process.env.YOUTUBE_API_KEY ??= "test-youtube-key";
     const { AppModule } = jest.requireActual("@/app.module") as typeof import("@/app.module");
     const providers = Reflect.getMetadata("providers", AppModule) as Array<{
       provide?: unknown;

@@ -79,6 +79,7 @@ function CreateEntryForm({ initialDraftId, taxonomy }: CreateEntryFormProps) {
   const {
     control,
     formState: { errors, isDirty },
+    getValues,
     register,
     setError,
     setValue,
@@ -403,7 +404,13 @@ function CreateEntryForm({ initialDraftId, taxonomy }: CreateEntryFormProps) {
                   title="ویدیوی مرتبط"
                   summary={watchedValues.youtubeUrl ? "ویدیو اضافه شده" : "اختیاری"}
                 >
-                  <YouTubeSection errors={errors} register={register} onDirty={markUnsaved} />
+                  <YouTubeSection
+                    control={control}
+                    errors={errors}
+                    getValues={getValues}
+                    setValue={setValue}
+                    onDirty={markUnsaved}
+                  />
                 </CreateEntryEditorSection>
               </section>
             </form>

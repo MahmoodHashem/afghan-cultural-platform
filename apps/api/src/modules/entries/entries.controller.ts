@@ -26,6 +26,7 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
+import { Throttle } from "@nestjs/throttler";
 import { memoryStorage } from "multer";
 
 import { CurrentUser } from "@/modules/auth/decorators/current-user.decorator";
@@ -66,8 +67,11 @@ import { EntryTagsDto } from "@/modules/entries/dto/entry-tags.dto";
 import {
   UpdateEntryYouTubeVideoDto,
   UpsertEntryYouTubeVideoDto,
+  YouTubeMetadataRequestDto,
+  YouTubeMetadataResponseDto,
 } from "@/modules/entries/dto/entry-youtube.dto";
 import { EntriesService } from "@/modules/entries/entries.service";
+import { YouTubeMetadataService } from "@/modules/entries/youtube-metadata.service";
 
 @ApiTags("Entries")
 @ApiBearerAuth()
@@ -85,11 +89,34 @@ import { EntriesService } from "@/modules/entries/entries.service";
   UpdateEntryYouTubeVideoDto,
   UploadEntryImageDto,
   UpsertEntryYouTubeVideoDto,
+  YouTubeMetadataRequestDto,
 )
 @RequireVerifiedEmail()
 @Controller()
 class EntriesController {
-  constructor(@Inject(EntriesService) private readonly entriesService: EntriesService) {}
+  constructor(
+    @Inject(EntriesService) private readonly entriesService: EntriesService,
+    @Inject(YouTubeMetadataService)
+    private readonly youtubeMetadataService: YouTubeMetadataService,
+  ) {}
+
+  @Post("entries/youtube-metadata")
+  @Throttle({ default: { limit: 20, ttl: 60_000 } })
+  @ApiOperation({
+    summary: "Resolve public YouTube video metadata for the contribution editor",
+    description:
+      "Validates a supported YouTube URL and returns normalized public snippet metadata. The server-side YouTube API credential is never exposed.",
+  })
+  @ApiBody({ type: YouTubeMetadataRequestDto })
+  @ApiOkResponse({ type: YouTubeMetadataResponseDto })
+  @ApiBadRequestResponse({ description: "YOUTUBE_URL_INVALID or validation failed" })
+  @ApiNotFoundResponse({ description: "YOUTUBE_VIDEO_NOT_FOUND" })
+  @ApiForbiddenResponse({
+    description: "AUTH_EMAIL_VERIFICATION_REQUIRED or AUTH_ACCOUNT_SUSPENDED",
+  })
+  resolveYouTubeMetadata(@Body() body: YouTubeMetadataRequestDto) {
+    return this.youtubeMetadataService.getMetadata(body.url);
+  }
 
   @Post("entries")
   @ApiOperation({

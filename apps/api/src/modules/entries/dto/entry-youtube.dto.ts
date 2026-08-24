@@ -25,4 +25,36 @@ class UpdateEntryYouTubeVideoDto extends PartialType(
   PickType(UpsertEntryYouTubeVideoDto, ["title", "description"] as const),
 ) {}
 
-export { UpdateEntryYouTubeVideoDto, UpsertEntryYouTubeVideoDto };
+class YouTubeMetadataRequestDto extends PickType(UpsertEntryYouTubeVideoDto, ["url"] as const) {}
+
+class YouTubeMetadataDto {
+  @ApiProperty()
+  videoId!: string;
+
+  @ApiProperty()
+  url!: string;
+
+  @ApiProperty()
+  title!: string;
+
+  @ApiProperty()
+  description!: string;
+
+  @ApiPropertyOptional({ nullable: true })
+  thumbnailUrl!: string | null;
+
+  @ApiPropertyOptional({ nullable: true })
+  channelTitle!: string | null;
+}
+
+class YouTubeMetadataResponseDto {
+  @ApiProperty({ type: YouTubeMetadataDto })
+  data!: YouTubeMetadataDto;
+}
+
+export {
+  UpdateEntryYouTubeVideoDto,
+  UpsertEntryYouTubeVideoDto,
+  YouTubeMetadataRequestDto,
+  YouTubeMetadataResponseDto,
+};

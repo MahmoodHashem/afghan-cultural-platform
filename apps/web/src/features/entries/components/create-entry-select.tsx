@@ -184,7 +184,6 @@ function SearchableCreateEntrySelect({
             {(option: SelectOption) => (
               <ComboboxItem key={option.value} value={option}>
                 <span>{option.label}</span>
-
               </ComboboxItem>
             )}
           </ComboboxList>
