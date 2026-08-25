@@ -104,7 +104,11 @@ function renderNode(node: TiptapNode, key: number | string): ReactNode {
       );
     case "orderedList":
       return (
-        <ol key={key} className="list-decimal space-y-2 pe-5 ps-0 marker:text-primary">
+        <ol
+          key={key}
+          start={getOrderedListStart(node.attrs)}
+          className="list-decimal space-y-2 pe-5 ps-0 marker:text-primary"
+        >
           {children}
         </ol>
       );
@@ -127,6 +131,16 @@ function renderNode(node: TiptapNode, key: number | string): ReactNode {
       return <hr key={key} className="border-border" />;
     case "hardBreak":
       return <br key={key} />;
+    case "codeBlock":
+      return (
+        <pre
+          key={key}
+          dir="ltr"
+          className="overflow-x-auto rounded-lg border border-border bg-muted px-4 py-3 text-left text-[15px] leading-7"
+        >
+          <code>{children}</code>
+        </pre>
+      );
     case "text":
       return applyMarks(node.text ?? "", node.marks, key);
     default:
@@ -145,6 +159,18 @@ function applyMarks(text: string, marks: TiptapMark[] | undefined, key: number |
         return <strong key={`${key}-bold`}>{current}</strong>;
       case "italic":
         return <em key={`${key}-italic`}>{current}</em>;
+      case "strike":
+        return <s key={`${key}-strike`}>{current}</s>;
+      case "code":
+        return (
+          <code
+            key={`${key}-code`}
+            dir="ltr"
+            className="rounded bg-muted px-1 py-0.5 text-[0.9em]"
+          >
+            {current}
+          </code>
+        );
       case "underline":
         return (
           <span key={`${key}-underline`} className="underline underline-offset-4">
@@ -233,6 +259,12 @@ function getTextAlignClass(attrs: Record<string, unknown> | undefined) {
     default:
       return "text-start";
   }
+}
+
+function getOrderedListStart(attrs: Record<string, unknown> | undefined) {
+  return typeof attrs?.start === "number" && Number.isInteger(attrs.start) && attrs.start > 0
+    ? attrs.start
+    : undefined;
 }
 
 export type { TiptapHeading };

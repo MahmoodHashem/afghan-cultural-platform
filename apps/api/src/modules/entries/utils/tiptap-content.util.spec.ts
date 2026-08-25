@@ -58,6 +58,61 @@ describe("Tiptap content utilities", () => {
     expect(extractPlainTextFromTiptap({ type: "doc", content: [] })).toBe("");
   });
 
+  it("accepts hard breaks emitted by the frontend StarterKit editor", () => {
+    const document = {
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [
+            { type: "text", text: "خط نخست" },
+            { type: "hardBreak" },
+            { type: "text", text: "خط دوم" },
+          ],
+        },
+      ],
+    };
+
+    expect(() => validateTiptapDocument(document)).not.toThrow();
+    expect(extractPlainTextFromTiptap(document)).toBe("خط نخست خط دوم");
+  });
+
+  it("accepts the remaining safe StarterKit nodes and marks", () => {
+    const document = {
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [
+            { type: "text", text: "خط‌خورده", marks: [{ type: "strike" }] },
+            { type: "text", text: " کد", marks: [{ type: "code" }] },
+          ],
+        },
+        { type: "horizontalRule" },
+        {
+          type: "codeBlock",
+          attrs: { language: "javascript" },
+          content: [{ type: "text", text: "const value = 1;" }],
+        },
+        {
+          type: "orderedList",
+          attrs: { start: 2, type: null },
+          content: [
+            {
+              type: "listItem",
+              content: [{ type: "paragraph", content: [{ type: "text", text: "مورد" }] }],
+            },
+          ],
+        },
+      ],
+    };
+
+    expect(() => validateTiptapDocument(document)).not.toThrow();
+    expect(extractPlainTextFromTiptap(document)).toBe(
+      ["خط‌خورده کد", "const value = 1;", "مورد"].join("\n"),
+    );
+  });
+
   it("rejects unsupported nodes such as images", () => {
     expect(() =>
       validateTiptapDocument({

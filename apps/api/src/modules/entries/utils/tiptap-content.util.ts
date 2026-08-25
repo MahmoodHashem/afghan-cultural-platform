@@ -18,16 +18,21 @@ const ALLOWED_NODE_TYPES = new Set([
   "doc",
   "paragraph",
   "text",
+  "hardBreak",
+  "horizontalRule",
   "heading",
   "bulletList",
   "orderedList",
   "listItem",
   "blockquote",
+  "codeBlock",
 ]);
 
 const ALLOWED_MARK_TYPES = new Set([
   "bold",
   "italic",
+  "strike",
+  "code",
   "underline",
   "link",
   "internalEntryLink",
@@ -146,6 +151,32 @@ function validateNodeAttributes(node: TiptapNode, path: string): void {
   validateOptionalEnum(attrs.textAlign, TEXT_ALIGN_VALUES, "textAlign", path);
   validateOptionalEnum(attrs.textDirection, TEXT_DIRECTION_VALUES, "textDirection", path);
   validateOptionalEnum(attrs.dir, TEXT_DIRECTION_VALUES, "dir", path);
+
+  if (
+    node.type === "orderedList" &&
+    attrs.start !== undefined &&
+    (typeof attrs.start !== "number" || !Number.isInteger(attrs.start) || attrs.start < 1)
+  ) {
+    throw new TiptapValidationError(`Invalid ordered-list start value at ${path}.`);
+  }
+
+  if (
+    (node.type === "orderedList" || node.type === "bulletList") &&
+    attrs.type !== undefined &&
+    attrs.type !== null &&
+    typeof attrs.type !== "string"
+  ) {
+    throw new TiptapValidationError(`Invalid list type at ${path}.`);
+  }
+
+  if (
+    node.type === "codeBlock" &&
+    attrs.language !== undefined &&
+    attrs.language !== null &&
+    (typeof attrs.language !== "string" || !/^[a-z0-9_+#.-]{1,40}$/i.test(attrs.language))
+  ) {
+    throw new TiptapValidationError(`Invalid code-block language at ${path}.`);
+  }
 }
 
 function validateMarks(node: TiptapNode, path: string): void {
@@ -298,6 +329,12 @@ function allowedNodeAttributes(nodeType: string): Set<string> {
     case "paragraph":
     case "blockquote":
       return new Set(["textAlign", "textDirection", "dir"]);
+    case "orderedList":
+      return new Set(["start", "type"]);
+    case "bulletList":
+      return new Set(["type"]);
+    case "codeBlock":
+      return new Set(["language"]);
     default:
       return new Set();
   }
@@ -308,7 +345,8 @@ function isBlockNode(nodeType: unknown): boolean {
     nodeType === "paragraph" ||
     nodeType === "heading" ||
     nodeType === "listItem" ||
-    nodeType === "blockquote"
+    nodeType === "blockquote" ||
+    nodeType === "codeBlock"
   );
 }
 
