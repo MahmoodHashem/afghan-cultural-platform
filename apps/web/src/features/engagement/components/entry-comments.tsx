@@ -160,7 +160,7 @@ function EntryComments({ entryId, initialComments, renderedAt }: EntryCommentsPr
               <motion.div
                 layout={reducedMotion ? false : "position"}
                 key={comment.id}
-                className="border-b border-border last:border-0 px-4 py-6"
+                className="border-b border-border last:border-0 px-4 py-3"
               >
                 <CommentThread entryId={entryId} comment={comment} now={now} />
               </motion.div>

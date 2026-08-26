@@ -181,7 +181,7 @@ function AccessPanel({
           >
             <motion.span
               aria-hidden="true"
-              className="absolute top-1 right-1 bottom-1 w-[calc(50%_-_4px)] rounded-md bg-card shadow-sm"
+              className="absolute top-1 right-1 bottom-1 w-[calc(50%-4px)] rounded-md bg-card shadow-sm"
               animate={{ x: authMode === "register" ? "-100%" : "0" }}
               transition={transition}
             />
