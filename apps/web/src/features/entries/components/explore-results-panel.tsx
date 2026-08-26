@@ -130,11 +130,11 @@ function ExploreSearchBar({ query }: { query: NormalizedExploreQuery }) {
   }, [normalizedQuerySearch, query, router, searchValue]);
 
   return (
-    <div className="sticky top-[calc(3.5rem+env(safe-area-inset-top))] z-30 -mx-1 flex items-center bg-background/95 px-1 py-2 backdrop-blur-xl md:top-20 md:mx-0 md:px-0">
+    <div className="sticky top-[calc(3.5rem+env(safe-area-inset-top))] z-30  flex items-center px-1 py-2 rounded-full md:top-20 md:mx-0 md:px-0">
       <label
         htmlFor={searchInputId}
         aria-busy={isPending}
-        className="group flex min-h-12 flex-1 items-center gap-3 rounded-xl border border-border bg-card px-4 transition-colors focus-within:border-primary focus-within:ring-3 focus-within:ring-ring/35"
+        className="group flex  flex-1 items-center gap-3 rounded-full border border-border bg-card px-4 transition-colors focus-within:border-primary focus-within:ring-3 focus-within:ring-ring/35"
       >
         <MagnifyingGlassIcon
           className="size-5 shrink-0 text-muted-foreground transition-colors group-focus-within:text-primary"
@@ -148,7 +148,7 @@ function ExploreSearchBar({ query }: { query: NormalizedExploreQuery }) {
           value={searchValue}
           onChange={(event) => setSearchValue(event.target.value)}
           placeholder="جست‌وجوی مکان، مشاهیر، رسم یا موضوع..."
-          className="h-10 border-0 bg-transparent px-0 text-[14px] shadow-none focus-visible:border-transparent focus-visible:ring-0"
+          className=" border-0 bg-transparent px-0 text-[14px] shadow-none focus-visible:border-transparent focus-visible:ring-0"
         />
         {searchValue ? (
           <button

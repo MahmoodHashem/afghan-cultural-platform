@@ -193,13 +193,13 @@ function MobileTopBar({
   return (
     <header
       className={cn(
-        "fixed inset-x-0 top-0 z-40 border-b pt-[env(safe-area-inset-top)] transition-[background-color,border-color,box-shadow,color] duration-300",
+        "fixed inset-x-0 top-2  z-40  pt-[env(safe-area-inset-top)] border transition-all duration-300",
         transparent
           ? "border-transparent bg-transparent text-white"
-          : "border-border/80 bg-background/95 text-foreground shadow-[0_6px_20px_rgba(31,41,55,0.06)] backdrop-blur-xl",
+          : "border-border/80 bg-background/95 text-foreground shadow-[0_6px_20px_rgba(31,41,55,0.06)] backdrop-blur-xl rounded-full mx-2",
       )}
     >
-      <div className="flex h-14 items-center gap-3 px-4">
+      <div className="flex  items-center gap-3 px-4">
         {backHref ? (
           <Link
             href={backHref}
@@ -274,7 +274,7 @@ function MobileBottomNavigation({
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-border/80 bg-card/95 px-2 pt-1.5 pb-[calc(0.5rem+env(safe-area-inset-bottom))] shadow-[0_-8px_28px_rgba(31,41,55,0.08)] backdrop-blur-xl"
+      className="fixed inset-x-0 bottom-2 rounded-full mx-2 z-40 border-t border-border/80 bg-card/95 px-2 pt-1.5 pb-[calc(0.5rem+env(safe-area-inset-bottom))] shadow-[0_-8px_28px_rgba(31,41,55,0.08)] backdrop-blur-xl"
       aria-label="ناوبری اصلی موبایل"
     >
       <div className="mx-auto grid max-w-md grid-cols-5 items-end">
@@ -307,7 +307,7 @@ function MobileBottomNavigation({
                 className={cn(
                   "flex size-7 items-center justify-center",
                   item.prominent &&
-                    "size-12 rounded-full border-4 border-card bg-primary text-primary-foreground shadow-[0_8px_20px_rgba(15,118,110,0.28)]",
+                  "size-12 rounded-full border-4 border-card bg-primary text-primary-foreground ",
                 )}
               >
                 <Icon className={item.prominent ? "size-6" : "size-5"} aria-hidden="true" />

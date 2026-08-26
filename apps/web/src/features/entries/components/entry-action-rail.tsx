@@ -249,7 +249,7 @@ function EntryActionRail({
         ? createPortal(
           <>
             <div
-              className="pointer-events-none fixed inset-x-0 top-[calc(3.5rem+env(safe-area-inset-top))] z-41 h-0.5 bg-border/60 lg:hidden"
+              className="pointer-events-none fixed inset-x-9 rounded-full top-[calc(3.2rem+env(safe-area-inset-top))] z-41 h-0.5 bg-border/60 lg:hidden"
               role="progressbar"
               aria-label="پیشرفت مطالعه"
               aria-valuemin={0}
