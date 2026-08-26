@@ -51,6 +51,7 @@ import type { CurrentUserResponse } from "@/modules/auth/types/auth-response.typ
 import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.type";
 import type { NormalizedOAuthProfile } from "@/modules/auth/types/oauth-profile.type";
 import { parseCookieHeader } from "@/modules/auth/utils/cookie.util";
+import { readOAuthState } from "@/modules/auth/utils/oauth-state";
 
 @ApiTags("Authentication")
 @Controller("auth")
@@ -363,7 +364,7 @@ class AuthController {
       "/auth/callback",
       this.configService.getOrThrow<string>("FRONTEND_URL"),
     );
-    const next = this.getSafeNextPath(
+    const next = readOAuthState(
       typeof request.query.state === "string" ? request.query.state : undefined,
     );
 
@@ -399,29 +400,6 @@ class AuthController {
     }
 
     return "AUTH_OAUTH_FAILED";
-  }
-
-  private getSafeNextPath(next: string | undefined): string | undefined {
-    if (!next) {
-      return undefined;
-    }
-
-    try {
-      const decodedNext = decodeURIComponent(next);
-
-      if (
-        !decodedNext.startsWith("/") ||
-        decodedNext.startsWith("//") ||
-        decodedNext.includes("\\") ||
-        /^[a-zA-Z][a-zA-Z\d+.-]*:/.test(decodedNext)
-      ) {
-        return undefined;
-      }
-
-      return decodedNext;
-    } catch {
-      return undefined;
-    }
   }
 }
 

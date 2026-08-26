@@ -4,6 +4,7 @@ import type { Request } from "express";
 
 import { AUTH_ERROR_CODES, FACEBOOK_AUTH_STRATEGY } from "@/modules/auth/auth.constants";
 import type { NormalizedOAuthProfile } from "@/modules/auth/types/oauth-profile.type";
+import { createOAuthState } from "@/modules/auth/utils/oauth-state";
 
 @Injectable()
 class FacebookAuthGuard extends AuthGuard(FACEBOOK_AUTH_STRATEGY) {
@@ -12,7 +13,7 @@ class FacebookAuthGuard extends AuthGuard(FACEBOOK_AUTH_STRATEGY) {
     const next = typeof request.query.next === "string" ? request.query.next : undefined;
 
     return {
-      state: getSafeOAuthState(next),
+      state: createOAuthState(next),
     };
   }
 
@@ -25,29 +26,6 @@ class FacebookAuthGuard extends AuthGuard(FACEBOOK_AUTH_STRATEGY) {
     }
 
     return user;
-  }
-}
-
-function getSafeOAuthState(next: string | undefined) {
-  if (!next) {
-    return undefined;
-  }
-
-  try {
-    const decodedNext = decodeURIComponent(next);
-
-    if (
-      !decodedNext.startsWith("/") ||
-      decodedNext.startsWith("//") ||
-      decodedNext.includes("\\") ||
-      /^[a-zA-Z][a-zA-Z\d+.-]*:/.test(decodedNext)
-    ) {
-      return undefined;
-    }
-
-    return decodedNext;
-  } catch {
-    return undefined;
   }
 }
 
