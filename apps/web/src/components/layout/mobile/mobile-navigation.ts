@@ -1,13 +1,13 @@
 import {
-  BookmarkIcon,
   HomeIcon,
   MagnifyingGlassIcon,
+  MapPinIcon,
   PlusIcon,
   UserCircleIcon,
 } from "@heroicons/react/24/outline";
 import type { ComponentType, SVGProps } from "react";
 
-type MobileNavKey = "home" | "explore" | "create" | "bookmarks" | "profile";
+type MobileNavKey = "home" | "explore" | "create" | "provinces" | "profile";
 
 type MobileNavItem = {
   key: MobileNavKey;
@@ -43,11 +43,11 @@ const mobileNavigation: MobileNavItem[] = [
     prominent: true,
   },
   {
-    key: "bookmarks",
-    label: "ذخیره‌ها",
-    href: "/profile?tab=bookmarks",
-    icon: BookmarkIcon,
-    protected: true,
+    key: "provinces",
+    label: "ولایت‌ها",
+    href: "/provinces",
+    icon: MapPinIcon,
+    protected: false,
   },
   {
     key: "profile",
@@ -96,15 +96,14 @@ function getMobileRouteContext(pathname: string): MobileRouteContext | null {
   return null;
 }
 
-function isMobileNavItemActive(key: MobileNavKey, pathname: string, profileTab: string | null) {
+function isMobileNavItemActive(key: MobileNavKey, pathname: string) {
   if (key === "home") return pathname === "/";
-  if (key === "bookmarks") return pathname === "/profile" && profileTab === "bookmarks";
-  if (key === "profile") return pathname === "/profile" && profileTab !== "bookmarks";
+  if (key === "provinces") return pathname.startsWith("/provinces");
+  if (key === "profile") return pathname === "/profile";
   if (key === "create") return pathname === "/entries/new" || pathname.endsWith("/edit");
 
   return (
     pathname === "/explore" ||
-    pathname.startsWith("/provinces") ||
     pathname.startsWith("/categories") ||
     (pathname.startsWith("/entries/") && pathname !== "/entries/new")
   );

@@ -53,7 +53,7 @@ function ExploreResultsPanel({
   return (
     <div className="space-y-5">
       <ExploreSearchBar query={query} />
-      <div className="sticky top-20 z-30 hidden md:block">
+      <div className="hidden md:block">
         <div className="py-2">
           <ExploreFilterForm taxonomy={taxonomy} query={query} variant="bar" autoApply />
         </div>
@@ -89,11 +89,7 @@ function ExploreResultsPanel({
   );
 }
 
-function ExploreSearchBar({
-  query,
-}: {
-  query: NormalizedExploreQuery;
-}) {
+function ExploreSearchBar({ query }: { query: NormalizedExploreQuery }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [searchValue, setSearchValue] = useState(query.search ?? "");
@@ -134,7 +130,7 @@ function ExploreSearchBar({
   }, [normalizedQuerySearch, query, router, searchValue]);
 
   return (
-    <div className="flex items-center">
+    <div className="sticky top-[calc(3.5rem+env(safe-area-inset-top))] z-30 -mx-1 flex items-center bg-background/95 px-1 py-2 backdrop-blur-xl md:top-20 md:mx-0 md:px-0">
       <label
         htmlFor={searchInputId}
         aria-busy={isPending}
@@ -187,7 +183,7 @@ function ExploreToolbar({
         </p>
         <div className="flex min-w-0 items-center gap-2">
           <SortSelect query={query} />
-          <ExploreFilterSheet taxonomy={taxonomy} query={query} />
+          <ExploreFilterSheet taxonomy={taxonomy} query={query} showTrigger={false} />
         </div>
       </div>
 
@@ -202,9 +198,7 @@ function ExploreToolbar({
           <ActiveFilterChips query={query} taxonomy={taxonomy} />
           <ClearFiltersLink query={query} />
         </div>
-        <p className="text-[15px] font-bold text-foreground">
-          {formatPersianNumber(total)} مطلب
-        </p>
+        <p className="text-[15px] font-bold text-foreground">{formatPersianNumber(total)} مطلب</p>
       </div>
     </div>
   );
@@ -230,7 +224,7 @@ function SortSelect({ query }: { query: NormalizedExploreQuery }) {
           });
         }}
       >
-			<SelectTrigger className="h-10 min-w-0 rounded-lg px-3 text-[12px] sm:text-[13px]">
+        <SelectTrigger className="h-10 min-w-0 rounded-lg px-3 text-[12px] sm:text-[13px]">
           <SelectValue />
         </SelectTrigger>
         <SelectContent align="start" alignItemWithTrigger={false}>

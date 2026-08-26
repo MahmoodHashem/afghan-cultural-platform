@@ -1,8 +1,4 @@
-import {
-  ClockIcon,
-  MapPinIcon,
-  Squares2X2Icon,
-} from "@heroicons/react/24/outline";
+import { ClockIcon, MapPinIcon, Squares2X2Icon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 
 const discoveryItems = [
@@ -13,10 +9,7 @@ const discoveryItems = [
 
 function MobileHomeDiscovery() {
   return (
-    <nav
-      aria-label="راه‌های دسترسی به مطالب"
-      className="relative z-20 -mt-7 px-4 md:hidden"
-    >
+    <nav aria-label="راه‌های دسترسی به مطالب" className="relative z-20 -mt-7 px-4 md:hidden">
       <div className="grid grid-cols-3 gap-2 rounded-2xl border border-border/80 bg-card p-2 shadow-[0_12px_30px_rgba(31,41,55,0.1)]">
         {discoveryItems.map((item) => {
           const Icon = item.icon;

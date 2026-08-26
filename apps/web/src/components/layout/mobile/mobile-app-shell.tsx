@@ -1,10 +1,14 @@
 "use client";
 
-import { ArrowRightIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import {
+  AdjustmentsHorizontalIcon,
+  ArrowRightIcon,
+  MagnifyingGlassIcon,
+} from "@heroicons/react/24/outline";
 import { motion, useReducedMotion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { type MouseEvent, useCallback, useEffect, useRef, useState } from "react";
 import {
   getMobileRouteContext,
@@ -16,6 +20,7 @@ import {
   MobileShellAuthDrawer,
   type ShellAuthReason,
 } from "@/components/layout/mobile/mobile-shell-auth-drawer";
+import { OPEN_EXPLORE_FILTERS_EVENT } from "@/components/layout/mobile/mobile-shell-events";
 import { PUBLIC_HEADER_CONTEXT_EVENT } from "@/components/layout/public-header";
 import { cn } from "@/lib/utils";
 import { type AuthSession, useAuthStore } from "@/stores/auth-store";
@@ -31,7 +36,6 @@ const CLOSE_ANIMATION_MS = 500;
 
 function MobileAppShell() {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const router = useRouter();
   const routeContext = getMobileRouteContext(pathname);
   const status = useAuthStore((state) => state.status);
@@ -86,7 +90,6 @@ function MobileAppShell() {
 
   if (!routeContext) return null;
 
-  const profileTab = searchParams.get("tab");
   const transparent = routeContext.kind === "home" && !scrolled;
 
   function openAuth(item: MobileNavItem) {
@@ -136,11 +139,7 @@ function MobileAppShell() {
         : "unverified";
 
   return (
-    <div
-      data-mobile-app-shell
-      data-mobile-route={routeContext.kind}
-      className="lg:hidden"
-    >
+    <div data-mobile-app-shell data-mobile-route={routeContext.kind} className="lg:hidden">
       <style>{`@media (max-width: 1023px) { body:has([data-mobile-app-shell]) footer, body:has([data-mobile-app-shell]) [data-public-header] { display: none; } }`}</style>
       <MobileTopBar
         routeContext={routeContext}
@@ -149,7 +148,6 @@ function MobileAppShell() {
       />
       <MobileBottomNavigation
         pathname={pathname}
-        profileTab={profileTab}
         status={status}
         onProtectedNavigation={handleProtectedNavigation}
       />
@@ -226,13 +224,24 @@ function MobileTopBar({
           </p>
         ) : null}
 
-        <Link
-          href="/explore"
-          aria-label="جست‌وجوی مطالب"
-          className="ms-auto flex size-11 shrink-0 items-center justify-center rounded-full outline-none transition-colors hover:bg-black/5 focus-visible:ring-3 focus-visible:ring-ring/40"
-        >
-          <MagnifyingGlassIcon className="size-5" aria-hidden="true" />
-        </Link>
+        {routeContext.kind === "explore" ? (
+          <button
+            type="button"
+            aria-label="باز کردن فیلترهای مطالب"
+            onClick={() => window.dispatchEvent(new Event(OPEN_EXPLORE_FILTERS_EVENT))}
+            className="ms-auto flex size-11 shrink-0 items-center justify-center rounded-full outline-none transition-colors hover:bg-black/5 focus-visible:ring-3 focus-visible:ring-ring/40"
+          >
+            <AdjustmentsHorizontalIcon className="size-5" aria-hidden="true" />
+          </button>
+        ) : (
+          <Link
+            href="/explore"
+            aria-label="جست‌وجوی مطالب"
+            className="ms-auto flex size-11 shrink-0 items-center justify-center rounded-full outline-none transition-colors hover:bg-black/5 focus-visible:ring-3 focus-visible:ring-ring/40"
+          >
+            <MagnifyingGlassIcon className="size-5" aria-hidden="true" />
+          </Link>
+        )}
       </div>
     </header>
   );
@@ -240,12 +249,10 @@ function MobileTopBar({
 
 function MobileBottomNavigation({
   pathname,
-  profileTab,
   status,
   onProtectedNavigation,
 }: {
   pathname: string;
-  profileTab: string | null;
   status: ReturnType<typeof useAuthStore.getState>["status"];
   onProtectedNavigation: (event: MouseEvent<HTMLAnchorElement>, item: MobileNavItem) => void;
 }) {
@@ -258,7 +265,7 @@ function MobileBottomNavigation({
     >
       <div className="mx-auto grid max-w-md grid-cols-5 items-end">
         {mobileNavigation.map((item) => {
-          const active = isMobileNavItemActive(item.key, pathname, profileTab);
+          const active = isMobileNavItemActive(item.key, pathname);
           const Icon = item.icon;
 
           return (
@@ -308,7 +315,6 @@ function getProtectedDestinationDescription(key: MobileNavItem["key"], reason: S
     return "برای افزودن مطلب، ابتدا ایمیل خود را تأیید کنید.";
   }
   if (key === "create") return "برای افزودن مطلب وارد حساب خود شوید.";
-  if (key === "bookmarks") return "برای دیدن مطالب ذخیره‌شده وارد حساب خود شوید.";
   return "برای دیدن حساب کاربری خود وارد شوید.";
 }
 

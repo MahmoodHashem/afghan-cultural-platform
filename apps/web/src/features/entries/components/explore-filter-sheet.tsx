@@ -1,8 +1,10 @@
 "use client";
 
 import { AdjustmentsHorizontalIcon } from "@heroicons/react/24/outline";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
+import { OPEN_EXPLORE_FILTERS_EVENT } from "@/components/layout/mobile/mobile-shell-events";
+import { Badge } from "@/components/ui/badge";
 import {
   Drawer,
   DrawerContent,
@@ -11,7 +13,6 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { Badge } from "@/components/ui/badge";
 import type { PublicEntryListQuery } from "../api/public-entries-api";
 import type { TaxonomyItem } from "../types/public-entry";
 import { ExploreFilterForm } from "./explore-filter-form";
@@ -25,9 +26,10 @@ type ExploreFilterSheetProps = {
   };
   query: Required<Pick<PublicEntryListQuery, "page" | "limit" | "sort">> &
     Omit<PublicEntryListQuery, "page" | "limit" | "sort">;
+  showTrigger?: boolean;
 };
 
-function ExploreFilterSheet({ taxonomy, query }: ExploreFilterSheetProps) {
+function ExploreFilterSheet({ taxonomy, query, showTrigger = true }: ExploreFilterSheetProps) {
   const [isOpen, setIsOpen] = useState(false);
   const activeFilterCount = [
     query.provinceSlug,
@@ -36,20 +38,29 @@ function ExploreFilterSheet({ taxonomy, query }: ExploreFilterSheetProps) {
     query.tagSlug,
   ].filter(Boolean).length;
 
+  useEffect(() => {
+    const openFilters = () => setIsOpen(true);
+
+    window.addEventListener(OPEN_EXPLORE_FILTERS_EVENT, openFilters);
+    return () => window.removeEventListener(OPEN_EXPLORE_FILTERS_EVENT, openFilters);
+  }, []);
+
   return (
     <Drawer open={isOpen} onOpenChange={setIsOpen} showSwipeHandle>
-      <DrawerTrigger
-        className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-border bg-card px-3 text-[13px] font-semibold text-foreground shadow-[0_2px_10px_rgba(0,0,0,.04)] transition-colors hover:bg-muted focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/40 focus-visible:outline-none"
-        aria-label="باز کردن فیلترها"
-      >
-        <AdjustmentsHorizontalIcon className="size-4" aria-hidden="true" />
-        فیلترها
-        {activeFilterCount > 0 ? (
-          <Badge className="min-w-5 justify-center rounded-full px-1.5 text-[11px]">
-            {activeFilterCount.toLocaleString("fa-AF")}
-          </Badge>
-        ) : null}
-      </DrawerTrigger>
+      {showTrigger ? (
+        <DrawerTrigger
+          className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-border bg-card px-3 text-[13px] font-semibold text-foreground shadow-[0_2px_10px_rgba(0,0,0,.04)] transition-colors hover:bg-muted focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/40 focus-visible:outline-none"
+          aria-label="باز کردن فیلترها"
+        >
+          <AdjustmentsHorizontalIcon className="size-4" aria-hidden="true" />
+          فیلترها
+          {activeFilterCount > 0 ? (
+            <Badge className="min-w-5 justify-center rounded-full px-1.5 text-[11px]">
+              {activeFilterCount.toLocaleString("fa-AF")}
+            </Badge>
+          ) : null}
+        </DrawerTrigger>
+      ) : null}
       <DrawerContent
         dir="rtl"
         className="max-h-[88svh] overflow-hidden border-border bg-background p-0"
