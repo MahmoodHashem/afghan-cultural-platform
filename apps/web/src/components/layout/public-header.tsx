@@ -111,7 +111,10 @@ function PublicHeader({ variant = "solid" }: PublicHeaderProps) {
   }, []);
 
   return (
-    <header className="pointer-events-none fixed inset-x-0 top-4 z-30 flex justify-center px-4 sm:top-5">
+    <header
+      data-public-header
+      className="pointer-events-none fixed inset-x-0 top-4 z-30 flex justify-center px-4 sm:top-5"
+    >
       <nav
         className={cn(
           "pointer-events-auto flex items-center rounded-full transition-all duration-500 ease-out",

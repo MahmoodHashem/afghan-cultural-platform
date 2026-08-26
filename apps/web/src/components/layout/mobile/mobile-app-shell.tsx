@@ -1,0 +1,323 @@
+"use client";
+
+import { ArrowRightIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import { motion, useReducedMotion } from "motion/react";
+import Image from "next/image";
+import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { type MouseEvent, useCallback, useEffect, useRef, useState } from "react";
+import {
+  getMobileRouteContext,
+  isMobileNavItemActive,
+  type MobileNavItem,
+  mobileNavigation,
+} from "@/components/layout/mobile/mobile-navigation";
+import {
+  MobileShellAuthDrawer,
+  type ShellAuthReason,
+} from "@/components/layout/mobile/mobile-shell-auth-drawer";
+import { PUBLIC_HEADER_CONTEXT_EVENT } from "@/components/layout/public-header";
+import { cn } from "@/lib/utils";
+import { type AuthSession, useAuthStore } from "@/stores/auth-store";
+
+type HeaderContext = {
+  title: string;
+  backHref: string;
+  backLabel: string;
+  visible: boolean;
+};
+
+const CLOSE_ANIMATION_MS = 500;
+
+function MobileAppShell() {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const routeContext = getMobileRouteContext(pathname);
+  const status = useAuthStore((state) => state.status);
+  const user = useAuthStore((state) => state.user);
+  const [headerContext, setHeaderContext] = useState<HeaderContext | null>(null);
+  const [scrolled, setScrolled] = useState(false);
+  const [pendingItem, setPendingItem] = useState<MobileNavItem | null>(null);
+  const [authOpen, setAuthOpen] = useState(false);
+  const openFrameRef = useRef<number | null>(null);
+  const closeTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (routeContext?.kind !== "home") {
+      setScrolled(true);
+      return;
+    }
+
+    const update = () => setScrolled(window.scrollY > 72);
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+    return () => window.removeEventListener("scroll", update);
+  }, [routeContext?.kind]);
+
+  useEffect(() => {
+    const updateContext = (event: Event) => {
+      if (event instanceof CustomEvent && isHeaderContext(event.detail)) {
+        setHeaderContext(event.detail);
+      }
+    };
+
+    window.addEventListener(PUBLIC_HEADER_CONTEXT_EVENT, updateContext);
+    return () => window.removeEventListener(PUBLIC_HEADER_CONTEXT_EVENT, updateContext);
+  }, []);
+
+  const closeAuth = useCallback(() => {
+    if (openFrameRef.current !== null) window.cancelAnimationFrame(openFrameRef.current);
+    setAuthOpen(false);
+    if (closeTimerRef.current !== null) window.clearTimeout(closeTimerRef.current);
+    closeTimerRef.current = window.setTimeout(() => {
+      setPendingItem(null);
+      closeTimerRef.current = null;
+    }, CLOSE_ANIMATION_MS);
+  }, []);
+
+  useEffect(
+    () => () => {
+      if (openFrameRef.current !== null) window.cancelAnimationFrame(openFrameRef.current);
+      if (closeTimerRef.current !== null) window.clearTimeout(closeTimerRef.current);
+    },
+    [],
+  );
+
+  if (!routeContext) return null;
+
+  const profileTab = searchParams.get("tab");
+  const transparent = routeContext.kind === "home" && !scrolled;
+
+  function openAuth(item: MobileNavItem) {
+    if (closeTimerRef.current !== null) window.clearTimeout(closeTimerRef.current);
+    if (openFrameRef.current !== null) window.cancelAnimationFrame(openFrameRef.current);
+    setPendingItem(item);
+    setAuthOpen(false);
+    openFrameRef.current = window.requestAnimationFrame(() => {
+      setAuthOpen(true);
+      openFrameRef.current = null;
+    });
+  }
+
+  function handleProtectedNavigation(event: MouseEvent<HTMLAnchorElement>, item: MobileNavItem) {
+    if (!item.protected) return;
+    if (status === "initializing") {
+      event.preventDefault();
+      return;
+    }
+
+    const canCreate = user?.status === "ACTIVE" && Boolean(user.emailVerified);
+    if (
+      status === "authenticated" &&
+      user?.status === "ACTIVE" &&
+      (item.key !== "create" || canCreate)
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+    openAuth(item);
+  }
+
+  function handleAuthenticated(session: AuthSession) {
+    if (!pendingItem) return;
+    if (pendingItem.key === "create" && !session.user.emailVerified) return;
+    const destination = pendingItem.href;
+    closeAuth();
+    router.push(destination);
+  }
+
+  const authReason: ShellAuthReason =
+    status !== "authenticated" || !user
+      ? "unauthenticated"
+      : user.status === "SUSPENDED"
+        ? "suspended"
+        : "unverified";
+
+  return (
+    <div data-mobile-app-shell className="lg:hidden">
+      <style>{`@media (max-width: 1023px) { body:has([data-mobile-app-shell]) footer, body:has([data-mobile-app-shell]) [data-public-header] { display: none; } }`}</style>
+      <MobileTopBar
+        routeContext={routeContext}
+        headerContext={headerContext}
+        transparent={transparent}
+      />
+      <MobileBottomNavigation
+        pathname={pathname}
+        profileTab={profileTab}
+        status={status}
+        onProtectedNavigation={handleProtectedNavigation}
+      />
+      <div className="h-[calc(4.75rem+env(safe-area-inset-bottom))]" aria-hidden="true" />
+
+      {pendingItem ? (
+        <MobileShellAuthDrawer
+          open={authOpen}
+          onOpenChange={(open) => {
+            if (open) setAuthOpen(true);
+            else closeAuth();
+          }}
+          title={pendingItem.label}
+          description={getProtectedDestinationDescription(pendingItem.key, authReason)}
+          returnPath={pendingItem.href}
+          reason={authReason}
+          user={user}
+          onAuthenticated={handleAuthenticated}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+function MobileTopBar({
+  routeContext,
+  headerContext,
+  transparent,
+}: {
+  routeContext: NonNullable<ReturnType<typeof getMobileRouteContext>>;
+  headerContext: HeaderContext | null;
+  transparent: boolean;
+}) {
+  const contextual = routeContext.kind === "entry" && Boolean(headerContext?.visible);
+  const backHref = contextual && headerContext ? headerContext.backHref : routeContext.backHref;
+  const backLabel = contextual && headerContext ? headerContext.backLabel : routeContext.backLabel;
+
+  return (
+    <header
+      className={cn(
+        "fixed inset-x-0 top-0 z-40 border-b pt-[env(safe-area-inset-top)] transition-[background-color,border-color,box-shadow,color] duration-300",
+        transparent
+          ? "border-transparent bg-transparent text-white"
+          : "border-border/80 bg-background/95 text-foreground shadow-[0_6px_20px_rgba(31,41,55,0.06)] backdrop-blur-xl",
+      )}
+    >
+      <div className="flex h-14 items-center gap-3 px-4">
+        {backHref ? (
+          <Link
+            href={backHref}
+            aria-label={backLabel}
+            className="flex size-11 shrink-0 items-center justify-center rounded-full outline-none transition-colors hover:bg-black/5 focus-visible:ring-3 focus-visible:ring-ring/40"
+          >
+            <ArrowRightIcon className="size-5" aria-hidden="true" />
+          </Link>
+        ) : routeContext.kind === "home" ? (
+          <Link href="/" className="flex min-w-0 items-center gap-2 font-bold">
+            <Image
+              src="/images/small-logo.png"
+              alt=""
+              width={32}
+              height={36}
+              className={cn("h-8 w-auto", transparent && "brightness-0 invert")}
+            />
+            <span className="truncate text-[15px]">میراث افغانستان</span>
+          </Link>
+        ) : (
+          <p className="min-w-0 flex-1 truncate text-[16px] font-bold">{routeContext.title}</p>
+        )}
+
+        {backHref ? (
+          <p className="min-w-0 flex-1 truncate text-[14px] font-bold">
+            {contextual && headerContext ? headerContext.title : routeContext.title}
+          </p>
+        ) : null}
+
+        <Link
+          href="/explore"
+          aria-label="جست‌وجوی مطالب"
+          className="ms-auto flex size-11 shrink-0 items-center justify-center rounded-full outline-none transition-colors hover:bg-black/5 focus-visible:ring-3 focus-visible:ring-ring/40"
+        >
+          <MagnifyingGlassIcon className="size-5" aria-hidden="true" />
+        </Link>
+      </div>
+    </header>
+  );
+}
+
+function MobileBottomNavigation({
+  pathname,
+  profileTab,
+  status,
+  onProtectedNavigation,
+}: {
+  pathname: string;
+  profileTab: string | null;
+  status: ReturnType<typeof useAuthStore.getState>["status"];
+  onProtectedNavigation: (event: MouseEvent<HTMLAnchorElement>, item: MobileNavItem) => void;
+}) {
+  const reducedMotion = Boolean(useReducedMotion());
+
+  return (
+    <nav
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-border/80 bg-card/95 px-2 pt-1.5 pb-[calc(0.5rem+env(safe-area-inset-bottom))] shadow-[0_-8px_28px_rgba(31,41,55,0.08)] backdrop-blur-xl"
+      aria-label="ناوبری اصلی موبایل"
+    >
+      <div className="mx-auto grid max-w-md grid-cols-5 items-end">
+        {mobileNavigation.map((item) => {
+          const active = isMobileNavItemActive(item.key, pathname, profileTab);
+          const Icon = item.icon;
+
+          return (
+            <Link
+              key={item.key}
+              href={item.href}
+              aria-current={active ? "page" : undefined}
+              aria-disabled={status === "initializing" && item.protected}
+              onClick={(event) => onProtectedNavigation(event, item)}
+              className={cn(
+                "relative flex min-h-12 flex-col items-center justify-end gap-0.5 rounded-xl px-1 text-[11px] font-medium text-muted-foreground outline-none transition-colors focus-visible:ring-3 focus-visible:ring-ring/40",
+                active && "text-primary",
+                item.prominent && "-mt-5",
+              )}
+            >
+              {active && !item.prominent ? (
+                <motion.span
+                  layoutId="mobile-navigation-active"
+                  className="absolute inset-x-3 top-0 h-0.5 rounded-full bg-primary"
+                  transition={reducedMotion ? { duration: 0 } : { duration: 0.24 }}
+                  aria-hidden="true"
+                />
+              ) : null}
+              <span
+                className={cn(
+                  "flex size-7 items-center justify-center",
+                  item.prominent &&
+                    "size-12 rounded-full border-4 border-card bg-primary text-primary-foreground shadow-[0_8px_20px_rgba(15,118,110,0.28)]",
+                )}
+              >
+                <Icon className={item.prominent ? "size-6" : "size-5"} aria-hidden="true" />
+              </span>
+              <span className={cn(item.prominent && "font-semibold text-primary")}>
+                {item.label}
+              </span>
+            </Link>
+          );
+        })}
+      </div>
+    </nav>
+  );
+}
+
+function getProtectedDestinationDescription(key: MobileNavItem["key"], reason: ShellAuthReason) {
+  if (reason === "suspended") return "در حال حاضر امکان انجام این کار وجود ندارد.";
+  if (reason === "unverified" && key === "create") {
+    return "برای افزودن مطلب، ابتدا ایمیل خود را تأیید کنید.";
+  }
+  if (key === "create") return "برای افزودن مطلب وارد حساب خود شوید.";
+  if (key === "bookmarks") return "برای دیدن مطالب ذخیره‌شده وارد حساب خود شوید.";
+  return "برای دیدن حساب کاربری خود وارد شوید.";
+}
+
+function isHeaderContext(value: unknown): value is HeaderContext {
+  if (!value || typeof value !== "object") return false;
+  const context = value as Partial<HeaderContext>;
+  return (
+    typeof context.title === "string" &&
+    typeof context.backHref === "string" &&
+    context.backHref.startsWith("/") &&
+    typeof context.backLabel === "string" &&
+    typeof context.visible === "boolean"
+  );
+}
+
+export { MobileAppShell };

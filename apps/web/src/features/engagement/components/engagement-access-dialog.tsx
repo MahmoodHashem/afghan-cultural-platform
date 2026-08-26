@@ -1,8 +1,6 @@
 "use client";
 
-import {
-  EnvelopeIcon,
-} from "@heroicons/react/24/outline";
+import { EnvelopeIcon } from "@heroicons/react/24/outline";
 import { motion, useReducedMotion } from "motion/react";
 import { type ReactNode, useEffect, useLayoutEffect, useRef, useState } from "react";
 
@@ -34,7 +32,7 @@ type AuthMode = "login" | "register";
 
 const actionContent: Record<
   EngagementAction,
-  { title: string, guest: string; unverified: string }
+  { title: string; guest: string; unverified: string }
 > = {
   like: {
     title: "پسندیدن",
@@ -106,10 +104,7 @@ function EngagementAccessDialog({
   if (isMobile) {
     return (
       <Drawer open={open} onOpenChange={onOpenChange} showSwipeHandle>
-        <DrawerContent
-          dir="rtl"
-          className="max-h-[92svh] overflow-hidden border-border p-0"
-        >
+        <DrawerContent dir="rtl" className="max-h-[92svh] overflow-hidden border-border p-0">
           <DrawerHeader className="sr-only">
             <DrawerTitle>{content.title}</DrawerTitle>
             <DrawerDescription>{content.guest}</DrawerDescription>
@@ -122,10 +117,7 @@ function EngagementAccessDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        className="max-h-[95svh] gap-0 overflow-y-auto p-0 sm:max-w-md"
-        dir="rtl"
-      >
+      <DialogContent className="max-h-[95svh] gap-0 overflow-y-auto p-0 sm:max-w-md" dir="rtl">
         <DialogHeader className="sr-only">
           <DialogTitle>{content.title}</DialogTitle>
           <DialogDescription>{content.guest}</DialogDescription>
@@ -160,8 +152,6 @@ function AccessPanel({
   return (
     <div className="bg-card">
       <header className="px-5 pt-6 pb-4 text-start sm:px-6">
-
-
         <p className="mt-1 text-[13px] leading-6 text-muted-foreground ">
           {suspended
             ? "در حال حاضر امکان انجام این کار وجود ندارد."
@@ -291,10 +281,7 @@ function SlidingAuthForms({
       >
         <div
           ref={loginRef}
-          className={cn(
-            "w-1/2 shrink-0",
-            mode !== "login" && "h-0 pointer-events-none",
-          )}
+          className={cn("w-1/2 shrink-0", mode !== "login" && "h-0 pointer-events-none")}
           aria-hidden={mode !== "login"}
           inert={mode !== "login"}
         >
@@ -308,10 +295,7 @@ function SlidingAuthForms({
 
         <div
           ref={registerRef}
-          className={cn(
-            "w-1/2 shrink-0",
-            mode !== "register" && "h-0 pointer-events-none",
-          )}
+          className={cn("w-1/2 shrink-0", mode !== "register" && "h-0 pointer-events-none")}
           aria-hidden={mode !== "register"}
           inert={mode !== "register"}
         >
