@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/layout/theme-provider";
 import { AppProviders } from "@/providers/app-providers";
 
 import "./globals.css";
+import "./mobile-app.css";
 
 export const metadata: Metadata = {
   title: "میراث افغانستان",

@@ -52,7 +52,7 @@ function ExploreResultsPanel({
 
   return (
     <div className="space-y-5">
-      <ExploreSearchBar query={query} taxonomy={taxonomy} />
+      <ExploreSearchBar query={query} />
       <div className="sticky top-20 z-30 hidden md:block">
         <div className="py-2">
           <ExploreFilterForm taxonomy={taxonomy} query={query} variant="bar" autoApply />
@@ -91,10 +91,8 @@ function ExploreResultsPanel({
 
 function ExploreSearchBar({
   query,
-  taxonomy,
 }: {
   query: NormalizedExploreQuery;
-  taxonomy: ExploreResultsPanelProps["taxonomy"];
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -136,7 +134,7 @@ function ExploreSearchBar({
   }, [normalizedQuerySearch, query, router, searchValue]);
 
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center">
       <label
         htmlFor={searchInputId}
         aria-busy={isPending}
@@ -168,9 +166,6 @@ function ExploreSearchBar({
         ) : null}
         {isPending ? <span className="sr-only">در حال جست‌وجو</span> : null}
       </label>
-      <div className="md:hidden">
-        <ExploreFilterSheet taxonomy={taxonomy} query={query} />
-      </div>
     </div>
   );
 }
@@ -185,21 +180,31 @@ function ExploreToolbar({
   total: number;
 }) {
   return (
-    <div
-      className="
-    flex flex-col gap-3
-    border-b border-border
-    px-1 pb-3 pt-1
-    sm:flex-row sm:items-center sm:justify-between
-  "
-    >
-      <div className="flex items-center gap-3">
-        <SortSelect query={query} />
+    <div className="border-b border-border px-1 pt-1 pb-3">
+      <div className="flex items-center justify-between gap-3 md:hidden">
+        <p className="shrink-0 text-[14px] font-bold text-foreground">
+          {formatPersianNumber(total)} مطلب
+        </p>
+        <div className="flex min-w-0 items-center gap-2">
+          <SortSelect query={query} />
+          <ExploreFilterSheet taxonomy={taxonomy} query={query} />
+        </div>
+      </div>
+
+      <div className="mt-3 flex items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:hidden">
         <ActiveFilterChips query={query} taxonomy={taxonomy} />
         <ClearFiltersLink query={query} />
       </div>
-      <div className="flex flex-wrap items-center gap-2">
-        <p className="text-[15px] font-bold text-foreground">{formatPersianNumber(total)} مطلب</p>
+
+      <div className="hidden items-center justify-between gap-3 md:flex">
+        <div className="flex items-center gap-3">
+          <SortSelect query={query} />
+          <ActiveFilterChips query={query} taxonomy={taxonomy} />
+          <ClearFiltersLink query={query} />
+        </div>
+        <p className="text-[15px] font-bold text-foreground">
+          {formatPersianNumber(total)} مطلب
+        </p>
       </div>
     </div>
   );
@@ -225,7 +230,7 @@ function SortSelect({ query }: { query: NormalizedExploreQuery }) {
           });
         }}
       >
-        <SelectTrigger>
+			<SelectTrigger className="h-10 min-w-0 rounded-lg px-3 text-[12px] sm:text-[13px]">
           <SelectValue />
         </SelectTrigger>
         <SelectContent align="start" alignItemWithTrigger={false}>

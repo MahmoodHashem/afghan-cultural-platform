@@ -4,6 +4,7 @@ import { getHomeData } from "@/features/home/api/home-api";
 import { HomeContent } from "@/features/home/components/home-content";
 import { HomeFooter } from "@/features/home/components/home-footer";
 import { HomeHero } from "@/features/home/components/home-hero";
+import { MobileHomeDiscovery } from "@/features/home/components/mobile-home-discovery";
 
 export const metadata: Metadata = {
   title: "میراث افغانستان | فرهنگ و تاریخ افغانستان",
@@ -22,7 +23,10 @@ export default async function Home() {
   return (
     <main className="min-h-screen bg-background">
       <HomeHero />
-      <HomeContent data={homeData} />
+      <MobileHomeDiscovery />
+      <div data-mobile-home-feed>
+        <HomeContent data={homeData} />
+      </div>
       <HomeFooter />
     </main>
   );

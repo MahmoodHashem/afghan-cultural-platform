@@ -136,7 +136,11 @@ function MobileAppShell() {
         : "unverified";
 
   return (
-    <div data-mobile-app-shell className="lg:hidden">
+    <div
+      data-mobile-app-shell
+      data-mobile-route={routeContext.kind}
+      className="lg:hidden"
+    >
       <style>{`@media (max-width: 1023px) { body:has([data-mobile-app-shell]) footer, body:has([data-mobile-app-shell]) [data-public-header] { display: none; } }`}</style>
       <MobileTopBar
         routeContext={routeContext}
@@ -273,7 +277,7 @@ function MobileBottomNavigation({
               {active && !item.prominent ? (
                 <motion.span
                   layoutId="mobile-navigation-active"
-                  className="absolute inset-x-3 top-0 h-0.5 rounded-full bg-primary"
+                  className="absolute inset-x-7 -bottom-1 h-0.5 rounded-full bg-primary"
                   transition={reducedMotion ? { duration: 0 } : { duration: 0.24 }}
                   aria-hidden="true"
                 />

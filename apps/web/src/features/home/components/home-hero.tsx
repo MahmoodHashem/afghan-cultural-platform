@@ -68,16 +68,16 @@ function HomeHero() {
   }, []);
 
   return (
-    <section className="relative min-h-[90svh] overflow-hidden bg-foreground text-white">
+    <section className="relative min-h-[70svh] overflow-hidden bg-foreground text-white sm:min-h-[82svh] lg:min-h-[90svh]">
       <HeroCarousel activeSlide={activeSlide} />
       <div className="absolute inset-0 bg-linear-to-b from-black/45 via-black/20 to-black/65" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_42%,rgba(214,168,75,0.22),transparent_34%),linear-gradient(90deg,rgba(0,0,0,0.56),transparent_62%)]" />
 
       <PublicHeader variant="hero" />
 
-      <div className="relative z-10 flex min-h-[76svh] items-end">
-        <div className="mx-auto w-full max-w-7xl px-5 pt-32 pb-14 sm:px-8 sm:pb-16 lg:px-10 lg:pb-20">
-          <fieldset className="mt-10 flex items-center gap-2">
+      <div className="relative z-10 flex min-h-[62svh] items-end sm:min-h-[72svh] lg:min-h-[76svh]">
+        <div className="mx-auto w-full max-w-7xl px-5 pt-24 pb-12 sm:px-8 sm:pt-32 sm:pb-16 lg:px-10 lg:pb-20">
+          <fieldset className="mt-8 flex items-center gap-2 sm:mt-10">
             <legend className="sr-only">تصاویر شاخص</legend>
             {heroSlides.map((slide, index) => (
               <button

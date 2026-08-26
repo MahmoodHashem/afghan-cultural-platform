@@ -1,0 +1,99 @@
+@media (max-width: 767px) {
+  body:has([data-mobile-app-shell]) {
+    overflow-x: clip;
+  }
+
+  body:has([data-mobile-route="home"]) [data-mobile-home-feed] {
+    padding-top: 1.5rem;
+  }
+
+  body:has([data-mobile-route="home"]) [data-mobile-home-feed] .content-container {
+    width: 100%;
+    padding-inline: 1rem;
+  }
+
+  body:has([data-mobile-route="home"]) [data-mobile-home-feed] section {
+    scroll-margin-top: calc(4.5rem + env(safe-area-inset-top));
+  }
+
+  body:has([data-mobile-route="home"]) [data-mobile-home-feed] h2 {
+    font-size: 1.25rem;
+    line-height: 1.85;
+  }
+
+  body:has([data-mobile-route="home"]) [data-mobile-home-feed] .grid {
+    gap: 1rem;
+  }
+
+  body:has([data-mobile-route="explore"]) main,
+  body:has([data-mobile-route="province"]) main,
+  body:has([data-mobile-route="category"]) main {
+    overflow-x: clip;
+    scroll-padding-top: calc(4.5rem + env(safe-area-inset-top));
+  }
+
+  body:has([data-mobile-route="explore"]) main .content-container,
+  body:has([data-mobile-route="province"]) main .content-container,
+  body:has([data-mobile-route="category"]) main .content-container {
+    width: 100%;
+    padding-inline: 1rem;
+  }
+
+  body:has([data-mobile-route="explore"]) main h1,
+  body:has([data-mobile-route="province"]) main h1,
+  body:has([data-mobile-route="category"]) main h1 {
+    font-size: 1.6rem;
+    line-height: 1.7;
+  }
+
+  body:has([data-mobile-route="explore"]) main [role="tablist"],
+  body:has([data-mobile-route="province"]) main [role="tablist"],
+  body:has([data-mobile-route="category"]) main [role="tablist"] {
+    scrollbar-width: none;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scroll-snap-type: inline proximity;
+  }
+
+  body:has([data-mobile-route="explore"]) main [role="tablist"]::-webkit-scrollbar,
+  body:has([data-mobile-route="province"]) main [role="tablist"]::-webkit-scrollbar,
+  body:has([data-mobile-route="category"]) main [role="tablist"]::-webkit-scrollbar {
+    display: none;
+  }
+
+  body:has([data-mobile-route="explore"]) main [role="tab"],
+  body:has([data-mobile-route="province"]) main [role="tab"],
+  body:has([data-mobile-route="category"]) main [role="tab"] {
+    min-height: 2.75rem;
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+  }
+
+  body:has([data-mobile-route="explore"]) main [data-slot="select-trigger"],
+  body:has([data-mobile-route="province"]) main [data-slot="select-trigger"],
+  body:has([data-mobile-route="category"]) main [data-slot="select-trigger"],
+  body:has([data-mobile-route="explore"]) main input,
+  body:has([data-mobile-route="province"]) main input,
+  body:has([data-mobile-route="category"]) main input {
+    min-height: 2.75rem;
+  }
+
+  body:has([data-mobile-route="explore"]) main [data-slot="card"],
+  body:has([data-mobile-route="province"]) main [data-slot="card"],
+  body:has([data-mobile-route="category"]) main [data-slot="card"] {
+    border-radius: 0.75rem;
+  }
+
+  body:has([data-mobile-route="explore"]) main .grid:has([data-slot="card"]),
+  body:has([data-mobile-route="province"]) main .grid:has([data-slot="card"]),
+  body:has([data-mobile-route="category"]) main .grid:has([data-slot="card"]) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+  }
+
+  body:has([data-mobile-route="explore"]) main [data-slot="card"] img,
+  body:has([data-mobile-route="province"]) main [data-slot="card"] img,
+  body:has([data-mobile-route="category"]) main [data-slot="card"] img {
+    width: 100%;
+  }
+}

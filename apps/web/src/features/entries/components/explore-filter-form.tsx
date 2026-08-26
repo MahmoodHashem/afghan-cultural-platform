@@ -38,7 +38,7 @@ type ExploreFilterFormProps = {
     tags: TaxonomyItem[];
   };
   query: NormalizedExploreQuery;
-  variant?: "bar" | "sheet";
+  variant?: "bar" | "drawer";
   autoApply?: boolean;
   onApplied?: () => void;
 };
@@ -122,16 +122,8 @@ function ExploreFilterForm({
     });
   }
 
-  return (
-    <form
-      onSubmit={handleSubmit}
-      className={cn(
-        "border border-border bg-card shadow-[0_6px_24px_rgba(31,41,55,0.035)]",
-        variant === "bar"
-          ? "grid w-full grid-cols-2 gap-1 rounded-2xl p-2 lg:grid-cols-4"
-          : "space-y-2 rounded-2xl p-4",
-      )}
-    >
+  const fields = (
+    <>
       <SelectField
         icon={<MapPinIcon className="size-5" aria-hidden="true" />}
         label="ولایت"
@@ -152,12 +144,12 @@ function ExploreFilterForm({
       />
       <SelectField
         icon={<Squares2X2Icon className="size-5" aria-hidden="true" />}
-        label="نوع محتوا"
+        label="نوع مطلب"
         name="contentTypeSlug"
         value={filters.contentTypeSlug}
         onValueChange={(value) => handleFilterChange("contentTypeSlug", value)}
         options={taxonomy.contentTypes.map(toOption)}
-        placeholder="همه انواع محتوا"
+        placeholder="همه انواع مطلب"
       />
       <SelectField
         icon={<TagIcon className="size-5" aria-hidden="true" />}
@@ -168,21 +160,37 @@ function ExploreFilterForm({
         options={taxonomy.tags.map(toOption)}
         placeholder="همه برچسب‌ها"
       />
+    </>
+  );
 
-      {variant === "sheet" ? (
-        <div className="mt-5 grid gap-3">
-          <Button type="submit" className="rounded-full" disabled={isPending}>
-            {isPending ? "در حال نمایش..." : "نمایش نتایج"}
-          </Button>
+  return (
+    <form
+      onSubmit={handleSubmit}
+      className={cn(
+        "bg-card",
+        variant === "bar"
+          ? "grid w-full grid-cols-2 gap-1 rounded-2xl border border-border p-2 shadow-[0_6px_24px_rgba(31,41,55,0.035)] lg:grid-cols-4"
+          : "flex min-h-0 flex-1 flex-col overflow-hidden",
+      )}
+    >
+      <div className={cn(variant === "drawer" ? "min-h-0 flex-1 space-y-2 overflow-y-auto px-4 py-4" : "contents")}>
+        {fields}
+      </div>
 
+      {variant === "drawer" ? (
+        <div className="grid shrink-0 grid-cols-[auto_1fr] gap-3 border-t border-border bg-card px-4 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
           <button
             type="button"
             onClick={handleReset}
             disabled={isPending}
-            className={cn(buttonVariants({ variant: "outline" }), "rounded-full")}
+            className={cn(buttonVariants({ variant: "outline" }), "rounded-lg px-4")}
           >
-            حذف همه فیلترها
+            حذف همه
           </button>
+
+          <Button type="submit" className="rounded-lg" disabled={isPending}>
+            {isPending ? "در حال نمایش..." : "نمایش نتایج"}
+          </Button>
         </div>
       ) : null}
     </form>
