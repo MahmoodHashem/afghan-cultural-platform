@@ -67,7 +67,7 @@ function createTiptapHeadings(content: unknown): TiptapHeading[] {
 
 function renderNode(node: TiptapNode, key: number | string): ReactNode {
   const children = renderChildren(node.content);
-  const textAlign = getTextAlignClass(node.attrs);
+  const textAlign = "text-justify"
 
   switch (node.type) {
     case "paragraph":
@@ -246,16 +246,6 @@ function getDirection(attrs: Record<string, unknown> | undefined) {
   return attrs?.dir === "ltr" ? "ltr" : "rtl";
 }
 
-function getTextAlignClass(attrs: Record<string, unknown> | undefined) {
-  switch (attrs?.textAlign) {
-    case "center":
-      return "text-center";
-    case "left":
-      return "text-left";
-    default:
-      return "text-start";
-  }
-}
 
 function getOrderedListStart(attrs: Record<string, unknown> | undefined) {
   return typeof attrs?.start === "number" && Number.isInteger(attrs.start) && attrs.start > 0
