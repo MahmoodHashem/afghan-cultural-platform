@@ -39,7 +39,10 @@ function EngagementAccessProvider({
   const user = useAuthStore((state) => state.user);
   const updateUser = useAuthStore((state) => state.updateUser);
   const [dialogAction, setDialogAction] = useState<EngagementAction | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [pendingIntent, setPendingIntent] = useState<PendingEngagementIntent | null>(null);
+  const dialogFrameRef = useRef<number | null>(null);
+  const dialogCloseTimerRef = useRef<number | null>(null);
   const syncInFlightRef = useRef(false);
   const lastSyncAtRef = useRef(0);
   const canContribute =
@@ -49,15 +52,63 @@ function EngagementAccessProvider({
     setPendingIntent(readPendingEngagementIntent(entryId));
   }, [entryId]);
 
-  useEffect(() => {
-    if (status === "authenticated" && user && !user.emailVerified && pendingIntent) {
-      setDialogAction(pendingIntent.kind === "comment" ? "comment" : pendingIntent.kind);
+  const openAccessDialog = useCallback((action: EngagementAction) => {
+    if (dialogCloseTimerRef.current !== null) {
+      window.clearTimeout(dialogCloseTimerRef.current);
+      dialogCloseTimerRef.current = null;
     }
-  }, [pendingIntent, status, user]);
+
+    if (dialogFrameRef.current !== null) {
+      window.cancelAnimationFrame(dialogFrameRef.current);
+    }
+
+    setDialogAction(action);
+    setDialogOpen(false);
+    dialogFrameRef.current = window.requestAnimationFrame(() => {
+      setDialogOpen(true);
+      dialogFrameRef.current = null;
+    });
+  }, []);
+
+  const closeAccessDialog = useCallback(() => {
+    if (dialogFrameRef.current !== null) {
+      window.cancelAnimationFrame(dialogFrameRef.current);
+      dialogFrameRef.current = null;
+    }
+
+    setDialogOpen(false);
+
+    if (dialogCloseTimerRef.current !== null) {
+      window.clearTimeout(dialogCloseTimerRef.current);
+    }
+
+    dialogCloseTimerRef.current = window.setTimeout(() => {
+      setDialogAction(null);
+      dialogCloseTimerRef.current = null;
+    }, 500);
+  }, []);
+
+  useEffect(
+    () => () => {
+      if (dialogFrameRef.current !== null) {
+        window.cancelAnimationFrame(dialogFrameRef.current);
+      }
+      if (dialogCloseTimerRef.current !== null) {
+        window.clearTimeout(dialogCloseTimerRef.current);
+      }
+    },
+    [],
+  );
 
   useEffect(() => {
-    if (canContribute) setDialogAction(null);
-  }, [canContribute]);
+    if (status === "authenticated" && user && !user.emailVerified && pendingIntent) {
+      openAccessDialog(pendingIntent.kind === "comment" ? "comment" : pendingIntent.kind);
+    }
+  }, [openAccessDialog, pendingIntent, status, user]);
+
+  useEffect(() => {
+    if (canContribute && dialogAction) closeAccessDialog();
+  }, [canContribute, closeAccessDialog, dialogAction]);
 
   const syncCurrentUser = useCallback(async () => {
     if (
@@ -129,10 +180,10 @@ function EngagementAccessProvider({
       }
 
       if (intent) saveIntent(intent);
-      setDialogAction(action);
+      openAccessDialog(action);
       return false;
     },
-    [saveIntent, status, user],
+    [openAccessDialog, saveIntent, status, user],
   );
 
   const clearIntent = useCallback(() => {
@@ -208,9 +259,13 @@ function EngagementAccessProvider({
           reason={accessReason}
           user={user}
           returnPath={pendingIntent?.returnPath ?? entryPath}
-          open
+          open={dialogOpen}
           onOpenChange={(open) => {
-            if (!open) setDialogAction(null);
+            if (open) {
+              setDialogOpen(true);
+            } else {
+              closeAccessDialog();
+            }
           }}
         />
       ) : null}

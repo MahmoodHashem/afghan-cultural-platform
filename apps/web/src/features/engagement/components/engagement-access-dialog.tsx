@@ -15,12 +15,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import { EmailVerificationButton } from "@/features/auth/components/email-verification-button";
 import { LoginForm } from "@/features/auth/components/login-form";
 import { RegisterForm } from "@/features/auth/components/register-form";
@@ -105,19 +105,18 @@ function EngagementAccessDialog({
 
   if (isMobile) {
     return (
-      <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent
-          side="bottom"
+      <Drawer open={open} onOpenChange={onOpenChange} showSwipeHandle>
+        <DrawerContent
           dir="rtl"
-          className="max-h-[92svh] overflow-y-auto rounded-t-2xl border-border p-0"
+          className="max-h-[92svh] overflow-hidden border-border p-0"
         >
-          <SheetHeader className="sr-only">
-            <SheetTitle>{content.title}</SheetTitle>
-            <SheetDescription>{content.guest}</SheetDescription>
-          </SheetHeader>
-          {panel}
-        </SheetContent>
-      </Sheet>
+          <DrawerHeader className="sr-only">
+            <DrawerTitle>{content.title}</DrawerTitle>
+            <DrawerDescription>{content.guest}</DrawerDescription>
+          </DrawerHeader>
+          <div className="min-h-0 overflow-y-auto overscroll-contain">{panel}</div>
+        </DrawerContent>
+      </Drawer>
     );
   }
 
