@@ -4,6 +4,7 @@ type EnvironmentVariables = {
   NODE_ENV: "development" | "test" | "production";
   PORT: number;
   FRONTEND_URL: string;
+  CORS_ALLOWED_ORIGINS?: string;
   DATABASE_URL: string;
   JWT_ACCESS_SECRET: string;
   JWT_REFRESH_SECRET: string;
@@ -44,6 +45,7 @@ const envValidationSchema = Joi.object<EnvironmentVariables>({
   FRONTEND_URL: Joi.string()
     .uri({ scheme: ["http", "https"] })
     .required(),
+  CORS_ALLOWED_ORIGINS: Joi.string().trim().allow("").optional(),
   DATABASE_URL: Joi.string()
     .uri({ scheme: ["postgresql", "postgres"] })
     .required(),

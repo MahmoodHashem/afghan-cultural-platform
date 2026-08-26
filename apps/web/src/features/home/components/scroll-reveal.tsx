@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "motion/react";
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -29,9 +29,14 @@ function ScrollReveal({
   as = "div",
 }: ScrollRevealProps) {
   const prefersReducedMotion = useReducedMotion();
+  const [animationReady, setAnimationReady] = useState(false);
   const MotionElement = revealElements[as];
 
-  if (prefersReducedMotion) {
+  useEffect(() => {
+    setAnimationReady(true);
+  }, []);
+
+  if (!animationReady || prefersReducedMotion) {
     return <MotionElement className={className}>{children}</MotionElement>;
   }
 

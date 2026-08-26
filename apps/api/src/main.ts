@@ -11,6 +11,12 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
   const frontendUrl = configService.getOrThrow<string>("FRONTEND_URL");
+  const corsAllowedOrigins = configService
+    .get<string>("CORS_ALLOWED_ORIGINS", "")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+  const allowedFrontendOrigins = new Set([frontendUrl, ...corsAllowedOrigins]);
   const port = configService.get<number>("PORT", 4000);
 
   app.setGlobalPrefix("api/v1");
@@ -21,7 +27,7 @@ async function bootstrap() {
       origin: string | undefined,
       callback: (error: Error | null, allow?: boolean) => void,
     ) => {
-      callback(null, !origin || origin === frontendUrl);
+      callback(null, !origin || allowedFrontendOrigins.has(origin));
     },
     credentials: true,
   });
