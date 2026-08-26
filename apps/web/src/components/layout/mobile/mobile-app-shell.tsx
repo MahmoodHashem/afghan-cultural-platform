@@ -3,6 +3,7 @@
 import {
   AdjustmentsHorizontalIcon,
   ArrowRightIcon,
+  ListBulletIcon,
   MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
 import { motion, useReducedMotion } from "motion/react";
@@ -20,7 +21,10 @@ import {
   MobileShellAuthDrawer,
   type ShellAuthReason,
 } from "@/components/layout/mobile/mobile-shell-auth-drawer";
-import { OPEN_EXPLORE_FILTERS_EVENT } from "@/components/layout/mobile/mobile-shell-events";
+import {
+  OPEN_ENTRY_CONTENTS_EVENT,
+  OPEN_EXPLORE_FILTERS_EVENT,
+} from "@/components/layout/mobile/mobile-shell-events";
 import { PUBLIC_HEADER_CONTEXT_EVENT } from "@/components/layout/public-header";
 import { cn } from "@/lib/utils";
 import { type AuthSession, useAuthStore } from "@/stores/auth-store";
@@ -30,6 +34,7 @@ type HeaderContext = {
   backHref: string;
   backLabel: string;
   visible: boolean;
+  hasTableOfContents?: boolean;
 };
 
 const CLOSE_ANIMATION_MS = 500;
@@ -232,6 +237,15 @@ function MobileTopBar({
             className="ms-auto flex size-11 shrink-0 items-center justify-center rounded-full outline-none transition-colors hover:bg-black/5 focus-visible:ring-3 focus-visible:ring-ring/40"
           >
             <AdjustmentsHorizontalIcon className="size-5" aria-hidden="true" />
+          </button>
+        ) : routeContext.kind === "entry" && headerContext?.hasTableOfContents ? (
+          <button
+            type="button"
+            aria-label="باز کردن فهرست مطالب"
+            onClick={() => window.dispatchEvent(new Event(OPEN_ENTRY_CONTENTS_EVENT))}
+            className="ms-auto flex size-11 shrink-0 items-center justify-center rounded-full outline-none transition-colors hover:bg-black/5 focus-visible:ring-3 focus-visible:ring-ring/40"
+          >
+            <ListBulletIcon className="size-5" aria-hidden="true" />
           </button>
         ) : (
           <Link

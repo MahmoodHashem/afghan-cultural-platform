@@ -6,6 +6,7 @@ const allowedDevOrigins = process.env.NEXT_ALLOWED_DEV_ORIGINS?.split(",")
 
 const nextConfig: NextConfig = {
   allowedDevOrigins,
+  devIndicators: false,
   images: {
     remotePatterns: [
       {

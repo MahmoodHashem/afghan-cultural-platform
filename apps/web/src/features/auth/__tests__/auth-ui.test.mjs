@@ -44,6 +44,9 @@ const verifiedEmailBanner = read("src/features/auth/components/verified-email-ba
 const authQuery = read("src/lib/auth/auth-query.ts");
 const persianUtils = read("src/lib/utils/persian.ts");
 const publicLayout = read("src/app/(public)/layout.tsx");
+const mobileAppShell = read("src/components/layout/mobile/mobile-app-shell.tsx");
+const mobileShellEvents = read("src/components/layout/mobile/mobile-shell-events.ts");
+const mobileAppStyles = read("src/app/mobile-app.css");
 const publicError = read("src/app/(public)/error.tsx");
 const createEntryPage = read("src/app/(contribute)/entries/new/page.tsx");
 const createEntryLoading = read("src/app/(contribute)/entries/new/loading.tsx");
@@ -309,8 +312,14 @@ test("login and register use the same approved login logo asset", () => {
 test("OAuth buttons are connected through click handlers", () => {
   assert.match(oauthButtons, /onGoogleClick/);
   assert.match(oauthButtons, /onFacebookClick/);
-  assert.match(loginForm, /redirectToOAuthProvider\("google", searchParams\.get\("next"\)\)/);
-  assert.match(registerForm, /redirectToOAuthProvider\("google", searchParams\.get\("next"\)\)/);
+  assert.match(
+    loginForm,
+    /redirectToOAuthProvider\("google", nextPath \?\? searchParams\.get\("next"\)\)/,
+  );
+  assert.match(
+    registerForm,
+    /redirectToOAuthProvider\("google", nextPath \?\? searchParams\.get\("next"\)\)/,
+  );
   assert.match(oauthRedirect, /createOAuthStartUrl\(provider, getSafeRedirectPath\(nextPath\)\)/);
 });
 
@@ -410,8 +419,8 @@ test("protected route gates preserve safe next paths and enforce auth states", (
   assert.match(routeGates, /getSafeRedirectPath\(pathname\)/);
   assert.match(authRedirects, /function createAuthPath/);
   assert.match(authRedirects, /`\$\{authPath\}\?next=\$\{encodeURIComponent\(safePath\)\}`/);
-  assert.match(loginForm, /createRegisterPath\(searchParams\.get\("next"\)/);
-  assert.match(registerForm, /createLoginPath\(searchParams\.get\("next"\)/);
+  assert.match(loginForm, /createRegisterPath\(nextPath \?\? searchParams\.get\("next"\)/);
+  assert.match(registerForm, /createLoginPath\(nextPath \?\? searchParams\.get\("next"\)/);
 });
 
 test("owner profile route is authenticated and noindexed", () => {
@@ -767,7 +776,8 @@ test("explore page uses public entries and taxonomy APIs with URL filters", () =
   assert.match(exploreFilterForm, /name="contentTypeSlug"/);
   assert.doesNotMatch(exploreFilterForm, /name="geographicScope"/);
   assert.match(exploreFilterForm, /<Select/);
-  assert.match(exploreFilterSheet, /SheetContent side="right"/);
+  assert.match(exploreFilterSheet, /<Drawer/);
+  assert.match(exploreFilterSheet, /showSwipeHandle/);
   assert.match(exploreResultsPanel, /جست‌وجوی مکان، مشاهیر، رسم یا موضوع/);
   assert.match(exploreResultsPanel, /router\.replace/);
   assert.match(exploreResultsPanel, /search: normalizedSearch \|\| undefined/);
@@ -903,7 +913,7 @@ test("entry detail includes reading navigation and sticky article tools", () => 
   assert.match(entryTableOfContents, /max-h-80/);
   assert.match(entryTableOfContents, /overflow-y-auto/);
   assert.match(entryTableOfContents, /aria-current=\{isActive \? "location" : undefined\}/);
-  assert.match(entryTableOfContents, /border border-primary\/20\s+text-primary/);
+  assert.match(entryTableOfContents, /border border-primary\/20/);
   assert.match(entryTableOfContents, /event\.preventDefault\(\)/);
   assert.match(entryTableOfContents, /heading\.scrollIntoView/);
   assert.match(entryTableOfContents, /behavior: window\.matchMedia/);
@@ -913,7 +923,7 @@ test("entry detail includes reading navigation and sticky article tools", () => 
   assert.match(tiptapDocumentRenderer, /id=\{headingId\}/);
   assert.match(
     entryDetailContent,
-    /<EntryDetailHeaderContext title=\{entry\.title\} backHref="\/explore" \/>/,
+    /<EntryDetailHeaderContext[\s\S]*title=\{entry\.title\}[\s\S]*hasTableOfContents=\{tableOfContents\.length > 0\}/,
   );
   assert.match(entryHeaderContext, /window\.scrollY > 420/);
   assert.match(entryHeaderContext, /PUBLIC_HEADER_CONTEXT_EVENT/);
@@ -922,8 +932,10 @@ test("entry detail includes reading navigation and sticky article tools", () => 
   assert.match(publicHeader, /transition-all duration-300 ease-out/);
   assert.match(publicHeader, /inert=\{shouldShowHeaderContext\}/);
   assert.match(entryDetailContent, /EntryActionRail/);
-  assert.match(entryActionRail, /sticky top-20/);
-  assert.match(entryActionRail, /lg:top-32/);
+  assert.match(entryActionRail, /sticky top-32/);
+  assert.match(entryActionRail, /bottom-\[calc\(4\.75rem\+env\(safe-area-inset-bottom\)\)\]/);
+  assert.match(entryActionRail, /showMobileDock/);
+  assert.match(entryActionRail, /data-entry-intro/);
   assert.match(entryActionRail, /ChatBubbleOvalLeftEllipsisIcon/);
   assert.match(entryActionRail, /HeartIcon/);
   assert.match(entryActionRail, /BookmarkIcon/);
@@ -936,6 +948,17 @@ test("entry detail includes reading navigation and sticky article tools", () => 
   assert.match(entryScrollControls, /رفتن به انتهای مطلب/);
   assert.match(entryScrollControls, /prefers-reduced-motion: reduce/);
   assert.match(entryScrollControls, /position: fixed|fixed bottom-5/);
+  assert.match(entryScrollControls, /hidden flex-col/);
+  assert.match(entryTableOfContents, /variant === "drawer"/);
+  assert.match(entryTableOfContents, /OPEN_ENTRY_CONTENTS_EVENT/);
+  assert.match(entryTableOfContents, /<Drawer/);
+  assert.match(mobileAppShell, /ListBulletIcon/);
+  assert.match(mobileAppShell, /OPEN_ENTRY_CONTENTS_EVENT/);
+  assert.match(mobileShellEvents, /mobile-shell:open-entry-contents/);
+  assert.match(entryDetailContent, /snap-x snap-mandatory/);
+  assert.match(mobileAppStyles, /data-mobile-route="entry"/);
+  assert.match(commentComposer, /setIsExpanded/);
+  assert.match(commentComposer, /onFocus=\{\(\) => setIsExpanded\(true\)\}/);
 });
 
 test("entry detail supports threaded comments and verified-user feedback", () => {
@@ -996,15 +1019,15 @@ test("engagement access uses one contextual dialog and safe temporary intents", 
   assert.match(engagementAccessProvider, /getCurrentUser/);
   assert.match(engagementAccessProvider, /subscribeToAuthEvents/);
   assert.match(engagementAccessDialog, /<Dialog/);
-  assert.match(engagementAccessDialog, /<Sheet/);
-  assert.match(engagementAccessDialog, /side="bottom"/);
+  assert.match(engagementAccessDialog, /<Drawer/);
+  assert.match(engagementAccessDialog, /showSwipeHandle/);
   assert.match(engagementAccessDialog, /<LoginForm/);
   assert.match(engagementAccessDialog, /<RegisterForm/);
   assert.match(engagementAccessDialog, /nextPath=\{returnPath\}/);
   assert.match(loginForm, /onAuthenticated/);
   assert.match(registerForm, /onAuthenticated/);
   assert.match(engagementAccessDialog, /<EmailVerificationButton/);
-  assert.match(engagementAccessDialog, /این حساب موقتاً تعلیق شده است/);
+  assert.match(engagementAccessDialog, /در حال حاضر امکان انجام این کار وجود ندارد/);
   assert.match(pendingEngagementIntent, /window\.sessionStorage/);
   assert.match(pendingEngagementIntent, /PENDING_ENGAGEMENT_INTENT_TTL_MS = 30 \* 60 \* 1000/);
   assert.match(pendingEngagementIntent, /parsed\.entryId !== entryId/);

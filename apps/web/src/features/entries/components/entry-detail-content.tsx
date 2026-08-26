@@ -32,35 +32,55 @@ function EntryDetailContent({
   const commentsRenderedAt = new Date().toISOString();
 
   return (
-    <main className="min-h-screen bg-background">
-      <EntryDetailHeaderContext title={entry.title} backHref="/explore" />
+    <main data-entry-detail className="min-h-screen bg-background pb-24 lg:pb-0">
+      <EntryDetailHeaderContext
+        title={entry.title}
+        backHref="/explore"
+        hasTableOfContents={tableOfContents.length > 0}
+      />
+      {tableOfContents.length > 0 ? (
+        <div className="lg:hidden">
+          <EntryTableOfContents items={tableOfContents} variant="drawer" />
+        </div>
+      ) : null}
       <article>
-        <section className="border-b border-border bg-card pt-24 pb-10 sm:pt-28">
+        <section
+          data-entry-intro
+          className="border-b border-border bg-card pt-[calc(4.5rem+env(safe-area-inset-top))] pb-6 sm:pt-28 sm:pb-10"
+        >
           <div className="content-container">
-            <EntryDetailBreadcrumb
-              entryPath={`/entries/${encodeURIComponent(entry.slug)}`}
-              entryTitle={entry.title}
-              fallbackItems={breadcrumbItems}
-            />
+            <div className="hidden lg:block">
+              <EntryDetailBreadcrumb
+                entryPath={`/entries/${encodeURIComponent(entry.slug)}`}
+                entryTitle={entry.title}
+                fallbackItems={breadcrumbItems}
+              />
+            </div>
 
-            <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_420px] lg:items-end">
-              <div className="space-y-5">
+            <div className="grid gap-6 lg:mt-8 lg:grid-cols-[1fr_420px] lg:items-end lg:gap-8">
+              <div className="space-y-4 sm:space-y-5">
                 <div className="flex flex-wrap gap-2">
-                  <Badge className="rounded-full bg-primary-light text-primary">
+                  <Badge className="rounded-full bg-primary-light px-2.5 text-[11px] text-primary sm:text-[12px]">
                     {entry.category.name}
                   </Badge>
-                  <Badge variant="outline" className="rounded-full">
+                  <Badge
+                    variant="outline"
+                    className="rounded-full px-2.5 text-[11px] sm:text-[12px]"
+                  >
                     {entry.contentType.name}
                   </Badge>
-                  <Badge variant="outline" className="rounded-full">
+                  <Badge
+                    variant="outline"
+                    className="rounded-full px-2.5 text-[11px] sm:text-[12px]"
+                  >
                     {getEntryLocationLabel(entry)}
                   </Badge>
                 </div>
-                <div className="space-y-4">
-                  <h1 className="max-w-4xl text-[38px] font-bold leading-[1.35] text-foreground sm:text-[52px]">
+                <div className="space-y-3 sm:space-y-4">
+                  <h1 className="max-w-4xl text-[29px] font-bold leading-[1.55] text-foreground sm:text-[52px] sm:leading-[1.35]">
                     {entry.title}
                   </h1>
-                  <p className="max-w-3xl text-[18px] leading-9 text-muted-foreground">
+                  <p className="max-w-3xl text-[15px] leading-8 text-muted-foreground sm:text-[18px] sm:leading-9">
                     {entry.summary}
                   </p>
                 </div>
@@ -68,7 +88,7 @@ function EntryDetailContent({
               </div>
 
               {heroImage ? (
-                <figure className="overflow-hidden rounded-[28px] border border-border bg-background shadow-[0_2px_10px_rgba(0,0,0,.05)]">
+                <figure className="-mx-4 overflow-hidden border-y border-border bg-background sm:mx-0 sm:rounded-[28px] sm:border shadow-[0_2px_10px_rgba(0,0,0,.05)]">
                   <div className="relative aspect-4/3">
                     <Image
                       src={heroImage.secureUrl}
@@ -90,7 +110,7 @@ function EntryDetailContent({
           </div>
         </section>
 
-        <section className="content-container grid gap-8 py-10 lg:grid-cols-[56px_minmax(0,760px)_320px] lg:items-start lg:justify-between">
+        <section className="content-container grid gap-8 py-7 sm:py-10 lg:grid-cols-[56px_minmax(0,760px)_320px] lg:items-start lg:justify-between">
           <EntryActionRail
             entryId={entry.id}
             title={entry.title}
@@ -105,6 +125,11 @@ function EntryDetailContent({
             {entry.images.length > 1 ? <ImageGallery images={entry.images.slice(1)} /> : null}
             {entry.youtubeVideo ? <YouTubeEmbed entry={entry} /> : null}
             {entry.sources.length > 0 ? <SourcesList entry={entry} /> : null}
+            <div className="divide-y divide-border rounded-xl border border-border bg-card lg:hidden">
+              <TaxonomyCard entry={entry} />
+              {entry.tags.length > 0 ? <TagsCard entry={entry} /> : null}
+              {entry.incomingReferences.length > 0 ? <IncomingReferences entry={entry} /> : null}
+            </div>
             <CommunityModerationActions entryId={entry.id} />
             <EntryComments
               entryId={entry.id}
@@ -113,7 +138,7 @@ function EntryDetailContent({
             />
           </div>
 
-          <aside className="space-y-5 lg:sticky lg:top-24 bg-card p-3 rounded-lg divide-y divide-border">
+          <aside className="hidden space-y-5 divide-y divide-border rounded-lg bg-card p-3 lg:sticky lg:top-24 lg:block">
             {tableOfContents.length > 0 ? <EntryTableOfContents items={tableOfContents} /> : null}
             <TaxonomyCard entry={entry} />
             {entry.tags.length > 0 ? <TagsCard entry={entry} /> : null}
@@ -127,7 +152,7 @@ function EntryDetailContent({
 
 function EntryMeta({ entry }: { entry: PublicEntryDetail }) {
   return (
-    <dl className="flex flex-wrap gap-x-6 gap-y-3 text-[14px] text-muted-foreground">
+    <dl className="flex flex-wrap gap-x-4 gap-y-2 text-[12px] text-muted-foreground sm:gap-x-6 sm:gap-y-3 sm:text-[14px]">
       <div className="inline-flex items-center gap-2">
         <UserCircleIcon className="size-5" aria-hidden="true" />
         <dt className="sr-only">نویسنده</dt>
@@ -151,11 +176,11 @@ function ImageGallery({ images }: { images: PublicEntryDetail["images"] }) {
   return (
     <section className="space-y-4">
       <h2 className="text-[26px] font-bold text-foreground">تصاویر بیشتر</h2>
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-4 sm:overflow-visible sm:px-0 sm:pb-0">
         {images.map((image) => (
           <figure
             key={image.id}
-            className="overflow-hidden rounded-2xl border border-border bg-card"
+            className="w-[86vw] max-w-sm shrink-0 snap-center overflow-hidden rounded-xl border border-border bg-card sm:w-auto sm:max-w-none sm:rounded-2xl"
           >
             <div className="relative aspect-[4/3]">
               <Image

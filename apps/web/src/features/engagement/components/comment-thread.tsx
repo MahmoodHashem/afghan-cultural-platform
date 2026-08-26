@@ -244,7 +244,7 @@ function CommentThread({ entryId, comment, depth = 0, now }: CommentThreadProps)
             initial={reducedMotion ? false : { opacity: 0, height: 0, y: -4 }}
             animate={{ opacity: 1, height: "auto", y: 0 }}
             exit={reducedMotion ? undefined : { opacity: 0, height: 0 }}
-            className="mt-4 ms-6 overflow-hidden sm:ms-14"
+            className="mt-4 ms-2 overflow-hidden sm:ms-14"
           >
             <CommentComposer
               mode="reply"
@@ -267,8 +267,11 @@ function CommentThread({ entryId, comment, depth = 0, now }: CommentThreadProps)
             animate={{ opacity: 1, height: "auto" }}
             exit={reducedMotion ? undefined : { opacity: 0, height: 0 }}
             className={cn(
-              "relative overflow-hidden border-s border-border ps-3 ms-5 sm:ms-12 my-5",
-              depth >= 2 && "sm:ms-4",
+              "relative my-5 overflow-hidden border-s border-border",
+              depth === 0
+                ? "ms-4 ps-3 sm:ms-12"
+                : "ms-0 border-s-0 ps-0 sm:ms-4 sm:border-s sm:ps-3",
+              depth >= 2 && "sm:ms-1",
             )}
           >
             {repliesQuery.isLoading ? <CommentListSkeleton compact /> : null}

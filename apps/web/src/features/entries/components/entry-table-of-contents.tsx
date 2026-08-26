@@ -3,7 +3,15 @@
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import { useEffect, useState } from "react";
 
+import { OPEN_ENTRY_CONTENTS_EVENT } from "@/components/layout/mobile/mobile-shell-events";
 import { Button } from "@/components/ui/button";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import { cn } from "@/lib/utils";
 
 type TableOfContentsItem = {
@@ -12,9 +20,16 @@ type TableOfContentsItem = {
   level: 2 | 3;
 };
 
-function EntryTableOfContents({ items }: { items: TableOfContentsItem[] }) {
+function EntryTableOfContents({
+  items,
+  variant = "sidebar",
+}: {
+  items: TableOfContentsItem[];
+  variant?: "sidebar" | "drawer";
+}) {
   const [activeId, setActiveId] = useState(items[0]?.id ?? "");
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   useEffect(() => {
     const headings = items
@@ -47,6 +62,39 @@ function EntryTableOfContents({ items }: { items: TableOfContentsItem[] }) {
 
     return () => observer.disconnect();
   }, [items]);
+
+  useEffect(() => {
+    if (variant !== "drawer") return;
+
+    const openContents = () => setIsDrawerOpen(true);
+    window.addEventListener(OPEN_ENTRY_CONTENTS_EVENT, openContents);
+    return () => window.removeEventListener(OPEN_ENTRY_CONTENTS_EVENT, openContents);
+  }, [variant]);
+
+  if (variant === "drawer") {
+    return (
+      <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen} showSwipeHandle>
+        <DrawerContent
+          dir="rtl"
+          className="max-h-[78svh] overflow-hidden border-border bg-background"
+        >
+          <DrawerHeader className="border-b border-border px-5 pt-3 pb-4 text-right">
+            <DrawerTitle>فهرست مطالب</DrawerTitle>
+            <DrawerDescription>برای رفتن به هر بخش، عنوان آن را انتخاب کنید.</DrawerDescription>
+          </DrawerHeader>
+          <TableOfContentsList
+            items={items}
+            activeId={activeId}
+            onSelect={(item) => {
+              navigateToHeading(item.id, setActiveId);
+              setIsDrawerOpen(false);
+            }}
+            className="max-h-[calc(78svh-7rem)] px-4 py-3"
+          />
+        </DrawerContent>
+      </Drawer>
+    );
+  }
 
   return (
     <article id="entry-table-of-contents" className="scroll-mt-32">
@@ -81,58 +129,77 @@ function EntryTableOfContents({ items }: { items: TableOfContentsItem[] }) {
           )}
         >
           <div className="min-h-0 overflow-hidden">
-            <ol className="max-h-80 space-y-1 overflow-y-auto pe-1">
-              {items.map((item) => {
-                const isActive = item.id === activeId;
-
-                return (
-                  <li key={item.id}>
-                    <a
-                      href={`#${item.id}`}
-                      aria-current={isActive ? "location" : undefined}
-                      onClick={(event) => {
-                        const heading = document.getElementById(item.id);
-
-                        if (!heading) {
-                          return;
-                        }
-
-                        event.preventDefault();
-                        setActiveId(item.id);
-
-                        const destination = new URL(window.location.href);
-                        destination.hash = item.id;
-
-                        if (window.location.hash !== destination.hash) {
-                          window.history.pushState(window.history.state, "", destination);
-                        }
-
-                        heading.scrollIntoView({
-                          behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
-                            ? "auto"
-                            : "smooth",
-                          block: "start",
-                        });
-                      }}
-                      className={cn(
-                        "block rounded-xl py-2 text-[14px] leading-7 transition-colors focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/35",
-                        item.level === 3 ? "ps-4 pe-2" : "px-2 font-semibold",
-                        isActive
-                          ? "border border-primary/20  text-primary"
-                          : "text-muted-foreground hover:bg-muted hover:text-primary",
-                      )}
-                    >
-                      {item.title}
-                    </a>
-                  </li>
-                );
-              })}
-            </ol>
+            <TableOfContentsList
+              items={items}
+              activeId={activeId}
+              onSelect={(item) => navigateToHeading(item.id, setActiveId)}
+              className="max-h-80 pe-1"
+            />
           </div>
         </nav>
       </div>
     </article>
   );
+}
+
+function TableOfContentsList({
+  items,
+  activeId,
+  onSelect,
+  className,
+}: {
+  items: TableOfContentsItem[];
+  activeId: string;
+  onSelect: (item: TableOfContentsItem) => void;
+  className?: string;
+}) {
+  return (
+    <ol className={cn("space-y-1 overflow-y-auto overscroll-contain", className)}>
+      {items.map((item) => {
+        const isActive = item.id === activeId;
+
+        return (
+          <li key={item.id}>
+            <a
+              href={`#${item.id}`}
+              aria-current={isActive ? "location" : undefined}
+              onClick={(event) => {
+                event.preventDefault();
+                onSelect(item);
+              }}
+              className={cn(
+                "block rounded-xl py-2 text-[14px] leading-7 transition-colors focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/35",
+                item.level === 3 ? "ps-5 pe-3" : "px-3 font-semibold",
+                isActive
+                  ? "border border-primary/20 bg-primary-light/35 text-primary"
+                  : "text-muted-foreground hover:bg-muted hover:text-primary",
+              )}
+            >
+              {item.title}
+            </a>
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
+function navigateToHeading(id: string, setActiveId: (id: string) => void) {
+  const heading = document.getElementById(id);
+  if (!heading) return;
+
+  setActiveId(id);
+  const destination = new URL(window.location.href);
+  destination.hash = id;
+
+  if (window.location.hash !== destination.hash) {
+    window.history.pushState(window.history.state, "", destination);
+  }
+
+  heading.scrollIntoView({
+    behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+    block: "start",
+  });
 }
 
 export type { TableOfContentsItem };

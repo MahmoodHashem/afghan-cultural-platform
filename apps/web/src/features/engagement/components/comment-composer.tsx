@@ -2,7 +2,7 @@
 
 import { PaperAirplaneIcon, ShieldCheckIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useId, useRef } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -40,6 +40,9 @@ function CommentComposer({
   onCancel,
 }: CommentComposerProps) {
   const compact = mode !== "root";
+  const [isExpanded, setIsExpanded] = useState(
+    compact || autoFocus || initialBody.trim().length > 0,
+  );
   const fieldId = useId();
   const {
     register,
@@ -62,7 +65,8 @@ function CommentComposer({
   useEffect(() => {
     reset({ body: initialBody });
     selectionRef.current = { start: initialBody.length, end: initialBody.length };
-  }, [initialBody, reset]);
+    if (initialBody.trim().length > 0 || autoFocus) setIsExpanded(true);
+  }, [autoFocus, initialBody, reset]);
 
   async function submit(values: EntryCommentFormValues) {
     try {
@@ -113,15 +117,23 @@ function CommentComposer({
   return (
     <form
       onSubmit={handleSubmit(submit)}
+      onFocus={() => setIsExpanded(true)}
       className={cn(
-        "bg-card",
+        "bg-card transition-[padding,box-shadow] duration-200",
         compact
           ? "space-y-3 rounded-xl border border-border p-3"
-          : "rounded-xl border border-border p-4 sm:p-5",
+          : isExpanded
+            ? "rounded-xl border border-border p-4 shadow-[0_6px_22px_rgba(31,41,55,0.06)] sm:p-5"
+            : "rounded-xl border border-border p-3 sm:p-4",
       )}
     >
       <div className={cn("flex items-start gap-3", !compact && "sm:gap-4")}>
-        <Avatar className={cn("bg-primary-light", compact ? "size-9" : "size-11")}>
+        <Avatar
+          className={cn(
+            "bg-primary-light transition-[width,height] duration-200",
+            compact ? "size-9" : isExpanded ? "size-11" : "size-9",
+          )}
+        >
           <AvatarFallback className="bg-primary-light font-bold text-primary">
             {createUserInitials(authorName)}
           </AvatarFallback>
@@ -132,7 +144,7 @@ function CommentComposer({
           </label>
           <Textarea
             id={fieldId}
-            rows={compact ? 3 : 4}
+            rows={compact ? 3 : isExpanded ? 4 : 2}
             maxLength={1000}
             autoFocus={autoFocus}
             placeholder={
@@ -144,7 +156,11 @@ function CommentComposer({
             aria-describedby={errors.body ? errorId : undefined}
             className={cn(
               "resize-y border-border bg-background leading-8 shadow-none",
-              compact ? "min-h-24" : "min-h-28 sm:min-h-32",
+              compact
+                ? "min-h-24"
+                : isExpanded
+                  ? "min-h-28 sm:min-h-32"
+                  : "min-h-18 resize-none border-transparent bg-transparent",
             )}
             {...bodyField}
             ref={(element) => {
@@ -163,45 +179,59 @@ function CommentComposer({
         </div>
       </div>
 
-      <div
-        className={cn("mt-4 flex flex-wrap items-center justify-between gap-3", compact && "mt-3")}
-      >
-        {!compact ? (
-          <p className="inline-flex items-center gap-2 text-[12px] leading-6 text-muted-foreground sm:text-[13px]">
-            <ShieldCheckIcon className="size-5 shrink-0 text-primary" aria-hidden="true" />
-            {helperText ?? "لطفاً با احترام و مرتبط با موضوع، نظر خود را بنویسید."}
-          </p>
-        ) : (
-          <span className="text-[12px] text-muted-foreground">
-            {formatPersianNumber(body.length)}/۱۰۰۰
-          </span>
-        )}
-        <div className="ms-auto flex items-center gap-2">
-          <CommentEmojiPicker disabled={isPending || body.length >= 1000} onSelect={insertEmoji} />
+      {compact || isExpanded ? (
+        <div
+          className={cn(
+            "mt-4 flex flex-wrap items-center justify-between gap-3",
+            compact && "mt-3",
+          )}
+        >
           {!compact ? (
+            <p className="inline-flex items-center gap-2 text-[12px] leading-6 text-muted-foreground sm:text-[13px]">
+              <ShieldCheckIcon className="size-5 shrink-0 text-primary" aria-hidden="true" />
+              {helperText ?? "لطفاً با احترام و مرتبط با موضوع، نظر خود را بنویسید."}
+            </p>
+          ) : (
             <span className="text-[12px] text-muted-foreground">
               {formatPersianNumber(body.length)}/۱۰۰۰
             </span>
-          ) : null}
-          {onCancel ? (
-            <Button type="button" variant="ghost" size="sm" disabled={isPending} onClick={onCancel}>
-              انصراف
-            </Button>
-          ) : null}
-          <Button type="submit" size={compact ? "sm" : "default"} disabled={isPending}>
-            {isPending
-              ? "در حال ثبت..."
-              : mode === "edit"
-                ? "ذخیره تغییرات"
-                : mode === "reply"
-                  ? "ارسال پاسخ"
-                  : "ارسال دیدگاه"}
-            {mode !== "edit" ? (
-              <PaperAirplaneIcon className="size-4 rtl:-scale-x-100" aria-hidden="true" />
+          )}
+          <div className="ms-auto flex items-center gap-2">
+            <CommentEmojiPicker
+              disabled={isPending || body.length >= 1000}
+              onSelect={insertEmoji}
+            />
+            {!compact ? (
+              <span className="text-[12px] text-muted-foreground">
+                {formatPersianNumber(body.length)}/۱۰۰۰
+              </span>
             ) : null}
-          </Button>
+            {onCancel ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                disabled={isPending}
+                onClick={onCancel}
+              >
+                انصراف
+              </Button>
+            ) : null}
+            <Button type="submit" size={compact ? "sm" : "default"} disabled={isPending}>
+              {isPending
+                ? "در حال ثبت..."
+                : mode === "edit"
+                  ? "ذخیره تغییرات"
+                  : mode === "reply"
+                    ? "ارسال پاسخ"
+                    : "ارسال دیدگاه"}
+              {mode !== "edit" ? (
+                <PaperAirplaneIcon className="size-4 rtl:-scale-x-100" aria-hidden="true" />
+              ) : null}
+            </Button>
+          </div>
         </div>
-      </div>
+      ) : null}
     </form>
   );
 }

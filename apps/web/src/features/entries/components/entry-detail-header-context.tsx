@@ -7,9 +7,14 @@ import { type HeaderContext, PUBLIC_HEADER_CONTEXT_EVENT } from "@/components/la
 type EntryDetailHeaderContextProps = {
   title: string;
   backHref: string;
+  hasTableOfContents: boolean;
 };
 
-function EntryDetailHeaderContext({ title, backHref }: EntryDetailHeaderContextProps) {
+function EntryDetailHeaderContext({
+  title,
+  backHref,
+  hasTableOfContents,
+}: EntryDetailHeaderContextProps) {
   useEffect(() => {
     let animationFrameId = 0;
 
@@ -19,6 +24,7 @@ function EntryDetailHeaderContext({ title, backHref }: EntryDetailHeaderContextP
         backHref,
         backLabel: "بازگشت به مطالب",
         visible,
+        hasTableOfContents,
       };
 
       window.dispatchEvent(new CustomEvent(PUBLIC_HEADER_CONTEXT_EVENT, { detail }));
@@ -39,7 +45,7 @@ function EntryDetailHeaderContext({ title, backHref }: EntryDetailHeaderContextP
       window.removeEventListener("scroll", updateContext);
       dispatchContext(false);
     };
-  }, [backHref, title]);
+  }, [backHref, hasTableOfContents, title]);
 
   return null;
 }

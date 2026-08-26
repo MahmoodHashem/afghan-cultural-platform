@@ -54,6 +54,7 @@ type HeaderContext = {
   backHref: string;
   backLabel: string;
   visible: boolean;
+  hasTableOfContents?: boolean;
 };
 
 const PUBLIC_HEADER_CONTEXT_EVENT = "afghan-culture:public-header-context";

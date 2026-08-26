@@ -3,28 +3,6 @@
     overflow-x: clip;
   }
 
-  body:has([data-mobile-route="home"]) [data-mobile-home-feed] {
-    padding-top: 1.5rem;
-  }
-
-  body:has([data-mobile-route="home"]) [data-mobile-home-feed] .content-container {
-    width: 100%;
-    padding-inline: 1rem;
-  }
-
-  body:has([data-mobile-route="home"]) [data-mobile-home-feed] section {
-    scroll-margin-top: calc(4.5rem + env(safe-area-inset-top));
-  }
-
-  body:has([data-mobile-route="home"]) [data-mobile-home-feed] h2 {
-    font-size: 1.25rem;
-    line-height: 1.85;
-  }
-
-  body:has([data-mobile-route="home"]) [data-mobile-home-feed] .grid {
-    gap: 1rem;
-  }
-
   body:has([data-mobile-route="explore"]) main,
   body:has([data-mobile-route="province"]) main,
   body:has([data-mobile-route="category"]) main {
@@ -95,5 +73,56 @@
   body:has([data-mobile-route="province"]) main [data-slot="card"] img,
   body:has([data-mobile-route="category"]) main [data-slot="card"] img {
     width: 100%;
+  }
+
+  body:has([data-mobile-route="home"]) [data-mobile-home-feed] {
+    padding-top: 1.5rem;
+  }
+
+  body:has([data-mobile-route="home"]) [data-mobile-home-feed] .content-container {
+    width: 100%;
+    padding-inline: 1rem;
+  }
+
+  body:has([data-mobile-route="home"]) [data-mobile-home-feed] section {
+    scroll-margin-top: calc(4.5rem + env(safe-area-inset-top));
+  }
+
+  body:has([data-mobile-route="home"]) [data-mobile-home-feed] h2 {
+    font-size: 1.25rem;
+    line-height: 1.85;
+  }
+
+  body:has([data-mobile-route="home"]) [data-mobile-home-feed] .grid {
+    gap: 1rem;
+  }
+
+  body:has([data-mobile-route="entry"]) [data-entry-detail] .content-container {
+    width: 100%;
+    padding-inline: 1rem;
+  }
+
+  body:has([data-mobile-route="entry"]) [data-entry-detail] .article-container {
+    font-size: 1.0625rem;
+    line-height: 2.1;
+  }
+
+  body:has([data-mobile-route="entry"]) [data-entry-detail] .article-container h2 {
+    scroll-margin-top: calc(4.5rem + env(safe-area-inset-top));
+    padding-top: 0.75rem;
+    font-size: 1.5rem;
+    line-height: 1.75;
+  }
+
+  body:has([data-mobile-route="entry"]) [data-entry-detail] .article-container h3 {
+    scroll-margin-top: calc(4.5rem + env(safe-area-inset-top));
+    padding-top: 0.5rem;
+    font-size: 1.25rem;
+    line-height: 1.8;
+  }
+
+  body:has([data-mobile-route="entry"]) [data-entry-detail] .article-container p,
+  body:has([data-mobile-route="entry"]) [data-entry-detail] .article-container li {
+    line-height: 2.1;
   }
 }

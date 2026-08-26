@@ -46,7 +46,7 @@ function EntryScrollControls() {
 
   return (
     <nav
-      className="fixed bottom-5 right-4 z-40 flex flex-col  overflow-hidden rounded-full  shadow-[0_2px_10px_rgba(0,0,0,.08)] backdrop-blur-sm sm:bottom-6 sm:right-6"
+      className="fixed bottom-5 right-4 z-40 hidden flex-col overflow-hidden rounded-full shadow-[0_2px_10px_rgba(0,0,0,.08)] backdrop-blur-sm lg:flex lg:bottom-6 lg:right-6"
       aria-label="پیمایش سریع مطلب"
     >
       <Button
