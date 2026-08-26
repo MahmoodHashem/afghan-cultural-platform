@@ -163,11 +163,7 @@ function applyMarks(text: string, marks: TiptapMark[] | undefined, key: number |
         return <s key={`${key}-strike`}>{current}</s>;
       case "code":
         return (
-          <code
-            key={`${key}-code`}
-            dir="ltr"
-            className="rounded bg-muted px-1 py-0.5 text-[0.9em]"
-          >
+          <code key={`${key}-code`} dir="ltr" className="rounded bg-muted px-1 py-0.5 text-[0.9em]">
             {current}
           </code>
         );

@@ -24,9 +24,17 @@ function getSafeRedirectPath(path: string | null | undefined) {
 }
 
 function createLoginPath(nextPath: string) {
-  const safePath = getSafeRedirectPath(nextPath);
-
-  return safePath === "/" ? "/login" : `/login?next=${encodeURIComponent(safePath)}`;
+  return createAuthPath("/login", nextPath);
 }
 
-export { createLoginPath, DEFAULT_AUTHENTICATED_PATH, getSafeRedirectPath };
+function createRegisterPath(nextPath: string) {
+  return createAuthPath("/register", nextPath);
+}
+
+function createAuthPath(authPath: "/login" | "/register", nextPath: string) {
+  const safePath = getSafeRedirectPath(nextPath);
+
+  return safePath === "/" ? authPath : `${authPath}?next=${encodeURIComponent(safePath)}`;
+}
+
+export { createLoginPath, createRegisterPath, DEFAULT_AUTHENTICATED_PATH, getSafeRedirectPath };

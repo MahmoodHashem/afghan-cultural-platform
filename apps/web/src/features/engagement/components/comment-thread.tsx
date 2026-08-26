@@ -3,7 +3,7 @@
 import { ArrowUturnLeftIcon, ChevronDownIcon, HeartIcon } from "@heroicons/react/24/outline";
 import { HeartIcon as HeartIconSolid } from "@heroicons/react/24/solid";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -34,7 +34,8 @@ type CommentThreadProps = {
 
 function CommentThread({ entryId, comment, depth = 0, now }: CommentThreadProps) {
   const reducedMotion = useReducedMotion();
-  const { user, canContribute, ensureVerifiedAccess } = useEngagementAccess();
+  const { user, canContribute, ensureVerifiedAccess, getPendingComment, clearPendingComment } =
+    useEngagementAccess();
   const [repliesOpen, setRepliesOpen] = useState(false);
   const [replying, setReplying] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -52,9 +53,17 @@ function CommentThread({ entryId, comment, depth = 0, now }: CommentThreadProps)
   const activeBody = comment.status === "ACTIVE" ? comment.body : null;
   const isOwner = Boolean(activeAuthor?.id === user?.id);
   const isSelfLike = Boolean(activeAuthor?.id === user?.id);
+  const pendingReply = getPendingComment(comment.id);
+
+  useEffect(() => {
+    if (canContribute && pendingReply) {
+      setRepliesOpen(true);
+      setReplying(true);
+      setEditing(false);
+    }
+  }, [canContribute, pendingReply]);
 
   function beginReply() {
-    if (!ensureVerifiedAccess("comment")) return;
     setRepliesOpen(true);
     setReplying(true);
     setEditing(false);
@@ -62,11 +71,21 @@ function CommentThread({ entryId, comment, depth = 0, now }: CommentThreadProps)
 
   function toggleLike() {
     if (isSelfLike) return;
-    if (ensureVerifiedAccess("comment")) commentLike.toggle();
+    if (ensureVerifiedAccess("commentLike")) commentLike.toggle();
   }
 
   async function submitReply(body: string) {
+    if (
+      !ensureVerifiedAccess("comment", {
+        kind: "comment",
+        body,
+        parentId: comment.id,
+      })
+    ) {
+      throw new Error("Comment access is unavailable.");
+    }
     await createComment.mutateAsync({ body, parentId: comment.id });
+    clearPendingComment(comment.id);
     setReplying(false);
     setRepliesOpen(true);
   }
@@ -230,6 +249,7 @@ function CommentThread({ entryId, comment, depth = 0, now }: CommentThreadProps)
             <CommentComposer
               mode="reply"
               authorName={user?.displayName ?? "کاربر"}
+              initialBody={pendingReply?.body ?? ""}
               isPending={createComment.isPending}
               autoFocus
               onSubmit={submitReply}

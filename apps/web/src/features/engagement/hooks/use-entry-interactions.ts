@@ -69,20 +69,23 @@ function useEntryLike({ entryId, initialCount, isAuthenticated }: InteractionOpt
   });
   const state = stateQuery.data ?? fallbackState;
 
+  async function setLiked(shouldLike: boolean) {
+    if (mutation.isPending || actionLock.current) return undefined;
+
+    actionLock.current = true;
+    try {
+      return await mutation.mutateAsync(shouldLike);
+    } finally {
+      actionLock.current = false;
+    }
+  }
+
   return {
     ...state,
     isLoading: isAuthenticated && stateQuery.isLoading,
     isPending: mutation.isPending,
-    toggle: () => {
-      if (!mutation.isPending && !actionLock.current) {
-        actionLock.current = true;
-        mutation.mutate(!state.isLikedByCurrentUser, {
-          onSettled: () => {
-            actionLock.current = false;
-          },
-        });
-      }
-    },
+    setLiked,
+    toggle: () => void setLiked(!state.isLikedByCurrentUser),
   };
 }
 
@@ -136,20 +139,23 @@ function useEntryBookmark({ entryId, initialCount, isAuthenticated }: Interactio
   });
   const state = stateQuery.data ?? fallbackState;
 
+  async function setBookmarked(shouldBookmark: boolean) {
+    if (mutation.isPending || actionLock.current) return undefined;
+
+    actionLock.current = true;
+    try {
+      return await mutation.mutateAsync(shouldBookmark);
+    } finally {
+      actionLock.current = false;
+    }
+  }
+
   return {
     ...state,
     isLoading: isAuthenticated && stateQuery.isLoading,
     isPending: mutation.isPending,
-    toggle: () => {
-      if (!mutation.isPending && !actionLock.current) {
-        actionLock.current = true;
-        mutation.mutate(!state.bookmarked, {
-          onSettled: () => {
-            actionLock.current = false;
-          },
-        });
-      }
-    },
+    setBookmarked,
+    toggle: () => void setBookmarked(!state.bookmarked),
   };
 }
 

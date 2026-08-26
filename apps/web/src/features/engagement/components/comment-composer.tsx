@@ -24,6 +24,7 @@ type CommentComposerProps = {
   initialBody?: string;
   isPending: boolean;
   autoFocus?: boolean;
+  helperText?: string;
   onSubmit: (body: string) => Promise<void>;
   onCancel?: () => void;
 };
@@ -34,6 +35,7 @@ function CommentComposer({
   initialBody = "",
   isPending,
   autoFocus = false,
+  helperText,
   onSubmit,
   onCancel,
 }: CommentComposerProps) {
@@ -167,7 +169,7 @@ function CommentComposer({
         {!compact ? (
           <p className="inline-flex items-center gap-2 text-[12px] leading-6 text-muted-foreground sm:text-[13px]">
             <ShieldCheckIcon className="size-5 shrink-0 text-primary" aria-hidden="true" />
-            لطفاً با احترام و مرتبط با موضوع، نظر خود را بنویسید.
+            {helperText ?? "لطفاً با احترام و مرتبط با موضوع، نظر خود را بنویسید."}
           </p>
         ) : (
           <span className="text-[12px] text-muted-foreground">

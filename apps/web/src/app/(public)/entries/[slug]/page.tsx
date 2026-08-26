@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { PageTransition } from "@/components/layout/page-transition";
+import { EngagementAccessProvider } from "@/features/engagement/components/engagement-access-provider";
 import {
   getPublicEntryComments,
   getPublishedEntryBySlug,
@@ -54,7 +55,12 @@ export default async function EntryDetailPage({ params }: EntryDetailPageProps) 
   return (
     <>
       <PageTransition>
-        <EntryDetailContent entry={entry} comments={comments} breadcrumbItems={breadcrumbItems} />
+        <EngagementAccessProvider
+          entryId={entry.id}
+          entryPath={`/entries/${encodeURIComponent(entry.slug)}`}
+        >
+          <EntryDetailContent entry={entry} comments={comments} breadcrumbItems={breadcrumbItems} />
+        </EngagementAccessProvider>
       </PageTransition>
       <EntryScrollControls />
     </>

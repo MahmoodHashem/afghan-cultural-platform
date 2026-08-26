@@ -37,7 +37,14 @@ function EntryActionRail({
   bookmarkCount,
 }: EntryActionRailProps) {
   const [progress, setProgress] = useState(0);
-  const { isAuthenticated, status, ensureVerifiedAccess } = useEngagementAccess();
+  const {
+    isAuthenticated,
+    status,
+    canContribute,
+    pendingIntent,
+    ensureVerifiedAccess,
+    takePendingToggleIntent,
+  } = useEngagementAccess();
   const like = useEntryLike({ entryId, initialCount: likeCount, isAuthenticated });
   const bookmark = useEntryBookmark({ entryId, initialCount: bookmarkCount, isAuthenticated });
   const comments = useEntryComments(entryId, "newest", initialComments);
@@ -68,6 +75,42 @@ function EntryActionRail({
     };
   }, []);
 
+  useEffect(() => {
+    if (!canContribute || like.isLoading || pendingIntent?.kind !== "like") return;
+
+    const intent = takePendingToggleIntent("like");
+    if (!intent || intent.desiredState === like.isLikedByCurrentUser) return;
+
+    void like
+      .setLiked(intent.desiredState)
+      .then((result) => {
+        if (result) {
+          toast.success(intent.desiredState ? "پسند شما ثبت شد." : "پسند شما برداشته شد.");
+        }
+      })
+      .catch(() => undefined);
+  }, [canContribute, like, pendingIntent, takePendingToggleIntent]);
+
+  useEffect(() => {
+    if (!canContribute || bookmark.isLoading || pendingIntent?.kind !== "bookmark") return;
+
+    const intent = takePendingToggleIntent("bookmark");
+    if (!intent || intent.desiredState === bookmark.bookmarked) return;
+
+    void bookmark
+      .setBookmarked(intent.desiredState)
+      .then((result) => {
+        if (result) {
+          toast.success(
+            intent.desiredState
+              ? "مطلب در ذخیره‌های شما قرار گرفت."
+              : "مطلب از ذخیره‌های شما برداشته شد.",
+          );
+        }
+      })
+      .catch(() => undefined);
+  }, [bookmark, canContribute, pendingIntent, takePendingToggleIntent]);
+
   async function shareEntry() {
     const url = window.location.href;
 
@@ -89,13 +132,23 @@ function EntryActionRail({
   }
 
   function toggleLike() {
-    if (ensureVerifiedAccess("like")) {
+    if (
+      ensureVerifiedAccess("like", {
+        kind: "like",
+        desiredState: !like.isLikedByCurrentUser,
+      })
+    ) {
       like.toggle();
     }
   }
 
   function toggleBookmark() {
-    if (ensureVerifiedAccess("bookmark")) {
+    if (
+      ensureVerifiedAccess("bookmark", {
+        kind: "bookmark",
+        desiredState: !bookmark.bookmarked,
+      })
+    ) {
       bookmark.toggle();
     }
   }

@@ -56,6 +56,14 @@ const entryHeaderContext = read("src/features/entries/components/entry-detail-he
 const entryTableOfContents = read("src/features/entries/components/entry-table-of-contents.tsx");
 const engagementApi = read("src/features/engagement/api/entry-engagement-api.ts");
 const engagementAccess = read("src/features/engagement/hooks/use-engagement-access.ts");
+const engagementAccessProvider = read(
+  "src/features/engagement/components/engagement-access-provider.tsx",
+);
+const engagementAccessDialog = read(
+  "src/features/engagement/components/engagement-access-dialog.tsx",
+);
+const pendingEngagementIntent = read("src/features/engagement/utils/pending-engagement-intent.ts");
+const authEvents = read("src/features/auth/utils/auth-events.ts");
 const engagementInteractions = read("src/features/engagement/hooks/use-entry-interactions.ts");
 const engagementCommentsHook = read("src/features/engagement/hooks/use-entry-comments.ts");
 const engagementComments = read("src/features/engagement/components/entry-comments.tsx");
@@ -244,7 +252,7 @@ test("login page renders required fields and links", () => {
   assert.match(loginForm, /\/forgot-password/);
   assert.match(loginForm, /ورود با گوگل/);
   assert.match(loginForm, /ورود با فیسبوک/);
-  assert.match(loginForm, /\/register/);
+  assert.match(loginForm, /createRegisterPath/);
 });
 
 test("register page renders required fields and links", () => {
@@ -257,7 +265,7 @@ test("register page renders required fields and links", () => {
   assert.match(registerForm, /\/privacy/);
   assert.match(registerForm, /ثبت‌نام با گوگل/);
   assert.match(registerForm, /ثبت‌نام با فیسبوک/);
-  assert.match(registerForm, /\/login/);
+  assert.match(registerForm, /createLoginPath/);
 });
 
 test("auth schemas cover invalid email validation", () => {
@@ -353,6 +361,8 @@ test("verification callback consumes the token once and refreshes authenticated 
   assert.match(authApi, /body: \{ token \}/);
   assert.match(authMutations, /refreshAuthSessionOnce/);
   assert.match(authMutations, /updateUser\(user\)/);
+  assert.match(authMutations, /publishAuthEvent/);
+  assert.match(authEvents, /BroadcastChannel/);
   assert.match(authErrorMessages, /AUTH_VERIFICATION_TOKEN_INVALID/);
   assert.match(authErrorMessages, /AUTH_VERIFICATION_TOKEN_EXPIRED/);
   assert.doesNotMatch(emailVerificationCompletion, /localStorage|sessionStorage|console\./);
@@ -398,7 +408,10 @@ test("protected route gates preserve safe next paths and enforce auth states", (
   assert.match(routeGates, /status === "initializing"/);
   assert.match(routeGates, /createLoginPath\(nextPath\)/);
   assert.match(routeGates, /getSafeRedirectPath\(pathname\)/);
-  assert.match(authRedirects, /`\/login\?next=\$\{encodeURIComponent\(safePath\)\}`/);
+  assert.match(authRedirects, /function createAuthPath/);
+  assert.match(authRedirects, /`\$\{authPath\}\?next=\$\{encodeURIComponent\(safePath\)\}`/);
+  assert.match(loginForm, /createRegisterPath\(searchParams\.get\("next"\)/);
+  assert.match(registerForm, /createLoginPath\(searchParams\.get\("next"\)/);
 });
 
 test("owner profile route is authenticated and noindexed", () => {
@@ -974,12 +987,29 @@ test("like and bookmark mutations optimistically update rollback and reconcile",
   assert.match(entryActionRail, /bookmark\.bookmarkCount/);
 });
 
-test("engagement access redirects guests and explains verification requirements", () => {
-  assert.match(engagementAccess, /createLoginPath\(currentPath\)/);
-  assert.match(engagementAccess, /!user\.emailVerified/);
-  assert.match(engagementAccess, /برای پسندیدن مطلب باید ایمیل خود را تأیید کنید/);
-  assert.match(engagementAccess, /برای ذخیره‌کردن مطلب باید ایمیل خود را تأیید کنید/);
-  assert.match(engagementAccess, /برای نوشتن دیدگاه باید ایمیل خود را تأیید کنید/);
+test("engagement access uses one contextual dialog and safe temporary intents", () => {
+  assert.match(entryDetailPage, /<EngagementAccessProvider/);
+  assert.match(engagementAccess, /EngagementAccessContext/);
+  assert.match(engagementAccessProvider, /ensureVerifiedAccess/);
+  assert.match(engagementAccessProvider, /readPendingEngagementIntent/);
+  assert.match(engagementAccessProvider, /takePendingToggleIntent/);
+  assert.match(engagementAccessProvider, /getCurrentUser/);
+  assert.match(engagementAccessProvider, /subscribeToAuthEvents/);
+  assert.match(engagementAccessDialog, /<Dialog/);
+  assert.match(engagementAccessDialog, /<Sheet/);
+  assert.match(engagementAccessDialog, /side="bottom"/);
+  assert.match(engagementAccessDialog, /<LoginForm/);
+  assert.match(engagementAccessDialog, /<RegisterForm/);
+  assert.match(engagementAccessDialog, /nextPath=\{returnPath\}/);
+  assert.match(loginForm, /onAuthenticated/);
+  assert.match(registerForm, /onAuthenticated/);
+  assert.match(engagementAccessDialog, /<EmailVerificationButton/);
+  assert.match(engagementAccessDialog, /این حساب موقتاً تعلیق شده است/);
+  assert.match(pendingEngagementIntent, /window\.sessionStorage/);
+  assert.match(pendingEngagementIntent, /PENDING_ENGAGEMENT_INTENT_TTL_MS = 30 \* 60 \* 1000/);
+  assert.match(pendingEngagementIntent, /parsed\.entryId !== entryId/);
+  assert.match(pendingEngagementIntent, /isSafeEntryReturnPath/);
+  assert.doesNotMatch(pendingEngagementIntent, /accessToken|refreshToken|document\.cookie/);
   assert.match(engagementErrors, /AUTH_ACCOUNT_SUSPENDED/);
   assert.match(engagementErrors, /TOO_MANY_REQUESTS/);
   assert.match(engagementErrors, /NETWORK_ERROR/);
@@ -997,6 +1027,10 @@ test("comment mutations preserve server truth and synchronize focused caches", (
   assert.match(engagementCommentsHook, /restoreCommentListSnapshots/);
   assert.match(commentComposer, /fieldErrors\.find/);
   assert.match(commentComposer, /mode !== "edit"/);
+  assert.match(engagementComments, /initialBody=\{pendingRootComment\?\.body \?\? ""\}/);
+  assert.match(engagementComments, /kind: "comment", body/);
+  assert.match(commentThread, /parentId: comment\.id/);
+  assert.match(commentThread, /initialBody=\{pendingReply\?\.body \?\? ""\}/);
   assert.match(commentComposer, /<CommentEmojiPicker/);
   assert.match(commentComposer, /setSelectionRange\(nextCursorPosition, nextCursorPosition\)/);
   assert.match(commentComposer, /setValue\("body", nextBody/);

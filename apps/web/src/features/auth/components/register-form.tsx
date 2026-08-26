@@ -21,11 +21,24 @@ import { useRegister } from "@/features/auth/hooks/use-auth-mutations";
 import { type RegisterFormValues, registerSchema } from "@/features/auth/schemas/auth-schemas";
 import { applyApiFieldErrors, getAuthFormErrorMessage } from "@/features/auth/utils/form-errors";
 import { redirectToOAuthProvider } from "@/features/auth/utils/oauth-redirect";
-import { getSafeRedirectPath } from "@/features/auth/utils/redirects";
+import { createLoginPath, getSafeRedirectPath } from "@/features/auth/utils/redirects";
 import { isApiError } from "@/lib/api/api-error";
 import { cn } from "@/lib/utils";
+import type { AuthSession } from "@/stores/auth-store";
 
-function RegisterForm() {
+type RegisterFormProps = {
+  embedded?: boolean;
+  nextPath?: string;
+  onAuthenticated?: (session: AuthSession) => void;
+  onSwitchToLogin?: () => void;
+};
+
+function RegisterForm({
+  embedded = false,
+  nextPath,
+  onAuthenticated,
+  onSwitchToLogin,
+}: RegisterFormProps = {}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const registerMutation = useRegister();
@@ -61,9 +74,14 @@ function RegisterForm() {
         setShowUnverifiedNotice(true);
       }
 
+      if (onAuthenticated) {
+        onAuthenticated(session);
+        return;
+      }
+
       window.setTimeout(
         () => {
-          router.replace(getSafeRedirectPath(searchParams.get("next")));
+          router.replace(getSafeRedirectPath(nextPath ?? searchParams.get("next")));
         },
         session.user.emailVerified ? 0 : 900,
       );
@@ -92,7 +110,11 @@ function RegisterForm() {
   }
 
   return (
-    <form className="space-y-5" onSubmit={handleSubmit(handleRegisterSubmit)} noValidate>
+    <form
+      className={cn(embedded ? "space-y-4" : "space-y-5")}
+      onSubmit={handleSubmit(handleRegisterSubmit)}
+      noValidate
+    >
       {showUnverifiedNotice ? <UnverifiedEmailNotice /> : null}
 
       <div className="space-y-4">
@@ -209,15 +231,32 @@ function RegisterForm() {
       <OAuthButtons
         googleLabel="ثبت‌نام با گوگل"
         facebookLabel="ثبت‌نام با فیسبوک"
-        onGoogleClick={() => redirectToOAuthProvider("google", searchParams.get("next"))}
-        onFacebookClick={() => redirectToOAuthProvider("facebook", searchParams.get("next"))}
+        onGoogleClick={() =>
+          redirectToOAuthProvider("google", nextPath ?? searchParams.get("next"))
+        }
+        onFacebookClick={() =>
+          redirectToOAuthProvider("facebook", nextPath ?? searchParams.get("next"))
+        }
       />
 
       <p className="text-center text-[15px] text-muted-foreground">
         قبلاً حساب کاربری دارید؟{" "}
-        <Link href="/login" className="font-semibold text-primary hover:text-primary-hover">
-          ورود به حساب
-        </Link>
+        {embedded && onSwitchToLogin ? (
+          <button
+            type="button"
+            className="font-semibold text-primary hover:text-primary-hover"
+            onClick={onSwitchToLogin}
+          >
+            ورود به حساب
+          </button>
+        ) : (
+          <Link
+            href={createLoginPath(nextPath ?? searchParams.get("next") ?? "/")}
+            className="font-semibold text-primary hover:text-primary-hover"
+          >
+            ورود به حساب
+          </Link>
+        )}
       </p>
     </form>
   );

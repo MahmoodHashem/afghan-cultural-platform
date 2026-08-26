@@ -13,6 +13,7 @@ import {
   resendEmailVerification,
   verifyEmail,
 } from "@/features/auth/api/auth-api";
+import { publishAuthEvent } from "@/features/auth/utils/auth-events";
 import { markAuthLogoutStarted, refreshAuthSessionOnce } from "@/lib/auth/auth-coordinator";
 import {
   clearPrivateAuthQueries,
@@ -127,6 +128,7 @@ function useVerifyEmail() {
       }
 
       await queryClient.invalidateQueries({ queryKey: ["profile"] });
+      publishAuthEvent({ type: "email-verified", userId: user.id });
     },
   });
 }

@@ -39,13 +39,21 @@ type EntryCommentsProps = {
 
 function EntryComments({ entryId, initialComments, renderedAt }: EntryCommentsProps) {
   const reducedMotion = useReducedMotion();
-  const { status, user, canContribute, ensureVerifiedAccess } = useEngagementAccess();
+  const {
+    status,
+    user,
+    canContribute,
+    ensureVerifiedAccess,
+    getPendingComment,
+    clearPendingComment,
+  } = useEngagementAccess();
   const [sort, setSort] = useState<EntryCommentSort>("newest");
   const [now, setNow] = useState(() => new Date(renderedAt ?? Date.now()).getTime());
   const commentsQuery = useEntryComments(entryId, sort, initialComments);
   const createComment = useCreateComment(entryId);
   const comments = commentsQuery.data?.pages.flatMap((page) => page.data) ?? [];
   const commentCount = commentsQuery.data?.pages[0]?.commentCount ?? initialComments.commentCount;
+  const pendingRootComment = getPendingComment();
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 60_000);
@@ -53,8 +61,11 @@ function EntryComments({ entryId, initialComments, renderedAt }: EntryCommentsPr
   }, []);
 
   async function submitComment(body: string) {
-    if (!ensureVerifiedAccess("comment")) throw new Error("Comment access is unavailable.");
+    if (!ensureVerifiedAccess("comment", { kind: "comment", body })) {
+      throw new Error("Comment access is unavailable.");
+    }
     await createComment.mutateAsync({ body });
+    clearPendingComment();
   }
 
   return (
@@ -104,28 +115,23 @@ function EntryComments({ entryId, initialComments, renderedAt }: EntryCommentsPr
 
       {status === "initializing" ? (
         <Skeleton className="h-48 rounded-xl" aria-label="در حال آماده‌سازی فرم دیدگاه" />
-      ) : canContribute && user ? (
+      ) : (
         <CommentComposer
-          authorName={user.displayName}
+          authorName={user?.displayName ?? "مهمان"}
+          initialBody={pendingRootComment?.body ?? ""}
           isPending={createComment.isPending}
+          autoFocus={canContribute && Boolean(pendingRootComment)}
+          helperText={
+            status === "unauthenticated"
+              ? "متن شما حفظ می‌شود؛ برای ثبت دیدگاه وارد حساب خود شوید."
+              : user?.status === "SUSPENDED"
+                ? "امکان ثبت دیدگاه با این حساب وجود ندارد."
+                : !canContribute
+                  ? "متن شما حفظ می‌شود؛ برای ثبت دیدگاه ایمیل خود را تأیید کنید."
+                  : undefined
+          }
           onSubmit={submitComment}
         />
-      ) : (
-        <div className="rounded-xl border border-border bg-card p-5 text-[14px] leading-7 text-muted-foreground">
-          <p>
-            {status === "unauthenticated"
-              ? "برای نوشتن دیدگاه وارد حساب خود شوید."
-              : "برای نوشتن دیدگاه باید ایمیل حساب شما تأیید شده باشد."}
-          </p>
-          <Button
-            type="button"
-            variant="outline"
-            className="mt-3"
-            onClick={() => ensureVerifiedAccess("comment")}
-          >
-            {status === "unauthenticated" ? "ورود / ثبت‌نام" : "راهنمای تأیید ایمیل"}
-          </Button>
-        </div>
       )}
 
       {commentsQuery.isLoading ? <CommentListSkeleton /> : null}
