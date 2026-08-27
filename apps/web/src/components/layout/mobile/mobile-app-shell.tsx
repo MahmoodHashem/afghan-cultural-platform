@@ -274,7 +274,7 @@ function MobileBottomNavigation({
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-2 rounded-full mx-2 z-40 border-t border-border/80 bg-card/95 px-2 pt-1.5 pb-[calc(0.5rem+env(safe-area-inset-bottom))] shadow-[0_-8px_28px_rgba(31,41,55,0.08)] backdrop-blur-xl"
+      className="fixed inset-x-0 bottom-2 rounded-full mx-2 z-40 border-t border-border/80 bg-card/95 px-2 pt-1 pb-[calc(0.3rem+env(safe-area-inset-bottom))] shadow-[0_-8px_28px_rgba(31,41,55,0.08)] backdrop-blur-xl"
       aria-label="ناوبری اصلی موبایل"
     >
       <div className="mx-auto grid max-w-md grid-cols-5 items-end">
@@ -298,7 +298,7 @@ function MobileBottomNavigation({
               {active && !item.prominent ? (
                 <motion.span
                   layoutId="mobile-navigation-active"
-                  className="absolute inset-x-7 -bottom-1 h-0.5 rounded-full bg-primary"
+                  className="absolute inset-x-7 bottom-0 h-0.5 rounded-full bg-primary"
                   transition={reducedMotion ? { duration: 0 } : { duration: 0.24 }}
                   aria-hidden="true"
                 />
@@ -307,7 +307,7 @@ function MobileBottomNavigation({
                 className={cn(
                   "flex size-7 items-center justify-center",
                   item.prominent &&
-                  "size-12 rounded-full border-4 border-card bg-primary text-primary-foreground ",
+                    "size-12 rounded-full border-4 border-card bg-primary text-primary-foreground ",
                 )}
               >
                 <Icon className={item.prominent ? "size-6" : "size-5"} aria-hidden="true" />

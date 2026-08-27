@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  ArrowTopRightOnSquareIcon,
   BookmarkIcon,
   ChatBubbleOvalLeftEllipsisIcon,
   HeartIcon,
@@ -75,7 +76,7 @@ function EntryActionRail({
         setProgress(nextProgress);
         setShowMobileDock(
           (entryIntro ? entryIntro.getBoundingClientRect().bottom <= 72 : window.scrollY > 420) &&
-          !hasReachedComments,
+            !hasReachedComments,
         );
       });
     };
@@ -172,7 +173,6 @@ function EntryActionRail({
   function renderActions(orientation: "mobile" | "desktop") {
     return (
       <>
-
         <ActionButton
           label={like.isLikedByCurrentUser ? "برداشتن پسند" : "پسندیدن مطلب"}
           count={like.likeCount}
@@ -216,7 +216,7 @@ function EntryActionRail({
           label="اشتراک‌گذاری"
           orientation={orientation}
           onClick={shareEntry}
-          icon={<ShareIcon className="size-6" aria-hidden="true" />}
+          icon={<ArrowTopRightOnSquareIcon className="size-6" aria-hidden="true" />}
         />
       </>
     );
@@ -247,35 +247,35 @@ function EntryActionRail({
 
       {portalRoot
         ? createPortal(
-          <>
-            <div
-              className="pointer-events-none fixed inset-x-9 rounded-full top-[calc(3.2rem+env(safe-area-inset-top))] z-41 h-0.5 bg-border/60 lg:hidden"
-              role="progressbar"
-              aria-label="پیشرفت مطالعه"
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-valuenow={Math.round(progress * 100)}
-            >
+            <>
               <div
-                className="h-full bg-primary transition-[width] duration-150 motion-reduce:transition-none"
-                style={{ width: `${progress * 100}%` }}
-              />
-            </div>
+                className="pointer-events-none fixed inset-x-9 rounded-full top-[calc(3.2rem+env(safe-area-inset-top))] z-41 h-0.5 bg-border/60 lg:hidden"
+                role="progressbar"
+                aria-label="پیشرفت مطالعه"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={Math.round(progress * 100)}
+              >
+                <div
+                  className="h-full bg-primary transition-[width] duration-150 motion-reduce:transition-none"
+                  style={{ width: `${progress * 100}%` }}
+                />
+              </div>
 
-            <nav
-              aria-label="تعامل با مطلب"
-              aria-hidden={!showMobileDock}
-              inert={!showMobileDock}
-              className={cn(
-                "fixed right-4  z-30 flex flex-col rounded-2xl px-1 py-1   duration-300 motion-reduce:transition-none lg:hidden",
-                "inset-x-auto bottom-[calc(5rem+env(safe-area-inset-bottom))]  flex flex-col grid-cols-none items-center gap-1.5",
-              )}
-            >
-              {renderActions("mobile")}
-            </nav>
-          </>,
-          portalRoot,
-        )
+              <nav
+                aria-label="تعامل با مطلب"
+                aria-hidden={!showMobileDock}
+                inert={!showMobileDock}
+                className={cn(
+                  "fixed right-4 z-40  flex flex-col  duration-300 motion-reduce:transition-none lg:hidden",
+                  "inset-x-auto bottom-[calc(5rem+env(safe-area-inset-bottom))]  flex flex-col grid-cols-none items-center gap-1.5 bg-card ms-4 rounded-2xl py-2 shadow border",
+                )}
+              >
+                {renderActions("mobile")}
+              </nav>
+            </>,
+            portalRoot,
+          )
         : null}
     </>
   );
@@ -307,8 +307,7 @@ function ActionButton({
       disabled={disabled || pending}
       className={cn(
         "group flex min-h-12 min-w-12 flex-col items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-muted hover:text-primary focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/40 disabled:pointer-events-none disabled:opacity-60",
-        orientation === "mobile" &&
-        "min-h-13  rounded-full text-primary  ",
+        orientation === "mobile" && "rounded-full text-foreground",
         active === true && "text-primary",
       )}
       aria-label={label}
