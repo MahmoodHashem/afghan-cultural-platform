@@ -6,7 +6,7 @@ import {
   ListBulletIcon,
   MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
-import { motion, useReducedMotion } from "motion/react";
+import { motion, useMotionValueEvent, useReducedMotion, useScroll, useSpring } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -202,9 +202,26 @@ function MobileTopBar({
   hidden: boolean;
 }) {
   const reducedMotion = Boolean(useReducedMotion());
+  const { scrollYProgress } = useScroll();
+  const smoothReadingProgress = useSpring(scrollYProgress, {
+    stiffness: 240,
+    damping: 36,
+    mass: 0.72,
+    skipInitialAnimation: true,
+  });
+  const [readingProgress, setReadingProgress] = useState(0);
   const contextual = routeContext.kind === "entry" && Boolean(headerContext?.visible);
   const backHref = contextual && headerContext ? headerContext.backHref : routeContext.backHref;
   const backLabel = contextual && headerContext ? headerContext.backLabel : routeContext.backLabel;
+
+  useMotionValueEvent(scrollYProgress, "change", (latest) => {
+    const nextProgress = Math.round(latest * 100);
+    setReadingProgress((current) =>
+      Math.abs(nextProgress - current) >= 2 || nextProgress === 0 || nextProgress === 100
+        ? nextProgress
+        : current,
+    );
+  });
 
   return (
     <motion.header
@@ -278,6 +295,21 @@ function MobileTopBar({
           </Link>
         )}
       </div>
+      {routeContext.kind === "entry" ? (
+        <div
+          className="absolute inset-x-5 bottom-0 h-0.5 overflow-hidden rounded-full bg-border/55"
+          role="progressbar"
+          aria-label="پیشرفت مطالعه"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={readingProgress}
+        >
+          <motion.div
+            className="h-full origin-right rounded-full bg-primary"
+            style={{ scaleX: reducedMotion ? scrollYProgress : smoothReadingProgress }}
+          />
+        </div>
+      ) : null}
     </motion.header>
   );
 }

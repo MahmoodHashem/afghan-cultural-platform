@@ -261,43 +261,24 @@ function EntryActionRail({
 
       {portalRoot
         ? createPortal(
-            <>
-              <motion.div
-                initial={false}
-                animate={{ opacity: readingChromeHidden ? 0 : 1, y: readingChromeHidden ? -14 : 0 }}
-                transition={getRailTransition(reducedMotion)}
-                className="pointer-events-none fixed inset-x-9 rounded-full top-[calc(3.2rem+env(safe-area-inset-top))] z-41 h-0.5 bg-border/60 lg:hidden"
-                role="progressbar"
-                aria-label="پیشرفت مطالعه"
-                aria-valuemin={0}
-                aria-valuemax={100}
-                aria-valuenow={Math.round(progress * 100)}
-              >
-                <div
-                  className="h-full bg-primary transition-[width] duration-150 motion-reduce:transition-none"
-                  style={{ width: `${progress * 100}%` }}
-                />
-              </motion.div>
-
-              <motion.nav
-                initial={false}
-                animate={
-                  showMobileDock && !readingChromeHidden
-                    ? { opacity: 1, x: 0, scale: 1 }
-                    : { opacity: 0, x: 72, scale: 0.96 }
-                }
-                transition={getRailTransition(reducedMotion)}
-                aria-label="تعامل با مطلب"
-                aria-hidden={!showMobileDock || readingChromeHidden}
-                inert={!showMobileDock || readingChromeHidden}
-                className={cn(
-                  "fixed right-4 z-40 flex flex-col will-change-transform lg:hidden",
-                  "inset-x-auto bottom-[calc(5rem+env(safe-area-inset-bottom))]  flex flex-col grid-cols-none items-center gap-1.5 bg-card ms-4 rounded-2xl py-2 shadow border",
-                )}
-              >
-                {renderActions("mobile")}
-              </motion.nav>
-            </>,
+            <motion.nav
+              initial={false}
+              animate={
+                showMobileDock && !readingChromeHidden
+                  ? { opacity: 1, x: 0, scale: 1 }
+                  : { opacity: 0, x: 72, scale: 0.96 }
+              }
+              transition={getRailTransition(reducedMotion)}
+              aria-label="تعامل با مطلب"
+              aria-hidden={!showMobileDock || readingChromeHidden}
+              inert={!showMobileDock || readingChromeHidden}
+              className={cn(
+                "fixed right-2 z-40 flex flex-col will-change-transform lg:hidden",
+                "inset-x-auto bottom-[calc(5rem+env(safe-area-inset-bottom))]  flex flex-col grid-cols-none items-center gap-1.5 bg-card ms-2 rounded-2xl py-2 shadow border",
+              )}
+            >
+              {renderActions("mobile")}
+            </motion.nav>,
             portalRoot,
           )
         : null}
