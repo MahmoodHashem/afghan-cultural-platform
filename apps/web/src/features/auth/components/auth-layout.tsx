@@ -10,14 +10,14 @@ type AuthLayoutProps = {
 
 function AuthLayout({ backgroundSrc, variant, children }: AuthLayoutProps) {
   return (
-    <main className="min-h-svh bg-background">
-      <div className="grid min-h-svh w-full items-stretch lg:grid-cols-[minmax(0,0.95fr)_minmax(520px,1.05fr)] lg:[direction:ltr]">
+    <main className="min-h-dvh bg-background">
+      <div className="grid min-h-dvh w-full items-stretch lg:grid-cols-[minmax(0,0.95fr)_minmax(520px,1.05fr)] lg:[direction:ltr]">
         <AuthBrandPanel
           backgroundSrc={backgroundSrc}
           variant={variant}
           className="min-h-svh rounded-none [direction:rtl]"
         />
-        <section className="flex min-w-0 items-center justify-center px-5 py-8 [direction:rtl] sm:px-8 lg:px-10 lg:py-10">
+        <section className="flex min-h-dvh min-w-0 items-start justify-center overflow-y-auto overscroll-contain px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))] [direction:rtl] sm:items-center sm:px-8 sm:py-8 lg:px-10 lg:py-10">
           {children}
         </section>
       </div>

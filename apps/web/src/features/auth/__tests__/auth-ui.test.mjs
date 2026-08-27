@@ -46,6 +46,9 @@ const persianUtils = read("src/lib/utils/persian.ts");
 const publicLayout = read("src/app/(public)/layout.tsx");
 const mobileAppShell = read("src/components/layout/mobile/mobile-app-shell.tsx");
 const mobileShellEvents = read("src/components/layout/mobile/mobile-shell-events.ts");
+const mobileChromeVisibility = read("src/components/layout/mobile/use-mobile-chrome-visibility.ts");
+const mobileChromeHidden = read("src/components/layout/mobile/use-mobile-chrome-hidden.ts");
+const mobileShellAuthDrawer = read("src/components/layout/mobile/mobile-shell-auth-drawer.tsx");
 const mobileAppStyles = read("src/app/mobile-app.css");
 const publicError = read("src/app/(public)/error.tsx");
 const createEntryPage = read("src/app/(contribute)/entries/new/page.tsx");
@@ -138,6 +141,9 @@ const profileLayout = read("src/app/(profile)/layout.tsx");
 const profileLoading = read("src/app/(profile)/profile/loading.tsx");
 const ownerProfilePage = read("src/features/profile/components/owner-profile-page.tsx");
 const profileSkeleton = read("src/features/profile/components/profile-page-skeleton.tsx");
+const profileLogoutButton = read("src/features/profile/components/profile-logout-button.tsx");
+const authLayout = read("src/features/auth/components/auth-layout.tsx");
+const authCard = read("src/features/auth/components/auth-card.tsx");
 const profileApi = read("src/features/profile/api/profile-api.ts");
 const profileEntryStatus = read("src/features/profile/constants/entry-status.ts");
 const profileEntryHooks = read("src/features/profile/hooks/use-owner-entries.ts");
@@ -454,6 +460,14 @@ test("owner profile uses safe authenticated user data", () => {
   assert.doesNotMatch(ownerProfilePage, /passwordHash|refreshToken|tokenHash/);
 });
 
+test("owner profile exposes confirmed logout directly in the account page", () => {
+  assert.match(ownerProfilePage, /<ProfileLogoutButton \/>/);
+  assert.match(profileLogoutButton, /useLogout/);
+  assert.match(profileLogoutButton, /از حساب خارج می‌شوید؟/);
+  assert.match(profileLogoutButton, /<AlertDialog/);
+  assert.match(profileLogoutButton, /خروج از حساب/);
+});
+
 test("owner profile entries integrate the existing private entry endpoints", () => {
   assert.match(entryDraftsApi, /async function listOwnEntries/);
   assert.match(entryDraftsApi, /\/me\/entries/);
@@ -473,6 +487,44 @@ test("profile tabs and filters are owned by URL search params", () => {
   assert.match(profileQueryUtils, /\/profile/);
   assert.match(ownerProfilePage, /useSearchParams/);
   assert.match(ownerProfilePage, /scroll=\{false\}/);
+});
+
+test("mobile profile uses compact app chrome without changing profile data ownership", () => {
+  assert.match(mobileAppShell, /routeContext\?\.kind === "profile"/);
+  assert.match(mobileAppShell, /<ProfileMenu user=\{user\} mobile \/>/);
+  assert.match(publicHeader, /function ProfileMenu\(\{ user, mobile = false \}/);
+  assert.match(publicHeader, /user\.role === "MODERATOR" \|\| user\.role === "ADMIN"/);
+  assert.match(publicHeader, /user\.role === "ADMIN"/);
+  assert.match(publicHeader, /<LogoutConfirmationDialog/);
+  assert.match(ownerProfilePage, /lg:size-28/);
+  assert.match(ownerProfilePage, /lg:inline-flex/);
+  assert.match(ownerProfilePage, /stats\.entries/);
+  assert.match(ownerProfilePage, /stats\.comments/);
+  assert.match(ownerProfilePage, /stats\.bookmarks/);
+});
+
+test("mobile profile tabs coordinate with thresholded shell visibility", () => {
+  assert.match(mobileChromeVisibility, /HIDE_AFTER_DISTANCE = 52/);
+  assert.match(mobileChromeVisibility, /SHOW_AFTER_DISTANCE = 32/);
+  assert.match(mobileShellEvents, /mobile-shell:chrome-visibility/);
+  assert.match(mobileChromeHidden, /MOBILE_CHROME_VISIBILITY_EVENT/);
+  assert.match(ownerProfilePage, /useMobileChromeHidden/);
+  assert.match(ownerProfilePage, /className="sticky z-30/);
+  assert.match(ownerProfilePage, /env\(safe-area-inset-top\)/);
+  assert.match(ownerProfilePage, /layoutId="profile-active-tab"/);
+  assert.match(ownerProfilePage, /prefers-reduced-motion|useReducedMotion/);
+});
+
+test("mobile authentication surfaces use dynamic viewport and safe-area behavior", () => {
+  assert.match(authLayout, /min-h-dvh/);
+  assert.match(authLayout, /safe-area-inset-top/);
+  assert.match(authLayout, /safe-area-inset-bottom/);
+  assert.match(authCard, /sm:rounded-xl/);
+  assert.match(mobileShellAuthDrawer, /max-h-\[92dvh\]/);
+  assert.match(mobileShellAuthDrawer, /overscroll-contain/);
+  assert.match(mobileShellAuthDrawer, /safe-area-inset-bottom/);
+  assert.match(mobileShellAuthDrawer, /nextPath=\{returnPath\}/);
+  assert.match(mobileShellAuthDrawer, /onAuthenticated=\{onAuthenticated\}/);
 });
 
 test("profile status labels use approved Persian wording", () => {
@@ -933,13 +985,13 @@ test("entry detail includes reading navigation and sticky article tools", () => 
   assert.match(publicHeader, /inert=\{shouldShowHeaderContext\}/);
   assert.match(entryDetailContent, /EntryActionRail/);
   assert.match(entryActionRail, /sticky top-32/);
-  assert.match(entryActionRail, /bottom-\[calc\(4\.75rem\+env\(safe-area-inset-bottom\)\)\]/);
+  assert.match(entryActionRail, /bottom-\[calc\(5rem\+env\(safe-area-inset-bottom\)\)\]/);
   assert.match(entryActionRail, /showMobileDock/);
   assert.match(entryActionRail, /data-entry-intro/);
   assert.match(entryActionRail, /ChatBubbleOvalLeftEllipsisIcon/);
   assert.match(entryActionRail, /HeartIcon/);
   assert.match(entryActionRail, /BookmarkIcon/);
-  assert.match(entryActionRail, /ShareIcon/);
+  assert.match(entryActionRail, /ArrowTopRightOnSquareIcon/);
   assert.match(entryActionRail, /navigator\.share/);
   assert.match(entryActionRail, /scrollHeight - window\.innerHeight/);
   assert.match(entryDetailPage, /<EntryScrollControls \/>/);

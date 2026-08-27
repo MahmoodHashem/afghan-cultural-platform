@@ -15,7 +15,7 @@ import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
-import { READING_CHROME_VISIBILITY_EVENT } from "@/components/layout/mobile/mobile-shell-events";
+import { MOBILE_CHROME_VISIBILITY_EVENT } from "@/components/layout/mobile/mobile-shell-events";
 
 import { useEngagementAccess } from "@/features/engagement/hooks/use-engagement-access";
 import { useEntryComments } from "@/features/engagement/hooks/use-entry-comments";
@@ -68,8 +68,8 @@ function EntryActionRail({
       if (typeof detail.hidden === "boolean") setReadingChromeHidden(detail.hidden);
     };
 
-    window.addEventListener(READING_CHROME_VISIBILITY_EVENT, updateVisibility);
-    return () => window.removeEventListener(READING_CHROME_VISIBILITY_EVENT, updateVisibility);
+    window.addEventListener(MOBILE_CHROME_VISIBILITY_EVENT, updateVisibility);
+    return () => window.removeEventListener(MOBILE_CHROME_VISIBILITY_EVENT, updateVisibility);
   }, []);
 
   useEffect(() => {

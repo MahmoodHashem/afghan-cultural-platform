@@ -535,7 +535,7 @@ function HeaderAuthControls({ isCompact }: { isCompact: boolean }) {
   );
 }
 
-function ProfileMenu({ user }: { user: SafeUser }) {
+function ProfileMenu({ user, mobile = false }: { user: SafeUser; mobile?: boolean }) {
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
   const logoutMutation = useLogout();
   const confirmLogout = () => {
@@ -552,18 +552,25 @@ function ProfileMenu({ user }: { user: SafeUser }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        className="flex h-11 items-center gap-1.5 rounded-full bg-background ps-2 pe-3 text-foreground shadow-[0_8px_24px_rgba(31,41,55,0.14)] outline-none transition-colors hover:bg-background/90 focus-visible:ring-3 focus-visible:ring-white/35"
+        className={cn(
+          "flex items-center rounded-full bg-background text-foreground outline-none transition-colors hover:bg-background/90 focus-visible:ring-3",
+          mobile
+            ? "ms-auto size-10 justify-center bg-transparent shadow-none focus-visible:ring-ring/40"
+            : "h-11 gap-1.5 ps-2 pe-3 shadow-[0_8px_24px_rgba(31,41,55,0.14)] focus-visible:ring-white/35",
+        )}
         aria-label="باز کردن منوی حساب"
       >
-        <Avatar size="default" className="size-8 bg-primary-light">
+        <Avatar size="default" className={cn("bg-primary-light", mobile ? "size-9" : "size-8")}>
           <AvatarFallback className="bg-primary-light text-[12px] font-bold text-primary">
             {createUserInitials(user.displayName)}
           </AvatarFallback>
         </Avatar>
-        <ChevronDownIcon
-          className="hidden size-4 text-foreground transition-transform aria-expanded:rotate-180 sm:block"
-          aria-hidden="true"
-        />
+        {!mobile ? (
+          <ChevronDownIcon
+            className="hidden size-4 text-foreground transition-transform aria-expanded:rotate-180 sm:block"
+            aria-hidden="true"
+          />
+        ) : null}
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
@@ -579,13 +586,15 @@ function ProfileMenu({ user }: { user: SafeUser }) {
           </DropdownMenuLabel>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem
-          render={<Link href="/profile" />}
-          className="rounded-2xl px-3 py-2 text-[14px] text-muted-foreground hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground"
-        >
-          <UserCircleIcon className="size-4" aria-hidden="true" />
-          حساب کاربری
-        </DropdownMenuItem>
+        {!mobile ? (
+          <DropdownMenuItem
+            render={<Link href="/profile" />}
+            className="rounded-2xl px-3 py-2 text-[14px] text-muted-foreground hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground"
+          >
+            <UserCircleIcon className="size-4" aria-hidden="true" />
+            حساب کاربری
+          </DropdownMenuItem>
+        ) : null}
         {user.role === "MODERATOR" || user.role === "ADMIN" ? (
           <DropdownMenuItem
             render={<Link href="/moderator" />}
@@ -679,4 +688,4 @@ function isHeaderContext(value: unknown): value is HeaderContext {
 }
 
 export type { HeaderContext };
-export { PUBLIC_HEADER_CONTEXT_EVENT, PublicHeader };
+export { ProfileMenu, PUBLIC_HEADER_CONTEXT_EVENT, PublicHeader };

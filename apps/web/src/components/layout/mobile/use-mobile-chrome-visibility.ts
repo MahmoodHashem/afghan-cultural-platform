@@ -12,7 +12,7 @@ const MAX_ACCUMULATED_STEP = 24;
  * Direction changes reset the travelled distance, preventing mobile momentum
  * and rubber-band scrolling from rapidly toggling the application chrome.
  */
-function useMobileReadingChrome(enabled: boolean) {
+function useMobileChromeVisibility(enabled: boolean) {
   const { scrollY } = useScroll();
   const [hidden, setHidden] = useState(false);
   const hiddenRef = useRef(false);
@@ -65,4 +65,4 @@ function useMobileReadingChrome(enabled: boolean) {
   return hidden;
 }
 
-export { useMobileReadingChrome };
+export { useMobileChromeVisibility };

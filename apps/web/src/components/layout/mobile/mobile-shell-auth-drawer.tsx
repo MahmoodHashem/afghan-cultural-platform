@@ -48,13 +48,16 @@ function MobileShellAuthDrawer({
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange} showSwipeHandle>
-      <DrawerContent dir="rtl" className="max-h-[92svh] overflow-hidden border-border p-0">
+      <DrawerContent
+        dir="rtl"
+        className="max-h-[92dvh] overflow-hidden border-border p-0 [overscroll-behavior-block:contain]"
+      >
         <DrawerHeader className="border-b border-border px-5 pt-3 pb-4 text-start">
           <DrawerTitle className="text-[18px] font-bold">{title}</DrawerTitle>
           <DrawerDescription className="leading-6">{description}</DrawerDescription>
         </DrawerHeader>
 
-        <div className="min-h-0 overflow-y-auto overscroll-contain px-5 pt-4 pb-6">
+        <div className="min-h-0 overflow-y-auto overscroll-contain px-5 pt-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] [scroll-padding-bottom:2rem]">
           {reason === "unauthenticated" ? (
             <>
               <div

@@ -57,9 +57,9 @@ function EmailVerificationCompletion() {
   }, [router, searchParams, verifyMutation]);
 
   return (
-    <main className="flex min-h-svh items-center justify-center bg-background px-5 py-10">
-      <Card className="w-full max-w-lg rounded-xl border-border bg-card shadow-[0_2px_10px_rgba(0,0,0,.05)]">
-        <CardContent className="space-y-7 p-6 text-center sm:p-10">
+    <main className="flex min-h-dvh items-center justify-center bg-background px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-5 sm:py-10">
+      <Card className="w-full max-w-lg rounded-none border-0 bg-card shadow-none sm:rounded-xl sm:border sm:border-border sm:shadow-[0_2px_10px_rgba(0,0,0,.05)]">
+        <CardContent className="space-y-6 p-4 text-center sm:space-y-7 sm:p-10">
           <AuthLogo priority />
 
           {verification.status === "processing" ? (

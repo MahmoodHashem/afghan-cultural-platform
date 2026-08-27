@@ -22,14 +22,14 @@ import {
   type ShellAuthReason,
 } from "@/components/layout/mobile/mobile-shell-auth-drawer";
 import {
+  MOBILE_CHROME_VISIBILITY_EVENT,
   OPEN_ENTRY_CONTENTS_EVENT,
   OPEN_EXPLORE_FILTERS_EVENT,
-  READING_CHROME_VISIBILITY_EVENT,
 } from "@/components/layout/mobile/mobile-shell-events";
-import { useMobileReadingChrome } from "@/components/layout/mobile/use-mobile-reading-chrome";
-import { PUBLIC_HEADER_CONTEXT_EVENT } from "@/components/layout/public-header";
+import { useMobileChromeVisibility } from "@/components/layout/mobile/use-mobile-chrome-visibility";
+import { ProfileMenu, PUBLIC_HEADER_CONTEXT_EVENT } from "@/components/layout/public-header";
 import { cn } from "@/lib/utils";
-import { type AuthSession, useAuthStore } from "@/stores/auth-store";
+import { type AuthSession, type SafeUser, useAuthStore } from "@/stores/auth-store";
 
 type HeaderContext = {
   title: string;
@@ -53,15 +53,17 @@ function MobileAppShell() {
   const [authOpen, setAuthOpen] = useState(false);
   const openFrameRef = useRef<number | null>(null);
   const closeTimerRef = useRef<number | null>(null);
-  const readingChromeHidden = useMobileReadingChrome(routeContext?.kind === "entry");
+  const mobileChromeHidden = useMobileChromeVisibility(
+    routeContext?.kind === "entry" || routeContext?.kind === "profile",
+  );
 
   useEffect(() => {
     window.dispatchEvent(
-      new CustomEvent(READING_CHROME_VISIBILITY_EVENT, {
-        detail: { hidden: readingChromeHidden },
+      new CustomEvent(MOBILE_CHROME_VISIBILITY_EVENT, {
+        detail: { hidden: mobileChromeHidden },
       }),
     );
-  }, [readingChromeHidden]);
+  }, [mobileChromeHidden]);
 
   useEffect(() => {
     if (routeContext?.kind !== "home") {
@@ -161,12 +163,13 @@ function MobileAppShell() {
         routeContext={routeContext}
         headerContext={headerContext}
         transparent={transparent}
-        hidden={readingChromeHidden}
+        hidden={mobileChromeHidden}
+        user={user}
       />
       <MobileBottomNavigation
         pathname={pathname}
         status={status}
-        hidden={readingChromeHidden}
+        hidden={mobileChromeHidden}
         onProtectedNavigation={handleProtectedNavigation}
       />
       <div className="h-[calc(4.75rem+env(safe-area-inset-bottom))]" aria-hidden="true" />
@@ -195,11 +198,13 @@ function MobileTopBar({
   headerContext,
   transparent,
   hidden,
+  user,
 }: {
   routeContext: NonNullable<ReturnType<typeof getMobileRouteContext>>;
   headerContext: HeaderContext | null;
   transparent: boolean;
   hidden: boolean;
+  user: SafeUser | null;
 }) {
   const reducedMotion = Boolean(useReducedMotion());
   const { scrollYProgress } = useScroll();
@@ -267,7 +272,9 @@ function MobileTopBar({
           </p>
         ) : null}
 
-        {routeContext.kind === "explore" ? (
+        {routeContext.kind === "profile" && user ? (
+          <ProfileMenu user={user} mobile />
+        ) : routeContext.kind === "explore" ? (
           <button
             type="button"
             aria-label="باز کردن فیلترهای مطالب"

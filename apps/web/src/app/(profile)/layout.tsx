@@ -5,7 +5,7 @@ function ProfileShellLayout({ children }: Readonly<{ children: React.ReactNode }
   return (
     <div className="min-h-screen bg-background">
       <PublicHeader />
-      <main id="main-content" className="pt-28 sm:pt-32">
+      <main id="main-content" className="pt-[calc(4.75rem+env(safe-area-inset-top))] lg:pt-32">
         {children}
       </main>
       <HomeFooter />

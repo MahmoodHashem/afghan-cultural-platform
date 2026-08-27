@@ -9,11 +9,11 @@ import {
   EyeIcon,
   TrashIcon,
 } from "@heroicons/react/24/outline";
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
-
+import { useMobileChromeHidden } from "@/components/layout/mobile/use-mobile-chrome-hidden";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -63,6 +63,7 @@ import { cn } from "@/lib/utils";
 import { formatPersianDate, formatPersianNumber } from "@/lib/utils/formatters";
 import { createUserInitials } from "@/lib/utils/user";
 import { type SafeUser, useAuthStore } from "@/stores/auth-store";
+import { ProfileLogoutButton } from "./profile-logout-button";
 import { ProfilePageSkeleton } from "./profile-page-skeleton";
 
 const profileTabs: Array<{
@@ -106,9 +107,9 @@ function OwnerProfilePage() {
   const profileUser = ownerProfile.data ?? createProfileFallback(user);
 
   return (
-    <section className="content-container space-y-7 p-6 rounded-xl  bg-card mb-10">
+    <section className="content-container mb-0 max-w-none space-y-4 rounded-none bg-background px-0 pb-8 lg:mb-10 lg:max-w-(--container-content) lg:space-y-7 lg:rounded-xl lg:bg-card lg:p-6">
       <OwnerProfileHeader user={profileUser} isProfileLoading={ownerProfile.isLoading} />
-      <div className="flex flex-col items-center gap-6">
+      <div className="flex flex-col items-center gap-3 lg:gap-6">
         <ProfileNavigationTabs activeTab={profileQuery.tab} query={profileQuery} />
         <div className="w-full outline-none">
           {profileQuery.tab === "entries" ? <OwnerEntriesPanel query={profileQuery} /> : null}
@@ -130,22 +131,22 @@ function OwnerProfileHeader({
   const stats = useOwnerEntryStats();
 
   return (
-    <div className="overflow-hidden ">
-      <div className="relative min-h-36  px-5 py-6 sm:px-8">
-        <div className="flex flex-col justify-center items-center gap-4">
+    <div className="overflow-hidden bg-card lg:bg-transparent">
+      <div className="relative px-4 py-4 lg:min-h-36 lg:px-8 lg:py-6">
+        <div className="flex flex-col items-center justify-center gap-3 lg:gap-4">
           <div className="relative shrink-0">
-            <Avatar className="size-28 border-4 border-card bg-primary-light ">
+            <Avatar className="size-20 border-3 border-card bg-primary-light lg:size-28 lg:border-4">
               {user.profileImageUrl ? (
                 <AvatarImage src={user.profileImageUrl} alt={user.displayName} />
               ) : null}
-              <AvatarFallback className="bg-primary-light text-[24px] font-bold text-primary">
+              <AvatarFallback className="bg-primary-light text-[20px] font-bold text-primary lg:text-[24px]">
                 {createUserInitials(user.displayName)}
               </AvatarFallback>
             </Avatar>
             <span
               className={cn(
                 buttonVariants({ variant: "outline" }),
-                "absolute bottom-0 right-1 size-9 cursor-not-allowed rounded-full bg-card p-0",
+                "absolute bottom-0 right-1 hidden size-9 cursor-not-allowed rounded-full bg-card p-0 lg:inline-flex",
               )}
               aria-disabled="true"
               title="ویرایش تصویر پروفایل در مرحله بعدی رابط کاربری فعال می‌شود."
@@ -153,9 +154,9 @@ function OwnerProfileHeader({
               <CameraIcon className="size-4" aria-hidden="true" />
             </span>
           </div>
-          <div className="min-w-0 space-y-2 flex flex-col items-center">
-            <div className="flex flex-wrap items-center  gap-2">
-              <h1 className="text-[28px] font-bold leading-10 text-foreground sm:text-[34px]">
+          <div className="flex min-w-0 flex-col items-center space-y-1.5 lg:space-y-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="text-[22px] font-bold leading-9 text-foreground lg:text-[34px] lg:leading-10">
                 {user.displayName}
               </h1>
               {/* {user.emailVerified ? <CheckIcon className="size-5 border rounded-full"  /> : "ایمیل تأیید نشده"} */}
@@ -164,9 +165,10 @@ function OwnerProfileHeader({
               {user.email}
             </p>
             {!user.emailVerified ? <EmailVerificationButton email={user.email} compact /> : null}
+            <ProfileLogoutButton />
             {isProfileLoading ? <Skeleton className="h-4 w-36" /> : null}
             {user.biography ? (
-              <p className="max-w-xl text-center text-[14px] leading-7 text-muted-foreground">
+              <p className="max-w-xl px-4 text-center text-[13px] leading-6 text-muted-foreground lg:px-0 lg:text-[14px] lg:leading-7">
                 {user.biography}
               </p>
             ) : null}
@@ -186,11 +188,14 @@ function ProfileStats({ stats }: { stats: ReturnType<typeof useOwnerEntryStats> 
   ];
 
   return (
-    <dl className="flex justify-center gap-6">
+    <dl className="flex w-full justify-center border-y border-border/70 py-2 lg:gap-6 lg:border-0 lg:py-0">
       {items.map((item, index) => (
-        <div className="flex items-center gap-6" key={item.label}>
-          <div key={item.label} className="flex flex-col items-center px-3  ">
-            <dd className="mt-2 text-[29px] text-foreground ">
+        <div
+          className="flex flex-1 items-center justify-center gap-0 lg:flex-none lg:gap-6"
+          key={item.label}
+        >
+          <div key={item.label} className="flex min-w-20 flex-col items-center px-2 lg:px-3">
+            <dd className="text-[22px] font-semibold text-foreground lg:mt-2 lg:text-[29px] lg:font-normal">
               {stats.isLoading ? (
                 <Skeleton className="h-8 w-14" />
               ) : stats.isError ? (
@@ -203,9 +208,9 @@ function ProfileStats({ stats }: { stats: ReturnType<typeof useOwnerEntryStats> 
               )}
             </dd>
 
-            <dt className="text-sm text-muted-foreground">{item.label}</dt>
+            <dt className="text-[12px] text-muted-foreground lg:text-sm">{item.label}</dt>
           </div>
-          {index < items.length - 1 && <div className="h-6 w-px bg-slate-300" />}
+          {index < items.length - 1 ? <div className="h-7 w-px bg-border lg:bg-slate-300" /> : null}
         </div>
       ))}
     </dl>
@@ -219,49 +224,65 @@ function ProfileNavigationTabs({
   activeTab: ProfileTab;
   query: ProfileQuery;
 }) {
-  return (
-    <Tabs value={activeTab} className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
-      <TabsList
-        variant="default"
-        className="relative h-auto min-h-11 w-max justify-start gap-1 rounded-full border border-border bg-card p-1 shadow-[0_2px_10px_rgba(0,0,0,.04)]"
-        aria-label="بخش‌های پروفایل"
-      >
-        {profileTabs.map((tab) => {
-          const Icon = tab.icon;
-          const isActive = tab.value === activeTab;
+  const chromeHidden = useMobileChromeHidden();
+  const reducedMotion = Boolean(useReducedMotion());
 
-          return (
-            <Link
-              key={tab.value}
-              href={createProfileHref(query, { tab: tab.value, page: 1 })}
-              scroll={false}
-              role="tab"
-              aria-selected={isActive}
-              aria-current={isActive ? "page" : undefined}
-              className={cn(
-                "relative inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-full px-4 text-[13px] font-semibold outline-none transition-all focus-visible:ring-3 focus-visible:ring-ring/40",
-                isActive
-                  ? " text-primary-foreground shadow-[0_6px_16px_rgba(15,118,110,0.12)]"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
-              )}
-            >
-              {isActive ? (
-                <motion.span
-                  layoutId="profile-active-tab"
-                  className="absolute inset-0 rounded-full bg-primary"
-                  transition={{ type: "spring", stiffness: 420, damping: 34 }}
-                  aria-hidden="true"
-                />
-              ) : null}
-              <span className="relative z-10 inline-flex items-center gap-2">
-                <Icon className="size-4" aria-hidden="true" />
-                {tab.label}
-              </span>
-            </Link>
-          );
-        })}
-      </TabsList>
-    </Tabs>
+  return (
+    <motion.div
+      initial={false}
+      animate={{
+        top: chromeHidden
+          ? "calc(0.5rem + env(safe-area-inset-top))"
+          : "calc(4.25rem + env(safe-area-inset-top))",
+      }}
+      transition={
+        reducedMotion ? { duration: 0 } : { type: "spring", stiffness: 420, damping: 42, mass: 0.8 }
+      }
+      className="sticky z-30 w-full bg-background/95 py-2 backdrop-blur-xl lg:static lg:bg-transparent lg:py-0 lg:backdrop-blur-none"
+    >
+      <Tabs value={activeTab} className="overflow-x-auto px-4 lg:px-0">
+        <TabsList
+          variant="default"
+          className="relative mx-auto h-auto min-h-11 w-max justify-start gap-1 rounded-full border border-border bg-card p-1 shadow-[0_2px_10px_rgba(0,0,0,.04)]"
+          aria-label="بخش‌های پروفایل"
+        >
+          {profileTabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = tab.value === activeTab;
+
+            return (
+              <Link
+                key={tab.value}
+                href={createProfileHref(query, { tab: tab.value, page: 1 })}
+                scroll={false}
+                role="tab"
+                aria-selected={isActive}
+                aria-current={isActive ? "page" : undefined}
+                className={cn(
+                  "relative inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-full px-4 text-[13px] font-semibold outline-none transition-all focus-visible:ring-3 focus-visible:ring-ring/40",
+                  isActive
+                    ? " text-primary-foreground shadow-[0_6px_16px_rgba(15,118,110,0.12)]"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                )}
+              >
+                {isActive ? (
+                  <motion.span
+                    layoutId="profile-active-tab"
+                    className="absolute inset-0 rounded-full bg-primary"
+                    transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                    aria-hidden="true"
+                  />
+                ) : null}
+                <span className="relative z-10 inline-flex items-center gap-2">
+                  <Icon className="size-4" aria-hidden="true" />
+                  {tab.label}
+                </span>
+              </Link>
+            );
+          })}
+        </TabsList>
+      </Tabs>
+    </motion.div>
   );
 }
 
@@ -269,7 +290,7 @@ function OwnerEntriesPanel({ query }: { query: ProfileQuery }) {
   const ownerEntries = useOwnerEntries(query);
 
   return (
-    <div className="space-y-4 p-4">
+    <div className="space-y-4 px-3 pb-4 lg:p-4">
       <OwnerEntryToolbar query={query} total={ownerEntries.data?.meta.total ?? 0} />
       {ownerEntries.isLoading ? <OwnerEntryListSkeleton /> : null}
       {isVerifiedEmailError(ownerEntries.error) ? <OwnerEntriesVerificationState /> : null}
@@ -301,7 +322,7 @@ function OwnerCommentsPanel({ query }: { query: ProfileQuery }) {
   const ownerComments = useOwnerComments(query);
 
   return (
-    <div className="space-y-4 p-4">
+    <div className="space-y-4 px-3 pb-4 lg:p-4">
       <SimpleProfileToolbar total={ownerComments.data?.meta.total ?? 0} label="دیدگاه" />
       {ownerComments.isLoading ? <OwnerFeedbackListSkeleton /> : null}
       {ownerComments.isError ? (
@@ -331,7 +352,7 @@ function OwnerBookmarksPanel({ query }: { query: ProfileQuery }) {
   const ownerBookmarks = useOwnerBookmarks(query);
 
   return (
-    <div className="space-y-4 p-4">
+    <div className="space-y-4 px-3 pb-4 lg:p-4">
       <SimpleProfileToolbar total={ownerBookmarks.data?.meta.total ?? 0} label="ذخیره" />
       {ownerBookmarks.isLoading ? <OwnerFeedbackListSkeleton /> : null}
       {ownerBookmarks.isError ? (
@@ -359,7 +380,7 @@ function OwnerBookmarksPanel({ query }: { query: ProfileQuery }) {
 
 function SimpleProfileToolbar({ total, label }: { total: number; label: string }) {
   return (
-    <div className="flex min-h-10 items-center justify-between rounded-full border border-border px-4 py-1">
+    <div className="flex min-h-10 items-center justify-between rounded-full border border-border bg-card px-4 py-1">
       <p className="text-[13px] font-semibold text-muted-foreground">{label}</p>
       {total > 0 ? (
         <p className="text-sm text-foreground">
@@ -372,9 +393,9 @@ function SimpleProfileToolbar({ total, label }: { total: number; label: string }
 
 function OwnerEntryToolbar({ query, total }: { query: ProfileQuery; total: number }) {
   return (
-    <div className=" ">
-      <div className="flex  items-center justify-between border py-1 px-2 rounded-full gap-5">
-        <div className=" flex gap-2 overflow-x-auto">
+    <div>
+      <div className="flex items-center justify-between gap-3 rounded-full border bg-card px-2 py-1 lg:gap-5">
+        <div className="flex min-w-0 gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {ENTRY_STATUS_FILTERS.map((filter) => {
             const isActive = filter.value === "ALL" ? !query.status : query.status === filter.value;
 
@@ -407,7 +428,9 @@ function OwnerEntryToolbar({ query, total }: { query: ProfileQuery; total: numbe
           })}
         </div>
         {total > 0 && (
-          <p className="text-sm text-foreground text-center">{formatPersianNumber(total)} مطلب</p>
+          <p className="shrink-0 text-center text-[12px] text-foreground lg:text-sm">
+            {formatPersianNumber(total)} مطلب
+          </p>
         )}
       </div>
     </div>
@@ -416,7 +439,10 @@ function OwnerEntryToolbar({ query, total }: { query: ProfileQuery; total: numbe
 
 function OwnerCommentList({ comments }: { comments: ProfileComment[] }) {
   return (
-    <motion.ul layout className="space-y-3">
+    <motion.ul
+      layout
+      className="overflow-hidden rounded-xl border border-border bg-card lg:space-y-3 lg:overflow-visible lg:rounded-none lg:border-0 lg:bg-transparent"
+    >
       {comments.map((comment) => (
         <motion.li
           key={comment.id}
@@ -437,7 +463,7 @@ function OwnerCommentRow({ comment }: { comment: ProfileComment }) {
   const commentStatusMeta = ENTRY_COMMENT_STATUS_META[comment.status];
 
   return (
-    <article className="group rounded-xl p-4 transition-all duration-200 hover:border-primary/25 hover:shadow-[0_14px_34px_rgba(31,41,55,0.07)]">
+    <article className="group border-b border-border bg-card px-4 py-4 transition-colors last:border-b-0 lg:rounded-xl lg:border-0 lg:p-4 lg:transition-all lg:duration-200 lg:hover:border-primary/25 lg:hover:shadow-[0_14px_34px_rgba(31,41,55,0.07)]">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0 flex-1 space-y-3">
           <div className="flex flex-wrap items-center gap-2">
@@ -452,7 +478,9 @@ function OwnerCommentRow({ comment }: { comment: ProfileComment }) {
               {formatPersianDate(comment.updatedAt)}
             </span>
           </div>
-          <p className="line-clamp-3 text-[15px] leading-8 text-foreground">{comment.body}</p>
+          <p className="line-clamp-3 text-[14px] leading-7 text-foreground lg:text-[15px] lg:leading-8">
+            {comment.body}
+          </p>
           <Link
             href={`/entries/${encodeURIComponent(comment.entry.slug)}`}
             className="line-clamp-1 text-[14px] font-semibold text-primary transition-colors hover:text-primary-hover"
@@ -463,7 +491,10 @@ function OwnerCommentRow({ comment }: { comment: ProfileComment }) {
         {comment.entry.status === "PUBLISHED" ? (
           <Link
             href={`/entries/${encodeURIComponent(comment.entry.slug)}`}
-            className={cn(buttonVariants({ variant: "outline", size: "sm" }), "rounded-full")}
+            className={cn(
+              buttonVariants({ variant: "outline", size: "sm" }),
+              "self-start rounded-full",
+            )}
           >
             <EyeIcon className="size-4" aria-hidden="true" />
             نمایش مطلب
@@ -476,7 +507,10 @@ function OwnerCommentRow({ comment }: { comment: ProfileComment }) {
 
 function OwnerBookmarkList({ bookmarks }: { bookmarks: ProfileBookmark[] }) {
   return (
-    <motion.ul layout className="space-y-3">
+    <motion.ul
+      layout
+      className="overflow-hidden rounded-xl border border-border bg-card lg:space-y-3 lg:overflow-visible lg:rounded-none lg:border-0 lg:bg-transparent"
+    >
       {bookmarks.map((bookmark) => (
         <motion.li
           key={bookmark.id}
@@ -495,7 +529,7 @@ function OwnerBookmarkList({ bookmarks }: { bookmarks: ProfileBookmark[] }) {
 
 function OwnerBookmarkRow({ bookmark }: { bookmark: ProfileBookmark }) {
   return (
-    <article className="group rounded-xl p-4 transition-all duration-200 hover:border-primary/25 hover:shadow-[0_14px_34px_rgba(31,41,55,0.07)]">
+    <article className="group border-b border-border bg-card px-4 py-4 transition-colors last:border-b-0 lg:rounded-xl lg:border-0 lg:p-4 lg:transition-all lg:duration-200 lg:hover:border-primary/25 lg:hover:shadow-[0_14px_34px_rgba(31,41,55,0.07)]">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0 flex-1 space-y-3">
           <div className="flex flex-wrap items-center gap-2">
@@ -510,7 +544,7 @@ function OwnerBookmarkRow({ bookmark }: { bookmark: ProfileBookmark }) {
             </span>
           </div>
           <div>
-            <h2 className="line-clamp-2 text-[20px] font-bold leading-8 text-foreground">
+            <h2 className="line-clamp-2 text-[17px] font-bold leading-7 text-foreground lg:text-[20px] lg:leading-8">
               {bookmark.entry.title}
             </h2>
             <p className="mt-2 line-clamp-2 text-[14px] leading-7 text-muted-foreground">
@@ -520,7 +554,10 @@ function OwnerBookmarkRow({ bookmark }: { bookmark: ProfileBookmark }) {
         </div>
         <Link
           href={`/entries/${encodeURIComponent(bookmark.entry.slug)}`}
-          className={cn(buttonVariants({ variant: "outline", size: "sm" }), "rounded-full")}
+          className={cn(
+            buttonVariants({ variant: "outline", size: "sm" }),
+            "self-start rounded-full",
+          )}
         >
           <EyeIcon className="size-4" aria-hidden="true" />
           نمایش مطلب
@@ -536,7 +573,10 @@ function OwnerEntryList({ entries }: { entries: OwnEntry[] }) {
 
   return (
     <>
-      <motion.ul layout className="space-y-3">
+      <motion.ul
+        layout
+        className="overflow-hidden rounded-xl border border-border bg-card lg:space-y-3 lg:overflow-visible lg:rounded-none lg:border-0 lg:bg-transparent"
+      >
         {entries.map((entry) => (
           <motion.li
             key={entry.id}
@@ -576,11 +616,11 @@ function OwnerEntryRow({ entry, onDelete }: { entry: OwnEntry; onDelete: () => v
   const statusMeta = ENTRY_STATUS_META[entry.status];
 
   return (
-    <article className="group rounded-xl  p-4  transition-all duration-200 hover:border-primary/25 hover:shadow-[0_14px_34px_rgba(31,41,55,0.07)]">
+    <article className="group border-b border-border bg-card px-4 py-4 transition-colors last:border-b-0 lg:rounded-xl lg:border-0 lg:p-4 lg:transition-all lg:duration-200 lg:hover:border-primary/25 lg:hover:shadow-[0_14px_34px_rgba(31,41,55,0.07)]">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0 flex-1 space-y-3">
           <div>
-            <h2 className="line-clamp-2 text-[20px] font-bold leading-8 text-foreground">
+            <h2 className="line-clamp-2 text-[17px] font-bold leading-7 text-foreground lg:text-[20px] lg:leading-8">
               {entry.title || "بدون عنوان"}
             </h2>
             <p className="mt-2 line-clamp-2 text-[14px] leading-7 text-muted-foreground">
