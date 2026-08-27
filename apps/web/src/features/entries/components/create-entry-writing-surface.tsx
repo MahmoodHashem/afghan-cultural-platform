@@ -38,7 +38,7 @@ export function CreateEntryWritingSurface({
   onDirty,
 }: CreateEntryWritingSurfaceProps) {
   return (
-    <section className="space-y-12">
+    <section className="space-y-9 md:space-y-12">
       <div className="space-y-2 border-b border-border pb-3">
         <label htmlFor="entry-title" className="text-small text-foreground">
           عنوان مطلب
@@ -48,7 +48,7 @@ export function CreateEntryWritingSurface({
           id="entry-title"
           placeholder="عنوان خود را بنویسید..."
           aria-invalid={Boolean(errors.title)}
-          className="h-auto rounded-none border-0 bg-transparent px-0 py-2 text-right text-4xl leading-tight shadow-none outline-none placeholder:text-muted-foreground/25 focus-visible:ring-0 aria-invalid:border-none aria-invalid:ring-0 md:text-4xl"
+          className="h-auto rounded-none border-0 bg-transparent px-0 py-2 text-right text-[29px] leading-[1.45] shadow-none outline-none placeholder:text-muted-foreground/25 focus-visible:ring-0 aria-invalid:border-none aria-invalid:ring-0 md:text-4xl"
           {...register("title", {
             onChange: onDirty,
           })}
@@ -64,7 +64,7 @@ export function CreateEntryWritingSurface({
           id="entry-summary"
           placeholder="در چند جمله بگویید این مطلب درباره چیست..."
           aria-invalid={Boolean(errors.summary)}
-          className="min-h-8 resize-none rounded-none border-0 bg-transparent px-0 text-xl leading-9 shadow-none placeholder:text-muted-foreground/25 focus-visible:ring-0 aria-invalid:border-none aria-invalid:ring-0 md:text-xl"
+          className="min-h-20 resize-none rounded-none border-0 bg-transparent px-0 text-[17px] leading-8 shadow-none placeholder:text-muted-foreground/25 focus-visible:ring-0 aria-invalid:border-none aria-invalid:ring-0 md:min-h-8 md:text-xl md:leading-9"
           {...register("summary", {
             onChange: onDirty,
           })}
@@ -84,10 +84,10 @@ export function CreateEntryWritingSurface({
               }}
               placeholder="متن مطلب را بنویسید..."
               characterLimit={25_000}
-              toolbarMode="bubble"
+              toolbarMode="responsive"
               showCharacterCount={false}
               className="rounded-none border-0 bg-transparent"
-              editorClassName="min-h-[45vh] rounded-none bg-background px-0 py-0 text-[18px] leading-9 focus-visible:ring-0 placeholder:text-white"
+              editorClassName="min-h-[62dvh] rounded-none bg-background px-0 py-0 text-[17px] leading-9 focus-visible:ring-0 placeholder:text-white md:min-h-[45vh] md:text-[18px]"
             />
           )}
         />

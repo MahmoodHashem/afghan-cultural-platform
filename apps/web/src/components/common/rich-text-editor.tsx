@@ -13,10 +13,18 @@ import StarterKit from "@tiptap/starter-kit";
 import { AnimatePresence, motion } from "motion/react";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import { useVirtualKeyboard } from "@/hooks/use-virtual-keyboard";
 import { cn } from "@/lib/utils";
 import { formatPersianNumber } from "@/lib/utils/formatters";
 
@@ -29,7 +37,7 @@ type RichTextEditorProps = {
   characterLimit?: number;
   className?: string;
   editorClassName?: string;
-  toolbarMode?: "always" | "toggle" | "bubble" | "hidden";
+  toolbarMode?: "always" | "toggle" | "bubble" | "responsive" | "hidden";
   showCharacterCount?: boolean;
 };
 
@@ -76,6 +84,7 @@ function RichTextEditor({
   showCharacterCount = true,
 }: RichTextEditorProps) {
   const [isToolbarOpen, setIsToolbarOpen] = useState(toolbarMode === "always");
+  const [isEditorFocused, setIsEditorFocused] = useState(false);
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -117,6 +126,14 @@ function RichTextEditor({
     },
     onUpdate: ({ editor: currentEditor }) => {
       onChange?.(currentEditor.getJSON() as RichTextContent);
+    },
+    onFocus: () => setIsEditorFocused(true),
+    onBlur: ({ event }) => {
+      const nextTarget = event.relatedTarget;
+
+      if (!(nextTarget instanceof Element) || !nextTarget.closest("[data-mobile-editor-toolbar]")) {
+        setIsEditorFocused(false);
+      }
     },
   });
 
@@ -185,14 +202,155 @@ function RichTextEditor({
           <EditorToolbar editor={editor} onSetLink={setLink} />
         </div>
       ) : null}
-      {toolbarMode === "bubble" ? <EditorBubbleToolbar editor={editor} /> : null}
+      {toolbarMode === "bubble" || toolbarMode === "responsive" ? (
+        <div className={cn(toolbarMode === "responsive" && "max-md:hidden")}>
+          <EditorBubbleToolbar editor={editor} />
+        </div>
+      ) : null}
       <EditorContent editor={editor} />
+      {toolbarMode === "responsive" && isEditorFocused ? (
+        <MobileEditorToolbar editor={editor} onSetLink={setLink} />
+      ) : null}
       {showCharacterCount ? (
         <div className="border-t border-border px-4 py-2 text-small text-muted-foreground placeholder:text-muted-foreground/25 ">
           {formatPersianNumber(characters)} / {formatPersianNumber(characterLimit)} کاراکتر
         </div>
       ) : null}
     </div>
+  );
+}
+
+function MobileEditorToolbar({ editor, onSetLink }: EditorToolbarProps) {
+  const { inset } = useVirtualKeyboard();
+
+  if (typeof document === "undefined") {
+    return null;
+  }
+
+  const toolbar = (
+    <motion.div
+      data-mobile-editor-toolbar
+      dir="rtl"
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 12 }}
+      transition={{ duration: 0.16, ease: "easeOut" }}
+      className="fixed inset-x-2 z-70 flex h-12 items-center gap-1 overflow-x-auto rounded-xl border border-border bg-card/96 px-2  backdrop-blur-xl scrollbar-none md:hidden [&::-webkit-scrollbar]:hidden"
+      style={{ bottom: `max(${inset+70}px, env(safe-area-inset-bottom))` }}
+      onPointerDown={(event) => event.preventDefault()}
+    >
+      <MobileToolbarButton
+        label="عنوان ۲"
+        active={editor.isActive("heading", { level: 2 })}
+        onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+      >
+        H2
+      </MobileToolbarButton>
+      <MobileToolbarButton
+        label="ضخیم"
+        active={editor.isActive("bold")}
+        onClick={() => editor.chain().focus().toggleBold().run()}
+      >
+        B
+      </MobileToolbarButton>
+      <MobileToolbarButton
+        label="کج"
+        active={editor.isActive("italic")}
+        onClick={() => editor.chain().focus().toggleItalic().run()}
+      >
+        <span className="italic">I</span>
+      </MobileToolbarButton>
+      <MobileToolbarButton
+        label="زیرخط"
+        active={editor.isActive("underline")}
+        onClick={() => editor.chain().focus().toggleUnderline().run()}
+      >
+        <span className="underline">U</span>
+      </MobileToolbarButton>
+      <MobileToolbarButton
+        label="فهرست نشانه‌دار"
+        active={editor.isActive("bulletList")}
+        onClick={() => editor.chain().focus().toggleBulletList().run()}
+      >
+        •
+      </MobileToolbarButton>
+      <MobileToolbarButton
+        label="فهرست شماره‌دار"
+        active={editor.isActive("orderedList")}
+        onClick={() => editor.chain().focus().toggleOrderedList().run()}
+      >
+        ۱.
+      </MobileToolbarButton>
+      <MobileToolbarButton label="پیوند" active={editor.isActive("link")} onClick={onSetLink}>
+        پیوند
+      </MobileToolbarButton>
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          nativeButton
+          render={
+            <button
+              type="button"
+              className="flex size-9 shrink-0 items-center justify-center rounded-lg text-lg font-bold text-muted-foreground outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/40"
+              aria-label="ابزارهای بیشتر"
+            />
+          }
+        >
+          …
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" side="top" className="min-w-44">
+          <DropdownMenuItem
+            onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+          >
+            عنوان ۳
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => editor.chain().focus().toggleBlockquote().run()}>
+            نقل‌قول
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => editor.chain().focus().setTextAlign("right").run()}>
+            چینش راست
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => editor.chain().focus().setTextAlign("center").run()}>
+            چینش وسط
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            disabled={!editor.can().undo()}
+            onClick={() => editor.chain().focus().undo().run()}
+          >
+            بازگشت
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            disabled={!editor.can().redo()}
+            onClick={() => editor.chain().focus().redo().run()}
+          >
+            انجام دوباره
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </motion.div>
+  );
+
+  return createPortal(toolbar, document.body);
+}
+
+function MobileToolbarButton({
+  label,
+  active = false,
+  onClick,
+  children,
+}: BubbleToolbarButtonProps) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      aria-pressed={active}
+      className={cn(
+        "flex h-9 min-w-9 shrink-0 items-center justify-center rounded-lg px-2 text-[13px] font-semibold text-muted-foreground outline-none transition-colors focus-visible:ring-3 focus-visible:ring-ring/40",
+        active && "bg-primary text-primary-foreground",
+      )}
+      onClick={onClick}
+    >
+      {children}
+    </button>
   );
 }
 

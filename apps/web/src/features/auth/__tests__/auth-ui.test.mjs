@@ -90,6 +90,7 @@ const createEntryForm = read("src/features/entries/components/create-entry-form.
 const createEntryEditorLayout = read(
   "src/features/entries/components/create-entry-editor-layout.tsx",
 );
+const createEntryOverlays = read("src/features/entries/components/create-entry-overlays.tsx");
 const createEntrySections = read("src/features/entries/components/create-entry-sections.tsx");
 const createEntrySelect = read("src/features/entries/components/create-entry-select.tsx");
 const shadcnCombobox = read("src/components/ui/combobox.tsx");
@@ -102,6 +103,7 @@ const createEntrySchema = read("src/features/entries/schemas/create-entry-schema
 const tiptapContentUtils = read("src/features/entries/utils/tiptap-content.ts");
 const tiptapDocumentRenderer = read("src/components/common/tiptap-document.tsx");
 const richTextEditor = read("src/components/common/rich-text-editor.tsx");
+const virtualKeyboardHook = read("src/hooks/use-virtual-keyboard.ts");
 const explorePage = read("src/app/(public)/explore/page.tsx");
 const exploreLoading = read("src/app/(public)/explore/loading.tsx");
 const provincesPage = read("src/app/(public)/provinces/page.tsx");
@@ -583,11 +585,17 @@ test("create entry editor keeps writing first with contextual Tiptap tools", () 
   assert.match(createEntryWritingSurface, /عنوان مطلب/);
   assert.match(createEntryWritingSurface, /خلاصه/);
   assert.match(createEntryWritingSurface, /متن مطلب را بنویسید/);
-  assert.match(createEntryWritingSurface, /toolbarMode="bubble"/);
-  assert.match(createEntryWritingSurface, /min-h-\[45vh\]/);
-  assert.match(richTextEditor, /toolbarMode\?: "always" \| "toggle" \| "bubble" \| "hidden"/);
+  assert.match(createEntryWritingSurface, /toolbarMode="responsive"/);
+  assert.match(createEntryWritingSurface, /min-h-\[62dvh\]/);
+  assert.match(
+    richTextEditor,
+    /toolbarMode\?: "always" \| "toggle" \| "bubble" \| "responsive" \| "hidden"/,
+  );
   assert.match(richTextEditor, /BubbleMenu/);
   assert.match(richTextEditor, /EditorBubbleToolbar/);
+  assert.match(richTextEditor, /MobileEditorToolbar/);
+  assert.match(richTextEditor, /data-mobile-editor-toolbar/);
+  assert.match(virtualKeyboardHook, /window\.visualViewport/);
   assert.match(richTextEditor, /ابزارهای بیشتر/);
   assert.match(richTextEditor, /setLink\(\{ href: nextUrl \}\)/);
 });
@@ -659,6 +667,23 @@ test("create entry supports sources, image staging, and unsaved-change warning",
   assert.match(stagedEntryImagesHook, /uploadEntryImage/);
   assert.match(createEntryForm, /beforeunload/);
   assert.match(createEntrySections, /permissionConfirmed/);
+  assert.match(createEntrySections, /editingSourceIndex/);
+  assert.match(createEntrySections, /editingImageId/);
+  assert.match(createEntrySections, /<Drawer/);
+});
+
+test("create entry has an app-like mobile shell, preview, and readiness flow", () => {
+  assert.match(createEntryEditorLayout, /MobileEditorSaveAction/);
+  assert.match(createEntryEditorLayout, /env\(safe-area-inset-bottom\)/);
+  assert.match(createEntryEditorLayout, /getSaveStateLabel/);
+  assert.match(createEntryForm, /openMobileSection/);
+  assert.match(createEntryForm, /getReadinessIssues/);
+  assert.match(createEntryForm, /latestModerationReview\.comments/);
+  assert.match(createEntryOverlays, /EntryPreviewDialog/);
+  assert.match(createEntryOverlays, /SubmissionReadinessDrawer/);
+  assert.match(createEntryOverlays, /UnsavedEntryDialog/);
+  assert.match(createEntryOverlays, /TiptapDocument/);
+  assert.doesNotMatch(createEntryForm, /localStorage|sessionStorage|IndexedDB/);
 });
 
 test("role-aware navigation reflects auth state without becoming authorization", () => {

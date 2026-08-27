@@ -3,6 +3,7 @@
 import {
   ArrowSmallDownIcon,
   ArrowSmallUpIcon,
+  PencilSquareIcon,
   PhotoIcon,
   PlusIcon,
   TrashIcon,
@@ -22,6 +23,13 @@ import { Controller, useWatch } from "react-hook-form";
 import { PersianDatePicker } from "@/components/common/persian-date-picker";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import type { GeographicScope } from "@/features/entries/api/entry-drafts-api";
@@ -34,6 +42,7 @@ import {
 } from "@/features/entries/schemas/create-entry-schema";
 import type { StagedImage } from "@/features/entries/types/create-entry-form";
 import { getEntryFormErrorMessage } from "@/features/entries/utils/create-entry-errors";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { formatPersianNumber } from "@/lib/utils/formatters";
 import { EmptyRow, FieldError } from "./create-entry-editor-layout";
@@ -317,59 +326,134 @@ export function SourcesSection({
   onDirty,
   onRemoveSource,
 }: SourcesSectionProps) {
+  const isMobile = useIsMobile();
+  const [editingSourceIndex, setEditingSourceIndex] = useState<number | null>(null);
+  const sourceValues = useWatch({ control, name: "sources" });
+
+  function appendSource() {
+    sourceFields.append({
+      type: "WEBSITE",
+      title: "",
+      authorOrProvider: "",
+      publicationDate: "",
+      websiteUrl: "",
+      bookOrArticleDetails: "",
+      interviewDate: "",
+      explanation: "",
+    });
+    setEditingSourceIndex(sourceFields.fields.length);
+    onDirty();
+  }
+
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-small leading-7 text-muted-foreground">
           اگر منبع مکتوب، شفاهی یا تجربه شخصی دارید، آن را جداگانه ثبت کنید.
         </p>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => {
-            sourceFields.append({
-              type: "WEBSITE",
-              title: "",
-              authorOrProvider: "",
-              publicationDate: "",
-              websiteUrl: "",
-              bookOrArticleDetails: "",
-              interviewDate: "",
-              explanation: "",
-            });
-            onDirty();
-          }}
-        >
+        <Button type="button" variant="outline" onClick={appendSource}>
           <PlusIcon aria-hidden="true" />
           افزودن منبع
         </Button>
       </div>
-      <div className="space-y-4">
-        {sourceFields.fields.length > 0 ? (
-          sourceFields.fields.map((field, index) => (
-            <SourceFields
-              key={field.fieldKey}
-              index={index}
-              register={register}
-              control={control}
-              canMoveUp={index > 0}
-              canMoveDown={index < sourceFields.fields.length - 1}
-              onMoveUp={() => {
-                sourceFields.move(index, index - 1);
-                onDirty();
-              }}
-              onMoveDown={() => {
-                sourceFields.move(index, index + 1);
-                onDirty();
-              }}
-              onRemove={() => onRemoveSource(index)}
-              onDirty={onDirty}
-            />
-          ))
-        ) : (
-          <EmptyRow text="هنوز منبعی اضافه نشده است." />
-        )}
-      </div>
+      {isMobile ? (
+        <>
+          {sourceFields.fields.length > 0 ? (
+            <div className="divide-y divide-border rounded-xl border border-border">
+              {sourceFields.fields.map((field, index) => (
+                <button
+                  key={field.fieldKey}
+                  type="button"
+                  className="flex w-full items-center justify-between gap-3 px-4 py-3 text-start outline-none focus-visible:ring-3 focus-visible:ring-inset focus-visible:ring-ring/40"
+                  onClick={() => setEditingSourceIndex(index)}
+                >
+                  <span className="min-w-0">
+                    <span className="block truncate text-[14px] font-semibold text-foreground">
+                      {sourceValues[index]?.title || `منبع ${formatPersianNumber(index + 1)}`}
+                    </span>
+                    <span className="mt-1 block text-[12px] text-muted-foreground">
+                      {sourceTypeLabels[sourceValues[index]?.type ?? field.type]}
+                    </span>
+                  </span>
+                  <PencilSquareIcon
+                    className="size-5 shrink-0 text-muted-foreground"
+                    aria-hidden="true"
+                  />
+                </button>
+              ))}
+            </div>
+          ) : (
+            <EmptyRow text="هنوز منبعی اضافه نشده است." />
+          )}
+          <Drawer
+            open={editingSourceIndex !== null}
+            onOpenChange={(open) => {
+              if (!open) setEditingSourceIndex(null);
+            }}
+            showSwipeHandle
+          >
+            <DrawerContent dir="rtl" className="max-h-[90dvh] border-border">
+              <DrawerHeader className="px-5 text-start">
+                <DrawerTitle>جزئیات منبع</DrawerTitle>
+                <DrawerDescription>اطلاعات منبع را وارد یا ویرایش کنید.</DrawerDescription>
+              </DrawerHeader>
+              <div className="min-h-0 overflow-y-auto px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+                {editingSourceIndex !== null && sourceFields.fields[editingSourceIndex] ? (
+                  <SourceFields
+                    index={editingSourceIndex}
+                    register={register}
+                    control={control}
+                    canMoveUp={editingSourceIndex > 0}
+                    canMoveDown={editingSourceIndex < sourceFields.fields.length - 1}
+                    onMoveUp={() => {
+                      sourceFields.move(editingSourceIndex, editingSourceIndex - 1);
+                      setEditingSourceIndex(editingSourceIndex - 1);
+                      onDirty();
+                    }}
+                    onMoveDown={() => {
+                      sourceFields.move(editingSourceIndex, editingSourceIndex + 1);
+                      setEditingSourceIndex(editingSourceIndex + 1);
+                      onDirty();
+                    }}
+                    onRemove={() => {
+                      void onRemoveSource(editingSourceIndex);
+                      setEditingSourceIndex(null);
+                    }}
+                    onDirty={onDirty}
+                  />
+                ) : null}
+              </div>
+            </DrawerContent>
+          </Drawer>
+        </>
+      ) : (
+        <div className="space-y-4">
+          {sourceFields.fields.length > 0 ? (
+            sourceFields.fields.map((field, index) => (
+              <SourceFields
+                key={field.fieldKey}
+                index={index}
+                register={register}
+                control={control}
+                canMoveUp={index > 0}
+                canMoveDown={index < sourceFields.fields.length - 1}
+                onMoveUp={() => {
+                  sourceFields.move(index, index - 1);
+                  onDirty();
+                }}
+                onMoveDown={() => {
+                  sourceFields.move(index, index + 1);
+                  onDirty();
+                }}
+                onRemove={() => onRemoveSource(index)}
+                onDirty={onDirty}
+              />
+            ))
+          ) : (
+            <EmptyRow text="هنوز منبعی اضافه نشده است." />
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -702,8 +786,165 @@ type ImageListProps = {
 };
 
 function ImageList({ images, onChange, onMove, onRemove }: ImageListProps) {
+  const isMobile = useIsMobile();
+  const [editingImageId, setEditingImageId] = useState<string | null>(null);
+  const editingImage = images.find((image) => image.clientId === editingImageId) ?? null;
+
   if (images.length === 0) {
     return <EmptyRow text="هنوز تصویری اضافه نشده است." />;
+  }
+
+  if (isMobile) {
+    return (
+      <>
+        <div className="grid grid-cols-2 gap-3">
+          {images.map((image, index) => (
+            <div
+              key={image.clientId}
+              className="min-w-0 overflow-hidden rounded-xl border border-border bg-card"
+            >
+              <button
+                type="button"
+                className="relative block aspect-square w-full overflow-hidden bg-muted outline-none focus-visible:ring-3 focus-visible:ring-inset focus-visible:ring-ring/40"
+                onClick={() => setEditingImageId(image.clientId)}
+                aria-label={`ویرایش اطلاعات تصویر ${formatPersianNumber(index + 1)}`}
+              >
+                <Image
+                  src={image.previewUrl}
+                  alt={image.altText || "پیش‌نمایش تصویر انتخاب‌شده"}
+                  fill
+                  sizes="50vw"
+                  unoptimized
+                  className="object-cover"
+                />
+                <span
+                  className={cn(
+                    "absolute top-2 right-2 rounded-full px-2 py-1 text-[10px] font-semibold",
+                    image.status === "uploaded" && "bg-primary text-primary-foreground",
+                    image.status === "uploading" && "bg-gold text-foreground",
+                    image.status === "pending" && "bg-card/90 text-muted-foreground",
+                    image.status === "error" && "bg-destructive text-destructive-foreground",
+                  )}
+                >
+                  {getImageStatusLabel(image.status)}
+                </span>
+              </button>
+              <div className="flex items-center justify-between p-1.5">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label="انتقال تصویر به بالا"
+                  disabled={index === 0}
+                  onClick={() => onMove(image.clientId, "up")}
+                >
+                  <ArrowSmallUpIcon aria-hidden="true" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label="ویرایش اطلاعات تصویر"
+                  onClick={() => setEditingImageId(image.clientId)}
+                >
+                  <PencilSquareIcon aria-hidden="true" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label="انتقال تصویر به پایین"
+                  disabled={index === images.length - 1}
+                  onClick={() => onMove(image.clientId, "down")}
+                >
+                  <ArrowSmallDownIcon aria-hidden="true" />
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+        <Drawer
+          open={Boolean(editingImage)}
+          onOpenChange={(open) => {
+            if (!open) setEditingImageId(null);
+          }}
+          showSwipeHandle
+        >
+          <DrawerContent dir="rtl" className="max-h-[88dvh] border-border">
+            <DrawerHeader className="px-5 text-start">
+              <DrawerTitle>اطلاعات تصویر</DrawerTitle>
+              <DrawerDescription>متن جایگزین و منبع تصویر را کامل کنید.</DrawerDescription>
+            </DrawerHeader>
+            {editingImage ? (
+              <div className="min-h-0 space-y-4 overflow-y-auto px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+                <div className="relative aspect-video overflow-hidden rounded-xl bg-muted">
+                  <Image
+                    src={editingImage.previewUrl}
+                    alt={editingImage.altText || "پیش‌نمایش تصویر انتخاب‌شده"}
+                    fill
+                    sizes="100vw"
+                    unoptimized
+                    className="object-cover"
+                  />
+                </div>
+                <Input
+                  value={editingImage.altText}
+                  onChange={(event) =>
+                    onChange(editingImage.clientId, { altText: event.target.value })
+                  }
+                  placeholder="متن جایگزین تصویر *"
+                />
+                <Input
+                  value={editingImage.caption}
+                  onChange={(event) =>
+                    onChange(editingImage.clientId, { caption: event.target.value })
+                  }
+                  placeholder="شرح تصویر"
+                />
+                <Input
+                  value={editingImage.photographerOrSource}
+                  onChange={(event) =>
+                    onChange(editingImage.clientId, {
+                      photographerOrSource: event.target.value,
+                    })
+                  }
+                  placeholder="عکاس یا منبع تصویر"
+                />
+                <div className="flex items-start gap-2 text-small text-muted-foreground">
+                  <Checkbox
+                    id={`mobile-image-permission-${editingImage.clientId}`}
+                    checked={editingImage.permissionConfirmed}
+                    onChange={(event) =>
+                      onChange(editingImage.clientId, {
+                        permissionConfirmed: event.currentTarget.checked,
+                      })
+                    }
+                  />
+                  <label htmlFor={`mobile-image-permission-${editingImage.clientId}`}>
+                    اجازه استفاده از این تصویر را دارم.
+                  </label>
+                </div>
+                {editingImage.error ? (
+                  <p className="text-small text-destructive">{editingImage.error}</p>
+                ) : null}
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full text-destructive"
+                  onClick={() => {
+                    void onRemove(editingImage);
+                    setEditingImageId(null);
+                  }}
+                >
+                  <TrashIcon aria-hidden="true" />
+                  حذف تصویر
+                </Button>
+              </div>
+            ) : null}
+          </DrawerContent>
+        </Drawer>
+      </>
+    );
   }
 
   return (

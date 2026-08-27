@@ -1,6 +1,6 @@
 "use client";
 
-import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { CheckIcon, MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { type ReactNode, useMemo, useState } from "react";
 
 import {
@@ -13,6 +13,13 @@ import {
   ComboboxTrigger,
   ComboboxValue,
 } from "@/components/ui/combobox";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -22,6 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { formatPersianNumber } from "@/lib/utils/formatters";
 import { normalizePersianSearch } from "@/lib/utils/persian";
@@ -61,7 +69,24 @@ function CreateEntrySelect({
   error,
   disabled,
 }: CreateEntrySelectProps) {
+  const isMobile = useIsMobile();
+
   if (options.length > 10) {
+    if (isMobile) {
+      return (
+        <MobileCreateEntrySelect
+          id={id}
+          label={label}
+          value={value}
+          onValueChange={onValueChange}
+          options={options}
+          placeholder={placeholder}
+          error={error}
+          disabled={disabled}
+        />
+      );
+    }
+
     return (
       <SearchableCreateEntrySelect
         id={id}
@@ -111,6 +136,107 @@ function CreateEntrySelect({
           </SelectGroup>
         </SelectContent>
       </Select>
+    </CreateEntrySelectField>
+  );
+}
+
+function MobileCreateEntrySelect({
+  id,
+  label,
+  value,
+  onValueChange,
+  options,
+  placeholder,
+  error,
+  disabled,
+}: CreateEntrySelectProps) {
+  const [open, setOpen] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
+  const selectedOption = options.find((option) => option.value === value);
+  const orderedOptions = useOrderedOptions(options, value, searchValue);
+  const filteredOptions = useFilteredOptions(orderedOptions, searchValue, true);
+
+  return (
+    <CreateEntrySelectField label={label} id={id} error={error}>
+      <Drawer
+        open={open}
+        onOpenChange={(nextOpen) => {
+          setOpen(nextOpen);
+          if (!nextOpen) setSearchValue("");
+        }}
+        showSwipeHandle
+      >
+        <button
+          id={id}
+          type="button"
+          disabled={disabled}
+          aria-invalid={Boolean(error)}
+          aria-haspopup="dialog"
+          className={cn(
+            "flex h-11 w-full items-center justify-between rounded-lg border border-input bg-card px-3 text-start text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/40 disabled:opacity-50",
+            !selectedOption && "text-muted-foreground",
+            error && "border-destructive",
+          )}
+          onClick={() => setOpen(true)}
+        >
+          <span className="truncate">{selectedOption?.label ?? placeholder}</span>
+          <span aria-hidden="true">⌄</span>
+        </button>
+        <DrawerContent dir="rtl" className="max-h-[82dvh] border-border">
+          <DrawerHeader className="px-5 text-start">
+            <DrawerTitle>{label}</DrawerTitle>
+            <DrawerDescription>{placeholder}</DrawerDescription>
+          </DrawerHeader>
+          <div className="px-5 pt-3">
+            <div className="relative">
+              <MagnifyingGlassIcon
+                aria-hidden="true"
+                className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+              />
+              <Input
+                value={searchValue}
+                onChange={(event) => setSearchValue(event.target.value)}
+                placeholder={`جست‌وجوی ${label}...`}
+                className="h-11 pr-9"
+                autoFocus
+                autoComplete="off"
+              />
+            </div>
+          </div>
+          <div className="min-h-0 overflow-y-auto overscroll-contain px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+            {filteredOptions.length > 0 ? (
+              <div className="divide-y divide-border rounded-xl border border-border">
+                {filteredOptions.map((option) => {
+                  const selected = option.value === value;
+
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      className={cn(
+                        "flex min-h-12 w-full items-center justify-between gap-3 px-4 py-3 text-start text-[14px] outline-none focus-visible:ring-3 focus-visible:ring-inset focus-visible:ring-ring/40",
+                        selected && "bg-primary/8 font-semibold text-primary",
+                      )}
+                      aria-pressed={selected}
+                      onClick={() => {
+                        onValueChange(option.value);
+                        setOpen(false);
+                      }}
+                    >
+                      <span>{option.label}</span>
+                      {selected ? <CheckIcon className="size-5" aria-hidden="true" /> : null}
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="py-10 text-center text-small text-muted-foreground">
+                نتیجه‌ای پیدا نشد.
+              </p>
+            )}
+          </div>
+        </DrawerContent>
+      </Drawer>
     </CreateEntrySelectField>
   );
 }
@@ -228,7 +354,9 @@ function optionMatchesSearch(option: SelectOption, search: string) {
 }
 
 function TagMultiSelect({ label, selectedValues, options, onChange, error }: TagMultiSelectProps) {
+  const isMobile = useIsMobile();
   const [searchValue, setSearchValue] = useState("");
+  const [mobileOpen, setMobileOpen] = useState(false);
   const isSearchable = options.length > 10;
   const selectedOptions = options.filter((option) => selectedValues.includes(option.value));
   const orderedOptions = useOrderedOptions(options, selectedValues[0], searchValue).sort((a, b) => {
@@ -250,6 +378,98 @@ function TagMultiSelect({ label, selectedValues, options, onChange, error }: Tag
     }
 
     onChange([...selectedValues, value]);
+  }
+
+  if (isMobile) {
+    return (
+      <div className="space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-small font-semibold text-foreground">{label}</span>
+          <span className="text-[12px] text-muted-foreground">
+            {formatPersianNumber(selectedValues.length)} انتخاب
+          </span>
+        </div>
+        {selectedOptions.length > 0 ? (
+          <div className="flex flex-wrap gap-2">
+            {selectedOptions.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-small font-medium text-primary"
+                onClick={() => toggleTag(option.value)}
+              >
+                {option.label}
+                <XMarkIcon aria-hidden="true" className="size-3.5" />
+              </button>
+            ))}
+          </div>
+        ) : null}
+        <button
+          type="button"
+          className={cn(
+            "flex h-11 w-full items-center justify-between rounded-lg border border-input bg-card px-3 text-small text-muted-foreground outline-none focus-visible:ring-3 focus-visible:ring-ring/40",
+            error && "border-destructive",
+          )}
+          onClick={() => setMobileOpen(true)}
+        >
+          انتخاب برچسب‌ها
+          <span>{formatPersianNumber(selectedValues.length)}</span>
+        </button>
+        {error ? <p className="text-small text-destructive">{error}</p> : null}
+        <Drawer
+          open={mobileOpen}
+          onOpenChange={(open) => {
+            setMobileOpen(open);
+            if (!open) setSearchValue("");
+          }}
+          showSwipeHandle
+        >
+          <DrawerContent dir="rtl" className="max-h-[84dvh] border-border">
+            <DrawerHeader className="px-5 text-start">
+              <DrawerTitle>برچسب‌ها</DrawerTitle>
+              <DrawerDescription>یک یا چند برچسب مرتبط را انتخاب کنید.</DrawerDescription>
+            </DrawerHeader>
+            {isSearchable ? (
+              <div className="px-5 pt-3">
+                <div className="relative">
+                  <MagnifyingGlassIcon className="absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    value={searchValue}
+                    onChange={(event) => setSearchValue(event.target.value)}
+                    placeholder="جست‌وجوی برچسب..."
+                    className="h-11 pr-9"
+                    autoFocus
+                  />
+                </div>
+              </div>
+            ) : null}
+            <div className="min-h-0 overflow-y-auto px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+              <div className="flex flex-wrap gap-2">
+                {filteredOptions.map((option) => {
+                  const selected = selectedValues.includes(option.value);
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      aria-pressed={selected}
+                      className={cn(
+                        "rounded-full border px-3 py-2 text-small",
+                        selected
+                          ? "border-primary/20 bg-primary/10 font-semibold text-primary"
+                          : "border-border bg-card text-muted-foreground",
+                      )}
+                      onClick={() => toggleTag(option.value)}
+                    >
+                      {option.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </DrawerContent>
+        </Drawer>
+      </div>
+    );
   }
 
   return (

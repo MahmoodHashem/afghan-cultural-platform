@@ -5,7 +5,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { domAnimation, LazyMotion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { useFieldArray, useForm, useWatch } from "react-hook-form";
+import { type UseFormReturn, useFieldArray, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 
 import { applyApiFieldErrors } from "@/features/auth/utils/form-errors";
@@ -40,8 +40,19 @@ import {
   validateDistrictProvince,
 } from "@/features/entries/utils/create-entry-form-utils";
 import { profileQueryKeys } from "@/features/profile/constants/profile-query-keys";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { formatPersianNumber } from "@/lib/utils/formatters";
-import { CreateEntryEditorHeader, CreateEntryEditorSection } from "./create-entry-editor-layout";
+import {
+  CreateEntryEditorHeader,
+  CreateEntryEditorSection,
+  MobileEditorSaveAction,
+} from "./create-entry-editor-layout";
+import {
+  EntryPreviewDialog,
+  type ReadinessIssue,
+  SubmissionReadinessDrawer,
+  UnsavedEntryDialog,
+} from "./create-entry-overlays";
 import {
   DetailsSection,
   ImagesSection,
@@ -56,13 +67,23 @@ type CreateEntryFormProps = {
 };
 
 const editableEntryStatuses = new Set(["DRAFT", "CHANGES_REQUESTED"]);
+type EditorSectionKey = "details" | "images" | "sources" | "video";
 
 function CreateEntryForm({ initialDraftId, taxonomy }: CreateEntryFormProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const isMobile = useIsMobile();
   const [draftId, setDraftId] = useState<string | null>(initialDraftId ?? null);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [isSyncingMedia, setIsSyncingMedia] = useState(false);
+  const [openMobileSection, setOpenMobileSection] = useState<EditorSectionKey | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewValues, setPreviewValues] = useState<CreateEntryFormValues>(() =>
+    toCreateEntryFormDefaults(),
+  );
+  const [readinessOpen, setReadinessOpen] = useState(false);
+  const [readinessIssues, setReadinessIssues] = useState<ReadinessIssue[]>([]);
+  const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
   const draftQuery = useQuery({
     queryKey: ["entry-draft", initialDraftId],
     queryFn: ({ signal }) => getOwnEntry(initialDraftId as string, signal),
@@ -82,6 +103,7 @@ function CreateEntryForm({ initialDraftId, taxonomy }: CreateEntryFormProps) {
     getValues,
     register,
     setError,
+    setFocus,
     setValue,
   } = form;
   const sourceFields = useFieldArray({
@@ -215,6 +237,60 @@ function CreateEntryForm({ initialDraftId, taxonomy }: CreateEntryFormProps) {
     }
   }
 
+  function handlePreview() {
+    setPreviewValues(getValues());
+    setPreviewOpen(true);
+  }
+
+  async function handleRequestSubmit() {
+    if (!isMobile) {
+      await handleSubmitForReview();
+      return;
+    }
+
+    await form.trigger();
+    validateDistrictProvince(form.getValues(), taxonomy.districts, setError);
+    setReadinessIssues(getReadinessIssues(form, selectedScope));
+    setReadinessOpen(true);
+  }
+
+  function handleSelectReadinessIssue(issue: ReadinessIssue) {
+    setReadinessOpen(false);
+
+    if (issue.section === "details") {
+      setOpenMobileSection("details");
+    }
+
+    window.setTimeout(() => {
+      if (issue.field === "contentJson") {
+        document.querySelector<HTMLElement>("[contenteditable='true']")?.focus();
+        document.querySelector<HTMLElement>("[contenteditable='true']")?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+        return;
+      }
+
+      setFocus(issue.field, { shouldSelect: true });
+      const fieldId = getEntryFieldId(issue.field);
+      if (fieldId) {
+        document.getElementById(fieldId)?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }
+    }, 240);
+  }
+
+  function handleBack() {
+    if (hasUnsavedChanges) {
+      setLeaveDialogOpen(true);
+      return;
+    }
+
+    router.push("/explore");
+  }
+
   async function persistDraft({ showSuccessToast }: { showSuccessToast: boolean }) {
     const isValid = await form.trigger();
 
@@ -339,16 +415,31 @@ function CreateEntryForm({ initialDraftId, taxonomy }: CreateEntryFormProps) {
         <CreateEntryEditorHeader
           title={initialDraftId ? "ویرایش مطلب" : "مطلب جدید"}
           isBusy={isBusy}
+          saveState={saveState}
+          submitLabel={
+            initialDraft?.status === "CHANGES_REQUESTED" ? "ارسال دوباره برای بررسی" : undefined
+          }
+          onBack={handleBack}
+          onPreview={handlePreview}
           onSaveDraft={handleSaveDraft}
-          onSubmit={handleSubmitForReview}
+          onSubmit={handleRequestSubmit}
         />
 
-        <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <main className="mx-auto max-w-5xl px-4 pt-5 pb-28 sm:px-6 sm:py-10 lg:px-8">
           {isDraftLoading ? <DraftEditorLoadingState /> : null}
           {isDraftUnavailable ? <DraftEditorErrorState /> : null}
           {isDraftLocked ? <DraftEditorLockedState /> : null}
           {!isDraftLoading && !isDraftUnavailable && !isDraftLocked ? (
             <form className="bg-background px-0 py-6 sm:px-8 lg:px-14" noValidate>
+              {initialDraft?.status === "CHANGES_REQUESTED" &&
+              initialDraft.latestModerationReview?.comments ? (
+                <div className="mb-8 rounded-xl border border-terracotta/20 bg-terracotta/5 px-4 py-4 text-[14px] leading-7">
+                  <p className="font-semibold text-foreground">نظر بررسی‌کننده</p>
+                  <p className="mt-1 text-muted-foreground">
+                    {initialDraft.latestModerationReview.comments}
+                  </p>
+                </div>
+              ) : null}
               <CreateEntryWritingSurface
                 control={control}
                 errors={errors}
@@ -357,7 +448,14 @@ function CreateEntryForm({ initialDraftId, taxonomy }: CreateEntryFormProps) {
               />
 
               <section className="mt-8 divide-y divide-border border-y border-border">
-                <CreateEntryEditorSection title="جزئیات مطلب" summary={detailsSummary}>
+                <CreateEntryEditorSection
+                  title="جزئیات مطلب"
+                  summary={detailsSummary}
+                  open={isMobile ? openMobileSection === "details" : undefined}
+                  onOpenChange={
+                    isMobile ? (open) => setOpenMobileSection(open ? "details" : null) : undefined
+                  }
+                >
                   <DetailsSection
                     categoryOptions={categoryOptions}
                     contentTypeOptions={contentTypeOptions}
@@ -376,6 +474,10 @@ function CreateEntryForm({ initialDraftId, taxonomy }: CreateEntryFormProps) {
                 <CreateEntryEditorSection
                   title="تصاویر"
                   summary={`${formatPersianNumber(images.length)} تصویر`}
+                  open={isMobile ? openMobileSection === "images" : undefined}
+                  onOpenChange={
+                    isMobile ? (open) => setOpenMobileSection(open ? "images" : null) : undefined
+                  }
                 >
                   <ImagesSection
                     imageInputRef={imageInputRef}
@@ -390,6 +492,10 @@ function CreateEntryForm({ initialDraftId, taxonomy }: CreateEntryFormProps) {
                 <CreateEntryEditorSection
                   title="منابع"
                   summary={`${formatPersianNumber(sourceFields.fields.length)} منبع`}
+                  open={isMobile ? openMobileSection === "sources" : undefined}
+                  onOpenChange={
+                    isMobile ? (open) => setOpenMobileSection(open ? "sources" : null) : undefined
+                  }
                 >
                   <SourcesSection
                     control={control}
@@ -403,6 +509,10 @@ function CreateEntryForm({ initialDraftId, taxonomy }: CreateEntryFormProps) {
                 <CreateEntryEditorSection
                   title="ویدیوی مرتبط"
                   summary={watchedValues.youtubeUrl ? "ویدیو اضافه شده" : "اختیاری"}
+                  open={isMobile ? openMobileSection === "video" : undefined}
+                  onOpenChange={
+                    isMobile ? (open) => setOpenMobileSection(open ? "video" : null) : undefined
+                  }
                 >
                   <YouTubeSection
                     control={control}
@@ -416,9 +526,87 @@ function CreateEntryForm({ initialDraftId, taxonomy }: CreateEntryFormProps) {
             </form>
           ) : null}
         </main>
+
+        {!isDraftLoading && !isDraftUnavailable && !isDraftLocked ? (
+          <MobileEditorSaveAction
+            isBusy={isBusy}
+            saveState={saveState}
+            submitLabel={
+              initialDraft?.status === "CHANGES_REQUESTED"
+                ? "ارسال دوباره"
+                : "ارسال برای بررسی"
+            }
+            onSaveDraft={handleSaveDraft}
+            onSubmit={handleRequestSubmit}
+          />
+        ) : null}
+
+        <EntryPreviewDialog
+          open={previewOpen}
+          onOpenChange={setPreviewOpen}
+          values={previewValues}
+          images={images}
+          taxonomy={taxonomy}
+        />
+        <SubmissionReadinessDrawer
+          open={readinessOpen}
+          onOpenChange={setReadinessOpen}
+          issues={readinessIssues}
+          isBusy={isBusy}
+          submitLabel={
+            initialDraft?.status === "CHANGES_REQUESTED"
+              ? "ارسال دوباره برای بررسی"
+              : "ارسال برای بررسی"
+          }
+          onSelectIssue={handleSelectReadinessIssue}
+          onConfirm={async () => {
+            setReadinessOpen(false);
+            await handleSubmitForReview();
+          }}
+        />
+        <UnsavedEntryDialog
+          open={leaveDialogOpen}
+          onOpenChange={setLeaveDialogOpen}
+          onLeave={() => router.push("/explore")}
+        />
       </div>
     </LazyMotion>
   );
+}
+
+function getReadinessIssues(
+  form: UseFormReturn<CreateEntryFormValues>,
+  geographicScope: CreateEntryFormValues["geographicScope"],
+): ReadinessIssue[] {
+  const candidates: ReadinessIssue[] = [
+    { field: "title", label: "عنوان مطلب", section: "writing" },
+    { field: "summary", label: "خلاصه مطلب", section: "writing" },
+    { field: "contentJson", label: "متن مطلب", section: "writing" },
+    { field: "contentTypeId", label: "نوع مطلب", section: "details" },
+    { field: "categoryId", label: "موضوع", section: "details" },
+    { field: "geographicScope", label: "محدوده جغرافیایی", section: "details" },
+  ];
+
+  if (geographicScope === "PROVINCE") {
+    candidates.push({ field: "provinceId", label: "ولایت", section: "details" });
+    candidates.push({ field: "districtId", label: "ولسوالی انتخاب‌شده", section: "details" });
+  }
+
+  return candidates.filter((issue) => Boolean(form.getFieldState(issue.field).error));
+}
+
+function getEntryFieldId(field: keyof CreateEntryFormValues) {
+  const ids: Partial<Record<keyof CreateEntryFormValues, string>> = {
+    title: "entry-title",
+    summary: "entry-summary",
+    contentTypeId: "content-type",
+    categoryId: "category",
+    geographicScope: "geographic-scope",
+    provinceId: "province",
+    districtId: "district",
+  };
+
+  return ids[field];
 }
 
 function DraftEditorLoadingState() {
