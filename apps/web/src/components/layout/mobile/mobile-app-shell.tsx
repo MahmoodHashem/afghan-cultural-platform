@@ -24,7 +24,9 @@ import {
 import {
   OPEN_ENTRY_CONTENTS_EVENT,
   OPEN_EXPLORE_FILTERS_EVENT,
+  READING_CHROME_VISIBILITY_EVENT,
 } from "@/components/layout/mobile/mobile-shell-events";
+import { useMobileReadingChrome } from "@/components/layout/mobile/use-mobile-reading-chrome";
 import { PUBLIC_HEADER_CONTEXT_EVENT } from "@/components/layout/public-header";
 import { cn } from "@/lib/utils";
 import { type AuthSession, useAuthStore } from "@/stores/auth-store";
@@ -51,6 +53,15 @@ function MobileAppShell() {
   const [authOpen, setAuthOpen] = useState(false);
   const openFrameRef = useRef<number | null>(null);
   const closeTimerRef = useRef<number | null>(null);
+  const readingChromeHidden = useMobileReadingChrome(routeContext?.kind === "entry");
+
+  useEffect(() => {
+    window.dispatchEvent(
+      new CustomEvent(READING_CHROME_VISIBILITY_EVENT, {
+        detail: { hidden: readingChromeHidden },
+      }),
+    );
+  }, [readingChromeHidden]);
 
   useEffect(() => {
     if (routeContext?.kind !== "home") {
@@ -150,10 +161,12 @@ function MobileAppShell() {
         routeContext={routeContext}
         headerContext={headerContext}
         transparent={transparent}
+        hidden={readingChromeHidden}
       />
       <MobileBottomNavigation
         pathname={pathname}
         status={status}
+        hidden={readingChromeHidden}
         onProtectedNavigation={handleProtectedNavigation}
       />
       <div className="h-[calc(4.75rem+env(safe-area-inset-bottom))]" aria-hidden="true" />
@@ -181,19 +194,27 @@ function MobileTopBar({
   routeContext,
   headerContext,
   transparent,
+  hidden,
 }: {
   routeContext: NonNullable<ReturnType<typeof getMobileRouteContext>>;
   headerContext: HeaderContext | null;
   transparent: boolean;
+  hidden: boolean;
 }) {
+  const reducedMotion = Boolean(useReducedMotion());
   const contextual = routeContext.kind === "entry" && Boolean(headerContext?.visible);
   const backHref = contextual && headerContext ? headerContext.backHref : routeContext.backHref;
   const backLabel = contextual && headerContext ? headerContext.backLabel : routeContext.backLabel;
 
   return (
-    <header
+    <motion.header
+      initial={false}
+      animate={{ y: hidden ? "-135%" : "0%" }}
+      transition={getChromeTransition(reducedMotion)}
+      aria-hidden={hidden}
+      inert={hidden}
       className={cn(
-        "fixed inset-x-0 top-2  z-40  pt-[env(safe-area-inset-top)] border transition-all duration-300",
+        "fixed inset-x-0 top-2 z-40 border pt-[env(safe-area-inset-top)] will-change-transform transition-[background-color,border-color,box-shadow,color] duration-300",
         transparent
           ? "border-transparent bg-transparent text-white"
           : "border-border/80 bg-background/95 text-foreground shadow-[0_6px_20px_rgba(31,41,55,0.06)] backdrop-blur-xl rounded-full mx-2",
@@ -257,23 +278,30 @@ function MobileTopBar({
           </Link>
         )}
       </div>
-    </header>
+    </motion.header>
   );
 }
 
 function MobileBottomNavigation({
   pathname,
   status,
+  hidden,
   onProtectedNavigation,
 }: {
   pathname: string;
   status: ReturnType<typeof useAuthStore.getState>["status"];
+  hidden: boolean;
   onProtectedNavigation: (event: MouseEvent<HTMLAnchorElement>, item: MobileNavItem) => void;
 }) {
   const reducedMotion = Boolean(useReducedMotion());
 
   return (
-    <nav
+    <motion.nav
+      initial={false}
+      animate={{ y: hidden ? "145%" : "0%" }}
+      transition={getChromeTransition(reducedMotion)}
+      aria-hidden={hidden}
+      inert={hidden}
       className="fixed inset-x-0 bottom-2 rounded-full mx-2 z-40 border-t border-border/80 bg-card/95 px-2 pt-1 pb-[calc(0.3rem+env(safe-area-inset-bottom))] shadow-[0_-8px_28px_rgba(31,41,55,0.08)] backdrop-blur-xl"
       aria-label="ناوبری اصلی موبایل"
     >
@@ -319,8 +347,19 @@ function MobileBottomNavigation({
           );
         })}
       </div>
-    </nav>
+    </motion.nav>
   );
+}
+
+function getChromeTransition(reducedMotion: boolean) {
+  if (reducedMotion) return { duration: 0 } as const;
+
+  return {
+    type: "spring",
+    stiffness: 420,
+    damping: 42,
+    mass: 0.82,
+  } as const;
 }
 
 function getProtectedDestinationDescription(key: MobileNavItem["key"], reason: ShellAuthReason) {

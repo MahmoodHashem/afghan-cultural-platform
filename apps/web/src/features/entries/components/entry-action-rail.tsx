@@ -5,16 +5,17 @@ import {
   BookmarkIcon,
   ChatBubbleOvalLeftEllipsisIcon,
   HeartIcon,
-  ShareIcon,
 } from "@heroicons/react/24/outline";
 import {
   BookmarkIcon as BookmarkIconSolid,
   HeartIcon as HeartIconSolid,
 } from "@heroicons/react/24/solid";
+import { motion, useReducedMotion } from "motion/react";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
+import { READING_CHROME_VISIBILITY_EVENT } from "@/components/layout/mobile/mobile-shell-events";
 
 import { useEngagementAccess } from "@/features/engagement/hooks/use-engagement-access";
 import { useEntryComments } from "@/features/engagement/hooks/use-entry-comments";
@@ -40,7 +41,9 @@ function EntryActionRail({
 }: EntryActionRailProps) {
   const [progress, setProgress] = useState(0);
   const [showMobileDock, setShowMobileDock] = useState(false);
+  const [readingChromeHidden, setReadingChromeHidden] = useState(false);
   const [portalRoot, setPortalRoot] = useState<HTMLElement | null>(null);
+  const reducedMotion = Boolean(useReducedMotion());
   const {
     isAuthenticated,
     status,
@@ -56,6 +59,17 @@ function EntryActionRail({
 
   useEffect(() => {
     setPortalRoot(document.body);
+  }, []);
+
+  useEffect(() => {
+    const updateVisibility = (event: Event) => {
+      if (!(event instanceof CustomEvent)) return;
+      const detail = event.detail as { hidden?: unknown };
+      if (typeof detail.hidden === "boolean") setReadingChromeHidden(detail.hidden);
+    };
+
+    window.addEventListener(READING_CHROME_VISIBILITY_EVENT, updateVisibility);
+    return () => window.removeEventListener(READING_CHROME_VISIBILITY_EVENT, updateVisibility);
   }, []);
 
   useEffect(() => {
@@ -248,7 +262,10 @@ function EntryActionRail({
       {portalRoot
         ? createPortal(
             <>
-              <div
+              <motion.div
+                initial={false}
+                animate={{ opacity: readingChromeHidden ? 0 : 1, y: readingChromeHidden ? -14 : 0 }}
+                transition={getRailTransition(reducedMotion)}
                 className="pointer-events-none fixed inset-x-9 rounded-full top-[calc(3.2rem+env(safe-area-inset-top))] z-41 h-0.5 bg-border/60 lg:hidden"
                 role="progressbar"
                 aria-label="پیشرفت مطالعه"
@@ -260,25 +277,43 @@ function EntryActionRail({
                   className="h-full bg-primary transition-[width] duration-150 motion-reduce:transition-none"
                   style={{ width: `${progress * 100}%` }}
                 />
-              </div>
+              </motion.div>
 
-              <nav
+              <motion.nav
+                initial={false}
+                animate={
+                  showMobileDock && !readingChromeHidden
+                    ? { opacity: 1, x: 0, scale: 1 }
+                    : { opacity: 0, x: 72, scale: 0.96 }
+                }
+                transition={getRailTransition(reducedMotion)}
                 aria-label="تعامل با مطلب"
-                aria-hidden={!showMobileDock}
-                inert={!showMobileDock}
+                aria-hidden={!showMobileDock || readingChromeHidden}
+                inert={!showMobileDock || readingChromeHidden}
                 className={cn(
-                  "fixed right-4 z-40  flex flex-col  duration-300 motion-reduce:transition-none lg:hidden",
+                  "fixed right-4 z-40 flex flex-col will-change-transform lg:hidden",
                   "inset-x-auto bottom-[calc(5rem+env(safe-area-inset-bottom))]  flex flex-col grid-cols-none items-center gap-1.5 bg-card ms-4 rounded-2xl py-2 shadow border",
                 )}
               >
                 {renderActions("mobile")}
-              </nav>
+              </motion.nav>
             </>,
             portalRoot,
           )
         : null}
     </>
   );
+}
+
+function getRailTransition(reducedMotion: boolean) {
+  if (reducedMotion) return { duration: 0 } as const;
+
+  return {
+    type: "spring",
+    stiffness: 400,
+    damping: 40,
+    mass: 0.8,
+  } as const;
 }
 
 function ActionButton({
