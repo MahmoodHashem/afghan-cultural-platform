@@ -5,18 +5,19 @@ import {
   ArrowUpIcon,
   CheckCircleIcon,
   NoSymbolIcon,
-  PencilSquareIcon,
 } from "@heroicons/react/24/outline";
 import { createColumnHelper, tableFeatures, useTable } from "@tanstack/react-table";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import Link from "next/link";
 import { useMemo } from "react";
 
+import { PencilSquareIcon } from "@/components/icons/animated/pencil-square";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { AdminDescribedTaxonomyConfig } from "@/features/admin/constants/admin-described-taxonomy";
 import type { AdminTopic, AdminTopicsResponse } from "@/features/admin/types/admin-topics";
+import { useAnimatedIcon } from "@/hooks/use-animated-icon";
 import { formatPersianDate, formatPersianNumber } from "@/lib/utils/formatters";
 
 const topicTableFeatures = tableFeatures({});
@@ -279,6 +280,8 @@ function TopicRowActions({
   onEdit: (topic: AdminTopic) => void;
   onStatusAction: (topic: AdminTopic) => void;
 }) {
+  const editAnimation = useAnimatedIcon();
+
   return (
     <div className="flex items-center gap-1">
       <Button
@@ -288,8 +291,9 @@ function TopicRowActions({
         disabled={disabled}
         onClick={() => onEdit(topic)}
         aria-label={`ویرایش ${topic.name}`}
+        {...editAnimation.triggerProps}
       >
-        <PencilSquareIcon className="size-4" aria-hidden="true" />
+        <PencilSquareIcon ref={editAnimation.iconRef} size={16} aria-hidden="true" />
       </Button>
       <Button
         type="button"

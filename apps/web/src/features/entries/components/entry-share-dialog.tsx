@@ -1,15 +1,12 @@
 "use client";
 
-import {
-  CheckIcon,
-  ClipboardDocumentIcon,
-  EnvelopeIcon,
-  ShareIcon,
-} from "@heroicons/react/24/outline";
+import { CheckIcon, EnvelopeIcon } from "@heroicons/react/24/outline";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { SimpleIcon } from "simple-icons";
 import { siFacebook, siTelegram, siWhatsapp, siX } from "simple-icons";
 import { toast } from "sonner";
+import { ClipboardDocumentIcon } from "@/components/icons/animated/clipboard-document";
+import { ShareIcon } from "@/components/icons/animated/share";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -32,6 +29,7 @@ import {
   createEntryShareDestinations,
   type EntryShareDestination,
 } from "@/features/entries/utils/entry-share";
+import { useAnimatedIcon } from "@/hooks/use-animated-icon";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
@@ -160,6 +158,13 @@ function SharePanel({
   onCopy: () => void;
   onShareMore: () => void;
 }) {
+  const copyAnimation = useAnimatedIcon();
+  const shareAnimation = useAnimatedIcon();
+
+  useEffect(() => {
+    if (copied) copyAnimation.playStateChange();
+  }, [copied, copyAnimation.playStateChange]);
+
   return (
     <div className="space-y-6">
       <div className="flex gap-3 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -169,11 +174,12 @@ function SharePanel({
         {supportsNativeShare ? (
           <button
             type="button"
+            {...shareAnimation.triggerProps}
             className="group flex min-w-16 shrink-0 flex-col items-center gap-2 text-[12px] text-muted-foreground outline-none focus-visible:text-primary"
             onClick={onShareMore}
           >
             <span className="flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary transition-transform group-hover:scale-105">
-              <ShareIcon className="size-5" aria-hidden="true" />
+              <ShareIcon ref={shareAnimation.iconRef} size={20} aria-hidden="true" />
             </span>
             بیشتر
           </button>
@@ -189,8 +195,18 @@ function SharePanel({
           className="h-10 min-w-0 flex-1 border-0 bg-transparent text-left shadow-none focus-visible:ring-0"
           onFocus={(event) => event.currentTarget.select()}
         />
-        <Button type="button" className="shrink-0" onClick={onCopy} disabled={!canonicalUrl}>
-          {copied ? <CheckIcon aria-hidden="true" /> : <ClipboardDocumentIcon aria-hidden="true" />}
+        <Button
+          type="button"
+          className="shrink-0"
+          onClick={onCopy}
+          disabled={!canonicalUrl}
+          {...copyAnimation.triggerProps}
+        >
+          {copied ? (
+            <CheckIcon aria-hidden="true" />
+          ) : (
+            <ClipboardDocumentIcon ref={copyAnimation.iconRef} size={20} aria-hidden="true" />
+          )}
           {copied ? "کپی شد" : "کپی پیوند"}
         </Button>
       </div>

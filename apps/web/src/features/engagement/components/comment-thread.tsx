@@ -1,10 +1,10 @@
 "use client";
 
-import { ArrowUturnLeftIcon, ChevronDownIcon, HeartIcon } from "@heroicons/react/24/outline";
-import { HeartIcon as HeartIconSolid } from "@heroicons/react/24/solid";
+import { ArrowUturnLeftIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
+import { HeartIcon } from "@/components/icons/animated/heart";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,7 @@ import {
 } from "@/features/engagement/hooks/use-entry-comments";
 import type { EntryComment } from "@/features/engagement/types/entry-engagement";
 import { formatCommentRelativeTime } from "@/features/engagement/utils/comment-time";
+import { useAnimatedIcon } from "@/hooks/use-animated-icon";
 import { cn } from "@/lib/utils";
 import { formatPersianDate, formatPersianNumber } from "@/lib/utils/formatters";
 import { createUserInitials } from "@/lib/utils/user";
@@ -54,6 +55,13 @@ function CommentThread({ entryId, comment, depth = 0, now }: CommentThreadProps)
   const isOwner = Boolean(activeAuthor?.id === user?.id);
   const isSelfLike = Boolean(activeAuthor?.id === user?.id);
   const pendingReply = getPendingComment(comment.id);
+  const likeAnimation = useAnimatedIcon();
+  const previousLikedRef = useRef(commentLike.isLiked);
+
+  useEffect(() => {
+    if (previousLikedRef.current !== commentLike.isLiked) likeAnimation.playStateChange();
+    previousLikedRef.current = commentLike.isLiked;
+  }, [commentLike.isLiked, likeAnimation.playStateChange]);
 
   useEffect(() => {
     if (canContribute && pendingReply) {
@@ -193,12 +201,14 @@ function CommentThread({ entryId, comment, depth = 0, now }: CommentThreadProps)
                   disabled={isSelfLike || commentLike.isPending || commentLike.isLoading}
                   className={cn(commentLike.isLiked && "text-primary hover:text-primary")}
                   onClick={toggleLike}
+                  {...likeAnimation.triggerProps}
                 >
-                  {commentLike.isLiked ? (
-                    <HeartIconSolid className="size-4" aria-hidden="true" />
-                  ) : (
-                    <HeartIcon className="size-4" aria-hidden="true" />
-                  )}
+                  <HeartIcon
+                    ref={likeAnimation.iconRef}
+                    size={16}
+                    className={cn(commentLike.isLiked && "[&>svg]:fill-current")}
+                    aria-hidden="true"
+                  />
                   {formatPersianNumber(comment.likeCount)}
                 </Button>
                 <CommentMenu

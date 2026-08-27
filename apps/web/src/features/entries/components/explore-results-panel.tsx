@@ -1,11 +1,12 @@
 "use client";
 
-import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { XMarkIcon } from "@heroicons/react/24/outline";
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 
+import { MagnifyingGlassIcon } from "@/components/icons/animated/magnifying-glass";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useAnimatedIcon } from "@/hooks/use-animated-icon";
 import { cn } from "@/lib/utils";
 import { formatPersianNumber } from "@/lib/utils/formatters";
 import { normalizePersianSearch } from "@/lib/utils/persian";
@@ -96,6 +98,7 @@ function ExploreSearchBar({ query }: { query: NormalizedExploreQuery }) {
   const lastNavigationSearch = useRef(normalizePersianSearch(query.search ?? ""));
   const searchInputId = "explore-result-search";
   const normalizedQuerySearch = normalizePersianSearch(query.search ?? "");
+  const { iconRef, triggerProps } = useAnimatedIcon();
 
   useEffect(() => {
     if (normalizedQuerySearch === lastNavigationSearch.current) {
@@ -134,10 +137,13 @@ function ExploreSearchBar({ query }: { query: NormalizedExploreQuery }) {
       <label
         htmlFor={searchInputId}
         aria-busy={isPending}
+        {...triggerProps}
         className="group flex  flex-1 items-center gap-3 rounded-full border border-border bg-card px-4 transition-colors focus-within:border-primary focus-within:ring-3 focus-within:ring-ring/35"
       >
         <MagnifyingGlassIcon
-          className="size-5 shrink-0 text-muted-foreground transition-colors group-focus-within:text-primary"
+          ref={iconRef}
+          size={20}
+          className="shrink-0 text-muted-foreground transition-colors group-focus-within:text-primary"
           aria-hidden="true"
         />
         <span className="sr-only">جست‌وجو در نتایج</span>

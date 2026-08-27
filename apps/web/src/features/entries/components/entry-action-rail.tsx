@@ -1,20 +1,14 @@
 "use client";
 
-import {
-  ArrowTopRightOnSquareIcon,
-  BookmarkIcon,
-  ChatBubbleOvalLeftEllipsisIcon,
-  HeartIcon,
-} from "@heroicons/react/24/outline";
-import {
-  BookmarkIcon as BookmarkIconSolid,
-  HeartIcon as HeartIconSolid,
-} from "@heroicons/react/24/solid";
 import { motion, useReducedMotion } from "motion/react";
-import type { ReactNode } from "react";
-import { useEffect, useState } from "react";
+import type { ComponentType, HTMLAttributes, RefAttributes } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
+import { BookmarkIcon } from "@/components/icons/animated/bookmark";
+import { ChatBubbleOvalLeftEllipsisIcon } from "@/components/icons/animated/chat-bubble-oval-left-ellipsis";
+import { HeartIcon } from "@/components/icons/animated/heart";
+import { ShareIcon } from "@/components/icons/animated/share";
 import { MOBILE_CHROME_VISIBILITY_EVENT } from "@/components/layout/mobile/mobile-shell-events";
 
 import { useEngagementAccess } from "@/features/engagement/hooks/use-engagement-access";
@@ -22,6 +16,7 @@ import { useEntryComments } from "@/features/engagement/hooks/use-entry-comments
 import { useEntryBookmark, useEntryLike } from "@/features/engagement/hooks/use-entry-interactions";
 import type { EntryCommentListResponse } from "@/features/engagement/types/entry-engagement";
 import { EntryShareDialog } from "@/features/entries/components/entry-share-dialog";
+import { type AnimatedIconHandle, useAnimatedIcon } from "@/hooks/use-animated-icon";
 import { cn } from "@/lib/utils";
 import { formatPersianNumber } from "@/lib/utils/formatters";
 
@@ -179,20 +174,14 @@ function EntryActionRail({
           pending={like.isPending}
           disabled={status === "initializing" || like.isLoading}
           onClick={toggleLike}
-          icon={
-            like.isLikedByCurrentUser ? (
-              <HeartIconSolid className="size-6" aria-hidden="true" />
-            ) : (
-              <HeartIcon className="size-6" aria-hidden="true" />
-            )
-          }
+          icon={HeartIcon}
         />
         <ActionButton
           label="دیدگاه‌ها"
           count={commentCount}
           orientation={orientation}
           onClick={() => scrollToSection("entry-comments")}
-          icon={<ChatBubbleOvalLeftEllipsisIcon className="size-6" aria-hidden="true" />}
+          icon={ChatBubbleOvalLeftEllipsisIcon}
         />
         <ActionButton
           label={bookmark.bookmarked ? "برداشتن از ذخیره‌ها" : "ذخیره مطلب"}
@@ -202,19 +191,13 @@ function EntryActionRail({
           pending={bookmark.isPending}
           disabled={status === "initializing" || bookmark.isLoading}
           onClick={toggleBookmark}
-          icon={
-            bookmark.bookmarked ? (
-              <BookmarkIconSolid className="size-6" aria-hidden="true" />
-            ) : (
-              <BookmarkIcon className="size-6" aria-hidden="true" />
-            )
-          }
+          icon={BookmarkIcon}
         />
         <ActionButton
           label="اشتراک‌گذاری"
           orientation={orientation}
           onClick={() => setShareOpen(true)}
-          icon={<ArrowTopRightOnSquareIcon className="size-6" aria-hidden="true" />}
+          icon={ShareIcon}
         />
       </>
     );
@@ -294,7 +277,7 @@ function ActionButton({
   pending = false,
   disabled = false,
   orientation = "desktop",
-  icon,
+  icon: Icon,
   onClick,
 }: {
   label: string;
@@ -303,14 +286,25 @@ function ActionButton({
   pending?: boolean;
   disabled?: boolean;
   orientation?: "mobile" | "desktop";
-  icon: ReactNode;
+  icon: AnimatedActionIcon;
   onClick: () => void;
 }) {
+  const { iconRef, playStateChange, triggerProps } = useAnimatedIcon();
+  const previousActiveRef = useRef(active);
+
+  useEffect(() => {
+    if (previousActiveRef.current !== undefined && previousActiveRef.current !== active) {
+      playStateChange();
+    }
+    previousActiveRef.current = active;
+  }, [active, playStateChange]);
+
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled || pending}
+      {...triggerProps}
       className={cn(
         "group flex min-h-12 min-w-12 flex-col items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-muted hover:text-primary focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/40 disabled:pointer-events-none disabled:opacity-60",
         orientation === "mobile" && "rounded-full text-foreground",
@@ -320,7 +314,12 @@ function ActionButton({
       aria-pressed={active}
       aria-busy={pending}
     >
-      {icon}
+      <Icon
+        ref={iconRef}
+        size={24}
+        className={cn(active === true && "[&>svg]:fill-current")}
+        aria-hidden="true"
+      />
       {typeof count === "number" ? (
         <span className="mt-1 text-[12px] font-bold leading-none">
           {formatPersianNumber(count)}
@@ -329,6 +328,10 @@ function ActionButton({
     </button>
   );
 }
+
+type AnimatedActionIcon = ComponentType<
+  HTMLAttributes<HTMLDivElement> & { size?: number } & RefAttributes<AnimatedIconHandle>
+>;
 
 function scrollToSection(id: string) {
   document.getElementById(id)?.scrollIntoView({

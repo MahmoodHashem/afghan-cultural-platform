@@ -6,9 +6,8 @@ import {
   Bars3Icon,
   ChevronDownIcon,
   ClipboardDocumentCheckIcon,
-  MagnifyingGlassIcon,
-  PlusIcon,
   Squares2X2Icon,
+  PlusIcon as StaticPlusIcon,
   UserCircleIcon,
 } from "@heroicons/react/24/outline";
 import Image from "next/image";
@@ -16,6 +15,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { MagnifyingGlassIcon } from "@/components/icons/animated/magnifying-glass";
+import { PlusIcon } from "@/components/icons/animated/plus";
 
 import {
   AlertDialog,
@@ -41,6 +42,7 @@ import {
 import { Menubar } from "@/components/ui/menubar";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useLogout } from "@/features/auth/hooks/use-auth-mutations";
+import { useAnimatedIcon } from "@/hooks/use-animated-icon";
 import { cn } from "@/lib/utils";
 import { createUserInitials } from "@/lib/utils/user";
 import { type SafeUser, useAuthStore } from "@/stores/auth-store";
@@ -257,8 +259,11 @@ function HeaderSearch({
   className?: string;
   inputClassName?: string;
 }) {
+  const { iconRef, triggerProps } = useAnimatedIcon();
+
   return (
     <label
+      {...triggerProps}
       className={cn(
         "relative items-center gap-2.5 rounded-full border text-foreground shadow-[0_8px_24px_rgba(31,41,55,0.12)] transition-all duration-500 focus-within:border-primary focus-within:ring-3 focus-within:ring-ring/35",
         isCompact
@@ -268,10 +273,9 @@ function HeaderSearch({
       )}
     >
       <MagnifyingGlassIcon
-        className={cn(
-          "absolute right-2 size-5",
-          isCompact ? "text-muted-foreground" : "text-background",
-        )}
+        ref={iconRef}
+        size={20}
+        className={cn("absolute right-2", isCompact ? "text-muted-foreground" : "text-background")}
         aria-hidden="true"
       />
       <span className="sr-only">جست‌وجو</span>
@@ -389,7 +393,7 @@ function MobileNavigation({ isCompact }: { isCompact: boolean }) {
                       "h-11 w-full rounded-full",
                     )}
                   >
-                    <PlusIcon className="size-4" aria-hidden="true" />
+                    <StaticPlusIcon className="size-4" aria-hidden="true" />
                     افزودن مطلب
                   </Link>
                   <Link
@@ -482,6 +486,7 @@ function MobileNavigation({ isCompact }: { isCompact: boolean }) {
 function HeaderAuthControls({ isCompact }: { isCompact: boolean }) {
   const status = useAuthStore((state) => state.status);
   const user = useAuthStore((state) => state.user);
+  const { iconRef, triggerProps } = useAnimatedIcon();
 
   if (status === "initializing") {
     return (
@@ -520,6 +525,7 @@ function HeaderAuthControls({ isCompact }: { isCompact: boolean }) {
     <div className="ms-auto flex shrink-0 items-center gap-2">
       <Link
         href="/entries/new"
+        {...triggerProps}
         className={cn(
           "hidden items-center gap-1.5 rounded-full bg-primary font-semibold text-background shadow-[0_12px_30px_rgba(15,118,110,0.22)] transition-colors hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-3 md:inline-flex",
           isCompact
@@ -527,7 +533,7 @@ function HeaderAuthControls({ isCompact }: { isCompact: boolean }) {
             : "h-11 px-4 text-[14px] focus-visible:ring-white/35",
         )}
       >
-        <PlusIcon className="size-4" aria-hidden="true" />
+        <PlusIcon ref={iconRef} size={16} aria-hidden="true" />
         افزودن مطلب
       </Link>
       <ProfileMenu user={user} />

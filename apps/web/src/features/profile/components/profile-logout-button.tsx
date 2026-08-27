@@ -1,8 +1,8 @@
 "use client";
 
-import { ArrowRightStartOnRectangleIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
 import { toast } from "sonner";
+import { ArrowRightStartOnRectangleIcon } from "@/components/icons/animated/arrow-right-start-on-rectangle";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,10 +15,12 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { useLogout } from "@/features/auth/hooks/use-auth-mutations";
+import { useAnimatedIcon } from "@/hooks/use-animated-icon";
 
 function ProfileLogoutButton() {
   const [confirmationOpen, setConfirmationOpen] = useState(false);
   const logoutMutation = useLogout();
+  const { iconRef, triggerProps } = useAnimatedIcon();
 
   function confirmLogout() {
     logoutMutation.mutate(undefined, {
@@ -35,9 +37,10 @@ function ProfileLogoutButton() {
         size="sm"
         disabled={logoutMutation.isPending}
         onClick={() => setConfirmationOpen(true)}
+        {...triggerProps}
         className="mt-1 rounded-full text-muted-foreground hover:bg-destructive/8 hover:text-destructive"
       >
-        <ArrowRightStartOnRectangleIcon className="size-4" aria-hidden="true" />
+        <ArrowRightStartOnRectangleIcon ref={iconRef} size={16} aria-hidden="true" />
         {logoutMutation.isPending ? "در حال خروج..." : "خروج از حساب"}
       </Button>
 

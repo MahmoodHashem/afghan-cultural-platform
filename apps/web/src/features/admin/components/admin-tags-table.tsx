@@ -1,15 +1,17 @@
 "use client";
 
-import { CheckCircleIcon, NoSymbolIcon, PencilSquareIcon } from "@heroicons/react/24/outline";
+import { CheckCircleIcon, NoSymbolIcon } from "@heroicons/react/24/outline";
 import { createColumnHelper, tableFeatures, useTable } from "@tanstack/react-table";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import Link from "next/link";
 import { useMemo } from "react";
 
+import { PencilSquareIcon } from "@/components/icons/animated/pencil-square";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { AdminTag, AdminTagsResponse } from "@/features/admin/types/admin-tags";
+import { useAnimatedIcon } from "@/hooks/use-animated-icon";
 import { formatPersianDate, formatPersianNumber } from "@/lib/utils/formatters";
 
 const tagTableFeatures = tableFeatures({});
@@ -248,6 +250,8 @@ function TagRowActions({
   onEdit: (tag: AdminTag) => void;
   onStatusAction: (tag: AdminTag) => void;
 }) {
+  const editAnimation = useAnimatedIcon();
+
   return (
     <div className="flex items-center gap-1">
       <Button
@@ -257,8 +261,9 @@ function TagRowActions({
         disabled={disabled}
         onClick={() => onEdit(tag)}
         aria-label={`ویرایش ${tag.name}`}
+        {...editAnimation.triggerProps}
       >
-        <PencilSquareIcon className="size-4" aria-hidden="true" />
+        <PencilSquareIcon ref={editAnimation.iconRef} size={16} aria-hidden="true" />
       </Button>
       <Button
         type="button"

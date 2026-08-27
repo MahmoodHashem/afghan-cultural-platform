@@ -6,13 +6,13 @@ import {
   CameraIcon,
   ChatBubbleLeftRightIcon,
   DocumentTextIcon,
-  EyeIcon,
-  TrashIcon,
 } from "@heroicons/react/24/outline";
 import { motion, useReducedMotion } from "motion/react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
+import { EyeIcon } from "@/components/icons/animated/eye";
+import { TrashIcon } from "@/components/icons/animated/trash";
 import { useMobileChromeHidden } from "@/components/layout/mobile/use-mobile-chrome-hidden";
 import {
   AlertDialog,
@@ -58,6 +58,7 @@ import {
   type ProfileTab,
   parseProfileQuery,
 } from "@/features/profile/utils/profile-query";
+import { useAnimatedIcon } from "@/hooks/use-animated-icon";
 import { isApiError } from "@/lib/api/api-error";
 import { cn } from "@/lib/utils";
 import { formatPersianDate, formatPersianNumber } from "@/lib/utils/formatters";
@@ -489,16 +490,10 @@ function OwnerCommentRow({ comment }: { comment: ProfileComment }) {
           </Link>
         </div>
         {comment.entry.status === "PUBLISHED" ? (
-          <Link
+          <ProfileViewLink
             href={`/entries/${encodeURIComponent(comment.entry.slug)}`}
-            className={cn(
-              buttonVariants({ variant: "outline", size: "sm" }),
-              "self-start rounded-full",
-            )}
-          >
-            <EyeIcon className="size-4" aria-hidden="true" />
-            نمایش مطلب
-          </Link>
+            label="نمایش مطلب"
+          />
         ) : null}
       </div>
     </article>
@@ -552,16 +547,10 @@ function OwnerBookmarkRow({ bookmark }: { bookmark: ProfileBookmark }) {
             </p>
           </div>
         </div>
-        <Link
+        <ProfileViewLink
           href={`/entries/${encodeURIComponent(bookmark.entry.slug)}`}
-          className={cn(
-            buttonVariants({ variant: "outline", size: "sm" }),
-            "self-start rounded-full",
-          )}
-        >
-          <EyeIcon className="size-4" aria-hidden="true" />
-          نمایش مطلب
-        </Link>
+          label="نمایش مطلب"
+        />
       </div>
     </article>
   );
@@ -672,13 +661,7 @@ function OwnerEntryRow({ entry, onDelete }: { entry: OwnEntry; onDelete: () => v
 
         <div className="flex shrink-0 flex-wrap items-center gap-2 lg:justify-end">
           {entry.status === "PUBLISHED" ? (
-            <Link
-              href={`/entries/${encodeURIComponent(entry.slug)}`}
-              className={cn(buttonVariants({ variant: "outline", size: "sm" }), "rounded-full")}
-            >
-              <EyeIcon className="size-4" aria-hidden="true" />
-              نمایش
-            </Link>
+            <ProfileViewLink href={`/entries/${encodeURIComponent(entry.slug)}`} label="نمایش" />
           ) : null}
           {isOwnerEditableStatus(entry.status) ? (
             <Link
@@ -688,22 +671,44 @@ function OwnerEntryRow({ entry, onDelete }: { entry: OwnEntry; onDelete: () => v
               ویرایش
             </Link>
           ) : null}
-          {canDeleteOwnEntry(entry) ? (
-            <button
-              type="button"
-              onClick={onDelete}
-              className={cn(
-                buttonVariants({ variant: "ghost", size: "sm" }),
-                "rounded-full text-destructive hover:bg-destructive/10 hover:text-destructive",
-              )}
-            >
-              <TrashIcon className="size-4" aria-hidden="true" />
-              حذف
-            </button>
-          ) : null}
+          {canDeleteOwnEntry(entry) ? <ProfileDeleteButton onClick={onDelete} /> : null}
         </div>
       </div>
     </article>
+  );
+}
+
+function ProfileViewLink({ href, label }: { href: string; label: string }) {
+  const { iconRef, triggerProps } = useAnimatedIcon();
+
+  return (
+    <Link
+      href={href}
+      className={cn(buttonVariants({ variant: "outline", size: "sm" }), "self-start rounded-full")}
+      {...triggerProps}
+    >
+      <EyeIcon ref={iconRef} size={16} aria-hidden="true" />
+      {label}
+    </Link>
+  );
+}
+
+function ProfileDeleteButton({ onClick }: { onClick: () => void }) {
+  const { iconRef, triggerProps } = useAnimatedIcon();
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        buttonVariants({ variant: "ghost", size: "sm" }),
+        "rounded-full text-destructive hover:bg-destructive/10 hover:text-destructive",
+      )}
+      {...triggerProps}
+    >
+      <TrashIcon ref={iconRef} size={16} aria-hidden="true" />
+      حذف
+    </button>
   );
 }
 

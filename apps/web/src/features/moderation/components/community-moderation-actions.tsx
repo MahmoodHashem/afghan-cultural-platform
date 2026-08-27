@@ -1,8 +1,9 @@
 "use client";
 
-import { FlagIcon, PencilSquareIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
 
+import { FlagIcon } from "@/components/icons/animated/flag";
+import { PencilSquareIcon } from "@/components/icons/animated/pencil-square";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -34,6 +35,7 @@ import {
   correctionSectionLabels,
   reportReasonLabels,
 } from "@/features/moderation/utils/content-moderation-labels";
+import { useAnimatedIcon } from "@/hooks/use-animated-icon";
 
 const correctionSections = Object.entries(correctionSectionLabels).map(([value, label]) => ({
   value: value as CorrectionSection,
@@ -47,6 +49,8 @@ const reportReasons = Object.entries(reportReasonLabels).map(([value, label]) =>
 function CommunityModerationActions({ entryId }: { entryId: string }) {
   const { ensureVerifiedAccess } = useEngagementAccess();
   const [activeSheet, setActiveSheet] = useState<"correction" | "report" | null>(null);
+  const correctionAnimation = useAnimatedIcon();
+  const reportAnimation = useAnimatedIcon();
 
   function open(action: "correction" | "report") {
     if (ensureVerifiedAccess(action)) {
@@ -59,12 +63,24 @@ function CommunityModerationActions({ entryId }: { entryId: string }) {
       <span className="me-2 text-[13px] text-muted-foreground">
         در بهترشدن این مطلب سهم بگیرید:
       </span>
-      <Button type="button" variant="outline" size="sm" onClick={() => open("correction")}>
-        <PencilSquareIcon className="size-4" aria-hidden="true" />
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={() => open("correction")}
+        {...correctionAnimation.triggerProps}
+      >
+        <PencilSquareIcon ref={correctionAnimation.iconRef} size={16} aria-hidden="true" />
         پیشنهاد اصلاح
       </Button>
-      <Button type="button" variant="ghost" size="sm" onClick={() => open("report")}>
-        <FlagIcon className="size-4" aria-hidden="true" />
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={() => open("report")}
+        {...reportAnimation.triggerProps}
+      >
+        <FlagIcon ref={reportAnimation.iconRef} size={16} aria-hidden="true" />
         گزارش مطلب
       </Button>
 

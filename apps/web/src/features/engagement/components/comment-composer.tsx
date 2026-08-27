@@ -1,10 +1,11 @@
 "use client";
 
-import { PaperAirplaneIcon, ShieldCheckIcon } from "@heroicons/react/24/outline";
+import { ShieldCheckIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useId, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 
+import { PaperAirplaneIcon } from "@/components/icons/animated/paper-airplane";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,6 +14,7 @@ import {
   type EntryCommentFormValues,
   entryCommentSchema,
 } from "@/features/engagement/schemas/entry-comment-schema";
+import { useAnimatedIcon } from "@/hooks/use-animated-icon";
 import { isApiError } from "@/lib/api/api-error";
 import { cn } from "@/lib/utils";
 import { formatPersianNumber } from "@/lib/utils/formatters";
@@ -58,6 +60,7 @@ function CommentComposer({
     defaultValues: { body: initialBody },
   });
   const body = watch("body") ?? "";
+  const submitAnimation = useAnimatedIcon();
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const selectionRef = useRef({ start: initialBody.length, end: initialBody.length });
   const { ref: bodyFieldRef, ...bodyField } = register("body");
@@ -71,6 +74,7 @@ function CommentComposer({
   async function submit(values: EntryCommentFormValues) {
     try {
       await onSubmit(values.body);
+      submitAnimation.playStateChange();
       if (mode !== "edit") reset({ body: "" });
     } catch (error) {
       if (isApiError(error)) {
@@ -217,7 +221,12 @@ function CommentComposer({
                 انصراف
               </Button>
             ) : null}
-            <Button type="submit" size={compact ? "sm" : "default"} disabled={isPending}>
+            <Button
+              type="submit"
+              size={compact ? "sm" : "default"}
+              disabled={isPending}
+              {...submitAnimation.triggerProps}
+            >
               {isPending
                 ? "در حال ثبت..."
                 : mode === "edit"
@@ -226,7 +235,12 @@ function CommentComposer({
                     ? "ارسال پاسخ"
                     : "ارسال دیدگاه"}
               {mode !== "edit" ? (
-                <PaperAirplaneIcon className="size-4 rtl:-scale-x-100" aria-hidden="true" />
+                <PaperAirplaneIcon
+                  ref={submitAnimation.iconRef}
+                  size={16}
+                  className="rtl:-scale-x-100"
+                  aria-hidden="true"
+                />
               ) : null}
             </Button>
           </div>

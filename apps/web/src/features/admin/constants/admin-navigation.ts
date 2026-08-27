@@ -1,19 +1,20 @@
-import {
-  BookmarkSquareIcon,
-  ClockIcon,
-  Cog6ToothIcon,
-  DocumentDuplicateIcon,
-  DocumentTextIcon,
-  FlagIcon,
-  MapPinIcon,
-  ShieldCheckIcon,
-  Squares2X2Icon,
-  TagIcon,
-  UsersIcon,
-} from "@heroicons/react/24/outline";
-import type { ComponentType, SVGProps } from "react";
+import type { ForwardRefExoticComponent, HTMLAttributes, RefAttributes } from "react";
+import { BookmarkSquareIcon } from "@/components/icons/animated/bookmark-square";
+import { ClockIcon } from "@/components/icons/animated/clock";
+import { Cog6ToothIcon } from "@/components/icons/animated/cog-6-tooth";
+import { DocumentDuplicateIcon } from "@/components/icons/animated/document-duplicate";
+import { DocumentTextIcon } from "@/components/icons/animated/document-text";
+import { FlagIcon } from "@/components/icons/animated/flag";
+import { MapPinIcon } from "@/components/icons/animated/map-pin";
+import { ShieldCheckIcon } from "@/components/icons/animated/shield-check";
+import { Squares2X2Icon } from "@/components/icons/animated/squares-2x2";
+import { TagIcon } from "@/components/icons/animated/tag";
+import { UsersIcon } from "@/components/icons/animated/users";
+import type { AnimatedIconHandle } from "@/hooks/use-animated-icon";
 
-type AdminNavIcon = ComponentType<SVGProps<SVGSVGElement>>;
+type AdminNavIcon = ForwardRefExoticComponent<
+  HTMLAttributes<HTMLDivElement> & { size?: number } & RefAttributes<AnimatedIconHandle>
+>;
 
 type AdminNavItem = {
   title: string;

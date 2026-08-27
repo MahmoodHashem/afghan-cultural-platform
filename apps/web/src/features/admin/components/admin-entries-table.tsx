@@ -1,18 +1,21 @@
 "use client";
 
-import { ArchiveBoxIcon, ArrowPathIcon, EyeIcon } from "@heroicons/react/24/outline";
 import { createColumnHelper, tableFeatures, useTable } from "@tanstack/react-table";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo } from "react";
 
+import { ArchiveBoxIcon } from "@/components/icons/animated/archive-box";
+import { ArrowPathIcon } from "@/components/icons/animated/arrow-path";
+import { EyeIcon } from "@/components/icons/animated/eye";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AdminEntryStatusBadge } from "@/features/admin/components/admin-entry-status-badge";
 import { adminGeographicScopeLabels } from "@/features/admin/constants/admin-entry-meta";
 import type { AdminEntryListItem } from "@/features/admin/types/admin-entries";
 import type { AdminPaginationMeta } from "@/features/admin/types/admin-users";
+import { useAnimatedIcon } from "@/hooks/use-animated-icon";
 import { formatPersianDate, formatPersianNumber } from "@/lib/utils/formatters";
 
 const features = tableFeatures({});
@@ -257,6 +260,10 @@ function EntryActions({
   entry: AdminEntryListItem;
   onLifecycle: (entry: AdminEntryListItem) => void;
 }) {
+  const viewAnimation = useAnimatedIcon();
+  const archiveAnimation = useAnimatedIcon();
+  const restoreAnimation = useAnimatedIcon();
+
   return (
     <div className="flex items-center gap-1">
       <Button
@@ -264,8 +271,9 @@ function EntryActions({
         size="icon-sm"
         render={<Link href={`/admin/entries/${entry.id}`} />}
         aria-label={`مشاهده ${entry.title}`}
+        {...viewAnimation.triggerProps}
       >
-        <EyeIcon className="size-4" />
+        <EyeIcon ref={viewAnimation.iconRef} size={16} aria-hidden="true" />
       </Button>
       {entry.status === "PUBLISHED" ? (
         <Button
@@ -273,8 +281,9 @@ function EntryActions({
           size="icon-sm"
           onClick={() => onLifecycle(entry)}
           aria-label={`بایگانی ${entry.title}`}
+          {...archiveAnimation.triggerProps}
         >
-          <ArchiveBoxIcon className="size-4" />
+          <ArchiveBoxIcon ref={archiveAnimation.iconRef} size={16} aria-hidden="true" />
         </Button>
       ) : null}
       {entry.status === "ARCHIVED" ? (
@@ -283,8 +292,9 @@ function EntryActions({
           size="icon-sm"
           onClick={() => onLifecycle(entry)}
           aria-label={`بازگردانی ${entry.title}`}
+          {...restoreAnimation.triggerProps}
         >
-          <ArrowPathIcon className="size-4" />
+          <ArrowPathIcon ref={restoreAnimation.iconRef} size={16} aria-hidden="true" />
         </Button>
       ) : null}
     </div>

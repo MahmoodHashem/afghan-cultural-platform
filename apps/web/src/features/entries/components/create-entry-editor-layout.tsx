@@ -2,19 +2,21 @@
 
 import {
   ArrowRightIcon,
-  CheckCircleIcon,
   ChevronDownIcon,
-  EyeIcon,
-  PaperAirplaneIcon,
+  EyeIcon as StaticEyeIcon,
 } from "@heroicons/react/24/outline";
 import { AnimatePresence, m } from "motion/react";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
+import { CheckCircleIcon } from "@/components/icons/animated/check-circle";
+import { EyeIcon } from "@/components/icons/animated/eye";
+import { PaperAirplaneIcon } from "@/components/icons/animated/paper-airplane";
 import { Button } from "@/components/ui/button";
 import type { SaveState } from "@/features/entries/types/create-entry-form";
+import { useAnimatedIcon } from "@/hooks/use-animated-icon";
 import { useVirtualKeyboard } from "@/hooks/use-virtual-keyboard";
 import { cn } from "@/lib/utils";
 
@@ -38,6 +40,10 @@ export function CreateEntryEditorHeader({
   onSaveDraft,
   onSubmit,
 }: CreateEntryEditorHeaderProps) {
+  const previewAnimation = useAnimatedIcon();
+  const saveAnimation = useAnimatedIcon();
+  const submitAnimation = useAnimatedIcon();
+
   return (
     <header className="sticky top-2 rounded-full mx-2 z-40 border-b border-border bg-card/96 pt-[env(safe-area-inset-top)] backdrop-blur-xl md:top-5 md:mx-auto md:max-w-5xl md:rounded-full md:pt-0">
       <div className="mx-auto flex h-14 items-center justify-between gap-3 px-3 md:h-auto md:flex-col md:px-6 md:py-3 lg:flex-row lg:px-8">
@@ -61,8 +67,14 @@ export function CreateEntryEditorHeader({
           </div>
         </div>
         <div className="hidden items-center gap-2 md:flex lg:justify-end">
-          <Button type="button" variant="ghost" disabled={isBusy} onClick={onPreview}>
-            <EyeIcon aria-hidden="true" />
+          <Button
+            type="button"
+            variant="ghost"
+            disabled={isBusy}
+            onClick={onPreview}
+            {...previewAnimation.triggerProps}
+          >
+            <EyeIcon ref={previewAnimation.iconRef} size={20} aria-hidden="true" />
             پیش‌نمایش
           </Button>
           <Button
@@ -71,12 +83,19 @@ export function CreateEntryEditorHeader({
             className="rounded-full"
             disabled={isBusy}
             onClick={onSaveDraft}
+            {...saveAnimation.triggerProps}
           >
-            <CheckCircleIcon aria-hidden="true" />
+            <CheckCircleIcon ref={saveAnimation.iconRef} size={20} aria-hidden="true" />
             {isBusy ? "در حال ذخیره..." : "ذخیره پیش‌نویس"}
           </Button>
-          <Button type="button" className="rounded-full" disabled={isBusy} onClick={onSubmit}>
-            <PaperAirplaneIcon aria-hidden="true" />
+          <Button
+            type="button"
+            className="rounded-full"
+            disabled={isBusy}
+            onClick={onSubmit}
+            {...submitAnimation.triggerProps}
+          >
+            <PaperAirplaneIcon ref={submitAnimation.iconRef} size={20} aria-hidden="true" />
             {submitLabel}
           </Button>
         </div>
@@ -88,7 +107,7 @@ export function CreateEntryEditorHeader({
           aria-label="پیش‌نمایش مطلب"
           onClick={onPreview}
         >
-          <EyeIcon aria-hidden="true" />
+          <StaticEyeIcon aria-hidden="true" />
         </Button>
       </div>
     </header>
@@ -109,6 +128,12 @@ export function MobileEditorSaveAction({
   onSubmit: () => void;
 }) {
   const { isOpen: isKeyboardOpen } = useVirtualKeyboard();
+  const saveAnimation = useAnimatedIcon();
+  const submitAnimation = useAnimatedIcon();
+
+  useEffect(() => {
+    if (saveState === "saved") saveAnimation.playStateChange();
+  }, [saveAnimation.playStateChange, saveState]);
 
   if (typeof document === "undefined") {
     return null;
@@ -131,7 +156,7 @@ export function MobileEditorSaveAction({
           disabled={isBusy}
           onClick={onSaveDraft}
         >
-          <CheckCircleIcon aria-hidden="true" />
+          <CheckCircleIcon ref={saveAnimation.iconRef} size={20} aria-hidden="true" />
           <span className="truncate">
             {saveState === "saving" ? "در حال ذخیره..." : "ذخیره پیش‌نویس"}
           </span>
@@ -140,9 +165,12 @@ export function MobileEditorSaveAction({
           type="button"
           className="h-11 min-w-0 rounded-full shadow border"
           disabled={isBusy}
-          onClick={onSubmit}
+          onClick={() => {
+            submitAnimation.playStateChange();
+            onSubmit();
+          }}
         >
-          <PaperAirplaneIcon aria-hidden="true" />
+          <PaperAirplaneIcon ref={submitAnimation.iconRef} size={20} aria-hidden="true" />
           <span className="truncate">{submitLabel}</span>
         </Button>
       </div>
