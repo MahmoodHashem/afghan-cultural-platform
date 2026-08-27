@@ -560,7 +560,7 @@ function ProfileMenu({ user, mobile = false }: { user: SafeUser; mobile?: boolea
         )}
         aria-label="باز کردن منوی حساب"
       >
-        <Avatar size="default" className={cn("bg-primary-light", mobile ? "size-9" : "size-8")}>
+        <Avatar size="default" className={cn("bg-primary-light", mobile ? "size-7" : "size-8")}>
           <AvatarFallback className="bg-primary-light text-[12px] font-bold text-primary">
             {createUserInitials(user.displayName)}
           </AvatarFallback>

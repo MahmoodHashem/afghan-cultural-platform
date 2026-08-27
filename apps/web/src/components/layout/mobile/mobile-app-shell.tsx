@@ -242,7 +242,7 @@ function MobileTopBar({
           : "border-border/80 bg-background/95 text-foreground shadow-[0_6px_20px_rgba(31,41,55,0.06)] backdrop-blur-xl rounded-full mx-2",
       )}
     >
-      <div className="flex  items-center gap-3 px-4">
+      <div className="flex  items-center gap-3 ps-2 transition-all">
         {backHref ? (
           <Link
             href={backHref}
@@ -374,7 +374,7 @@ function MobileBottomNavigation({
                 className={cn(
                   "flex size-7 items-center justify-center",
                   item.prominent &&
-                    "size-12 rounded-full border-4 border-card bg-primary text-primary-foreground ",
+                  "size-12 rounded-full border-4 border-card bg-primary text-primary-foreground ",
                 )}
               >
                 <Icon className={item.prominent ? "size-6" : "size-5"} aria-hidden="true" />

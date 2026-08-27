@@ -240,7 +240,7 @@ function ProfileNavigationTabs({
       }
       className="sticky z-30 w-full bg-background/95 py-2 backdrop-blur-xl lg:static lg:bg-transparent lg:py-0 lg:backdrop-blur-none"
     >
-      <Tabs value={activeTab} className="overflow-x-auto px-4 lg:px-0">
+      <Tabs value={activeTab} className="overflow-hidden px-4 lg:px-0">
         <TabsList
           variant="default"
           className="relative mx-auto h-auto min-h-11 w-max justify-start gap-1 rounded-full border border-border bg-card p-1 shadow-[0_2px_10px_rgba(0,0,0,.04)]"
@@ -395,7 +395,7 @@ function OwnerEntryToolbar({ query, total }: { query: ProfileQuery; total: numbe
   return (
     <div>
       <div className="flex items-center justify-between gap-3 rounded-full border bg-card px-2 py-1 lg:gap-5">
-        <div className="flex min-w-0 gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex min-w-0 gap-2 overflow-x-auto scrollbar-none [&::-webkit-scrollbar]:hidden">
           {ENTRY_STATUS_FILTERS.map((filter) => {
             const isActive = filter.value === "ALL" ? !query.status : query.status === filter.value;
 
