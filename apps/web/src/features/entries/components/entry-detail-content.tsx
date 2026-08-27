@@ -114,6 +114,7 @@ function EntryDetailContent({
           <EntryActionRail
             entryId={entry.id}
             title={entry.title}
+            summary={entry.summary}
             initialComments={comments}
             likeCount={entry.likeCount}
             bookmarkCount={entry.bookmarkCount}

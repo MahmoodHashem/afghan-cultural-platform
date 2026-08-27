@@ -71,67 +71,67 @@ function EntryPreviewDialog({
 
   const previewContent = (
     <article className="mx-auto max-w-2xl space-y-8 px-5 py-8 sm:px-8">
-          <header className="space-y-4">
-            <div className="flex flex-wrap gap-2 text-[12px] text-muted-foreground">
-              {contentType ? <span>{contentType}</span> : null}
-              {category ? <span>· {category}</span> : null}
-              <span>· {geographicScopeLabels[values.geographicScope]}</span>
-              {province ? <span>· {province}</span> : null}
+      <header className="space-y-4">
+        <div className="flex flex-wrap gap-2 text-[12px] text-muted-foreground">
+          {contentType ? <span>{contentType}</span> : null}
+          {category ? <span>· {category}</span> : null}
+          <span>· {geographicScopeLabels[values.geographicScope]}</span>
+          {province ? <span>· {province}</span> : null}
+        </div>
+        <h1 className="text-[30px] font-bold leading-[1.5] text-foreground sm:text-[42px]">
+          {values.title.trim() || "عنوان مطلب"}
+        </h1>
+        <p className="text-[16px] leading-8 text-muted-foreground">
+          {values.summary.trim() || "خلاصه مطلب در اینجا دیده می‌شود."}
+        </p>
+      </header>
+
+      {images[0] ? (
+        <figure className="-mx-5 overflow-hidden border-y border-border sm:mx-0 sm:rounded-xl sm:border">
+          <div className="relative aspect-4/3 bg-muted">
+            <Image
+              src={images[0].previewUrl}
+              alt={images[0].altText || "پیش‌نمایش تصویر مطلب"}
+              fill
+              unoptimized
+              sizes="(min-width: 640px) 680px, 100vw"
+              className="object-cover"
+            />
+          </div>
+          {images[0].caption ? (
+            <figcaption className="px-4 py-3 text-[12px] text-muted-foreground">
+              {images[0].caption}
+            </figcaption>
+          ) : null}
+        </figure>
+      ) : null}
+
+      <TiptapDocument content={values.contentJson} />
+
+      {tags.length > 0 ? (
+        <div className="flex flex-wrap gap-2 border-t border-border pt-5">
+          {tags.map((tag) => (
+            <span
+              key={tag.id}
+              className="rounded-full bg-primary/8 px-3 py-1 text-[12px] text-primary"
+            >
+              {tag.name}
+            </span>
+          ))}
+        </div>
+      ) : null}
+
+      {values.sources.length > 0 ? (
+        <section className="space-y-3 border-t border-border pt-6">
+          <h2 className="text-xl font-bold">منابع</h2>
+          {values.sources.map((source, index) => (
+            <div key={source.id ?? `${source.type}-${index}`} className="text-[14px] leading-7">
+              <p className="font-semibold">{source.title || `منبع ${index + 1}`}</p>
+              <p className="text-muted-foreground">{sourceTypeLabels[source.type]}</p>
             </div>
-            <h1 className="text-[30px] font-bold leading-[1.5] text-foreground sm:text-[42px]">
-              {values.title.trim() || "عنوان مطلب"}
-            </h1>
-            <p className="text-[16px] leading-8 text-muted-foreground">
-              {values.summary.trim() || "خلاصه مطلب در اینجا دیده می‌شود."}
-            </p>
-          </header>
-
-          {images[0] ? (
-            <figure className="-mx-5 overflow-hidden border-y border-border sm:mx-0 sm:rounded-xl sm:border">
-              <div className="relative aspect-4/3 bg-muted">
-                <Image
-                  src={images[0].previewUrl}
-                  alt={images[0].altText || "پیش‌نمایش تصویر مطلب"}
-                  fill
-                  unoptimized
-                  sizes="(min-width: 640px) 680px, 100vw"
-                  className="object-cover"
-                />
-              </div>
-              {images[0].caption ? (
-                <figcaption className="px-4 py-3 text-[12px] text-muted-foreground">
-                  {images[0].caption}
-                </figcaption>
-              ) : null}
-            </figure>
-          ) : null}
-
-          <TiptapDocument content={values.contentJson} />
-
-          {tags.length > 0 ? (
-            <div className="flex flex-wrap gap-2 border-t border-border pt-5">
-              {tags.map((tag) => (
-                <span
-                  key={tag.id}
-                  className="rounded-full bg-primary/8 px-3 py-1 text-[12px] text-primary"
-                >
-                  {tag.name}
-                </span>
-              ))}
-            </div>
-          ) : null}
-
-          {values.sources.length > 0 ? (
-            <section className="space-y-3 border-t border-border pt-6">
-              <h2 className="text-xl font-bold">منابع</h2>
-              {values.sources.map((source, index) => (
-                <div key={source.id ?? `${source.type}-${index}`} className="text-[14px] leading-7">
-                  <p className="font-semibold">{source.title || `منبع ${index + 1}`}</p>
-                  <p className="text-muted-foreground">{sourceTypeLabels[source.type]}</p>
-                </div>
-              ))}
-            </section>
-          ) : null}
+          ))}
+        </section>
+      ) : null}
     </article>
   );
 

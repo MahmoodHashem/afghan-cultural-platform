@@ -57,6 +57,8 @@ const entryDetailPage = read("src/app/(public)/entries/[slug]/page.tsx");
 const entryDetailLoading = read("src/app/(public)/entries/[slug]/loading.tsx");
 const entryDetailContent = read("src/features/entries/components/entry-detail-content.tsx");
 const entryActionRail = read("src/features/entries/components/entry-action-rail.tsx");
+const entryShareDialog = read("src/features/entries/components/entry-share-dialog.tsx");
+const entryShareUtils = read("src/features/entries/utils/entry-share.ts");
 const entryScrollControls = read("src/features/entries/components/entry-scroll-controls.tsx");
 const entryHeaderContext = read("src/features/entries/components/entry-detail-header-context.tsx");
 const entryTableOfContents = read("src/features/entries/components/entry-table-of-contents.tsx");
@@ -1017,7 +1019,7 @@ test("entry detail includes reading navigation and sticky article tools", () => 
   assert.match(entryActionRail, /HeartIcon/);
   assert.match(entryActionRail, /BookmarkIcon/);
   assert.match(entryActionRail, /ArrowTopRightOnSquareIcon/);
-  assert.match(entryActionRail, /navigator\.share/);
+  assert.match(entryActionRail, /EntryShareDialog/);
   assert.match(entryActionRail, /scrollHeight - window\.innerHeight/);
   assert.match(entryDetailPage, /<EntryScrollControls \/>/);
   assert.match(entryDetailPage, /<\/PageTransition>\s*<EntryScrollControls \/>/);
@@ -1036,6 +1038,22 @@ test("entry detail includes reading navigation and sticky article tools", () => 
   assert.match(mobileAppStyles, /data-mobile-route="entry"/);
   assert.match(commentComposer, /setIsExpanded/);
   assert.match(commentComposer, /onFocus=\{\(\) => setIsExpanded\(true\)\}/);
+});
+
+test("entry sharing uses a responsive canonical share surface", () => {
+  assert.match(entryShareDialog, /<Drawer/);
+  assert.match(entryShareDialog, /<Dialog/);
+  assert.match(entryShareDialog, /navigator\.clipboard\.writeText/);
+  assert.match(entryShareDialog, /navigator\.share/);
+  assert.match(entryShareDialog, /error\.name === "AbortError"/);
+  assert.match(entryShareDialog, /کپی پیوند/);
+  assert.match(entryShareUtils, /createCanonicalEntryUrl/);
+  assert.doesNotMatch(entryShareUtils, /breadcrumb|utm_|searchParams|hash/);
+  assert.match(entryShareUtils, /https:\/\/wa\.me/);
+  assert.match(entryShareUtils, /https:\/\/t\.me\/share\/url/);
+  assert.match(entryShareUtils, /facebook\.com\/sharer/);
+  assert.match(entryShareUtils, /twitter\.com\/intent\/tweet/);
+  assert.match(entryShareUtils, /mailto:/);
 });
 
 test("entry detail supports threaded comments and verified-user feedback", () => {

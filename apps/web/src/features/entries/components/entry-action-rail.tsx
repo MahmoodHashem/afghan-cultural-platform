@@ -21,12 +21,14 @@ import { useEngagementAccess } from "@/features/engagement/hooks/use-engagement-
 import { useEntryComments } from "@/features/engagement/hooks/use-entry-comments";
 import { useEntryBookmark, useEntryLike } from "@/features/engagement/hooks/use-entry-interactions";
 import type { EntryCommentListResponse } from "@/features/engagement/types/entry-engagement";
+import { EntryShareDialog } from "@/features/entries/components/entry-share-dialog";
 import { cn } from "@/lib/utils";
 import { formatPersianNumber } from "@/lib/utils/formatters";
 
 type EntryActionRailProps = {
   entryId: string;
   title: string;
+  summary: string;
   initialComments: EntryCommentListResponse;
   likeCount: number;
   bookmarkCount: number;
@@ -35,6 +37,7 @@ type EntryActionRailProps = {
 function EntryActionRail({
   entryId,
   title,
+  summary,
   initialComments,
   likeCount,
   bookmarkCount,
@@ -42,6 +45,7 @@ function EntryActionRail({
   const [progress, setProgress] = useState(0);
   const [showMobileDock, setShowMobileDock] = useState(false);
   const [readingChromeHidden, setReadingChromeHidden] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
   const [portalRoot, setPortalRoot] = useState<HTMLElement | null>(null);
   const reducedMotion = Boolean(useReducedMotion());
   const {
@@ -142,26 +146,6 @@ function EntryActionRail({
       .catch(() => undefined);
   }, [bookmark, canContribute, pendingIntent, takePendingToggleIntent]);
 
-  async function shareEntry() {
-    const url = window.location.href;
-
-    if (navigator.share) {
-      try {
-        await navigator.share({ title, url });
-        return;
-      } catch {
-        return;
-      }
-    }
-
-    try {
-      await navigator.clipboard.writeText(url);
-      toast.success("پیوند مطلب کپی شد.");
-    } catch {
-      toast.error("پیوند کپی نشد. دوباره تلاش کنید.");
-    }
-  }
-
   function toggleLike() {
     if (
       ensureVerifiedAccess("like", {
@@ -229,7 +213,7 @@ function EntryActionRail({
         <ActionButton
           label="اشتراک‌گذاری"
           orientation={orientation}
-          onClick={shareEntry}
+          onClick={() => setShareOpen(true)}
           icon={<ArrowTopRightOnSquareIcon className="size-6" aria-hidden="true" />}
         />
       </>
@@ -282,6 +266,12 @@ function EntryActionRail({
             portalRoot,
           )
         : null}
+      <EntryShareDialog
+        open={shareOpen}
+        onOpenChange={setShareOpen}
+        title={title}
+        summary={summary}
+      />
     </>
   );
 }

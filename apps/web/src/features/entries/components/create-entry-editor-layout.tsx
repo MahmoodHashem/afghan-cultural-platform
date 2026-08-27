@@ -58,7 +58,6 @@ export function CreateEntryEditorHeader({
           </Button>
           <div>
             <h1 className="text-[14px] font-bold text-foreground md:text-base">{title}</h1>
-           
           </div>
         </div>
         <div className="hidden items-center gap-2 md:flex lg:justify-end">
@@ -137,7 +136,12 @@ export function MobileEditorSaveAction({
             {saveState === "saving" ? "در حال ذخیره..." : "ذخیره پیش‌نویس"}
           </span>
         </Button>
-        <Button type="button" className="h-11 min-w-0 rounded-full shadow border" disabled={isBusy} onClick={onSubmit}>
+        <Button
+          type="button"
+          className="h-11 min-w-0 rounded-full shadow border"
+          disabled={isBusy}
+          onClick={onSubmit}
+        >
           <PaperAirplaneIcon aria-hidden="true" />
           <span className="truncate">{submitLabel}</span>
         </Button>

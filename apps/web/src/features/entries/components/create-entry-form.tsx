@@ -532,9 +532,7 @@ function CreateEntryForm({ initialDraftId, taxonomy }: CreateEntryFormProps) {
             isBusy={isBusy}
             saveState={saveState}
             submitLabel={
-              initialDraft?.status === "CHANGES_REQUESTED"
-                ? "ارسال دوباره"
-                : "ارسال برای بررسی"
+              initialDraft?.status === "CHANGES_REQUESTED" ? "ارسال دوباره" : "ارسال برای بررسی"
             }
             onSaveDraft={handleSaveDraft}
             onSubmit={handleRequestSubmit}

@@ -236,7 +236,7 @@ function MobileEditorToolbar({ editor, onSetLink }: EditorToolbarProps) {
       exit={{ opacity: 0, y: 12 }}
       transition={{ duration: 0.16, ease: "easeOut" }}
       className="fixed inset-x-2 z-70 flex h-12 items-center gap-1 overflow-x-auto rounded-xl border border-border bg-card/96 px-2  backdrop-blur-xl scrollbar-none md:hidden [&::-webkit-scrollbar]:hidden"
-      style={{ bottom: `max(${inset+70}px, env(safe-area-inset-bottom))` }}
+      style={{ bottom: `max(${inset + 70}px, env(safe-area-inset-bottom))` }}
       onPointerDown={(event) => event.preventDefault()}
     >
       <MobileToolbarButton
