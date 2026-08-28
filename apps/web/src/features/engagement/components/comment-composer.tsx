@@ -123,19 +123,19 @@ function CommentComposer({
       onSubmit={handleSubmit(submit)}
       onFocus={() => setIsExpanded(true)}
       className={cn(
-        "bg-card transition-[padding,box-shadow] duration-200",
+        "bg-card transition-[padding,box-shadow] duration-200 p-4",
         compact
           ? "space-y-3 rounded-xl border border-border p-3"
           : isExpanded
-            ? "rounded-xl border border-border p-4 shadow-[0_6px_22px_rgba(31,41,55,0.06)] sm:p-5"
-            : "rounded-xl border border-border p-3 sm:p-4",
+            ? "rounded-xl border border-border shadow-[0_6px_22px_rgba(31,41,55,0.06)] "
+            : "rounded-xl border border-border ",
       )}
     >
       <div className={cn("flex items-start gap-3", !compact && "sm:gap-4")}>
         <Avatar
           className={cn(
-            "bg-primary-light transition-[width,height] duration-200",
-            compact ? "size-9" : isExpanded ? "size-11" : "size-9",
+            "bg-primary-light transition-[width,height] duration-200 size-9",
+            
           )}
         >
           <AvatarFallback className="bg-primary-light font-bold text-primary">
@@ -148,7 +148,7 @@ function CommentComposer({
           </label>
           <Textarea
             id={fieldId}
-            rows={compact ? 3 : isExpanded ? 4 : 2}
+            rows={compact ? 2 : isExpanded ? 3 : 2}
             maxLength={1000}
             autoFocus={autoFocus}
             placeholder={
@@ -161,9 +161,9 @@ function CommentComposer({
             className={cn(
               "resize-y border-border bg-background leading-8 shadow-none",
               compact
-                ? "min-h-24"
+                ? "min-h-18"
                 : isExpanded
-                  ? "min-h-28 sm:min-h-32"
+                  ? "min-h-18"
                   : "min-h-18 resize-none border-transparent bg-transparent",
             )}
             {...bodyField}
