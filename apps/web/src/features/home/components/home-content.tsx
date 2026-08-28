@@ -97,9 +97,7 @@ function SectionIntro({
   return (
     <div className="max-w-3xl space-y-4">
       <p className="text-[14px] font-bold text-primary">{eyebrow}</p>
-      <h1 className="text-lg font-bold leading-[1.35] text-foreground sm:text-[38px]">
-        {title}
-      </h1>
+      <h1 className="text-lg font-bold leading-[1.35] text-foreground sm:text-[38px]">{title}</h1>
       <p className="max-w-2xl text-[16px] leading-8 text-muted-foreground">{description}</p>
     </div>
   );

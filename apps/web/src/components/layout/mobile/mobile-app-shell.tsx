@@ -374,7 +374,7 @@ function MobileBottomNavigation({
                 className={cn(
                   "flex size-7 items-center justify-center",
                   item.prominent &&
-                  "size-12 rounded-full border-4 border-card bg-primary text-primary-foreground ",
+                    "size-12 rounded-full border-4 border-card bg-primary text-primary-foreground ",
                 )}
               >
                 <Icon className={item.prominent ? "size-6" : "size-5"} aria-hidden="true" />

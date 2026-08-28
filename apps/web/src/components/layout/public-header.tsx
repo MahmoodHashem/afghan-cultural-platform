@@ -11,8 +11,8 @@ import {
 } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { type SubmitEvent, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { ArrowRightStartOnRectangleIcon as AnimatedLogoutIcon } from "@/components/icons/animated/arrow-right-start-on-rectangle";
 import { ClipboardDocumentCheckIcon as AnimatedClipboardDocumentCheckIcon } from "@/components/icons/animated/clipboard-document-check";
@@ -49,6 +49,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { useLogout } from "@/features/auth/hooks/use-auth-mutations";
 import { useAnimatedIcon } from "@/hooks/use-animated-icon";
 import { cn } from "@/lib/utils";
+import { normalizePersianSearch } from "@/lib/utils/persian";
 import { createUserInitials } from "@/lib/utils/user";
 import { type SafeUser, useAuthStore } from "@/stores/auth-store";
 
@@ -264,10 +265,20 @@ function HeaderSearch({
   className?: string;
   inputClassName?: string;
 }) {
+  const router = useRouter();
+  const [searchValue, setSearchValue] = useState("");
   const { iconRef, triggerProps } = useAnimatedIcon();
 
+  function submitSearch(event: SubmitEvent) {
+    event.preventDefault();
+    const search = normalizePersianSearch(searchValue);
+
+    router.push(search ? `/explore?search=${encodeURIComponent(search)}` : "/explore");
+  }
+
   return (
-    <label
+    <form
+      onSubmit={submitSearch}
       {...triggerProps}
       className={cn(
         "relative items-center gap-2.5 rounded-full border text-foreground shadow-[0_8px_24px_rgba(31,41,55,0.12)] transition-all duration-500 focus-within:border-primary focus-within:ring-3 focus-within:ring-ring/35",
@@ -288,11 +299,13 @@ function HeaderSearch({
         type="search"
         placeholder={placeholder}
         className={cn(
-          "h-full min-w-0 flex-1 rounded-full bg-transparent ps-8 outline-none",
+          "h-full min-w-0 flex-1 rounded-full bg-transparent ps-10 outline-none",
           inputClassName,
         )}
+        value={searchValue}
+        onChange={(e) => setSearchValue(e.target.value)}
       />
-    </label>
+    </form>
   );
 }
 
