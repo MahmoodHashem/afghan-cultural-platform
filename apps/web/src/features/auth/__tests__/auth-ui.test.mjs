@@ -59,6 +59,8 @@ const entryDetailContent = read("src/features/entries/components/entry-detail-co
 const entryActionRail = read("src/features/entries/components/entry-action-rail.tsx");
 const entryShareDialog = read("src/features/entries/components/entry-share-dialog.tsx");
 const entryShareUtils = read("src/features/entries/utils/entry-share.ts");
+const animatedIconHook = read("src/hooks/use-animated-icon.ts");
+const animatedHeartIcon = read("src/components/icons/animated/heart.tsx");
 const entryScrollControls = read("src/features/entries/components/entry-scroll-controls.tsx");
 const entryHeaderContext = read("src/features/entries/components/entry-detail-header-context.tsx");
 const entryTableOfContents = read("src/features/entries/components/entry-table-of-contents.tsx");
@@ -1018,7 +1020,7 @@ test("entry detail includes reading navigation and sticky article tools", () => 
   assert.match(entryActionRail, /ChatBubbleOvalLeftEllipsisIcon/);
   assert.match(entryActionRail, /HeartIcon/);
   assert.match(entryActionRail, /BookmarkIcon/);
-  assert.match(entryActionRail, /ArrowTopRightOnSquareIcon/);
+  assert.match(entryActionRail, /ShareIcon/);
   assert.match(entryActionRail, /EntryShareDialog/);
   assert.match(entryActionRail, /scrollHeight - window\.innerHeight/);
   assert.match(entryDetailPage, /<EntryScrollControls \/>/);
@@ -1054,6 +1056,17 @@ test("entry sharing uses a responsive canonical share surface", () => {
   assert.match(entryShareUtils, /facebook\.com\/sharer/);
   assert.match(entryShareUtils, /twitter\.com\/intent\/tweet/);
   assert.match(entryShareUtils, /mailto:/);
+});
+
+test("animated icons use desktop hover and accessible reduced-motion behavior", () => {
+  assert.match(animatedIconHook, /\(hover: hover\) and \(pointer: fine\)/);
+  assert.match(animatedIconHook, /useReducedMotion/);
+  assert.match(animatedIconHook, /onMouseEnter/);
+  assert.match(animatedIconHook, /onFocus/);
+  assert.match(animatedIconHook, /playStateChange/);
+  assert.match(animatedHeartIcon, /startAnimation/);
+  assert.match(entryActionRail, /useAnimatedIcon/);
+  assert.match(entryActionRail, /playStateChange/);
 });
 
 test("entry detail supports threaded comments and verified-user feedback", () => {

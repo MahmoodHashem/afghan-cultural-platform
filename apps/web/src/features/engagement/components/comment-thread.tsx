@@ -1,9 +1,10 @@
 "use client";
 
-import { ArrowUturnLeftIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 
+import { ArrowUturnLeftIcon } from "@/components/icons/animated/arrow-uturn-left";
+import { ChevronDownIcon } from "@/components/icons/animated/chevron-down";
 import { HeartIcon } from "@/components/icons/animated/heart";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -56,6 +57,8 @@ function CommentThread({ entryId, comment, depth = 0, now }: CommentThreadProps)
   const isSelfLike = Boolean(activeAuthor?.id === user?.id);
   const pendingReply = getPendingComment(comment.id);
   const likeAnimation = useAnimatedIcon();
+  const replyAnimation = useAnimatedIcon();
+  const revealRepliesAnimation = useAnimatedIcon();
   const previousLikedRef = useRef(commentLike.isLiked);
 
   useEffect(() => {
@@ -182,8 +185,19 @@ function CommentThread({ entryId, comment, depth = 0, now }: CommentThreadProps)
 
             {!editing ? (
               <div className="mt-3 flex flex-wrap items-center gap-1 text-muted-foreground">
-                <Button type="button" variant="ghost" size="sm" onClick={beginReply}>
-                  <ArrowUturnLeftIcon className="size-4 rtl:-scale-x-100" aria-hidden="true" />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={beginReply}
+                  {...replyAnimation.triggerProps}
+                >
+                  <ArrowUturnLeftIcon
+                    ref={replyAnimation.iconRef}
+                    size={16}
+                    className="rtl:-scale-x-100"
+                    aria-hidden="true"
+                  />
                   پاسخ
                 </Button>
                 <Button
@@ -241,9 +255,10 @@ function CommentThread({ entryId, comment, depth = 0, now }: CommentThreadProps)
           size="sm"
           className="my-3 ms-12 text-primary hover:text-primary sm:ms-14"
           onClick={() => setRepliesOpen(true)}
+          {...revealRepliesAnimation.triggerProps}
         >
           مشاهده {formatPersianNumber(comment.directReplyCount)} پاسخ
-          <ChevronDownIcon className="size-4" aria-hidden="true" />
+          <ChevronDownIcon ref={revealRepliesAnimation.iconRef} size={16} aria-hidden="true" />
         </Button>
       ) : null}
 
@@ -317,11 +332,16 @@ function CommentThread({ entryId, comment, depth = 0, now }: CommentThreadProps)
                 className="my-2 w-full bg-primary-light/45 text-primary hover:bg-primary-light hover:text-primary"
                 disabled={repliesQuery.isFetchingNextPage}
                 onClick={() => repliesQuery.fetchNextPage()}
+                {...revealRepliesAnimation.triggerProps}
               >
                 {repliesQuery.isFetchingNextPage
                   ? "در حال بارگذاری..."
                   : `مشاهده ${formatPersianNumber(remainingReplies)} پاسخ دیگر`}
-                <ChevronDownIcon className="size-4" aria-hidden="true" />
+                <ChevronDownIcon
+                  ref={revealRepliesAnimation.iconRef}
+                  size={16}
+                  aria-hidden="true"
+                />
               </Button>
             ) : null}
           </motion.div>

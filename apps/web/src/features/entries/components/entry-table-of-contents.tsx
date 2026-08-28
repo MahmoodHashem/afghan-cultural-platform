@@ -1,8 +1,7 @@
 "use client";
 
-import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import { useEffect, useState } from "react";
-
+import { ChevronDownIcon } from "@/components/icons/animated/chevron-down";
 import { OPEN_ENTRY_CONTENTS_EVENT } from "@/components/layout/mobile/mobile-shell-events";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,6 +11,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
+import { useAnimatedIcon } from "@/hooks/use-animated-icon";
 import { cn } from "@/lib/utils";
 
 type TableOfContentsItem = {
@@ -30,6 +30,7 @@ function EntryTableOfContents({
   const [activeId, setActiveId] = useState(items[0]?.id ?? "");
   const [isExpanded, setIsExpanded] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const { iconRef, triggerProps } = useAnimatedIcon();
 
   useEffect(() => {
     const headings = items
@@ -107,10 +108,12 @@ function EntryTableOfContents({
             aria-controls="entry-table-of-contents-list"
             onClick={() => setIsExpanded((current) => !current)}
             className="rounded-full w-full flex items-center justify-between"
+            {...triggerProps}
           >
             <h2 className="text-[18px] font-bold text-foreground">فهرست مطالب</h2>
 
             <ChevronDownIcon
+              ref={iconRef}
               className={cn("size-4 transition-transform", isExpanded ? "rotate-180" : null)}
               aria-hidden="true"
             />

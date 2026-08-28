@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "motion/react";
-import type { ComponentType, HTMLAttributes, RefAttributes } from "react";
+import type { ForwardRefExoticComponent, HTMLAttributes, RefAttributes } from "react";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
@@ -329,7 +329,7 @@ function ActionButton({
   );
 }
 
-type AnimatedActionIcon = ComponentType<
+type AnimatedActionIcon = ForwardRefExoticComponent<
   HTMLAttributes<HTMLDivElement> & { size?: number } & RefAttributes<AnimatedIconHandle>
 >;
 

@@ -8,16 +8,21 @@ import {
   ClipboardDocumentCheckIcon,
   Squares2X2Icon,
   PlusIcon as StaticPlusIcon,
-  UserCircleIcon,
 } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { ArrowRightStartOnRectangleIcon as AnimatedLogoutIcon } from "@/components/icons/animated/arrow-right-start-on-rectangle";
+import { ClipboardDocumentCheckIcon as AnimatedClipboardDocumentCheckIcon } from "@/components/icons/animated/clipboard-document-check";
 import { MagnifyingGlassIcon } from "@/components/icons/animated/magnifying-glass";
 import { PlusIcon } from "@/components/icons/animated/plus";
-
+import { Squares2X2Icon as AnimatedSquares2X2Icon } from "@/components/icons/animated/squares-2x2";
+import {
+  UserCircleIcon as AnimatedUserCircleIcon,
+  UserCircleIcon,
+} from "@/components/icons/animated/user-circle";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -542,8 +547,15 @@ function HeaderAuthControls({ isCompact }: { isCompact: boolean }) {
 }
 
 function ProfileMenu({ user, mobile = false }: { user: SafeUser; mobile?: boolean }) {
+  const { triggerProps } = useAnimatedIcon();
+
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
   const logoutMutation = useLogout();
+  const profileAnimation = useAnimatedIcon();
+  const moderationAnimation = useAnimatedIcon();
+  const adminAnimation = useAnimatedIcon();
+  const logoutAnimation = useAnimatedIcon();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const confirmLogout = () => {
     logoutMutation.mutate(undefined, {
       onError: () => {
@@ -556,15 +568,17 @@ function ProfileMenu({ user, mobile = false }: { user: SafeUser; mobile?: boolea
   };
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={isDropdownOpen} onOpenChange={() => setIsDropdownOpen(!isDropdownOpen)}>
       <DropdownMenuTrigger
         className={cn(
           "flex items-center rounded-full bg-background text-foreground outline-none transition-colors hover:bg-background/90 focus-visible:ring-3",
           mobile
-            ? "ms-auto size-10 justify-center bg-transparent shadow-none focus-visible:ring-ring/40"
+            ? "ms-auto  justify-center bg-transparent shadow-none focus-visible:ring-ring/40"
             : "h-11 gap-1.5 ps-2 pe-3 shadow-[0_8px_24px_rgba(31,41,55,0.14)] focus-visible:ring-white/35",
         )}
         aria-label="باز کردن منوی حساب"
+        {...triggerProps}
+        aria-expanded={isDropdownOpen}
       >
         <Avatar size="default" className={cn("bg-primary-light", mobile ? "size-7" : "size-8")}>
           <AvatarFallback className="bg-primary-light text-[12px] font-bold text-primary">
@@ -573,8 +587,11 @@ function ProfileMenu({ user, mobile = false }: { user: SafeUser; mobile?: boolea
         </Avatar>
         {!mobile ? (
           <ChevronDownIcon
-            className="hidden size-4 text-foreground transition-transform aria-expanded:rotate-180 sm:block"
+            className={cn(
+              "hidden size-4 text-foreground transition-transform aria-expanded:rotate-180 sm:block",
+            )}
             aria-hidden="true"
+            aria-expanded={isDropdownOpen}
           />
         ) : null}
       </DropdownMenuTrigger>
@@ -594,28 +611,32 @@ function ProfileMenu({ user, mobile = false }: { user: SafeUser; mobile?: boolea
         <DropdownMenuSeparator />
         {!mobile ? (
           <DropdownMenuItem
-            render={<Link href="/profile" />}
+            render={<Link href="/profile" {...profileAnimation.triggerProps} />}
             className="rounded-2xl px-3 py-2 text-[14px] text-muted-foreground hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground"
           >
-            <UserCircleIcon className="size-4" aria-hidden="true" />
+            <AnimatedUserCircleIcon ref={profileAnimation.iconRef} size={16} aria-hidden="true" />
             حساب کاربری
           </DropdownMenuItem>
         ) : null}
         {user.role === "MODERATOR" || user.role === "ADMIN" ? (
           <DropdownMenuItem
-            render={<Link href="/moderator" />}
+            render={<Link href="/moderator" {...moderationAnimation.triggerProps} />}
             className="rounded-2xl px-3 py-2 text-[14px] text-muted-foreground hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground"
           >
-            <ClipboardDocumentCheckIcon className="size-4" aria-hidden="true" />
+            <AnimatedClipboardDocumentCheckIcon
+              ref={moderationAnimation.iconRef}
+              size={16}
+              aria-hidden="true"
+            />
             بررسی مطالب
           </DropdownMenuItem>
         ) : null}
         {user.role === "ADMIN" ? (
           <DropdownMenuItem
-            render={<Link href="/admin" />}
+            render={<Link href="/admin" {...adminAnimation.triggerProps} />}
             className="rounded-2xl px-3 py-2 text-[14px] text-muted-foreground hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground"
           >
-            <Squares2X2Icon className="size-4" aria-hidden="true" />
+            <AnimatedSquares2X2Icon ref={adminAnimation.iconRef} size={16} aria-hidden="true" />
             پنل مدیریت
           </DropdownMenuItem>
         ) : null}
@@ -624,9 +645,10 @@ function ProfileMenu({ user, mobile = false }: { user: SafeUser; mobile?: boolea
           variant="destructive"
           disabled={logoutMutation.isPending}
           onClick={() => setIsLogoutDialogOpen(true)}
+          {...logoutAnimation.triggerProps}
           className="rounded-2xl px-3 py-2 text-[14px] focus:bg-destructive/10"
         >
-          <ArrowRightStartOnRectangleIcon className="size-4" aria-hidden="true" />
+          <AnimatedLogoutIcon ref={logoutAnimation.iconRef} size={16} aria-hidden="true" />
           {logoutMutation.isPending ? "در حال خروج..." : "خروج"}
         </DropdownMenuItem>
       </DropdownMenuContent>

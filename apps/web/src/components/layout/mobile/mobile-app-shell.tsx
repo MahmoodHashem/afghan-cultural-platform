@@ -341,7 +341,7 @@ function MobileBottomNavigation({
       transition={getChromeTransition(reducedMotion)}
       aria-hidden={hidden}
       inert={hidden}
-      className="fixed inset-x-0 bottom-2 rounded-full mx-2 z-40 border-t border-border/80 bg-card/95 px-2 pt-1 pb-[calc(0.3rem+env(safe-area-inset-bottom))] shadow-[0_-8px_28px_rgba(31,41,55,0.08)] backdrop-blur-xl"
+      className="fixed inset-x-0 bottom-2 rounded-full mx-6 z-40 border-t border-border/80 bg-card/95 px-2 pt-1 pb-[calc(0.3rem+env(safe-area-inset-bottom))] shadow-[0_-8px_28px_rgba(31,41,55,0.08)] backdrop-blur-xl"
       aria-label="ناوبری اصلی موبایل"
     >
       <div className="mx-auto grid max-w-md grid-cols-5 items-end">

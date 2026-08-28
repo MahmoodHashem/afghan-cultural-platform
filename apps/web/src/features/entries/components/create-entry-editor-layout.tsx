@@ -8,7 +8,7 @@ import {
 import { AnimatePresence, m } from "motion/react";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { CheckCircleIcon } from "@/components/icons/animated/check-circle";
@@ -130,9 +130,13 @@ export function MobileEditorSaveAction({
   const { isOpen: isKeyboardOpen } = useVirtualKeyboard();
   const saveAnimation = useAnimatedIcon();
   const submitAnimation = useAnimatedIcon();
+  const previousSaveStateRef = useRef(saveState);
 
   useEffect(() => {
-    if (saveState === "saved") saveAnimation.playStateChange();
+    if (previousSaveStateRef.current !== "saved" && saveState === "saved") {
+      saveAnimation.playStateChange();
+    }
+    previousSaveStateRef.current = saveState;
   }, [saveAnimation.playStateChange, saveState]);
 
   if (typeof document === "undefined") {
@@ -243,14 +247,6 @@ export function CreateEntryEditorSection({
       </AnimatePresence>
     </div>
   );
-}
-
-function getSaveStateLabel(saveState: SaveState) {
-  if (saveState === "saving") return "در حال ذخیره...";
-  if (saveState === "saved") return "ذخیره شد";
-  if (saveState === "submitted") return "برای بررسی فرستاده شد";
-  if (saveState === "idle") return "آماده نوشتن";
-  return "تغییرات ذخیره‌نشده";
 }
 
 export function FieldError({ message }: { message?: string }) {

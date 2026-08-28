@@ -110,7 +110,7 @@ function EntryDetailContent({
           </div>
         </section>
 
-        <section className="content-container grid gap-8 py-7 sm:py-10 lg:grid-cols-[56px_minmax(0,760px)_320px] lg:items-start lg:justify-between">
+        <section className="content-container grid gap-2 py-7 sm:py-10 lg:grid-cols-[56px_minmax(0,760px)_320px] lg:items-start lg:justify-between">
           <EntryActionRail
             entryId={entry.id}
             title={entry.title}

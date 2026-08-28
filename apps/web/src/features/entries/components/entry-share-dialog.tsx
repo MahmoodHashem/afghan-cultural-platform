@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckIcon, EnvelopeIcon } from "@heroicons/react/24/outline";
+import { EnvelopeIcon } from "@heroicons/react/24/outline";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { SimpleIcon } from "simple-icons";
 import { siFacebook, siTelegram, siWhatsapp, siX } from "simple-icons";
@@ -202,11 +202,7 @@ function SharePanel({
           disabled={!canonicalUrl}
           {...copyAnimation.triggerProps}
         >
-          {copied ? (
-            <CheckIcon aria-hidden="true" />
-          ) : (
-            <ClipboardDocumentIcon ref={copyAnimation.iconRef} size={20} aria-hidden="true" />
-          )}
+          <ClipboardDocumentIcon ref={copyAnimation.iconRef} size={20} aria-hidden="true" />
           {copied ? "کپی شد" : "کپی پیوند"}
         </Button>
       </div>

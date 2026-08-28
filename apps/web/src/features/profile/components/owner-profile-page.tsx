@@ -239,7 +239,7 @@ function ProfileNavigationTabs({
       transition={
         reducedMotion ? { duration: 0 } : { type: "spring", stiffness: 420, damping: 42, mass: 0.8 }
       }
-      className="sticky z-30 w-full bg-background/95 py-2 backdrop-blur-xl lg:static lg:bg-transparent lg:py-0 lg:backdrop-blur-none"
+      className="sticky z-30 w-full  py-2 lg:static lg:bg-transparent lg:py-0 lg:backdrop-blur-none"
     >
       <Tabs value={activeTab} className="overflow-hidden px-4 lg:px-0">
         <TabsList
