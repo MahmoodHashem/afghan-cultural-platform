@@ -97,7 +97,7 @@ function SectionIntro({
   return (
     <div className="max-w-3xl space-y-4">
       <p className="text-[14px] font-bold text-primary">{eyebrow}</p>
-      <h1 className="text-[32px] font-bold leading-[1.35] text-foreground sm:text-[38px]">
+      <h1 className="text-lg font-bold leading-[1.35] text-foreground sm:text-[38px]">
         {title}
       </h1>
       <p className="max-w-2xl text-[16px] leading-8 text-muted-foreground">{description}</p>
@@ -133,7 +133,7 @@ function FeaturedEntryCard({ entry }: { entry: PublicEntryCard }) {
         href={createEntryHref(entry)}
         className="block outline-none focus-visible:ring-3 focus-visible:ring-ring/40"
       >
-        <div className="relative min-h-[420px] overflow-hidden">
+        <div className="relative min-h-105 md:min-h-205 overflow-hidden">
           <EntryImage
             entry={entry}
             fallbackIndex={0}
