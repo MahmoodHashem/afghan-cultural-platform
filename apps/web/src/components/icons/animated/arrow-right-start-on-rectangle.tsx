@@ -3,7 +3,7 @@
 import type { Variants } from "motion/react";
 import { motion, useAnimation } from "motion/react";
 import type { HTMLAttributes } from "react";
-import { forwardRef, useCallback, useImperativeHandle, useRef } from "react";
+import { forwardRef, useImperativeHandle } from "react";
 import { cn } from "@/lib/utils";
 
 export interface ArrowRightStartOnRectangleIconHandle {
@@ -11,7 +11,7 @@ export interface ArrowRightStartOnRectangleIconHandle {
   stopAnimation: () => void;
 }
 
-interface ArrowRightStartOnRectangleIconProps extends HTMLAttributes<HTMLDivElement> {
+interface ArrowRightStartOnRectangleIconProps extends HTMLAttributes<HTMLSpanElement> {
   size?: number;
 }
 
@@ -29,46 +29,21 @@ const ARROW_VARIANTS: Variants = {
 const ArrowRightStartOnRectangleIcon = forwardRef<
   ArrowRightStartOnRectangleIconHandle,
   ArrowRightStartOnRectangleIconProps
->(({ onMouseEnter, onMouseLeave, className, size = 28, ...props }, ref) => {
+>(({ className, size = 28, ...props }, ref) => {
   const controls = useAnimation();
-  const isControlledRef = useRef(false);
 
   useImperativeHandle(ref, () => {
-    isControlledRef.current = true;
-
     return {
       startAnimation: () => controls.start("animate"),
       stopAnimation: () => controls.start("normal"),
     };
   });
 
-  const handleMouseEnter = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      if (!isControlledRef.current) controls.start("animate");
-      onMouseEnter?.(e);
-    },
-    [controls, onMouseEnter],
-  );
-
-  const handleMouseLeave = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      if (isControlledRef.current) {
-        onMouseLeave?.(e);
-      } else {
-        controls.start("normal");
-      }
-    },
-    [controls, onMouseLeave],
-  );
-
   return (
-    <div
-      className={cn(className)}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      {...props}
-    >
+    <span className={cn(className)} {...props}>
       <svg
+        aria-hidden="true"
+        focusable="false"
         fill="none"
         height={size}
         stroke="currentColor"
@@ -84,7 +59,7 @@ const ArrowRightStartOnRectangleIcon = forwardRef<
           <path d="M18 15l3-3m0 0-3-3m3 3H9" />
         </motion.g>
       </svg>
-    </div>
+    </span>
   );
 });
 

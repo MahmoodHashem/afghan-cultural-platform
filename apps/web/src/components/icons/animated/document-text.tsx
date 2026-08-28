@@ -3,7 +3,7 @@
 import type { Variants } from "motion/react";
 import { motion, useAnimation } from "motion/react";
 import type { HTMLAttributes } from "react";
-import { forwardRef, useCallback, useImperativeHandle, useRef } from "react";
+import { forwardRef, useImperativeHandle } from "react";
 import { cn } from "@/lib/utils";
 
 export interface DocumentTextIconHandle {
@@ -11,7 +11,7 @@ export interface DocumentTextIconHandle {
   stopAnimation: () => void;
 }
 
-interface DocumentTextIconProps extends HTMLAttributes<HTMLDivElement> {
+interface DocumentTextIconProps extends HTMLAttributes<HTMLSpanElement> {
   size?: number;
 }
 
@@ -21,13 +21,10 @@ const LINE_VARIANTS: Variants = {
 };
 
 const DocumentTextIcon = forwardRef<DocumentTextIconHandle, DocumentTextIconProps>(
-  ({ onMouseEnter, onMouseLeave, className, size = 28, ...props }, ref) => {
+  ({ className, size = 28, ...props }, ref) => {
     const controls = useAnimation();
-    const isControlledRef = useRef(false);
 
     useImperativeHandle(ref, () => {
-      isControlledRef.current = true;
-
       return {
         startAnimation: async () => {
           await controls.start((i) => ({
@@ -45,45 +42,11 @@ const DocumentTextIcon = forwardRef<DocumentTextIconHandle, DocumentTextIconProp
       };
     });
 
-    const handleMouseEnter = useCallback(
-      async (e: React.MouseEvent<HTMLDivElement>) => {
-        if (isControlledRef.current) {
-          onMouseEnter?.(e);
-        } else {
-          await controls.start((i) => ({
-            pathLength: 0,
-            opacity: 0,
-            transition: { delay: i * 0.1, duration: 0.3 },
-          }));
-          await controls.start((i) => ({
-            pathLength: 1,
-            opacity: 1,
-            transition: { delay: i * 0.1, duration: 0.3 },
-          }));
-        }
-      },
-      [controls, onMouseEnter],
-    );
-
-    const handleMouseLeave = useCallback(
-      (e: React.MouseEvent<HTMLDivElement>) => {
-        if (isControlledRef.current) {
-          onMouseLeave?.(e);
-        } else {
-          controls.start("visible");
-        }
-      },
-      [controls, onMouseLeave],
-    );
-
     return (
-      <div
-        className={cn(className)}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        {...props}
-      >
+      <span className={cn(className)} {...props}>
         <svg
+          aria-hidden="true"
+          focusable="false"
           fill="none"
           height={size}
           stroke="currentColor"
@@ -109,7 +72,7 @@ const DocumentTextIcon = forwardRef<DocumentTextIconHandle, DocumentTextIconProp
             />
           ))}
         </svg>
-      </div>
+      </span>
     );
   },
 );

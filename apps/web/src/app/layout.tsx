@@ -4,12 +4,14 @@ import { Suspense } from "react";
 
 import { MobileAppShell } from "@/components/layout/mobile/mobile-app-shell";
 import { ThemeProvider } from "@/components/layout/theme-provider";
+import { getPublicSiteUrl } from "@/lib/seo/site-url";
 import { AppProviders } from "@/providers/app-providers";
 
 import "./globals.css";
 import "./mobile-app.css";
 
 export const metadata: Metadata = {
+  metadataBase: getPublicSiteUrl(),
   title: "میراث افغانستان",
   description: "A crowdsourced platform for preserving and sharing Afghan cultural information.",
 };

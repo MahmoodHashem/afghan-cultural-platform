@@ -3,7 +3,7 @@
 import type { Variants } from "motion/react";
 import { motion, useAnimation } from "motion/react";
 import type { HTMLAttributes } from "react";
-import { forwardRef, useCallback, useImperativeHandle, useRef } from "react";
+import { forwardRef, useImperativeHandle } from "react";
 import { cn } from "@/lib/utils";
 
 export interface MagnifyingGlassIconHandle {
@@ -11,7 +11,7 @@ export interface MagnifyingGlassIconHandle {
   stopAnimation: () => void;
 }
 
-interface MagnifyingGlassIconProps extends HTMLAttributes<HTMLDivElement> {
+interface MagnifyingGlassIconProps extends HTMLAttributes<HTMLSpanElement> {
   size?: number;
 }
 
@@ -31,49 +31,21 @@ const VARIANTS: Variants = {
 };
 
 const MagnifyingGlassIcon = forwardRef<MagnifyingGlassIconHandle, MagnifyingGlassIconProps>(
-  ({ onMouseEnter, onMouseLeave, className, size = 28, ...props }, ref) => {
+  ({ className, size = 28, ...props }, ref) => {
     const controls = useAnimation();
-    const isControlledRef = useRef(false);
 
     useImperativeHandle(ref, () => {
-      isControlledRef.current = true;
-
       return {
         startAnimation: () => controls.start("animate"),
         stopAnimation: () => controls.start("normal"),
       };
     });
 
-    const handleMouseEnter = useCallback(
-      (e: React.MouseEvent<HTMLDivElement>) => {
-        if (isControlledRef.current) {
-          onMouseEnter?.(e);
-        } else {
-          controls.start("animate");
-        }
-      },
-      [controls, onMouseEnter],
-    );
-
-    const handleMouseLeave = useCallback(
-      (e: React.MouseEvent<HTMLDivElement>) => {
-        if (isControlledRef.current) {
-          onMouseLeave?.(e);
-        } else {
-          controls.start("normal");
-        }
-      },
-      [controls, onMouseLeave],
-    );
-
     return (
-      <div
-        className={cn(className)}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        {...props}
-      >
+      <span className={cn(className)} {...props}>
         <motion.svg
+          aria-hidden="true"
+          focusable="false"
           animate={controls}
           fill="none"
           height={size}
@@ -89,7 +61,7 @@ const MagnifyingGlassIcon = forwardRef<MagnifyingGlassIconHandle, MagnifyingGlas
         >
           <path d="M21 21L15.8033 15.8033M15.8033 15.8033C17.1605 14.4461 18 12.5711 18 10.5C18 6.35786 14.6421 3 10.5 3C6.35786 3 3 6.35786 3 10.5C3 14.6421 6.35786 18 10.5 18C12.5711 18 14.4461 17.1605 15.8033 15.8033Z" />
         </motion.svg>
-      </div>
+      </span>
     );
   },
 );

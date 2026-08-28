@@ -3,7 +3,7 @@
 import type { Variants } from "motion/react";
 import { motion, useAnimation } from "motion/react";
 import type { HTMLAttributes } from "react";
-import { forwardRef, useCallback, useImperativeHandle, useRef } from "react";
+import { forwardRef, useImperativeHandle } from "react";
 import { cn } from "@/lib/utils";
 
 export interface CheckCircleIconHandle {
@@ -11,7 +11,7 @@ export interface CheckCircleIconHandle {
   stopAnimation: () => void;
 }
 
-interface CheckCircleIconProps extends HTMLAttributes<HTMLDivElement> {
+interface CheckCircleIconProps extends HTMLAttributes<HTMLSpanElement> {
   size?: number;
 }
 
@@ -34,49 +34,21 @@ const PATH_VARIANTS: Variants = {
 };
 
 const CheckCircleIcon = forwardRef<CheckCircleIconHandle, CheckCircleIconProps>(
-  ({ onMouseEnter, onMouseLeave, className, size = 28, ...props }, ref) => {
+  ({ className, size = 28, ...props }, ref) => {
     const controls = useAnimation();
-    const isControlledRef = useRef(false);
 
     useImperativeHandle(ref, () => {
-      isControlledRef.current = true;
-
       return {
         startAnimation: () => controls.start("animate"),
         stopAnimation: () => controls.start("normal"),
       };
     });
 
-    const handleMouseEnter = useCallback(
-      (e: React.MouseEvent<HTMLDivElement>) => {
-        if (isControlledRef.current) {
-          onMouseEnter?.(e);
-        } else {
-          controls.start("animate");
-        }
-      },
-      [controls, onMouseEnter],
-    );
-
-    const handleMouseLeave = useCallback(
-      (e: React.MouseEvent<HTMLDivElement>) => {
-        if (isControlledRef.current) {
-          onMouseLeave?.(e);
-        } else {
-          controls.start("normal");
-        }
-      },
-      [controls, onMouseLeave],
-    );
-
     return (
-      <div
-        className={cn(className)}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        {...props}
-      >
+      <span className={cn(className)} {...props}>
         <svg
+          aria-hidden="true"
+          focusable="false"
           fill="none"
           height={size}
           stroke="currentColor"
@@ -90,7 +62,7 @@ const CheckCircleIcon = forwardRef<CheckCircleIconHandle, CheckCircleIconProps>(
           <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
           <motion.path animate={controls} d="M9 12.75 11.25 15 15 9.75" variants={PATH_VARIANTS} />
         </svg>
-      </div>
+      </span>
     );
   },
 );

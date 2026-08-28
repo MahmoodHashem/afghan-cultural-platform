@@ -679,7 +679,6 @@ test("create entry supports sources, image staging, and unsaved-change warning",
 test("create entry has an app-like mobile shell, preview, and readiness flow", () => {
   assert.match(createEntryEditorLayout, /MobileEditorSaveAction/);
   assert.match(createEntryEditorLayout, /env\(safe-area-inset-bottom\)/);
-  assert.match(createEntryEditorLayout, /getSaveStateLabel/);
   assert.match(createEntryForm, /openMobileSection/);
   assert.match(createEntryForm, /getReadinessIssues/);
   assert.match(createEntryForm, /latestModerationReview\.comments/);

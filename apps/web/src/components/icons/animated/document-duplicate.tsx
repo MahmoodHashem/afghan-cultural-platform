@@ -3,7 +3,7 @@
 import type { Variants } from "motion/react";
 import { motion, useAnimation } from "motion/react";
 import type { HTMLAttributes } from "react";
-import { forwardRef, useCallback, useImperativeHandle, useRef } from "react";
+import { forwardRef, useImperativeHandle } from "react";
 import { cn } from "@/lib/utils";
 
 export interface DocumentDuplicateIconHandle {
@@ -11,7 +11,7 @@ export interface DocumentDuplicateIconHandle {
   stopAnimation: () => void;
 }
 
-interface DocumentDuplicateIconProps extends HTMLAttributes<HTMLDivElement> {
+interface DocumentDuplicateIconProps extends HTMLAttributes<HTMLSpanElement> {
   size?: number;
 }
 
@@ -33,49 +33,21 @@ const BACK_DOC_VARIANTS: Variants = {
 };
 
 const DocumentDuplicateIcon = forwardRef<DocumentDuplicateIconHandle, DocumentDuplicateIconProps>(
-  ({ onMouseEnter, onMouseLeave, className, size = 28, ...props }, ref) => {
+  ({ className, size = 28, ...props }, ref) => {
     const controls = useAnimation();
-    const isControlledRef = useRef(false);
 
     useImperativeHandle(ref, () => {
-      isControlledRef.current = true;
-
       return {
         startAnimation: () => controls.start("animate"),
         stopAnimation: () => controls.start("normal"),
       };
     });
 
-    const handleMouseEnter = useCallback(
-      (e: React.MouseEvent<HTMLDivElement>) => {
-        if (isControlledRef.current) {
-          onMouseEnter?.(e);
-        } else {
-          controls.start("animate");
-        }
-      },
-      [controls, onMouseEnter],
-    );
-
-    const handleMouseLeave = useCallback(
-      (e: React.MouseEvent<HTMLDivElement>) => {
-        if (isControlledRef.current) {
-          onMouseLeave?.(e);
-        } else {
-          controls.start("normal");
-        }
-      },
-      [controls, onMouseLeave],
-    );
-
     return (
-      <div
-        className={cn(className)}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        {...props}
-      >
+      <span className={cn(className)} {...props}>
         <svg
+          aria-hidden="true"
+          focusable="false"
           fill="none"
           height={size}
           stroke="currentColor"
@@ -95,7 +67,7 @@ const DocumentDuplicateIcon = forwardRef<DocumentDuplicateIconHandle, DocumentDu
           <path d="M15.75 17.25H19.125C19.7463 17.25 20.25 16.7463 20.25 16.125V11.25C20.25 6.79051 17.0066 3.08855 12.75 2.37444C12.2622 2.2926 11.7611 2.25 11.25 2.25H9.375C8.75368 2.25 8.25 2.75368 8.25 3.375V6.87444M15.75 17.25H9.375C8.75368 17.25 8.25 16.7463 8.25 16.125V6.87444" />
           <path d="M20.25 13.5V11.625C20.25 9.76104 18.739 8.25 16.875 8.25H15.375C14.7537 8.25 14.25 7.74632 14.25 7.125V5.625C14.25 3.76104 12.739 2.25 10.875 2.25H9.75" />
         </svg>
-      </div>
+      </span>
     );
   },
 );

@@ -132,12 +132,7 @@ function CommentComposer({
       )}
     >
       <div className={cn("flex items-start gap-3", !compact && "sm:gap-4")}>
-        <Avatar
-          className={cn(
-            "bg-primary-light transition-[width,height] duration-200 size-9",
-            
-          )}
-        >
+        <Avatar className={cn("bg-primary-light transition-[width,height] duration-200 size-9")}>
           <AvatarFallback className="bg-primary-light font-bold text-primary">
             {createUserInitials(authorName)}
           </AvatarFallback>

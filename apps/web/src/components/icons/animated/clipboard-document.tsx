@@ -3,7 +3,7 @@
 import type { Variants } from "motion/react";
 import { motion, useAnimation } from "motion/react";
 import type { HTMLAttributes } from "react";
-import { forwardRef, useCallback, useImperativeHandle, useRef } from "react";
+import { forwardRef, useImperativeHandle } from "react";
 import { cn } from "@/lib/utils";
 
 export interface ClipboardDocumentIconHandle {
@@ -11,7 +11,7 @@ export interface ClipboardDocumentIconHandle {
   stopAnimation: () => void;
 }
 
-interface ClipboardDocumentIconProps extends HTMLAttributes<HTMLDivElement> {
+interface ClipboardDocumentIconProps extends HTMLAttributes<HTMLSpanElement> {
   size?: number;
 }
 
@@ -40,49 +40,21 @@ const DOCUMENT_VARIANTS: Variants = {
 };
 
 const ClipboardDocumentIcon = forwardRef<ClipboardDocumentIconHandle, ClipboardDocumentIconProps>(
-  ({ onMouseEnter, onMouseLeave, className, size = 28, ...props }, ref) => {
+  ({ className, size = 28, ...props }, ref) => {
     const controls = useAnimation();
-    const isControlledRef = useRef(false);
 
     useImperativeHandle(ref, () => {
-      isControlledRef.current = true;
-
       return {
         startAnimation: () => controls.start("animate"),
         stopAnimation: () => controls.start("normal"),
       };
     });
 
-    const handleMouseEnter = useCallback(
-      (e: React.MouseEvent<HTMLDivElement>) => {
-        if (isControlledRef.current) {
-          onMouseEnter?.(e);
-        } else {
-          controls.start("animate");
-        }
-      },
-      [controls, onMouseEnter],
-    );
-
-    const handleMouseLeave = useCallback(
-      (e: React.MouseEvent<HTMLDivElement>) => {
-        if (isControlledRef.current) {
-          onMouseLeave?.(e);
-        } else {
-          controls.start("normal");
-        }
-      },
-      [controls, onMouseLeave],
-    );
-
     return (
-      <div
-        className={cn(className)}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        {...props}
-      >
+      <span className={cn(className)} {...props}>
         <svg
+          aria-hidden="true"
+          focusable="false"
           fill="none"
           height={size}
           stroke="currentColor"
@@ -104,7 +76,7 @@ const ClipboardDocumentIcon = forwardRef<ClipboardDocumentIconHandle, ClipboardD
             <path d="M15.75 18.75V16.875C15.75 15.011 14.239 13.5 12.375 13.5H10.875C10.2537 13.5 9.75 12.9963 9.75 12.375V10.875C9.75 9.01104 8.23896 7.5 6.375 7.5H5.25" />
           </motion.g>
         </svg>
-      </div>
+      </span>
     );
   },
 );

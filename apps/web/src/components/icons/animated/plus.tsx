@@ -2,7 +2,7 @@
 
 import { motion, useAnimation } from "motion/react";
 import type { HTMLAttributes } from "react";
-import { forwardRef, useCallback, useImperativeHandle, useRef } from "react";
+import { forwardRef, useImperativeHandle } from "react";
 import { cn } from "@/lib/utils";
 
 export interface PlusIconHandle {
@@ -10,54 +10,26 @@ export interface PlusIconHandle {
   stopAnimation: () => void;
 }
 
-interface PlusIconProps extends HTMLAttributes<HTMLDivElement> {
+interface PlusIconProps extends HTMLAttributes<HTMLSpanElement> {
   size?: number;
 }
 
 const PlusIcon = forwardRef<PlusIconHandle, PlusIconProps>(
-  ({ onMouseEnter, onMouseLeave, className, size = 28, ...props }, ref) => {
+  ({ className, size = 28, ...props }, ref) => {
     const controls = useAnimation();
-    const isControlledRef = useRef(false);
 
     useImperativeHandle(ref, () => {
-      isControlledRef.current = true;
-
       return {
         startAnimation: () => controls.start("animate"),
         stopAnimation: () => controls.start("normal"),
       };
     });
 
-    const handleMouseEnter = useCallback(
-      (e: React.MouseEvent<HTMLDivElement>) => {
-        if (isControlledRef.current) {
-          onMouseEnter?.(e);
-        } else {
-          controls.start("animate");
-        }
-      },
-      [controls, onMouseEnter],
-    );
-
-    const handleMouseLeave = useCallback(
-      (e: React.MouseEvent<HTMLDivElement>) => {
-        if (isControlledRef.current) {
-          onMouseLeave?.(e);
-        } else {
-          controls.start("normal");
-        }
-      },
-      [controls, onMouseLeave],
-    );
-
     return (
-      <div
-        className={cn(className)}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        {...props}
-      >
+      <span className={cn(className)} {...props}>
         <motion.svg
+          aria-hidden="true"
+          focusable="false"
           animate={controls}
           fill="none"
           height={size}
@@ -81,7 +53,7 @@ const PlusIcon = forwardRef<PlusIconHandle, PlusIconProps>(
           <path d="M5 12h14" />
           <path d="M12 5v14" />
         </motion.svg>
-      </div>
+      </span>
     );
   },
 );
