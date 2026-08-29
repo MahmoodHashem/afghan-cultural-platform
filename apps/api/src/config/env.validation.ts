@@ -85,7 +85,7 @@ const envValidationSchema = Joi.object<EnvironmentVariables>({
   CLOUDINARY_API_SECRET: Joi.string().trim().min(1).required(),
   YOUTUBE_API_KEY: Joi.string().trim().min(1).required(),
   MAX_IMAGES_PER_ENTRY: Joi.number().integer().positive().default(6),
-  MAX_IMAGE_SIZE_MB: Joi.number().integer().positive().default(5),
+  MAX_IMAGE_SIZE_MB: Joi.number().integer().positive().max(4).default(4),
 });
 
 export type { EnvironmentVariables };

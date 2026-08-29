@@ -439,7 +439,7 @@ class EntriesController {
   @ApiOperation({
     summary: "Upload an image to the current user's editable entry",
     description:
-      "Accepts multipart/form-data with an image file. JPEG, PNG, and WebP are supported. The backend validates actual file signatures, size, count, permission confirmation, and metadata.",
+      "Accepts multipart/form-data with an image file up to 4 MB. JPEG, PNG, and WebP are supported. The backend validates actual file signatures, size, count, permission confirmation, and metadata.",
   })
   @ApiConsumes("multipart/form-data")
   @ApiBody({

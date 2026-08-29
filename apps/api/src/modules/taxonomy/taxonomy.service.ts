@@ -1317,7 +1317,7 @@ class TaxonomyService {
       throw this.badRequest(TAXONOMY_ERROR_CODES.IMAGE_INVALID_TYPE, "Image file is required.");
     }
 
-    const maxImageSizeBytes = this.configService.get<number>("MAX_IMAGE_SIZE_MB", 5) * 1024 * 1024;
+    const maxImageSizeBytes = this.configService.get<number>("MAX_IMAGE_SIZE_MB", 4) * 1024 * 1024;
 
     if (file.size > maxImageSizeBytes || file.buffer.length > maxImageSizeBytes) {
       throw this.badRequest(TAXONOMY_ERROR_CODES.IMAGE_TOO_LARGE, "Image file is too large.");

@@ -43,6 +43,7 @@ import {
 import type { StagedImage } from "@/features/entries/types/create-entry-form";
 import { getEntryFormErrorMessage } from "@/features/entries/utils/create-entry-errors";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { MAX_IMAGE_SIZE_MB } from "@/lib/images/image-upload-limits";
 import { cn } from "@/lib/utils";
 import { formatPersianNumber } from "@/lib/utils/formatters";
 import { EmptyRow, FieldError } from "./create-entry-editor-layout";
@@ -298,7 +299,8 @@ export function ImagesSection({
         </span>
         <span className="text-small text-muted-foreground">یا برای انتخاب تصویر کلیک کنید</span>
         <span className="text-[12px] leading-6 text-muted-foreground">
-          حداکثر ۶ تصویر JPEG، PNG یا WebP؛ بارگذاری پس از ذخیره پیش‌نویس انجام می‌شود.
+          حداکثر ۶ تصویر JPEG، PNG یا WebP، هرکدام تا {formatPersianNumber(MAX_IMAGE_SIZE_MB)}
+          مگابایت؛ بارگذاری پس از ذخیره پیش‌نویس انجام می‌شود.
         </span>
       </button>
       <ImageList

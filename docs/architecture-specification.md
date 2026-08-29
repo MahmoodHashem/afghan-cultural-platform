@@ -637,7 +637,7 @@ Initial limits:
 
 ```text
 Maximum images per entry: 6
-Maximum size per image: 5 MB
+Maximum size per image: 4 MB
 Allowed formats: JPEG, PNG, WebP
 ```
 

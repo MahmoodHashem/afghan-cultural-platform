@@ -2440,7 +2440,7 @@ class EntriesService {
   }
 
   private getMaxImageSizeBytes(): number {
-    return this.configService.get<number>("MAX_IMAGE_SIZE_MB", 5) * 1024 * 1024;
+    return this.configService.get<number>("MAX_IMAGE_SIZE_MB", 4) * 1024 * 1024;
   }
 
   private extractRequiredYouTubeVideoId(url: string): string {

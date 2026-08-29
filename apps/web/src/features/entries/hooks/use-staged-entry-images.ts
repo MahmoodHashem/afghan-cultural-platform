@@ -11,8 +11,12 @@ import {
 import type { StagedImage } from "@/features/entries/types/create-entry-form";
 import { getEntryFormErrorMessage } from "@/features/entries/utils/create-entry-errors";
 import { emptyToUndefined } from "@/features/entries/utils/create-entry-form-utils";
-
-const maxImagesPerEntry = 6;
+import {
+  MAX_IMAGE_SIZE_BYTES,
+  MAX_IMAGE_SIZE_MB,
+  MAX_IMAGES_PER_ENTRY,
+} from "@/lib/images/image-upload-limits";
+import { formatPersianNumber } from "@/lib/utils/formatters";
 
 type UseStagedEntryImagesOptions = {
   draftId: string | null;
@@ -74,11 +78,24 @@ export function useStagedEntryImages({
       return;
     }
 
-    const remainingSlots = Math.max(0, maxImagesPerEntry - images.length);
-    const selectedFiles = Array.from(files).slice(0, remainingSlots);
+    const remainingSlots = Math.max(0, MAX_IMAGES_PER_ENTRY - images.length);
+    const filesWithinLimit = Array.from(files).filter((file) => file.size <= MAX_IMAGE_SIZE_BYTES);
+    const selectedFiles = filesWithinLimit.slice(0, remainingSlots);
 
-    if (selectedFiles.length < files.length) {
-      toast.error("برای هر مطلب حداکثر ۶ تصویر می‌توانید اضافه کنید.");
+    if (filesWithinLimit.length < files.length) {
+      toast.error(
+        `حجم هر تصویر باید حداکثر ${formatPersianNumber(MAX_IMAGE_SIZE_MB)} مگابایت باشد.`,
+      );
+    }
+
+    if (selectedFiles.length < filesWithinLimit.length) {
+      toast.error(
+        `برای هر مطلب حداکثر ${formatPersianNumber(MAX_IMAGES_PER_ENTRY)} تصویر می‌توانید اضافه کنید.`,
+      );
+    }
+
+    if (selectedFiles.length === 0) {
+      return;
     }
 
     const title = getTitle();

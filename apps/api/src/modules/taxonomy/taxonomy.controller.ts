@@ -182,7 +182,10 @@ class TaxonomyController {
   @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
   @UseInterceptors(FileInterceptor("image", { storage: memoryStorage() }))
-  @ApiOperation({ summary: "Upload or replace an Admin-managed province image" })
+  @ApiOperation({
+    summary: "Upload or replace an Admin-managed province image",
+    description: "Accepts a JPEG, PNG, or WebP image up to 4 MB.",
+  })
   @ApiConsumes("multipart/form-data")
   @ApiBody({
     schema: {

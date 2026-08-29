@@ -40,8 +40,6 @@ describe("HealthController", () => {
   it("returns service unavailable when PostgreSQL cannot be reached", async () => {
     queryRaw.mockRejectedValueOnce(new Error("connection unavailable"));
 
-    await expect(healthController.getHealth()).rejects.toBeInstanceOf(
-      ServiceUnavailableException,
-    );
+    await expect(healthController.getHealth()).rejects.toBeInstanceOf(ServiceUnavailableException);
   });
 });

@@ -21,6 +21,8 @@ import {
   adminProvinceImageSchema,
 } from "@/features/admin/schemas/admin-geography-schema";
 import type { AdminProvinceImage } from "@/features/admin/types/admin-provinces";
+import { MAX_IMAGE_SIZE_BYTES, MAX_IMAGE_SIZE_MB } from "@/lib/images/image-upload-limits";
+import { formatPersianNumber } from "@/lib/utils/formatters";
 
 function AdminProvinceImageDialog({
   image,
@@ -72,7 +74,9 @@ function AdminProvinceImageDialog({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{image ? "ویرایش تصویر ولایت" : "افزودن تصویر ولایت"}</DialogTitle>
-          <DialogDescription>تصویر JPEG، PNG یا WebP تا ۵ مگابایت انتخاب کنید.</DialogDescription>
+          <DialogDescription>
+            تصویر JPEG، PNG یا WebP تا {formatPersianNumber(MAX_IMAGE_SIZE_MB)} مگابایت انتخاب کنید.
+          </DialogDescription>
         </DialogHeader>
         <form id="admin-province-image-form" onSubmit={submit} className="space-y-4">
           {shownImage ? (
@@ -96,9 +100,12 @@ function AdminProvinceImageDialog({
               disabled={pending}
               onChange={(event) => {
                 const nextFile = event.target.files?.[0] ?? null;
-                if (nextFile && nextFile.size > 5 * 1024 * 1024) {
+                if (nextFile && nextFile.size > MAX_IMAGE_SIZE_BYTES) {
                   setFile(null);
-                  setFileError("حجم تصویر بیشتر از ۵ مگابایت است.");
+                  setFileError(
+                    `حجم تصویر بیشتر از ${formatPersianNumber(MAX_IMAGE_SIZE_MB)} مگابایت است.`,
+                  );
+                  event.target.value = "";
                   return;
                 }
                 setFile(nextFile);

@@ -947,7 +947,7 @@ are not imported by taxonomy seeding.
 - Bookmarks are private convenience data and do not change popularity, moderation status, or view count.
 - Entry comments do not directly change entry content.
 - Reports do not automatically remove content.
-- Images require ownership or permission confirmation before publication. Version one allows up to six images per entry, with a maximum size of 5 MB each.
+- Images require ownership or permission confirmation before publication. Version one allows up to six images per entry, with a maximum size of 4 MB each.
 - Sources are allowed as zero or many records; written sources are optional because some cultural knowledge is based on oral history or personal experience.
 - YouTube links must be validated and stored as YouTube IDs/URLs only; arbitrary iframes are not accepted.
 - Email verification is mandatory in version one.
@@ -1194,7 +1194,7 @@ The following previously open decisions are now approved for Phase B:
 - Audit logs: keep `metadata` as flexible JSON.
 - Sources: allow zero or many sources. Written sources are optional because some cultural knowledge is based on oral history or personal experience.
 - Email verification: mandatory in version one.
-- Images: maximum six images per Cultural Entry, maximum 5 MB each.
+- Images: maximum six images per Cultural Entry, maximum 4 MB each.
 - Published content: administrators may edit published content, but every change must create a new `ContentVersion`.
 - Publication: approved content is published immediately.
 - Initial taxonomy: seed Afghanistan's official provinces and districts, with initial categories and content types from the PRD. Tags are created by administrators as needed.
