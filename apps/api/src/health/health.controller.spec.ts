@@ -1,34 +1,47 @@
-import { Test, type TestingModule } from "@nestjs/testing";
+import { ServiceUnavailableException } from "@nestjs/common";
+import { Test } from "@nestjs/testing";
 
+import { PrismaService } from "@/database/prisma.service";
 import { HealthController } from "@/health/health.controller";
 import { HealthService } from "@/health/health.service";
 
 describe("HealthController", () => {
   let healthController: HealthController;
+  const queryRaw = jest.fn();
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    queryRaw.mockReset();
+    queryRaw.mockResolvedValue([{ result: 1 }]);
+
+    const module = await Test.createTestingModule({
       controllers: [HealthController],
-      providers: [HealthService],
+      providers: [
+        HealthService,
+        {
+          provide: PrismaService,
+          useValue: { $queryRaw: queryRaw },
+        },
+      ],
     }).compile();
 
     healthController = module.get<HealthController>(HealthController);
   });
 
-  it("returns the service health status", () => {
-    expect(healthController.getHealth()).toEqual({
+  it("returns the service and database health status", async () => {
+    await expect(healthController.getHealth()).resolves.toEqual({
       data: {
         status: "ok",
         service: "afghan-cultural-platform-api",
+        database: "up",
       },
     });
   });
 
-  it("echoes validation preview data after global validation", () => {
-    expect(healthController.validatePreview({ name: "test" })).toEqual({
-      data: {
-        name: "test",
-      },
-    });
+  it("returns service unavailable when PostgreSQL cannot be reached", async () => {
+    queryRaw.mockRejectedValueOnce(new Error("connection unavailable"));
+
+    await expect(healthController.getHealth()).rejects.toBeInstanceOf(
+      ServiceUnavailableException,
+    );
   });
 });

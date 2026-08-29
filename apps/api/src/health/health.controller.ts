@@ -1,7 +1,4 @@
-import { Body, Controller, Get, Inject, Post } from "@nestjs/common";
-import { ApiExcludeEndpoint } from "@nestjs/swagger";
-
-import type { HealthValidationPreviewDto } from "@/health/dto/health-validation-preview.dto";
+import { Controller, Get, Inject } from "@nestjs/common";
 import { HealthService } from "@/health/health.service";
 import { Public } from "@/modules/auth/decorators/public.decorator";
 
@@ -11,17 +8,9 @@ class HealthController {
   constructor(@Inject(HealthService) private readonly healthService: HealthService) {}
 
   @Get()
-  getHealth() {
+  async getHealth() {
     return {
-      data: this.healthService.getHealth(),
-    };
-  }
-
-  @Post("validation-preview")
-  @ApiExcludeEndpoint()
-  validatePreview(@Body() body: HealthValidationPreviewDto) {
-    return {
-      data: body,
+      data: await this.healthService.getHealth(),
     };
   }
 }
