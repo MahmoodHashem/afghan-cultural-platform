@@ -10,7 +10,6 @@ async function seedTaxonomy(prisma: SeedPrismaClient): Promise<void> {
       update: {
         name: province.name,
         sortOrder: province.sortOrder,
-        isActive: true,
       },
       create: {
         ...province,
@@ -25,7 +24,6 @@ async function seedTaxonomy(prisma: SeedPrismaClient): Promise<void> {
       update: {
         name: category.name,
         sortOrder: category.sortOrder,
-        isActive: true,
       },
       create: {
         ...category,
@@ -40,7 +38,6 @@ async function seedTaxonomy(prisma: SeedPrismaClient): Promise<void> {
       update: {
         name: contentType.name,
         sortOrder: contentType.sortOrder,
-        isActive: true,
       },
       create: {
         ...contentType,
