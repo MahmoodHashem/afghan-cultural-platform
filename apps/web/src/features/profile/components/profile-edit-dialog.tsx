@@ -36,6 +36,7 @@ import {
   type ProfileIdentityValues,
   profileIdentitySchema,
 } from "@/features/profile/schemas/profile-schema";
+import { normalizeProfileImage } from "@/features/profile/utils/normalize-profile-image";
 import { isApiError } from "@/lib/api/api-error";
 import { MAX_IMAGE_SIZE_BYTES, MAX_IMAGE_SIZE_MB } from "@/lib/images/image-upload-limits";
 import { cn } from "@/lib/utils";
@@ -55,13 +56,17 @@ function ProfileEditDialog({
 }) {
   const [file, setFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
+  const [isNormalizingImage, setIsNormalizingImage] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const previewUrl = useMemo(() => (file ? URL.createObjectURL(file) : null), [file]);
   const identityMutation = useProfileIdentityMutation();
   const imageUploadMutation = useProfileImageUploadMutation();
   const imageDeleteMutation = useProfileImageDeleteMutation();
   const pending =
-    identityMutation.isPending || imageUploadMutation.isPending || imageDeleteMutation.isPending;
+    isNormalizingImage ||
+    identityMutation.isPending ||
+    imageUploadMutation.isPending ||
+    imageDeleteMutation.isPending;
   const form = useForm<ProfileIdentityValues>({
     resolver: zodResolver(profileIdentitySchema),
     defaultValues: { displayName: user.displayName },
@@ -72,6 +77,7 @@ function ProfileEditDialog({
     form.reset({ displayName: user.displayName });
     setFile(null);
     setFileError(null);
+    setIsNormalizingImage(false);
   }, [form, open, user.displayName]);
 
   useEffect(
@@ -132,10 +138,15 @@ function ProfileEditDialog({
                   className={cn(
                     buttonVariants({ variant: "outline", size: "sm" }),
                     "cursor-pointer",
+                    pending && "pointer-events-none opacity-60",
                   )}
                 >
                   <CameraIcon className="size-4" aria-hidden="true" />
-                  {user.profileImageUrl ? "تغییر تصویر" : "انتخاب تصویر"}
+                  {isNormalizingImage
+                    ? "در حال آماده‌سازی..."
+                    : user.profileImageUrl
+                      ? "تغییر تصویر"
+                      : "انتخاب تصویر"}
                 </label>
                 <input
                   id="profile-image-input"
@@ -143,13 +154,13 @@ function ProfileEditDialog({
                   accept="image/jpeg,image/png,image/webp"
                   className="sr-only"
                   disabled={pending}
-                  onChange={(event) => {
+                  onChange={async (event) => {
                     const nextFile = event.target.files?.[0] ?? null;
+                    event.target.value = "";
 
                     if (nextFile && !ACCEPTED_IMAGE_TYPES.has(nextFile.type)) {
                       setFile(null);
                       setFileError("فقط تصویر JPEG، PNG یا WebP انتخاب کنید.");
-                      event.target.value = "";
                       return;
                     }
 
@@ -158,12 +169,24 @@ function ProfileEditDialog({
                       setFileError(
                         `حجم تصویر نباید بیشتر از ${formatPersianNumber(MAX_IMAGE_SIZE_MB)} مگابایت باشد.`,
                       );
-                      event.target.value = "";
                       return;
                     }
 
-                    setFile(nextFile);
+                    if (!nextFile) {
+                      return;
+                    }
+
+                    setIsNormalizingImage(true);
                     setFileError(null);
+
+                    try {
+                      setFile(await normalizeProfileImage(nextFile));
+                    } catch {
+                      setFile(null);
+                      setFileError("آماده‌سازی این تصویر انجام نشد. تصویر دیگری انتخاب کنید.");
+                    } finally {
+                      setIsNormalizingImage(false);
+                    }
                   }}
                 />
                 {user.profileImageUrl && !file ? (
@@ -180,8 +203,14 @@ function ProfileEditDialog({
                 ) : null}
               </div>
               <p className="text-center text-[12px] text-muted-foreground">
-                JPEG، PNG یا WebP تا {formatPersianNumber(MAX_IMAGE_SIZE_MB)} مگابایت
+                JPEG، PNG یا WebP تا {formatPersianNumber(MAX_IMAGE_SIZE_MB)} مگابایت؛ تصویر پیش از
+                بارگذاری به اندازه مناسب تبدیل می‌شود.
               </p>
+              {isNormalizingImage ? (
+                <p className="text-[12px] text-primary" role="status">
+                  در حال آماده‌سازی تصویر...
+                </p>
+              ) : null}
               {fileError ? <p className="text-[12px] text-destructive">{fileError}</p> : null}
             </div>
 

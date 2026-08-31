@@ -125,9 +125,7 @@ function CommentThread({ entryId, comment, depth = 0, now }: CommentThreadProps)
             {activeAuthor.profileImageUrl ? (
               <AvatarImage src={activeAuthor.profileImageUrl} alt="" />
             ) : null}
-            <AvatarFallback
-              className={cn("font-bold", getUserAvatarColorClass(activeAuthor.id))}
-            >
+            <AvatarFallback className={cn("font-bold", getUserAvatarColorClass(activeAuthor.id))}>
               {createUserInitials(activeAuthor.displayName)}
             </AvatarFallback>
           </Avatar>

@@ -25,9 +25,7 @@ function getUserAvatarColorClass(seed: string) {
     hash = (hash * 31 + seed.charCodeAt(index)) >>> 0;
   }
 
-  return (
-    userAvatarColorClasses[hash % userAvatarColorClasses.length] ?? userAvatarColorClasses[0]
-  );
+  return userAvatarColorClasses[hash % userAvatarColorClasses.length] ?? userAvatarColorClasses[0];
 }
 
 export { createUserInitials, getUserAvatarColorClass };

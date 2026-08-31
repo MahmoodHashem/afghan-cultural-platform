@@ -394,10 +394,7 @@ function MobileNavigation({ isCompact }: { isCompact: boolean }) {
                         <AvatarImage src={user.profileImageUrl} alt="" />
                       ) : null}
                       <AvatarFallback
-                        className={cn(
-                          "text-[12px] font-bold",
-                          getUserAvatarColorClass(user.id),
-                        )}
+                        className={cn("text-[12px] font-bold", getUserAvatarColorClass(user.id))}
                       >
                         {createUserInitials(user.displayName)}
                       </AvatarFallback>
@@ -601,11 +598,9 @@ function ProfileMenu({ user, mobile = false }: { user: SafeUser; mobile?: boolea
         {...triggerProps}
         aria-expanded={isDropdownOpen}
       >
-        <Avatar size="default" className={cn("bg-primary-light", mobile ? "size-7" : "size-8")}>
+        <Avatar size="default" className={cn("bg-primary-light", mobile ? "size-8" : "size-8")}>
           {user.profileImageUrl ? <AvatarImage src={user.profileImageUrl} alt="" /> : null}
-          <AvatarFallback
-            className={cn("text-[12px] font-bold", getUserAvatarColorClass(user.id))}
-          >
+          <AvatarFallback className={cn("text-[12px] font-bold", getUserAvatarColorClass(user.id))}>
             {createUserInitials(user.displayName)}
           </AvatarFallback>
         </Avatar>

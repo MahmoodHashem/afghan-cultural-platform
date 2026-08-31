@@ -146,6 +146,8 @@ const profilePage = read("src/app/(profile)/profile/page.tsx");
 const profileLayout = read("src/app/(profile)/layout.tsx");
 const profileLoading = read("src/app/(profile)/profile/loading.tsx");
 const ownerProfilePage = read("src/features/profile/components/owner-profile-page.tsx");
+const profileEditDialog = read("src/features/profile/components/profile-edit-dialog.tsx");
+const profileImageNormalizer = read("src/features/profile/utils/normalize-profile-image.ts");
 const profileSkeleton = read("src/features/profile/components/profile-page-skeleton.tsx");
 const profileLogoutButton = read("src/features/profile/components/profile-logout-button.tsx");
 const authLayout = read("src/features/auth/components/auth-layout.tsx");
@@ -503,10 +505,18 @@ test("mobile profile uses compact app chrome without changing profile data owner
   assert.match(publicHeader, /user\.role === "ADMIN"/);
   assert.match(publicHeader, /<LogoutConfirmationDialog/);
   assert.match(ownerProfilePage, /lg:size-28/);
-  assert.match(ownerProfilePage, /lg:inline-flex/);
+  assert.match(ownerProfilePage, /<ProfileEditDialog/);
   assert.match(ownerProfilePage, /stats\.entries/);
   assert.match(ownerProfilePage, /stats\.comments/);
   assert.match(ownerProfilePage, /stats\.bookmarks/);
+});
+
+test("profile images are normalized before upload", () => {
+  assert.match(profileEditDialog, /await normalizeProfileImage\(nextFile\)/);
+  assert.match(profileEditDialog, /isNormalizingImage/);
+  assert.match(profileImageNormalizer, /PROFILE_IMAGE_MAX_DIMENSION = 1024/);
+  assert.match(profileImageNormalizer, /PROFILE_IMAGE_TARGET_BYTES = 800 \* 1024/);
+  assert.match(profileImageNormalizer, /canvasToBlob\(canvas, "image\/webp", quality\)/);
 });
 
 test("mobile profile tabs coordinate with thresholded shell visibility", () => {

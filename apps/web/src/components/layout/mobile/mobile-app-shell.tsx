@@ -245,7 +245,7 @@ function MobileTopBar({
       <div
         className={cn(
           "flex  items-center gap-3 ps-2 transition-all",
-          routeContext.kind === "profile" && "p-3",
+          routeContext.kind === "profile" && "p-2",
         )}
       >
         {backHref ? (
