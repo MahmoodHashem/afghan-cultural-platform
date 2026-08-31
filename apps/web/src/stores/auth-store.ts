@@ -8,6 +8,7 @@ type SafeUser = {
   displayName: string;
   role: "USER" | "MODERATOR" | "ADMIN";
   status: string;
+  profileImageUrl: string | null;
   emailVerified: boolean;
 };
 

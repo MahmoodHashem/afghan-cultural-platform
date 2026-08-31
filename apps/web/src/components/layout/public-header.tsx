@@ -33,7 +33,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -594,6 +594,7 @@ function ProfileMenu({ user, mobile = false }: { user: SafeUser; mobile?: boolea
         aria-expanded={isDropdownOpen}
       >
         <Avatar size="default" className={cn("bg-primary-light", mobile ? "size-7" : "size-8")}>
+          {user.profileImageUrl ? <AvatarImage src={user.profileImageUrl} alt="" /> : null}
           <AvatarFallback className="bg-primary-light text-[12px] font-bold text-primary">
             {createUserInitials(user.displayName)}
           </AvatarFallback>

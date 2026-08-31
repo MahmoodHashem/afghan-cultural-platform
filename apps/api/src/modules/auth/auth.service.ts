@@ -759,6 +759,7 @@ class AuthService {
       email: user.email,
       role: user.role,
       status: user.status,
+      profileImageUrl: user.profileImageUrl,
       emailVerified: Boolean(user.emailVerifiedAt),
     };
   }

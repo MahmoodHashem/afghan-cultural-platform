@@ -1,9 +1,12 @@
-import { BadRequestException, Inject, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 
 import { PrismaService } from "../../database/prisma.service";
 import type { Prisma } from "../../generated/prisma/client";
 import { EntryCommentStatus, EntryStatus } from "../../generated/prisma/enums";
 import type { AuthenticatedUser } from "../auth/types/authenticated-user.type";
+import { CloudinaryMediaService } from "../media/cloudinary-media.service";
+import { isSupportedImageFile } from "../media/image-file.utils";
 import type { ProfileBookmarksQueryDto, ProfileCommentsQueryDto } from "./dto/profile-query.dto";
 import type { UpdateProfileDto } from "./dto/update-profile.dto";
 import { PROFILE_ERROR_CODES } from "./profile.constants";
@@ -77,7 +80,13 @@ type ProfilePaginationInput = {
 
 @Injectable()
 class ProfileService {
-  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(ProfileService.name);
+
+  constructor(
+    @Inject(PrismaService) private readonly prisma: PrismaService,
+    @Inject(CloudinaryMediaService) private readonly mediaService: CloudinaryMediaService,
+    @Inject(ConfigService) private readonly configService: ConfigService,
+  ) {}
 
   async getMyProfile(user: AuthenticatedUser) {
     const profile = await this.prisma.user.findUnique({
@@ -108,10 +117,6 @@ class ProfileService {
       data.biography = this.normalizeBiography(input.biography);
     }
 
-    if (input.profileImageUrl !== undefined) {
-      data.profileImageUrl = this.normalizeNullableText(input.profileImageUrl);
-    }
-
     if (input.provinceId !== undefined) {
       data.province = input.provinceId
         ? { connect: { id: await this.getActiveProvinceId(input.provinceId) } }
@@ -131,6 +136,50 @@ class ProfileService {
     return {
       data: mapProfileUser(profile),
     };
+  }
+
+  async uploadMyProfileImage(user: AuthenticatedUser, file: Express.Multer.File | undefined) {
+    this.validateProfileImageFile(file);
+    const existingProfile = await this.findProfileImage(user.id);
+    const uploadedImage = await this.mediaService.uploadProfileImage(file);
+
+    try {
+      const profile = await this.prisma.user.update({
+        where: { id: user.id },
+        data: {
+          profileImageUrl: uploadedImage.thumbnailUrl,
+          profileImageCloudinaryPublicId: uploadedImage.publicId,
+        },
+        select: profileUserSelect,
+      });
+
+      if (existingProfile.profileImageCloudinaryPublicId) {
+        await this.cleanupProfileImage(existingProfile.profileImageCloudinaryPublicId);
+      }
+
+      return { data: mapProfileUser(profile) };
+    } catch (error) {
+      await this.cleanupProfileImage(uploadedImage.publicId);
+      throw error;
+    }
+  }
+
+  async deleteMyProfileImage(user: AuthenticatedUser) {
+    const existingProfile = await this.findProfileImage(user.id);
+    const profile = await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        profileImageUrl: null,
+        profileImageCloudinaryPublicId: null,
+      },
+      select: profileUserSelect,
+    });
+
+    if (existingProfile.profileImageCloudinaryPublicId) {
+      await this.cleanupProfileImage(existingProfile.profileImageCloudinaryPublicId);
+    }
+
+    return { data: mapProfileUser(profile) };
   }
 
   async getMyStats(user: AuthenticatedUser) {
@@ -314,6 +363,62 @@ class ProfileService {
       page: query.page ?? 1,
       limit: query.limit ?? 20,
     };
+  }
+
+  private async findProfileImage(userId: string) {
+    const profile = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        profileImageCloudinaryPublicId: true,
+      },
+    });
+
+    if (!profile) {
+      throw new NotFoundException({
+        error: "PROFILE_NOT_FOUND",
+        message: "Profile was not found.",
+      });
+    }
+
+    return profile;
+  }
+
+  private validateProfileImageFile(
+    file: Express.Multer.File | undefined,
+  ): asserts file is Express.Multer.File {
+    if (!file) {
+      throw new BadRequestException({
+        error: PROFILE_ERROR_CODES.IMAGE_INVALID_TYPE,
+        message: "Profile image is required.",
+      });
+    }
+
+    const maxSizeBytes = this.configService.get<number>("MAX_IMAGE_SIZE_MB", 4) * 1024 * 1024;
+
+    if (file.size > maxSizeBytes || file.buffer.length > maxSizeBytes) {
+      throw new BadRequestException({
+        error: PROFILE_ERROR_CODES.IMAGE_TOO_LARGE,
+        message: "Profile image is too large.",
+      });
+    }
+
+    if (!isSupportedImageFile(file)) {
+      throw new BadRequestException({
+        error: PROFILE_ERROR_CODES.IMAGE_INVALID_TYPE,
+        message: "Only valid JPEG, PNG, and WebP images are supported.",
+      });
+    }
+  }
+
+  private async cleanupProfileImage(publicId: string): Promise<void> {
+    try {
+      await this.mediaService.deleteImage(publicId);
+    } catch (error) {
+      this.logger.error(
+        `Failed to clean up profile image ${publicId}.`,
+        error instanceof Error ? error.stack : String(error),
+      );
+    }
   }
 
   private skip(query: NormalizedPaginationQuery): number {

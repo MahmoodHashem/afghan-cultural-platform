@@ -1,4 +1,4 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
 import { UserRole, UserStatus } from "../../../generated/prisma/enums";
 
@@ -17,6 +17,9 @@ class SafeAuthUserDto {
 
   @ApiProperty({ enum: UserStatus, example: UserStatus.ACTIVE })
   status!: UserStatus;
+
+  @ApiPropertyOptional({ nullable: true })
+  profileImageUrl!: string | null;
 
   @ApiProperty({ example: false })
   emailVerified!: boolean;

@@ -6,6 +6,7 @@ type SafeAuthUser = {
   email: string;
   role: UserRole;
   status: UserStatus;
+  profileImageUrl: string | null;
   emailVerified: boolean;
 };
 

@@ -153,6 +153,7 @@ describe("AuthService", () => {
       email: "mahmood@example.com",
       role: UserRole.USER,
       status: UserStatus.ACTIVE,
+      profileImageUrl: null,
       emailVerified: false,
     });
     expect(prisma.emailVerificationToken.create).toHaveBeenCalledTimes(1);
@@ -729,6 +730,7 @@ describe("AuthService", () => {
           email: "mahmood@example.com",
           role: UserRole.USER,
           status: UserStatus.ACTIVE,
+          profileImageUrl: null,
           emailVerified: false,
         },
       },

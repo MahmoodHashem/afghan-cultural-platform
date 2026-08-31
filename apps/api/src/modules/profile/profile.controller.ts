@@ -7,13 +7,18 @@ import {
   Param,
   ParseUUIDPipe,
   Patch,
+  Post,
   Put,
   Query,
+  UploadedFile,
+  UseInterceptors,
 } from "@nestjs/common";
+import { FileInterceptor } from "@nestjs/platform-express";
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
   ApiBody,
+  ApiConsumes,
   ApiExtraModels,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
@@ -22,6 +27,7 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
+import { memoryStorage } from "multer";
 
 import { CurrentUser } from "../auth/decorators/current-user.decorator";
 import { RequireVerifiedEmail } from "../auth/decorators/require-verified-email.decorator";
@@ -61,7 +67,7 @@ class ProfileController {
   @ApiOperation({
     summary: "Update the current user's safe profile fields",
     description:
-      "Updates display name, biography, profile image URL, optional province, and cultural interests. Email, role, status, and security fields cannot be changed here.",
+      "Updates display name, biography, optional province, and cultural interests. Email, role, status, image assets, and security fields cannot be changed here.",
   })
   @ApiOkResponse({ type: ProfileResponseDto })
   @ApiBadRequestResponse({
@@ -71,6 +77,37 @@ class ProfileController {
   @ApiUnauthorizedResponse({ description: "Missing or invalid bearer token" })
   updateMyProfile(@CurrentUser() user: AuthenticatedUser, @Body() body: UpdateProfileDto) {
     return this.profileService.updateMyProfile(user, body);
+  }
+
+  @Post("image")
+  @UseInterceptors(FileInterceptor("image", { storage: memoryStorage() }))
+  @ApiOperation({ summary: "Upload or replace the current user's profile image" })
+  @ApiConsumes("multipart/form-data")
+  @ApiBody({
+    schema: {
+      type: "object",
+      required: ["image"],
+      properties: {
+        image: { type: "string", format: "binary" },
+      },
+    },
+  })
+  @ApiOkResponse({ type: ProfileResponseDto })
+  @ApiBadRequestResponse({
+    description: "PROFILE_IMAGE_INVALID_TYPE, PROFILE_IMAGE_TOO_LARGE, or IMAGE_UPLOAD_FAILED",
+  })
+  uploadMyProfileImage(
+    @CurrentUser() user: AuthenticatedUser,
+    @UploadedFile() image: Express.Multer.File | undefined,
+  ) {
+    return this.profileService.uploadMyProfileImage(user, image);
+  }
+
+  @Delete("image")
+  @ApiOperation({ summary: "Remove the current user's profile image" })
+  @ApiOkResponse({ type: ProfileResponseDto })
+  deleteMyProfileImage(@CurrentUser() user: AuthenticatedUser) {
+    return this.profileService.deleteMyProfileImage(user);
   }
 
   @Get("stats")

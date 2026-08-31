@@ -4,7 +4,6 @@ import {
   IsArray,
   IsOptional,
   IsString,
-  IsUrl,
   IsUUID,
   MaxLength,
   MinLength,
@@ -23,12 +22,6 @@ class UpdateProfileDto {
   @IsString()
   @MaxLength(600)
   biography?: string | null;
-
-  @ApiPropertyOptional({ nullable: true })
-  @IsOptional()
-  @IsUrl({ require_protocol: true })
-  @MaxLength(500)
-  profileImageUrl?: string | null;
 
   @ApiPropertyOptional({ nullable: true })
   @IsOptional()

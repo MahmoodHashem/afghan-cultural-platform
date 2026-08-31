@@ -37,6 +37,10 @@ class CloudinaryMediaService {
     return this.uploadImage(file, "afghan-cultural-platform/provinces", 720, 480);
   }
 
+  async uploadProfileImage(file: Express.Multer.File): Promise<UploadedCloudinaryImage> {
+    return this.uploadImage(file, "afghan-cultural-platform/profiles", 256, 256);
+  }
+
   private async uploadImage(
     file: Express.Multer.File,
     folder: string,

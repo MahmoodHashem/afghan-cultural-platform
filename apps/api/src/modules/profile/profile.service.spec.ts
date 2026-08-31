@@ -3,6 +3,7 @@ jest.mock("../../database/prisma.service", () => ({
 }));
 
 import { BadRequestException, NotFoundException } from "@nestjs/common";
+import type { ConfigService } from "@nestjs/config";
 
 import type { PrismaService } from "../../database/prisma.service";
 import {
@@ -12,6 +13,7 @@ import {
   UserStatus,
 } from "../../generated/prisma/enums";
 import type { AuthenticatedUser } from "../auth/types/authenticated-user.type";
+import type { CloudinaryMediaService } from "../media/cloudinary-media.service";
 import { PROFILE_ERROR_CODES } from "./profile.constants";
 import { ProfileService } from "./profile.service";
 
@@ -58,11 +60,26 @@ const publishedEntry = {
 
 describe("ProfileService", () => {
   let prisma: PrismaMock;
+  let mediaService: {
+    deleteImage: jest.Mock;
+    uploadProfileImage: jest.Mock;
+  };
   let service: ProfileService;
 
   beforeEach(() => {
     prisma = createPrismaMock();
-    service = new ProfileService(prisma as unknown as PrismaService);
+    mediaService = {
+      deleteImage: jest.fn().mockResolvedValue(undefined),
+      uploadProfileImage: jest.fn(),
+    };
+    const configService = {
+      get: jest.fn((_key: string, defaultValue: unknown) => defaultValue),
+    } as unknown as ConfigService;
+    service = new ProfileService(
+      prisma as unknown as PrismaService,
+      mediaService as unknown as CloudinaryMediaService,
+      configService,
+    );
   });
 
   it("returns safe owner profile fields", async () => {
@@ -244,6 +261,70 @@ describe("ProfileService", () => {
         culturalInterests: ["x"],
       }),
     ).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it("uploads a profile image and cleans up the replaced managed asset", async () => {
+    prisma.user.findUnique.mockResolvedValue({
+      profileImageCloudinaryPublicId: "afghan-cultural-platform/profiles/old-image",
+    });
+    mediaService.uploadProfileImage.mockResolvedValue({
+      publicId: "afghan-cultural-platform/profiles/new-image",
+      secureUrl: "https://res.cloudinary.com/example/new-image.webp",
+      thumbnailUrl: "https://res.cloudinary.com/example/new-image-thumbnail.webp",
+    });
+    prisma.user.update.mockResolvedValue({
+      ...user,
+      profileImageUrl: "https://res.cloudinary.com/example/new-image-thumbnail.webp",
+      biography: null,
+      culturalInterests: [],
+      province: null,
+      createdAt: new Date("2026-01-01T00:00:00.000Z"),
+      updatedAt: new Date("2026-01-02T00:00:00.000Z"),
+    });
+    const file = {
+      buffer: Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+      mimetype: "image/png",
+      size: 8,
+    } as Express.Multer.File;
+
+    const response = await service.uploadMyProfileImage(user, file);
+
+    expect(response.data.profileImageUrl).toBe(
+      "https://res.cloudinary.com/example/new-image-thumbnail.webp",
+    );
+    expect(prisma.user.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: {
+          profileImageCloudinaryPublicId: "afghan-cultural-platform/profiles/new-image",
+          profileImageUrl: "https://res.cloudinary.com/example/new-image-thumbnail.webp",
+        },
+      }),
+    );
+    expect(mediaService.deleteImage).toHaveBeenCalledWith(
+      "afghan-cultural-platform/profiles/old-image",
+    );
+  });
+
+  it("removes a profile image and its managed Cloudinary asset", async () => {
+    prisma.user.findUnique.mockResolvedValue({
+      profileImageCloudinaryPublicId: "afghan-cultural-platform/profiles/profile-image",
+    });
+    prisma.user.update.mockResolvedValue({
+      ...user,
+      profileImageUrl: null,
+      biography: null,
+      culturalInterests: [],
+      province: null,
+      createdAt: new Date("2026-01-01T00:00:00.000Z"),
+      updatedAt: new Date("2026-01-02T00:00:00.000Z"),
+    });
+
+    const response = await service.deleteMyProfileImage(user);
+
+    expect(response.data.profileImageUrl).toBeNull();
+    expect(mediaService.deleteImage).toHaveBeenCalledWith(
+      "afghan-cultural-platform/profiles/profile-image",
+    );
   });
 });
 

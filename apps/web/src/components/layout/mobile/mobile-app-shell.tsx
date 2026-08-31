@@ -242,7 +242,12 @@ function MobileTopBar({
           : "border-border/80 bg-background/95 text-foreground shadow-[0_6px_20px_rgba(31,41,55,0.06)] backdrop-blur-xl rounded-full mx-4",
       )}
     >
-      <div className="flex  items-center gap-3 ps-2 transition-all">
+      <div
+        className={cn(
+          "flex  items-center gap-3 ps-2 transition-all",
+          routeContext.kind === "profile" && "p-3",
+        )}
+      >
         {backHref ? (
           <Link
             href={backHref}

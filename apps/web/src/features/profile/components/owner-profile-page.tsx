@@ -6,6 +6,7 @@ import {
   CameraIcon,
   ChatBubbleLeftRightIcon,
   DocumentTextIcon,
+  PencilSquareIcon,
 } from "@heroicons/react/24/outline";
 import { motion, useReducedMotion } from "motion/react";
 import Link from "next/link";
@@ -26,7 +27,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList } from "@/components/ui/tabs";
 import { EmailVerificationButton } from "@/features/auth/components/email-verification-button";
@@ -64,6 +65,7 @@ import { cn } from "@/lib/utils";
 import { formatPersianDate, formatPersianNumber } from "@/lib/utils/formatters";
 import { createUserInitials } from "@/lib/utils/user";
 import { type SafeUser, useAuthStore } from "@/stores/auth-store";
+import { ProfileEditDialog } from "./profile-edit-dialog";
 import { ProfileLogoutButton } from "./profile-logout-button";
 import { ProfilePageSkeleton } from "./profile-page-skeleton";
 
@@ -130,54 +132,67 @@ function OwnerProfileHeader({
   isProfileLoading: boolean;
 }) {
   const stats = useOwnerEntryStats();
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   return (
-    <div className="overflow-hidden bg-card lg:bg-transparent">
-      <div className="relative px-4 py-4 lg:min-h-36 lg:px-8 lg:py-6">
-        <div className="flex flex-col items-center justify-center gap-3 lg:gap-4">
-          <div className="relative shrink-0">
-            <Avatar className="size-20 border-3 border-card bg-primary-light lg:size-28 lg:border-4">
-              {user.profileImageUrl ? (
-                <AvatarImage src={user.profileImageUrl} alt={user.displayName} />
-              ) : null}
-              <AvatarFallback className="bg-primary-light text-[20px] font-bold text-primary lg:text-[24px]">
-                {createUserInitials(user.displayName)}
-              </AvatarFallback>
-            </Avatar>
-            <span
-              className={cn(
-                buttonVariants({ variant: "outline" }),
-                "absolute bottom-0 right-1 hidden size-9 cursor-not-allowed rounded-full bg-card p-0 lg:inline-flex",
-              )}
-              aria-disabled="true"
-              title="ویرایش تصویر پروفایل در مرحله بعدی رابط کاربری فعال می‌شود."
-            >
-              <CameraIcon className="size-4" aria-hidden="true" />
-            </span>
-          </div>
-          <div className="flex min-w-0 flex-col items-center space-y-1.5 lg:space-y-2">
-            <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-[22px] font-bold leading-9 text-foreground lg:text-[34px] lg:leading-10">
-                {user.displayName}
-              </h1>
-              {/* {user.emailVerified ? <CheckIcon className="size-5 border rounded-full"  /> : "ایمیل تأیید نشده"} */}
+    <>
+      <div className="overflow-hidden bg-card lg:bg-transparent">
+        <div className="relative px-4 py-4 lg:min-h-36 lg:px-8 lg:py-6">
+          <div className="flex flex-col items-center justify-center gap-3 lg:gap-4">
+            <div className="relative shrink-0">
+              <Avatar className="size-20 border-3 border-card bg-primary-light lg:size-28 lg:border-4">
+                {user.profileImageUrl ? (
+                  <AvatarImage src={user.profileImageUrl} alt={user.displayName} />
+                ) : null}
+                <AvatarFallback className="bg-primary-light text-[20px] font-bold text-primary lg:text-[24px]">
+                  {createUserInitials(user.displayName)}
+                </AvatarFallback>
+              </Avatar>
+              <button
+                type="button"
+                className={cn(
+                  buttonVariants({ variant: "outline" }),
+                  "absolute right-1 bottom-0 size-9 rounded-full bg-card p-0",
+                )}
+                aria-label="ویرایش تصویر پروفایل"
+                onClick={() => setIsEditDialogOpen(true)}
+              >
+                <CameraIcon className="size-4" aria-hidden="true" />
+              </button>
             </div>
-            <p className="text-[13px] font-medium text-muted-foreground" dir="ltr">
-              {user.email}
-            </p>
-            {!user.emailVerified ? <EmailVerificationButton email={user.email} compact /> : null}
-            <ProfileLogoutButton />
-            {isProfileLoading ? <Skeleton className="h-4 w-36" /> : null}
-            {user.biography ? (
-              <p className="max-w-xl px-4 text-center text-[13px] leading-6 text-muted-foreground lg:px-0 lg:text-[14px] lg:leading-7">
-                {user.biography}
+            <div className="flex min-w-0 flex-col items-center space-y-1.5 lg:space-y-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-[22px] font-bold leading-9 text-foreground lg:text-[34px] lg:leading-10">
+                  {user.displayName}
+                </h1>
+              </div>
+              <p className="text-[13px] font-medium text-muted-foreground" dir="ltr">
+                {user.email}
               </p>
-            ) : null}
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                onClick={() => setIsEditDialogOpen(true)}
+              >
+                <PencilSquareIcon className="size-4" aria-hidden="true" />
+                ویرایش پروفایل
+              </Button>
+              {!user.emailVerified ? <EmailVerificationButton email={user.email} compact /> : null}
+              <ProfileLogoutButton />
+              {isProfileLoading ? <Skeleton className="h-4 w-36" /> : null}
+              {user.biography ? (
+                <p className="max-w-xl px-4 text-center text-[13px] leading-6 text-muted-foreground lg:px-0 lg:text-[14px] lg:leading-7">
+                  {user.biography}
+                </p>
+              ) : null}
+            </div>
           </div>
         </div>
+        <ProfileStats stats={stats} />
       </div>
-      <ProfileStats stats={stats} />
-    </div>
+      <ProfileEditDialog user={user} open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen} />
+    </>
   );
 }
 
@@ -943,7 +958,7 @@ function createProfileFallback(user: SafeUser): ProfileOwner {
     role: user.role,
     status: user.status === "SUSPENDED" ? "SUSPENDED" : "ACTIVE",
     displayName: user.displayName,
-    profileImageUrl: null,
+    profileImageUrl: user.profileImageUrl,
     biography: null,
     province: null,
     culturalInterests: [],

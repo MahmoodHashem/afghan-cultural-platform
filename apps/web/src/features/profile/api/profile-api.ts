@@ -84,6 +84,10 @@ type ProfileResponse = {
   data: ProfileOwner;
 };
 
+type UpdateProfileInput = {
+  displayName: string;
+};
+
 type ProfileStatsResponse = {
   data: ProfileStats;
 };
@@ -102,6 +106,34 @@ async function getMyProfile(signal?: AbortSignal) {
   const response = await apiRequest<ProfileResponse>("/profile/me", {
     method: "GET",
     signal,
+  });
+
+  return response.data;
+}
+
+async function updateMyProfile(input: UpdateProfileInput) {
+  const response = await apiRequest<ProfileResponse>("/profile/me", {
+    method: "PATCH",
+    body: input,
+  });
+
+  return response.data;
+}
+
+async function uploadMyProfileImage(file: File) {
+  const formData = new FormData();
+  formData.set("image", file);
+  const response = await apiRequest<ProfileResponse>("/profile/me/image", {
+    method: "POST",
+    body: formData,
+  });
+
+  return response.data;
+}
+
+async function deleteMyProfileImage() {
+  const response = await apiRequest<ProfileResponse>("/profile/me/image", {
+    method: "DELETE",
   });
 
   return response.data;
@@ -160,5 +192,14 @@ export type {
   ProfileListQuery,
   ProfileOwner,
   ProfileStats,
+  UpdateProfileInput,
 };
-export { getMyProfile, getMyProfileStats, listMyProfileBookmarks, listMyProfileComments };
+export {
+  deleteMyProfileImage,
+  getMyProfile,
+  getMyProfileStats,
+  listMyProfileBookmarks,
+  listMyProfileComments,
+  updateMyProfile,
+  uploadMyProfileImage,
+};
