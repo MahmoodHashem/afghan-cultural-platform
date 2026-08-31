@@ -29,7 +29,7 @@ import {
 import { adminAuthMethodLabels } from "@/features/admin/constants/admin-user-meta";
 import type { AdminPaginationMeta, AdminUserListItem } from "@/features/admin/types/admin-users";
 import { formatPersianDate, formatPersianNumber } from "@/lib/utils/formatters";
-import { createUserInitials } from "@/lib/utils/user";
+import { createUserInitials, getUserAvatarColorClass } from "@/lib/utils/user";
 
 const adminUsersTableFeatures = tableFeatures({});
 const ADMIN_USERS_GRID_COLUMNS =
@@ -332,7 +332,7 @@ function UserIdentity({ user }: { user: AdminUserListItem }) {
     >
       <Avatar className="size-9">
         {user.profileImageUrl ? <AvatarImage src={user.profileImageUrl} alt="" /> : null}
-        <AvatarFallback className="bg-primary/10 text-primary">
+        <AvatarFallback className={getUserAvatarColorClass(user.id)}>
           {createUserInitials(user.displayName)}
         </AvatarFallback>
       </Avatar>

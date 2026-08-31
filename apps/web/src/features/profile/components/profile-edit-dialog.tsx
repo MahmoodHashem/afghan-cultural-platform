@@ -40,7 +40,7 @@ import { isApiError } from "@/lib/api/api-error";
 import { MAX_IMAGE_SIZE_BYTES, MAX_IMAGE_SIZE_MB } from "@/lib/images/image-upload-limits";
 import { cn } from "@/lib/utils";
 import { formatPersianNumber } from "@/lib/utils/formatters";
-import { createUserInitials } from "@/lib/utils/user";
+import { createUserInitials, getUserAvatarColorClass } from "@/lib/utils/user";
 
 const ACCEPTED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
@@ -119,7 +119,9 @@ function ProfileEditDialog({
             <div className="flex flex-col items-center gap-3">
               <Avatar className="size-24 border-4 border-card bg-primary-light shadow-sm">
                 {shownImage ? <AvatarImage src={shownImage} alt="" /> : null}
-                <AvatarFallback className="bg-primary-light text-[22px] font-bold text-primary">
+                <AvatarFallback
+                  className={cn("text-[22px] font-bold", getUserAvatarColorClass(user.id))}
+                >
                   {createUserInitials(form.watch("displayName") || user.displayName)}
                 </AvatarFallback>
               </Avatar>

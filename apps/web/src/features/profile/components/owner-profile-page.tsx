@@ -63,7 +63,7 @@ import { useAnimatedIcon } from "@/hooks/use-animated-icon";
 import { isApiError } from "@/lib/api/api-error";
 import { cn } from "@/lib/utils";
 import { formatPersianDate, formatPersianNumber } from "@/lib/utils/formatters";
-import { createUserInitials } from "@/lib/utils/user";
+import { createUserInitials, getUserAvatarColorClass } from "@/lib/utils/user";
 import { type SafeUser, useAuthStore } from "@/stores/auth-store";
 import { ProfileEditDialog } from "./profile-edit-dialog";
 import { ProfileLogoutButton } from "./profile-logout-button";
@@ -144,7 +144,12 @@ function OwnerProfileHeader({
                 {user.profileImageUrl ? (
                   <AvatarImage src={user.profileImageUrl} alt={user.displayName} />
                 ) : null}
-                <AvatarFallback className="bg-primary-light text-[20px] font-bold text-primary lg:text-[24px]">
+                <AvatarFallback
+                  className={cn(
+                    "text-[20px] font-bold lg:text-[24px]",
+                    getUserAvatarColorClass(user.id),
+                  )}
+                >
                   {createUserInitials(user.displayName)}
                 </AvatarFallback>
               </Avatar>

@@ -19,8 +19,9 @@ import {
 } from "@/features/admin/components/admin-user-badges";
 import { adminAuthMethodLabels } from "@/features/admin/constants/admin-user-meta";
 import type { AdminUserDetail } from "@/features/admin/types/admin-users";
+import { cn } from "@/lib/utils";
 import { formatPersianDate, formatPersianNumber } from "@/lib/utils/formatters";
-import { createUserInitials } from "@/lib/utils/user";
+import { createUserInitials, getUserAvatarColorClass } from "@/lib/utils/user";
 
 function AdminUserSummary({
   user,
@@ -46,7 +47,9 @@ function AdminUserSummary({
         <div className="flex min-w-0 items-center gap-4">
           <Avatar className="size-15">
             {user.profileImageUrl ? <AvatarImage src={user.profileImageUrl} alt="" /> : null}
-            <AvatarFallback className="bg-primary/10 text-lg font-bold text-primary">
+            <AvatarFallback
+              className={cn("text-lg font-bold", getUserAvatarColorClass(user.id))}
+            >
               {createUserInitials(user.displayName)}
             </AvatarFallback>
           </Avatar>

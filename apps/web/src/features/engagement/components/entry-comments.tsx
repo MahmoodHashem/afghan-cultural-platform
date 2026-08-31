@@ -118,6 +118,7 @@ function EntryComments({ entryId, initialComments, renderedAt }: EntryCommentsPr
       ) : (
         <CommentComposer
           authorName={user?.displayName ?? "مهمان"}
+          authorSeed={user?.id ?? "guest"}
           initialBody={pendingRootComment?.body ?? ""}
           isPending={createComment.isPending}
           autoFocus={canContribute && Boolean(pendingRootComment)}

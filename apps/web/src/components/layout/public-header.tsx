@@ -50,7 +50,7 @@ import { useLogout } from "@/features/auth/hooks/use-auth-mutations";
 import { useAnimatedIcon } from "@/hooks/use-animated-icon";
 import { cn } from "@/lib/utils";
 import { normalizePersianSearch } from "@/lib/utils/persian";
-import { createUserInitials } from "@/lib/utils/user";
+import { createUserInitials, getUserAvatarColorClass } from "@/lib/utils/user";
 import { type SafeUser, useAuthStore } from "@/stores/auth-store";
 
 type PublicHeaderProps = {
@@ -390,7 +390,15 @@ function MobileNavigation({ isCompact }: { isCompact: boolean }) {
                 <div className="space-y-3">
                   <div className="flex items-center gap-3 rounded-2xl bg-card p-3">
                     <Avatar size="default" className="size-9 bg-primary-light">
-                      <AvatarFallback className="bg-primary-light text-[12px] font-bold text-primary">
+                      {user.profileImageUrl ? (
+                        <AvatarImage src={user.profileImageUrl} alt="" />
+                      ) : null}
+                      <AvatarFallback
+                        className={cn(
+                          "text-[12px] font-bold",
+                          getUserAvatarColorClass(user.id),
+                        )}
+                      >
                         {createUserInitials(user.displayName)}
                       </AvatarFallback>
                     </Avatar>
@@ -595,7 +603,9 @@ function ProfileMenu({ user, mobile = false }: { user: SafeUser; mobile?: boolea
       >
         <Avatar size="default" className={cn("bg-primary-light", mobile ? "size-7" : "size-8")}>
           {user.profileImageUrl ? <AvatarImage src={user.profileImageUrl} alt="" /> : null}
-          <AvatarFallback className="bg-primary-light text-[12px] font-bold text-primary">
+          <AvatarFallback
+            className={cn("text-[12px] font-bold", getUserAvatarColorClass(user.id))}
+          >
             {createUserInitials(user.displayName)}
           </AvatarFallback>
         </Avatar>

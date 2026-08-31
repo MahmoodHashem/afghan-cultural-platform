@@ -18,7 +18,7 @@ import type {
 import { formatAdminRelativeTime } from "@/features/admin/utils/admin-overview-formatters";
 import { cn } from "@/lib/utils";
 import { formatPersianDate } from "@/lib/utils/formatters";
-import { createUserInitials } from "@/lib/utils/user";
+import { createUserInitials, getUserAvatarColorClass } from "@/lib/utils/user";
 
 const activityToneClasses: Record<AdminActivityTone, string> = {
   blue: "bg-blue-500",
@@ -63,7 +63,12 @@ function AdminOverviewActivity({ activities }: { activities: AdminActivityViewMo
                   <TableCell className="py-3">
                     <div className="flex items-center gap-2">
                       <Avatar className="size-7">
-                        <AvatarFallback className="bg-muted text-[10px] text-muted-foreground">
+                        <AvatarFallback
+                          className={cn(
+                            "text-[10px]",
+                            getUserAvatarColorClass(activity.actor?.id ?? activity.actorName),
+                          )}
+                        >
                           {createUserInitials(activity.actorName)}
                         </AvatarFallback>
                       </Avatar>

@@ -18,11 +18,12 @@ import { useAnimatedIcon } from "@/hooks/use-animated-icon";
 import { isApiError } from "@/lib/api/api-error";
 import { cn } from "@/lib/utils";
 import { formatPersianNumber } from "@/lib/utils/formatters";
-import { createUserInitials } from "@/lib/utils/user";
+import { createUserInitials, getUserAvatarColorClass } from "@/lib/utils/user";
 
 type CommentComposerProps = {
   mode?: "root" | "reply" | "edit";
   authorName: string;
+  authorSeed?: string;
   initialBody?: string;
   isPending: boolean;
   autoFocus?: boolean;
@@ -34,6 +35,7 @@ type CommentComposerProps = {
 function CommentComposer({
   mode = "root",
   authorName,
+  authorSeed = authorName,
   initialBody = "",
   isPending,
   autoFocus = false,
@@ -133,7 +135,7 @@ function CommentComposer({
     >
       <div className={cn("flex items-start gap-3", !compact && "sm:gap-4")}>
         <Avatar className={cn("bg-primary-light transition-[width,height] duration-200 size-9")}>
-          <AvatarFallback className="bg-primary-light font-bold text-primary">
+          <AvatarFallback className={cn("font-bold", getUserAvatarColorClass(authorSeed))}>
             {createUserInitials(authorName)}
           </AvatarFallback>
         </Avatar>

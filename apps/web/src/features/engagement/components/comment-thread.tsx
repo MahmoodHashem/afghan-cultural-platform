@@ -25,7 +25,7 @@ import { formatCommentRelativeTime } from "@/features/engagement/utils/comment-t
 import { useAnimatedIcon } from "@/hooks/use-animated-icon";
 import { cn } from "@/lib/utils";
 import { formatPersianDate, formatPersianNumber } from "@/lib/utils/formatters";
-import { createUserInitials } from "@/lib/utils/user";
+import { createUserInitials, getUserAvatarColorClass } from "@/lib/utils/user";
 
 type CommentThreadProps = {
   entryId: string;
@@ -125,7 +125,9 @@ function CommentThread({ entryId, comment, depth = 0, now }: CommentThreadProps)
             {activeAuthor.profileImageUrl ? (
               <AvatarImage src={activeAuthor.profileImageUrl} alt="" />
             ) : null}
-            <AvatarFallback className="bg-primary-light font-bold text-primary">
+            <AvatarFallback
+              className={cn("font-bold", getUserAvatarColorClass(activeAuthor.id))}
+            >
               {createUserInitials(activeAuthor.displayName)}
             </AvatarFallback>
           </Avatar>
@@ -164,6 +166,7 @@ function CommentThread({ entryId, comment, depth = 0, now }: CommentThreadProps)
                   <CommentComposer
                     mode="edit"
                     authorName={activeAuthor.displayName}
+                    authorSeed={activeAuthor.id}
                     initialBody={activeBody}
                     isPending={updateComment.isPending}
                     autoFocus
@@ -274,6 +277,7 @@ function CommentThread({ entryId, comment, depth = 0, now }: CommentThreadProps)
             <CommentComposer
               mode="reply"
               authorName={user?.displayName ?? "کاربر"}
+              authorSeed={user?.id ?? "guest"}
               initialBody={pendingReply?.body ?? ""}
               isPending={createComment.isPending}
               autoFocus

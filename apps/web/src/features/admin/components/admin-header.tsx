@@ -10,7 +10,7 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -32,7 +32,7 @@ import { Input } from "@/components/ui/input";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { getAdminRouteMeta } from "@/features/admin/utils/admin-routes";
-import { createUserInitials } from "@/lib/utils/user";
+import { createUserInitials, getUserAvatarColorClass } from "@/lib/utils/user";
 import { useAuthStore } from "@/stores/auth-store";
 
 function AdminHeader() {
@@ -107,7 +107,8 @@ function AdminHeader() {
               }
             >
               <Avatar className="size-8">
-                <AvatarFallback className="bg-primary-light text-primary">
+                {user.profileImageUrl ? <AvatarImage src={user.profileImageUrl} alt="" /> : null}
+                <AvatarFallback className={getUserAvatarColorClass(user.id)}>
                   {createUserInitials(user.displayName)}
                 </AvatarFallback>
               </Avatar>

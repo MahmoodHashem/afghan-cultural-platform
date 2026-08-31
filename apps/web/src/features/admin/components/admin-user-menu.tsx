@@ -9,7 +9,7 @@ import {
 import { motion, useReducedMotion } from "motion/react";
 import Link from "next/link";
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/sidebar";
 import { AdminSidebarLabel } from "@/features/admin/components/admin-sidebar-label";
 import { useLogout } from "@/features/auth/hooks/use-auth-mutations";
-import { createUserInitials } from "@/lib/utils/user";
+import { createUserInitials, getUserAvatarColorClass } from "@/lib/utils/user";
 import { useAuthStore } from "@/stores/auth-store";
 
 function AdminUserMenu() {
@@ -54,7 +54,8 @@ function AdminUserMenu() {
             }
           >
             <Avatar size="lg" className="size-9">
-              <AvatarFallback className="bg-primary text-primary-foreground">
+              {user.profileImageUrl ? <AvatarImage src={user.profileImageUrl} alt="" /> : null}
+              <AvatarFallback className={getUserAvatarColorClass(user.id)}>
                 {createUserInitials(user.displayName)}
               </AvatarFallback>
             </Avatar>
