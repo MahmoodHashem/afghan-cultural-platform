@@ -1,13 +1,22 @@
-import "./register-path-aliases";
-
 import { ValidationPipe } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import helmet from "helmet";
+import { register } from "tsconfig-paths";
 
-import { AppModule } from "./app.module";
-import { HttpExceptionFilter } from "./common/filters/http-exception.filter";
+register({
+  baseUrl: __dirname,
+  paths: {
+    "@/*": ["*"],
+  },
+});
+
+// Vercel preserves TypeScript path aliases in its NestJS runtime output.
+// Load local modules only after the runtime resolver is registered.
+const { AppModule } = require("./app.module") as typeof import("./app.module");
+const { HttpExceptionFilter } =
+  require("./common/filters/http-exception.filter") as typeof import("./common/filters/http-exception.filter");
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
