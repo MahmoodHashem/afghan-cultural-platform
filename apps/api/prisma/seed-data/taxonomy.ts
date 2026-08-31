@@ -43,19 +43,20 @@ export const provinces: SeedTaxonomyItem[] = [
 
 export const categories: SeedTaxonomyItem[] = [
   { name: "رسم‌ها و عنعنات", slug: "traditions-and-customs", sortOrder: 1 },
-  { name: "جای‌های تاریخی", slug: "historical-places", sortOrder: 2 },
-  { name: "غذا", slug: "food", sortOrder: 3 },
-  { name: "لباس", slug: "clothing", sortOrder: 4 },
-  { name: "صنایع دستی", slug: "handicrafts", sortOrder: 5 },
-  { name: "موسیقی", slug: "music", sortOrder: 6 },
-  { name: "شعر و ادبیات", slug: "poetry-and-literature", sortOrder: 7 },
-  { name: "قصه‌های شفاهی", slug: "oral-stories", sortOrder: 8 },
-  { name: "جشن‌ها و مراسم", slug: "festivals-and-ceremonies", sortOrder: 9 },
-  { name: "زبان‌ها و اصطلاحات", slug: "languages-and-expressions", sortOrder: 10 },
-  { name: "معماری", slug: "architecture", sortOrder: 11 },
-  { name: "اشیای فرهنگی", slug: "cultural-objects", sortOrder: 12 },
-  { name: "بازی‌های محلی", slug: "local-games", sortOrder: 13 },
-  { name: "پیشه‌های سنتی", slug: "traditional-occupations", sortOrder: 14 },
+  { name: "مشاهیر", slug: "notable-figures", sortOrder: 2 },
+  { name: "جای‌های تاریخی", slug: "historical-places", sortOrder: 3 },
+  { name: "غذا", slug: "food", sortOrder: 4 },
+  { name: "لباس", slug: "clothing", sortOrder: 5 },
+  { name: "صنایع دستی", slug: "handicrafts", sortOrder: 6 },
+  { name: "موسیقی", slug: "music", sortOrder: 7 },
+  { name: "شعر و ادبیات", slug: "poetry-and-literature", sortOrder: 8 },
+  { name: "قصه‌های شفاهی", slug: "oral-stories", sortOrder: 9 },
+  { name: "جشن‌ها و مراسم", slug: "festivals-and-ceremonies", sortOrder: 10 },
+  { name: "زبان‌ها و اصطلاحات", slug: "languages-and-expressions", sortOrder: 11 },
+  { name: "معماری", slug: "architecture", sortOrder: 12 },
+  { name: "اشیای فرهنگی", slug: "cultural-objects", sortOrder: 13 },
+  { name: "بازی‌های محلی", slug: "local-games", sortOrder: 14 },
+  { name: "پیشه‌های سنتی", slug: "traditional-occupations", sortOrder: 15 },
 ];
 
 export const contentTypes: SeedTaxonomyItem[] = [

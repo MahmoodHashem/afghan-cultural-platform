@@ -1046,11 +1046,12 @@ class AuthService {
 
   private createRefreshCookieOptions(expiresAt: Date) {
     const cookieDomain = this.configService.get<string>("REFRESH_COOKIE_DOMAIN", "").trim();
+    const sameSite = this.configService.get<"lax" | "none">("REFRESH_COOKIE_SAME_SITE", "lax");
 
     return {
       httpOnly: true,
       secure: this.configService.get<string>("NODE_ENV", "development") === "production",
-      sameSite: "lax" as const,
+      sameSite,
       path: "/api/v1/auth",
       expires: expiresAt,
       ...(cookieDomain ? { domain: cookieDomain } : {}),
