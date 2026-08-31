@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 
-import { UserRole, UserStatus } from "@/generated/prisma/enums";
+import { UserRole, UserStatus } from "../../../generated/prisma/enums";
 
 class SafeAuthUserDto {
   @ApiProperty({ example: "90fc7cb5-984d-4ac7-83e6-81ebf63a5c63" })

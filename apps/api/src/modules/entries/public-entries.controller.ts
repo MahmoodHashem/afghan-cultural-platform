@@ -8,13 +8,10 @@ import {
   ApiTags,
 } from "@nestjs/swagger";
 
-import { Public } from "@/modules/auth/decorators/public.decorator";
-import {
-  PublicEntryListResponseDto,
-  PublicEntryResponseDto,
-} from "@/modules/entries/dto/entry-response.dto";
-import { PublicEntryQueryDto } from "@/modules/entries/dto/public-entry-query.dto";
-import { EntriesService } from "@/modules/entries/entries.service";
+import { Public } from "../auth/decorators/public.decorator";
+import { PublicEntryListResponseDto, PublicEntryResponseDto } from "./dto/entry-response.dto";
+import { PublicEntryQueryDto } from "./dto/public-entry-query.dto";
+import { EntriesService } from "./entries.service";
 
 @ApiTags("Public Entries")
 @ApiExtraModels(PublicEntryQueryDto)

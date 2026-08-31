@@ -1,10 +1,10 @@
-jest.mock("@/database/prisma.service", () => ({
+jest.mock("../../database/prisma.service", () => ({
   PrismaService: class PrismaService {},
 }));
 
-import { UserRole } from "@/generated/prisma/enums";
-import { REQUIRE_VERIFIED_EMAIL_KEY, ROLES_KEY } from "@/modules/auth/auth.constants";
-import { ModerationController } from "@/modules/moderation/moderation.controller";
+import { UserRole } from "../../generated/prisma/enums";
+import { REQUIRE_VERIFIED_EMAIL_KEY, ROLES_KEY } from "../auth/auth.constants";
+import { ModerationController } from "./moderation.controller";
 
 describe("ModerationController authorization metadata", () => {
   it("requires verified email and moderator or admin role", () => {

@@ -2,8 +2,8 @@ import {
   convertMarkdownToTiptap,
   createDeterministicUuid,
   parseNormalizedEntryMarkdown,
-} from "@/modules/entries/utils/normalized-content.util";
-import { extractInternalEntryReferences } from "@/modules/entries/utils/tiptap-content.util";
+} from "./normalized-content.util";
+import { extractInternalEntryReferences } from "./tiptap-content.util";
 
 const validMarkdown = `---
 key: "sample-entry"

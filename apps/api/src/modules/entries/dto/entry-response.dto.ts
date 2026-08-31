@@ -6,7 +6,7 @@ import {
   ModerationDecision,
   SourceType,
   VersionReason,
-} from "@/generated/prisma/enums";
+} from "../../../generated/prisma/enums";
 
 class EntryTaxonomyDto {
   @ApiProperty()

@@ -1,4 +1,4 @@
-import type { AuthProvider } from "@/generated/prisma/enums";
+import type { AuthProvider } from "../../../generated/prisma/enums";
 
 /**
  * Google and Facebook strategies will map provider profiles into this common shape.

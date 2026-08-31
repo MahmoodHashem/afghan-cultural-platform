@@ -1,4 +1,4 @@
-jest.mock("@/database/prisma.service", () => ({
+jest.mock("../../database/prisma.service", () => ({
   PrismaService: class PrismaService {},
 }));
 
@@ -10,12 +10,17 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 
-import type { PrismaService } from "@/database/prisma.service";
-import { EntryStatus, ModerationDecision, UserRole, UserStatus } from "@/generated/prisma/enums";
-import type { AuditService } from "@/modules/audit/audit.service";
-import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.type";
-import { MODERATION_ERROR_CODES } from "@/modules/moderation/moderation.constants";
-import { ModerationService } from "@/modules/moderation/moderation.service";
+import type { PrismaService } from "../../database/prisma.service";
+import {
+  EntryStatus,
+  ModerationDecision,
+  UserRole,
+  UserStatus,
+} from "../../generated/prisma/enums";
+import type { AuditService } from "../audit/audit.service";
+import type { AuthenticatedUser } from "../auth/types/authenticated-user.type";
+import { MODERATION_ERROR_CODES } from "./moderation.constants";
+import { ModerationService } from "./moderation.service";
 
 type DelegateMock = {
   count: jest.Mock;

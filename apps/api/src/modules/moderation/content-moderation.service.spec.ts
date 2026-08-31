@@ -1,8 +1,8 @@
-jest.mock("@/database/prisma.service", () => ({ PrismaService: class PrismaService {} }));
+jest.mock("../../database/prisma.service", () => ({ PrismaService: class PrismaService {} }));
 
 import { ConflictException } from "@nestjs/common";
 
-import type { PrismaService } from "@/database/prisma.service";
+import type { PrismaService } from "../../database/prisma.service";
 import {
   AuditAction,
   CorrectionStatus,
@@ -13,11 +13,11 @@ import {
   ReportStatus,
   UserRole,
   UserStatus,
-} from "@/generated/prisma/enums";
-import type { AuditService } from "@/modules/audit/audit.service";
-import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.type";
-import { ContentModerationService } from "@/modules/moderation/content-moderation.service";
-import { MODERATION_ERROR_CODES } from "@/modules/moderation/moderation.constants";
+} from "../../generated/prisma/enums";
+import type { AuditService } from "../audit/audit.service";
+import type { AuthenticatedUser } from "../auth/types/authenticated-user.type";
+import { ContentModerationService } from "./content-moderation.service";
+import { MODERATION_ERROR_CODES } from "./moderation.constants";
 
 const ids = {
   entry: "11111111-1111-4111-8111-111111111111",

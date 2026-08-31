@@ -1,9 +1,13 @@
 import { ServiceUnavailableException } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 
-import { PrismaService } from "@/database/prisma.service";
-import { HealthController } from "@/health/health.controller";
-import { HealthService } from "@/health/health.service";
+jest.mock("../database/prisma.service", () => ({
+  PrismaService: class PrismaService {},
+}));
+
+import { PrismaService } from "../database/prisma.service";
+import { HealthController } from "./health.controller";
+import { HealthService } from "./health.service";
 
 describe("HealthController", () => {
   let healthController: HealthController;

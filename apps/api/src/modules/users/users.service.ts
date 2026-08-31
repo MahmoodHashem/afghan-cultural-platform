@@ -1,8 +1,8 @@
 import { Inject, Injectable } from "@nestjs/common";
 
-import { PrismaService } from "@/database/prisma.service";
-import { UserRole, UserStatus } from "@/generated/prisma/enums";
-import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.type";
+import { PrismaService } from "../../database/prisma.service";
+import { UserRole, UserStatus } from "../../generated/prisma/enums";
+import type { AuthenticatedUser } from "../auth/types/authenticated-user.type";
 
 type CreateEmailPasswordUserInput = {
   displayName: string;

@@ -18,7 +18,7 @@ import {
   EntryStatus,
   UserRole,
   UserStatus,
-} from "@/generated/prisma/enums";
+} from "../../../generated/prisma/enums";
 
 const ADMIN_USER_SORT_FIELDS = ["createdAt", "displayName", "lastLoginAt"] as const;
 const ADMIN_USER_SORT_DIRECTIONS = ["asc", "desc"] as const;

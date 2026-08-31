@@ -8,7 +8,7 @@ import {
 } from "@nestjs/common";
 import type { Response } from "express";
 
-import type { RequestWithId } from "@/common/types/request-with-id.type";
+import type { RequestWithId } from "../types/request-with-id.type";
 
 type FieldError = {
   field: string;

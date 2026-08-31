@@ -1,4 +1,4 @@
-import { mapEntry } from "@/modules/entries/entries.mapper";
+import { mapEntry } from "./entries.mapper";
 
 describe("mapEntry", () => {
   it("exposes only the latest safe moderation feedback on an owned entry", () => {

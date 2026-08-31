@@ -20,7 +20,7 @@ import {
   ReportReason,
   ReportResolutionAction,
   ReportStatus,
-} from "@/generated/prisma/enums";
+} from "../../../generated/prisma/enums";
 
 const CORRECTION_SECTIONS = ["TITLE", "SUMMARY", "CONTENT"] as const;
 const REPORT_TARGET_TYPES = ["ENTRY", "COMMENT"] as const;

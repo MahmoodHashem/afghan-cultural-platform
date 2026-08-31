@@ -2,9 +2,9 @@ import { type ExecutionContext, Injectable, UnauthorizedException } from "@nestj
 import { AuthGuard } from "@nestjs/passport";
 import type { Request } from "express";
 
-import { AUTH_ERROR_CODES, GOOGLE_AUTH_STRATEGY } from "@/modules/auth/auth.constants";
-import type { NormalizedOAuthProfile } from "@/modules/auth/types/oauth-profile.type";
-import { createOAuthState } from "@/modules/auth/utils/oauth-state";
+import { AUTH_ERROR_CODES, GOOGLE_AUTH_STRATEGY } from "../auth.constants";
+import type { NormalizedOAuthProfile } from "../types/oauth-profile.type";
+import { createOAuthState } from "../utils/oauth-state";
 
 @Injectable()
 class GoogleAuthGuard extends AuthGuard(GOOGLE_AUTH_STRATEGY) {

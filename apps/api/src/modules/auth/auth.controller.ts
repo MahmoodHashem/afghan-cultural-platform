@@ -24,34 +24,31 @@ import {
 } from "@nestjs/swagger";
 import { Throttle } from "@nestjs/throttler";
 import type { Request, Response } from "express";
-import { AuthService } from "@/modules/auth/auth.service";
-import { CurrentUser } from "@/modules/auth/decorators/current-user.decorator";
-import { OAuthProfile } from "@/modules/auth/decorators/oauth-profile.decorator";
-import { Public } from "@/modules/auth/decorators/public.decorator";
+import { AuthService } from "./auth.service";
+import { CurrentUser } from "./decorators/current-user.decorator";
+import { OAuthProfile } from "./decorators/oauth-profile.decorator";
+import { Public } from "./decorators/public.decorator";
 import {
   AuthSessionResponseDto,
   CurrentUserResponseDto,
   MessageResponseDto,
   VerifyEmailResponseDto,
-} from "@/modules/auth/dto/auth-response.dto";
-import { ForgotPasswordDto } from "@/modules/auth/dto/forgot-password.dto";
-import { LoginDto } from "@/modules/auth/dto/login.dto";
-import { RegisterDto } from "@/modules/auth/dto/register.dto";
-import { ResendVerificationDto } from "@/modules/auth/dto/resend-verification.dto";
-import { ResetPasswordDto } from "@/modules/auth/dto/reset-password.dto";
-import { SetupPasswordDto } from "@/modules/auth/dto/setup-password.dto";
-import { VerifyEmailDto } from "@/modules/auth/dto/verify-email.dto";
-import { FacebookAuthGuard } from "@/modules/auth/guards/facebook-auth.guard";
-import { GoogleAuthGuard } from "@/modules/auth/guards/google-auth.guard";
-import type {
-  AuthRequestContext,
-  RefreshCookie,
-} from "@/modules/auth/types/auth-request-context.type";
-import type { CurrentUserResponse } from "@/modules/auth/types/auth-response.type";
-import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.type";
-import type { NormalizedOAuthProfile } from "@/modules/auth/types/oauth-profile.type";
-import { parseCookieHeader } from "@/modules/auth/utils/cookie.util";
-import { readOAuthState } from "@/modules/auth/utils/oauth-state";
+} from "./dto/auth-response.dto";
+import { ForgotPasswordDto } from "./dto/forgot-password.dto";
+import { LoginDto } from "./dto/login.dto";
+import { RegisterDto } from "./dto/register.dto";
+import { ResendVerificationDto } from "./dto/resend-verification.dto";
+import { ResetPasswordDto } from "./dto/reset-password.dto";
+import { SetupPasswordDto } from "./dto/setup-password.dto";
+import { VerifyEmailDto } from "./dto/verify-email.dto";
+import { FacebookAuthGuard } from "./guards/facebook-auth.guard";
+import { GoogleAuthGuard } from "./guards/google-auth.guard";
+import type { AuthRequestContext, RefreshCookie } from "./types/auth-request-context.type";
+import type { CurrentUserResponse } from "./types/auth-response.type";
+import type { AuthenticatedUser } from "./types/authenticated-user.type";
+import type { NormalizedOAuthProfile } from "./types/oauth-profile.type";
+import { parseCookieHeader } from "./utils/cookie.util";
+import { readOAuthState } from "./utils/oauth-state";
 
 @ApiTags("Authentication")
 @Controller("auth")

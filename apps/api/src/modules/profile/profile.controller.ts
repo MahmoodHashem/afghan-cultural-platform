@@ -23,22 +23,19 @@ import {
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
 
-import { CurrentUser } from "@/modules/auth/decorators/current-user.decorator";
-import { RequireVerifiedEmail } from "@/modules/auth/decorators/require-verified-email.decorator";
-import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.type";
-import {
-  ProfileBookmarksQueryDto,
-  ProfileCommentsQueryDto,
-} from "@/modules/profile/dto/profile-query.dto";
+import { CurrentUser } from "../auth/decorators/current-user.decorator";
+import { RequireVerifiedEmail } from "../auth/decorators/require-verified-email.decorator";
+import type { AuthenticatedUser } from "../auth/types/authenticated-user.type";
+import { ProfileBookmarksQueryDto, ProfileCommentsQueryDto } from "./dto/profile-query.dto";
 import {
   ProfileBookmarkStatusResponseDto,
   ProfileBookmarksResponseDto,
   ProfileCommentsResponseDto,
   ProfileResponseDto,
   ProfileStatsResponseDto,
-} from "@/modules/profile/dto/profile-response.dto";
-import { UpdateProfileDto } from "@/modules/profile/dto/update-profile.dto";
-import { ProfileService } from "@/modules/profile/profile.service";
+} from "./dto/profile-response.dto";
+import { UpdateProfileDto } from "./dto/update-profile.dto";
+import { ProfileService } from "./profile.service";
 
 @ApiTags("Profile")
 @ApiBearerAuth()

@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common";
 
-import { CloudinaryMediaService } from "@/modules/media/cloudinary-media.service";
+import { CloudinaryMediaService } from "./cloudinary-media.service";
 
 @Module({
   providers: [CloudinaryMediaService],

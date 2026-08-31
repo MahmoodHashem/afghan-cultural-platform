@@ -2,7 +2,7 @@ import { ApiPropertyOptional } from "@nestjs/swagger";
 import { Transform } from "class-transformer";
 import { IsEnum, IsIn, IsInt, IsOptional, IsUUID, Max, Min } from "class-validator";
 
-import { EntryStatus } from "@/generated/prisma/enums";
+import { EntryStatus } from "../../../generated/prisma/enums";
 
 const ENTRY_SORT_FIELDS = ["createdAt", "updatedAt"] as const;
 const ENTRY_SORT_DIRECTIONS = ["asc", "desc"] as const;

@@ -10,7 +10,7 @@ import {
   MinLength,
 } from "class-validator";
 
-import { GeographicScope } from "@/generated/prisma/enums";
+import { GeographicScope } from "../../../generated/prisma/enums";
 
 class CreateEntryDraftDto {
   @ApiProperty({ minLength: 2, maxLength: 180 })

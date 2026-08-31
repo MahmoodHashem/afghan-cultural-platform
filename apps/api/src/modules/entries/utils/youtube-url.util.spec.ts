@@ -1,7 +1,4 @@
-import {
-  createCanonicalYouTubeUrl,
-  extractYouTubeVideoId,
-} from "@/modules/entries/utils/youtube-url.util";
+import { createCanonicalYouTubeUrl, extractYouTubeVideoId } from "./youtube-url.util";
 
 describe("youtube-url.util", () => {
   it.each([

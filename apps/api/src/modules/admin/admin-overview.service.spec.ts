@@ -1,10 +1,10 @@
-jest.mock("@/database/prisma.service", () => ({
+jest.mock("../../database/prisma.service", () => ({
   PrismaService: class PrismaService {},
 }));
 
-import type { PrismaService } from "@/database/prisma.service";
-import { AuditAction } from "@/generated/prisma/enums";
-import { AdminOverviewService } from "@/modules/admin/admin-overview.service";
+import type { PrismaService } from "../../database/prisma.service";
+import { AuditAction } from "../../generated/prisma/enums";
+import { AdminOverviewService } from "./admin-overview.service";
 
 type DelegateMock = {
   count: jest.Mock;

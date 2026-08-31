@@ -1,14 +1,14 @@
-jest.mock("@/database/prisma.service", () => ({ PrismaService: class PrismaService {} }));
+jest.mock("../../database/prisma.service", () => ({ PrismaService: class PrismaService {} }));
 
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { BadRequestException, ForbiddenException, NotFoundException } from "@nestjs/common";
 
-import type { PrismaService } from "@/database/prisma.service";
-import { EntryCommentStatus, UserRole, UserStatus } from "@/generated/prisma/enums";
-import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.type";
-import { COMMUNITY_ERROR_CODES } from "@/modules/community/community.constants";
-import { CommunityService } from "@/modules/community/community.service";
+import type { PrismaService } from "../../database/prisma.service";
+import { EntryCommentStatus, UserRole, UserStatus } from "../../generated/prisma/enums";
+import type { AuthenticatedUser } from "../auth/types/authenticated-user.type";
+import { COMMUNITY_ERROR_CODES } from "./community.constants";
+import { CommunityService } from "./community.service";
 
 type DelegateMock = Record<
   "count" | "create" | "deleteMany" | "findMany" | "findFirst" | "findUnique" | "update" | "upsert",

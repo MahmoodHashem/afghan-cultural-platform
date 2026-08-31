@@ -1,4 +1,4 @@
-import type { UserRole, UserStatus } from "@/generated/prisma/enums";
+import type { UserRole, UserStatus } from "../../../generated/prisma/enums";
 
 type AuthenticatedUser = {
   id: string;

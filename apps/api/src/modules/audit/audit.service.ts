@@ -1,8 +1,8 @@
 import { Inject, Injectable } from "@nestjs/common";
 
-import { PrismaService } from "@/database/prisma.service";
-import type { Prisma } from "@/generated/prisma/client";
-import type { AuditAction } from "@/generated/prisma/enums";
+import { PrismaService } from "../../database/prisma.service";
+import type { Prisma } from "../../generated/prisma/client";
+import type { AuditAction } from "../../generated/prisma/enums";
 
 type AuditDbClient = Prisma.TransactionClient | PrismaService;
 

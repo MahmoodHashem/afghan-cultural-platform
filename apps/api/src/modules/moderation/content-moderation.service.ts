@@ -7,8 +7,8 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 
-import { PrismaService } from "@/database/prisma.service";
-import type { Prisma } from "@/generated/prisma/client";
+import { PrismaService } from "../../database/prisma.service";
+import type { Prisma } from "../../generated/prisma/client";
 import {
   AuditAction,
   CorrectionStatus,
@@ -17,9 +17,9 @@ import {
   ReportResolutionAction,
   ReportStatus,
   VersionReason,
-} from "@/generated/prisma/enums";
-import { AuditService } from "@/modules/audit/audit.service";
-import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.type";
+} from "../../generated/prisma/enums";
+import { AuditService } from "../audit/audit.service";
+import type { AuthenticatedUser } from "../auth/types/authenticated-user.type";
 import type {
   CorrectionDecisionDto,
   CorrectionQueueQueryDto,
@@ -29,8 +29,8 @@ import type {
   ResolveReportDto,
   SubmitCorrectionDto,
   SubmitReportDto,
-} from "@/modules/moderation/dto/content-moderation.dto";
-import { MODERATION_ERROR_CODES } from "@/modules/moderation/moderation.constants";
+} from "./dto/content-moderation.dto";
+import { MODERATION_ERROR_CODES } from "./moderation.constants";
 
 const correctionSelect = {
   id: true,

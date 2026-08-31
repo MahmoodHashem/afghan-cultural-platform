@@ -1,8 +1,8 @@
 import { Module } from "@nestjs/common";
 
-import { PrismaModule } from "@/database/prisma.module";
-import { CommunityController } from "@/modules/community/community.controller";
-import { CommunityService } from "@/modules/community/community.service";
+import { PrismaModule } from "../../database/prisma.module";
+import { CommunityController } from "./community.controller";
+import { CommunityService } from "./community.service";
 
 @Module({
   imports: [PrismaModule],

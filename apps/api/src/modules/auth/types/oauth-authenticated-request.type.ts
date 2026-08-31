@@ -1,6 +1,6 @@
 import type { Request } from "express";
 
-import type { NormalizedOAuthProfile } from "@/modules/auth/types/oauth-profile.type";
+import type { NormalizedOAuthProfile } from "./oauth-profile.type";
 
 type OAuthAuthenticatedRequest = Request & {
   user: NormalizedOAuthProfile;

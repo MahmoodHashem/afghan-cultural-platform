@@ -9,12 +9,12 @@ import {
   ApiTags,
 } from "@nestjs/swagger";
 
-import { UserRole } from "@/generated/prisma/enums";
-import { CurrentUser } from "@/modules/auth/decorators/current-user.decorator";
-import { RequireVerifiedEmail } from "@/modules/auth/decorators/require-verified-email.decorator";
-import { Roles } from "@/modules/auth/decorators/roles.decorator";
-import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.type";
-import { ContentModerationService } from "@/modules/moderation/content-moderation.service";
+import { UserRole } from "../../generated/prisma/enums";
+import { CurrentUser } from "../auth/decorators/current-user.decorator";
+import { RequireVerifiedEmail } from "../auth/decorators/require-verified-email.decorator";
+import { Roles } from "../auth/decorators/roles.decorator";
+import type { AuthenticatedUser } from "../auth/types/authenticated-user.type";
+import { ContentModerationService } from "./content-moderation.service";
 import {
   CorrectionDecisionDto,
   CorrectionQueueQueryDto,
@@ -22,7 +22,7 @@ import {
   ModerationHistoryQueryDto,
   ReportQueueQueryDto,
   ResolveReportDto,
-} from "@/modules/moderation/dto/content-moderation.dto";
+} from "./dto/content-moderation.dto";
 
 @ApiTags("Content moderation")
 @ApiExtraModels(

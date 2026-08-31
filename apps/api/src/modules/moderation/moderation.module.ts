@@ -1,12 +1,12 @@
 import { Module } from "@nestjs/common";
 
-import { PrismaModule } from "@/database/prisma.module";
-import { AuditModule } from "@/modules/audit/audit.module";
-import { CommunityModerationController } from "@/modules/moderation/community-moderation.controller";
-import { ContentModerationController } from "@/modules/moderation/content-moderation.controller";
-import { ContentModerationService } from "@/modules/moderation/content-moderation.service";
-import { ModerationController } from "@/modules/moderation/moderation.controller";
-import { ModerationService } from "@/modules/moderation/moderation.service";
+import { PrismaModule } from "../../database/prisma.module";
+import { AuditModule } from "../audit/audit.module";
+import { CommunityModerationController } from "./community-moderation.controller";
+import { ContentModerationController } from "./content-moderation.controller";
+import { ContentModerationService } from "./content-moderation.service";
+import { ModerationController } from "./moderation.controller";
+import { ModerationService } from "./moderation.service";
 
 @Module({
   imports: [PrismaModule, AuditModule],

@@ -1,9 +1,9 @@
 import { Module } from "@nestjs/common";
 
-import { PrismaModule } from "@/database/prisma.module";
-import { MediaModule } from "@/modules/media/media.module";
-import { TaxonomyController } from "@/modules/taxonomy/taxonomy.controller";
-import { TaxonomyService } from "@/modules/taxonomy/taxonomy.service";
+import { PrismaModule } from "../../database/prisma.module";
+import { MediaModule } from "../media/media.module";
+import { TaxonomyController } from "./taxonomy.controller";
+import { TaxonomyService } from "./taxonomy.service";
 
 @Module({
   imports: [PrismaModule, MediaModule],

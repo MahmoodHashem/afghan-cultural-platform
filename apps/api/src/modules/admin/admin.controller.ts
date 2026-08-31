@@ -8,10 +8,10 @@ import {
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
 
-import { UserRole } from "@/generated/prisma/enums";
-import { AdminOverviewService } from "@/modules/admin/admin-overview.service";
-import { AdminOverviewResponseDto } from "@/modules/admin/dto/admin-overview-response.dto";
-import { Roles } from "@/modules/auth/decorators/roles.decorator";
+import { UserRole } from "../../generated/prisma/enums";
+import { Roles } from "../auth/decorators/roles.decorator";
+import { AdminOverviewService } from "./admin-overview.service";
+import { AdminOverviewResponseDto } from "./dto/admin-overview-response.dto";
 
 @ApiTags("Admin")
 @ApiBearerAuth()

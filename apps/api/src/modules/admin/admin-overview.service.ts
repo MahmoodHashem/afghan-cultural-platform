@@ -1,8 +1,8 @@
 import { Inject, Injectable } from "@nestjs/common";
 
-import { PrismaService } from "@/database/prisma.service";
-import type { Prisma } from "@/generated/prisma/client";
-import { CorrectionStatus, EntryStatus, ReportStatus } from "@/generated/prisma/enums";
+import { PrismaService } from "../../database/prisma.service";
+import type { Prisma } from "../../generated/prisma/client";
+import { CorrectionStatus, EntryStatus, ReportStatus } from "../../generated/prisma/enums";
 
 const GROWTH_DAYS = 30;
 const STALE_REPORT_DAYS = 3;

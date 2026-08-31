@@ -11,14 +11,11 @@ import {
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
 
-import { CurrentUser } from "@/modules/auth/decorators/current-user.decorator";
-import { RequireVerifiedEmail } from "@/modules/auth/decorators/require-verified-email.decorator";
-import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.type";
-import { ContentModerationService } from "@/modules/moderation/content-moderation.service";
-import {
-  SubmitCorrectionDto,
-  SubmitReportDto,
-} from "@/modules/moderation/dto/content-moderation.dto";
+import { CurrentUser } from "../auth/decorators/current-user.decorator";
+import { RequireVerifiedEmail } from "../auth/decorators/require-verified-email.decorator";
+import type { AuthenticatedUser } from "../auth/types/authenticated-user.type";
+import { ContentModerationService } from "./content-moderation.service";
+import { SubmitCorrectionDto, SubmitReportDto } from "./dto/content-moderation.dto";
 
 @ApiTags("Community moderation")
 @ApiExtraModels(SubmitCorrectionDto, SubmitReportDto)

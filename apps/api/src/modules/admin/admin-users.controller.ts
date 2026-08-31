@@ -22,15 +22,18 @@ import {
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
 
-import { UserRole } from "@/generated/prisma/enums";
-import { AdminUsersService } from "@/modules/admin/admin-users.service";
-import { UpdateAdminUserStatusDto } from "@/modules/admin/dto/admin-user-actions.dto";
+import { UserRole } from "../../generated/prisma/enums";
+import { CurrentUser } from "../auth/decorators/current-user.decorator";
+import { Roles } from "../auth/decorators/roles.decorator";
+import type { AuthenticatedUser } from "../auth/types/authenticated-user.type";
+import { AdminUsersService } from "./admin-users.service";
+import { UpdateAdminUserStatusDto } from "./dto/admin-user-actions.dto";
 import {
   AdminUserActivityQueryDto,
   AdminUserCommentsQueryDto,
   AdminUserEntriesQueryDto,
   AdminUsersQueryDto,
-} from "@/modules/admin/dto/admin-users-query.dto";
+} from "./dto/admin-users-query.dto";
 import {
   AdminRevokeSessionsEnvelopeDto,
   AdminUserActivityResponseDto,
@@ -39,10 +42,7 @@ import {
   AdminUserEntriesResponseDto,
   AdminUserStatusEnvelopeDto,
   AdminUsersResponseDto,
-} from "@/modules/admin/dto/admin-users-response.dto";
-import { CurrentUser } from "@/modules/auth/decorators/current-user.decorator";
-import { Roles } from "@/modules/auth/decorators/roles.decorator";
-import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.type";
+} from "./dto/admin-users-response.dto";
 
 @ApiTags("Admin Users")
 @ApiExtraModels(

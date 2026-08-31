@@ -8,11 +8,11 @@ import {
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
-import { PrismaService } from "@/database/prisma.service";
-import type { Prisma } from "@/generated/prisma/client";
-import { EntryStatus } from "@/generated/prisma/enums";
-import { CloudinaryMediaService } from "@/modules/media/cloudinary-media.service";
-import { isSupportedImageFile } from "@/modules/media/image-file.utils";
+import { PrismaService } from "../../database/prisma.service";
+import type { Prisma } from "../../generated/prisma/client";
+import { EntryStatus } from "../../generated/prisma/enums";
+import { CloudinaryMediaService } from "../media/cloudinary-media.service";
+import { isSupportedImageFile } from "../media/image-file.utils";
 import type {
   CreateDescribedTaxonomyDto,
   CreateDistrictDto,
@@ -25,15 +25,15 @@ import type {
   UpdateProvinceDto,
   UpdateProvinceImageDto,
   UpdateTagDto,
-} from "@/modules/taxonomy/dto/taxonomy-management.dto";
+} from "./dto/taxonomy-management.dto";
 import type {
   AdminDistrictQueryDto,
   AdminTaxonomyQueryDto,
   DistrictQueryDto,
   TaxonomyQueryDto,
-} from "@/modules/taxonomy/dto/taxonomy-query.dto";
-import { TAXONOMY_ERROR_CODES } from "@/modules/taxonomy/taxonomy.constants";
-import { normalizeTaxonomyName, resolveSlug } from "@/modules/taxonomy/taxonomy.utils";
+} from "./dto/taxonomy-query.dto";
+import { TAXONOMY_ERROR_CODES } from "./taxonomy.constants";
+import { normalizeTaxonomyName, resolveSlug } from "./taxonomy.utils";
 
 type PaginationMeta = {
   page: number;

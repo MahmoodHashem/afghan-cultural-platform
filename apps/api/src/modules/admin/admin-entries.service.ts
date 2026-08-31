@@ -6,20 +6,20 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 
-import { PrismaService } from "@/database/prisma.service";
-import type { Prisma } from "@/generated/prisma/client";
+import { PrismaService } from "../../database/prisma.service";
+import type { Prisma } from "../../generated/prisma/client";
 import {
   AuditAction,
   EntryStatus,
   ModerationDecision,
   ReportStatus,
-} from "@/generated/prisma/enums";
-import { ADMIN_ENTRY_ERROR_CODES } from "@/modules/admin/admin.constants";
-import type { AdminEntriesQueryDto } from "@/modules/admin/dto/admin-entries-query.dto";
-import type { AdminEntryLifecycleReasonDto } from "@/modules/admin/dto/admin-entry-actions.dto";
-import { AuditService } from "@/modules/audit/audit.service";
-import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.type";
-import { entrySelect, mapEntry } from "@/modules/entries/entries.mapper";
+} from "../../generated/prisma/enums";
+import { AuditService } from "../audit/audit.service";
+import type { AuthenticatedUser } from "../auth/types/authenticated-user.type";
+import { entrySelect, mapEntry } from "../entries/entries.mapper";
+import { ADMIN_ENTRY_ERROR_CODES } from "./admin.constants";
+import type { AdminEntriesQueryDto } from "./dto/admin-entries-query.dto";
+import type { AdminEntryLifecycleReasonDto } from "./dto/admin-entry-actions.dto";
 
 const taxonomySelect = { id: true, name: true, slug: true, isActive: true } as const;
 const authorSelect = {

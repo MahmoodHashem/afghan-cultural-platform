@@ -6,19 +6,13 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 
-import { PrismaService } from "@/database/prisma.service";
-import type { Prisma } from "@/generated/prisma/client";
-import { EntryCommentStatus, EntryStatus } from "@/generated/prisma/enums";
-import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.type";
-import { COMMUNITY_ERROR_CODES } from "@/modules/community/community.constants";
-import type {
-  CommentPaginationQueryDto,
-  EntryCommentQueryDto,
-} from "@/modules/community/dto/comment-query.dto";
-import type {
-  CreateEntryCommentDto,
-  UpdateEntryCommentDto,
-} from "@/modules/community/dto/community-feedback.dto";
+import { PrismaService } from "../../database/prisma.service";
+import type { Prisma } from "../../generated/prisma/client";
+import { EntryCommentStatus, EntryStatus } from "../../generated/prisma/enums";
+import type { AuthenticatedUser } from "../auth/types/authenticated-user.type";
+import { COMMUNITY_ERROR_CODES } from "./community.constants";
+import type { CommentPaginationQueryDto, EntryCommentQueryDto } from "./dto/comment-query.dto";
+import type { CreateEntryCommentDto, UpdateEntryCommentDto } from "./dto/community-feedback.dto";
 
 type CommentPayload = {
   id: string;

@@ -16,7 +16,7 @@ import {
   ValidateNested,
 } from "class-validator";
 
-import { SourceType } from "@/generated/prisma/enums";
+import { SourceType } from "../../../generated/prisma/enums";
 
 class CreateEntrySourceDto {
   @ApiProperty({ enum: SourceType })

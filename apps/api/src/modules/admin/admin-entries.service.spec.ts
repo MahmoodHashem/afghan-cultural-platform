@@ -1,8 +1,8 @@
-jest.mock("@/database/prisma.service", () => ({ PrismaService: class PrismaService {} }));
+jest.mock("../../database/prisma.service", () => ({ PrismaService: class PrismaService {} }));
 
 import { BadRequestException, ConflictException, NotFoundException } from "@nestjs/common";
 
-import type { PrismaService } from "@/database/prisma.service";
+import type { PrismaService } from "../../database/prisma.service";
 import {
   AuditAction,
   EntryStatus,
@@ -10,10 +10,10 @@ import {
   ModerationDecision,
   UserRole,
   UserStatus,
-} from "@/generated/prisma/enums";
-import { AdminEntriesService } from "@/modules/admin/admin-entries.service";
-import type { AuditService } from "@/modules/audit/audit.service";
-import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.type";
+} from "../../generated/prisma/enums";
+import type { AuditService } from "../audit/audit.service";
+import type { AuthenticatedUser } from "../auth/types/authenticated-user.type";
+import { AdminEntriesService } from "./admin-entries.service";
 
 type Delegate = Record<string, jest.Mock>;
 type PrismaMock = {

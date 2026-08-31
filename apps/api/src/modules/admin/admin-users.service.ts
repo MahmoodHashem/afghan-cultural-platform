@@ -7,19 +7,19 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 
-import { PrismaService } from "@/database/prisma.service";
-import type { Prisma } from "@/generated/prisma/client";
-import { AuditAction, EntryStatus, UserStatus } from "@/generated/prisma/enums";
-import { ADMIN_USER_ERROR_CODES } from "@/modules/admin/admin.constants";
-import type { UpdateAdminUserStatusDto } from "@/modules/admin/dto/admin-user-actions.dto";
+import { PrismaService } from "../../database/prisma.service";
+import type { Prisma } from "../../generated/prisma/client";
+import { AuditAction, EntryStatus, UserStatus } from "../../generated/prisma/enums";
+import { AuditService } from "../audit/audit.service";
+import type { AuthenticatedUser } from "../auth/types/authenticated-user.type";
+import { ADMIN_USER_ERROR_CODES } from "./admin.constants";
+import type { UpdateAdminUserStatusDto } from "./dto/admin-user-actions.dto";
 import type {
   AdminUserActivityQueryDto,
   AdminUserCommentsQueryDto,
   AdminUserEntriesQueryDto,
   AdminUsersQueryDto,
-} from "@/modules/admin/dto/admin-users-query.dto";
-import { AuditService } from "@/modules/audit/audit.service";
-import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.type";
+} from "./dto/admin-users-query.dto";
 
 const adminUserListSelect = {
   id: true,

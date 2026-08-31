@@ -3,7 +3,7 @@ import {
   extractPlainTextFromTiptap,
   TiptapValidationError,
   validateTiptapDocument,
-} from "@/modules/entries/utils/tiptap-content.util";
+} from "./tiptap-content.util";
 
 const validDocument = {
   type: "doc",

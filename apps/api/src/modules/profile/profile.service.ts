@@ -1,15 +1,12 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from "@nestjs/common";
 
-import { PrismaService } from "@/database/prisma.service";
-import type { Prisma } from "@/generated/prisma/client";
-import { EntryCommentStatus, EntryStatus } from "@/generated/prisma/enums";
-import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.type";
-import type {
-  ProfileBookmarksQueryDto,
-  ProfileCommentsQueryDto,
-} from "@/modules/profile/dto/profile-query.dto";
-import type { UpdateProfileDto } from "@/modules/profile/dto/update-profile.dto";
-import { PROFILE_ERROR_CODES } from "@/modules/profile/profile.constants";
+import { PrismaService } from "../../database/prisma.service";
+import type { Prisma } from "../../generated/prisma/client";
+import { EntryCommentStatus, EntryStatus } from "../../generated/prisma/enums";
+import type { AuthenticatedUser } from "../auth/types/authenticated-user.type";
+import type { ProfileBookmarksQueryDto, ProfileCommentsQueryDto } from "./dto/profile-query.dto";
+import type { UpdateProfileDto } from "./dto/update-profile.dto";
+import { PROFILE_ERROR_CODES } from "./profile.constants";
 
 const profileUserSelect = {
   id: true,

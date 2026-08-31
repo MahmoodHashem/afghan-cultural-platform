@@ -11,34 +11,38 @@ import {
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
-import { PrismaService } from "@/database/prisma.service";
-import type { Prisma } from "@/generated/prisma/client";
-import { AuditAction, EntryStatus, GeographicScope, VersionReason } from "@/generated/prisma/enums";
-import { AuditService } from "@/modules/audit/audit.service";
-import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.type";
-import type {
-  CreateEntryDraftDto,
-  UpdateEntryDraftDto,
-} from "@/modules/entries/dto/create-entry-draft.dto";
+import { PrismaService } from "../../database/prisma.service";
+import type { Prisma } from "../../generated/prisma/client";
+import {
+  AuditAction,
+  EntryStatus,
+  GeographicScope,
+  VersionReason,
+} from "../../generated/prisma/enums";
+import { AuditService } from "../audit/audit.service";
+import type { AuthenticatedUser } from "../auth/types/authenticated-user.type";
+import { CloudinaryMediaService } from "../media/cloudinary-media.service";
+import { isSupportedImageFile } from "../media/image-file.utils";
+import type { CreateEntryDraftDto, UpdateEntryDraftDto } from "./dto/create-entry-draft.dto";
 import type {
   ReorderEntryImagesDto,
   UpdateEntryImageMetadataDto,
   UploadEntryImageDto,
-} from "@/modules/entries/dto/entry-images.dto";
-import type { OwnEntriesQueryDto } from "@/modules/entries/dto/entry-query.dto";
-import type { EntryReferenceSearchQueryDto } from "@/modules/entries/dto/entry-references.dto";
+} from "./dto/entry-images.dto";
+import type { OwnEntriesQueryDto } from "./dto/entry-query.dto";
+import type { EntryReferenceSearchQueryDto } from "./dto/entry-references.dto";
 import type {
   CreateEntrySourceDto,
   ReorderEntrySourcesDto,
   UpdateEntrySourceDto,
-} from "@/modules/entries/dto/entry-sources.dto";
-import type { EntryTagsDto } from "@/modules/entries/dto/entry-tags.dto";
+} from "./dto/entry-sources.dto";
+import type { EntryTagsDto } from "./dto/entry-tags.dto";
 import type {
   UpdateEntryYouTubeVideoDto,
   UpsertEntryYouTubeVideoDto,
-} from "@/modules/entries/dto/entry-youtube.dto";
-import type { PublicEntryQueryDto } from "@/modules/entries/dto/public-entry-query.dto";
-import { ENTRY_ERROR_CODES } from "@/modules/entries/entries.constants";
+} from "./dto/entry-youtube.dto";
+import type { PublicEntryQueryDto } from "./dto/public-entry-query.dto";
+import { ENTRY_ERROR_CODES } from "./entries.constants";
 import {
   contentVersionSelect,
   entryReferenceTargetSelect,
@@ -59,26 +63,21 @@ import {
   publicEntryDetailSelect,
   sourceSelect,
   youtubeVideoSelect,
-} from "@/modules/entries/entries.mapper";
+} from "./entries.mapper";
 import {
   createEntryKeyFromId,
   createUniqueEntrySlug,
   isValidEntrySlug,
   normalizeEntrySearchText,
   normalizeEntrySlug,
-} from "@/modules/entries/utils/entry-slug.util";
+} from "./utils/entry-slug.util";
 import {
   extractInternalEntryReferences,
   extractPlainTextFromTiptap,
   type InternalEntryReference,
   TiptapValidationError,
-} from "@/modules/entries/utils/tiptap-content.util";
-import {
-  createCanonicalYouTubeUrl,
-  extractYouTubeVideoId,
-} from "@/modules/entries/utils/youtube-url.util";
-import { CloudinaryMediaService } from "@/modules/media/cloudinary-media.service";
-import { isSupportedImageFile } from "@/modules/media/image-file.utils";
+} from "./utils/tiptap-content.util";
+import { createCanonicalYouTubeUrl, extractYouTubeVideoId } from "./utils/youtube-url.util";
 
 type TaxonomyReference = {
   id: string;

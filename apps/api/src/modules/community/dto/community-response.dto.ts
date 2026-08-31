@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
-import { EntryCommentStatus } from "@/generated/prisma/enums";
+import { EntryCommentStatus } from "../../../generated/prisma/enums";
 
 class CommentAuthorDto {
   @ApiProperty()

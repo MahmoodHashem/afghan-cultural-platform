@@ -10,43 +10,40 @@ import {
 import { ConfigService } from "@nestjs/config";
 import { JwtService, type JwtSignOptions } from "@nestjs/jwt";
 
-import { MailService } from "@/common/mail/mail.service";
-import { PrismaService } from "@/database/prisma.service";
-import { AuthProvider, UserRole, UserStatus } from "@/generated/prisma/enums";
+import { MailService } from "../../common/mail/mail.service";
+import { PrismaService } from "../../database/prisma.service";
+import { AuthProvider, UserRole, UserStatus } from "../../generated/prisma/enums";
+import type { UserCredentials } from "../users/users.service";
+import { UsersService } from "../users/users.service";
 import {
   AUTH_ERROR_CODES,
   EMAIL_VERIFICATION_NEUTRAL_MESSAGE,
   PASSWORD_RESET_NEUTRAL_MESSAGE,
-} from "@/modules/auth/auth.constants";
-import type { ForgotPasswordDto } from "@/modules/auth/dto/forgot-password.dto";
-import type { LoginDto } from "@/modules/auth/dto/login.dto";
-import type { RegisterDto } from "@/modules/auth/dto/register.dto";
-import type { ResendVerificationDto } from "@/modules/auth/dto/resend-verification.dto";
-import type { ResetPasswordDto } from "@/modules/auth/dto/reset-password.dto";
-import type { SetupPasswordDto } from "@/modules/auth/dto/setup-password.dto";
-import type { VerifyEmailDto } from "@/modules/auth/dto/verify-email.dto";
-import type { AuthRequestContext } from "@/modules/auth/types/auth-request-context.type";
+} from "./auth.constants";
+import type { ForgotPasswordDto } from "./dto/forgot-password.dto";
+import type { LoginDto } from "./dto/login.dto";
+import type { RegisterDto } from "./dto/register.dto";
+import type { ResendVerificationDto } from "./dto/resend-verification.dto";
+import type { ResetPasswordDto } from "./dto/reset-password.dto";
+import type { SetupPasswordDto } from "./dto/setup-password.dto";
+import type { VerifyEmailDto } from "./dto/verify-email.dto";
+import type { AuthRequestContext } from "./types/auth-request-context.type";
 import type {
   AuthSessionResponse,
   CurrentUserResponse,
   MessageResponse,
   SafeAuthUser,
   VerifyEmailResponse,
-} from "@/modules/auth/types/auth-response.type";
-import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.type";
-import type {
-  JwtAccessTokenPayload,
-  JwtRefreshTokenPayload,
-} from "@/modules/auth/types/jwt-payload.type";
-import type { NormalizedOAuthProfile } from "@/modules/auth/types/oauth-profile.type";
+} from "./types/auth-response.type";
+import type { AuthenticatedUser } from "./types/authenticated-user.type";
+import type { JwtAccessTokenPayload, JwtRefreshTokenPayload } from "./types/jwt-payload.type";
+import type { NormalizedOAuthProfile } from "./types/oauth-profile.type";
 import {
   hashPassword as createPasswordHash,
   hashRefreshToken as createRefreshTokenHash,
   verifyPassword as verifyPasswordHash,
-} from "@/modules/auth/utils/password.util";
-import { createSecureToken, hashToken } from "@/modules/auth/utils/token.util";
-import type { UserCredentials } from "@/modules/users/users.service";
-import { UsersService } from "@/modules/users/users.service";
+} from "./utils/password.util";
+import { createSecureToken, hashToken } from "./utils/token.util";
 
 type AuthErrorCode = (typeof AUTH_ERROR_CODES)[keyof typeof AUTH_ERROR_CODES];
 type OAuthTransaction = Pick<PrismaService, "oAuthAccount" | "user">;

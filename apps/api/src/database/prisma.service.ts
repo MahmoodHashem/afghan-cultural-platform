@@ -8,7 +8,7 @@ import {
 import { ConfigService } from "@nestjs/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 
-import { PrismaClient } from "@/generated/prisma/client";
+import { PrismaClient } from "../generated/prisma/client";
 
 @Injectable()
 class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {

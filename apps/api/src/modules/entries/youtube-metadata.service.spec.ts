@@ -1,7 +1,7 @@
 import type { ConfigService } from "@nestjs/config";
 
-import { ENTRY_ERROR_CODES } from "@/modules/entries/entries.constants";
-import { YouTubeMetadataService } from "@/modules/entries/youtube-metadata.service";
+import { ENTRY_ERROR_CODES } from "./entries.constants";
+import { YouTubeMetadataService } from "./youtube-metadata.service";
 
 describe("YouTubeMetadataService", () => {
   const configService = {

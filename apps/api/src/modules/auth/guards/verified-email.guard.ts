@@ -7,8 +7,8 @@ import {
 } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 
-import { AUTH_ERROR_CODES, REQUIRE_VERIFIED_EMAIL_KEY } from "@/modules/auth/auth.constants";
-import type { AuthenticatedRequest } from "@/modules/auth/types/authenticated-request.type";
+import { AUTH_ERROR_CODES, REQUIRE_VERIFIED_EMAIL_KEY } from "../auth.constants";
+import type { AuthenticatedRequest } from "../types/authenticated-request.type";
 
 @Injectable()
 class VerifiedEmailGuard implements CanActivate {

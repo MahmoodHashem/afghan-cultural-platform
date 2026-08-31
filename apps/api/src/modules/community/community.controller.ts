@@ -24,19 +24,13 @@ import {
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
 
-import { CurrentUser } from "@/modules/auth/decorators/current-user.decorator";
-import { Public } from "@/modules/auth/decorators/public.decorator";
-import { RequireVerifiedEmail } from "@/modules/auth/decorators/require-verified-email.decorator";
-import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.type";
-import { CommunityService } from "@/modules/community/community.service";
-import {
-  CommentPaginationQueryDto,
-  EntryCommentQueryDto,
-} from "@/modules/community/dto/comment-query.dto";
-import {
-  CreateEntryCommentDto,
-  UpdateEntryCommentDto,
-} from "@/modules/community/dto/community-feedback.dto";
+import { CurrentUser } from "../auth/decorators/current-user.decorator";
+import { Public } from "../auth/decorators/public.decorator";
+import { RequireVerifiedEmail } from "../auth/decorators/require-verified-email.decorator";
+import type { AuthenticatedUser } from "../auth/types/authenticated-user.type";
+import { CommunityService } from "./community.service";
+import { CommentPaginationQueryDto, EntryCommentQueryDto } from "./dto/comment-query.dto";
+import { CreateEntryCommentDto, UpdateEntryCommentDto } from "./dto/community-feedback.dto";
 import {
   CommentInteractionStateResponseDto,
   CommentLikeStateResponseDto,
@@ -44,7 +38,7 @@ import {
   EntryCommentListResponseDto,
   EntryCommentResponseDto,
   LikeStateResponseDto,
-} from "@/modules/community/dto/community-response.dto";
+} from "./dto/community-response.dto";
 
 @ApiTags("Entry comments and engagement")
 @ApiExtraModels(

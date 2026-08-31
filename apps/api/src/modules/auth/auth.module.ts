@@ -3,15 +3,15 @@ import { ConfigService } from "@nestjs/config";
 import { JwtModule, type JwtSignOptions } from "@nestjs/jwt";
 import { PassportModule } from "@nestjs/passport";
 
-import { MailModule } from "@/common/mail/mail.module";
-import { PrismaModule } from "@/database/prisma.module";
-import { JWT_ACCESS_STRATEGY } from "@/modules/auth/auth.constants";
-import { AuthController } from "@/modules/auth/auth.controller";
-import { AuthService } from "@/modules/auth/auth.service";
-import { FacebookStrategy } from "@/modules/auth/strategies/facebook.strategy";
-import { GoogleStrategy } from "@/modules/auth/strategies/google.strategy";
-import { JwtAccessStrategy } from "@/modules/auth/strategies/jwt-access.strategy";
-import { UsersModule } from "@/modules/users/users.module";
+import { MailModule } from "../../common/mail/mail.module";
+import { PrismaModule } from "../../database/prisma.module";
+import { UsersModule } from "../users/users.module";
+import { JWT_ACCESS_STRATEGY } from "./auth.constants";
+import { AuthController } from "./auth.controller";
+import { AuthService } from "./auth.service";
+import { FacebookStrategy } from "./strategies/facebook.strategy";
+import { GoogleStrategy } from "./strategies/google.strategy";
+import { JwtAccessStrategy } from "./strategies/jwt-access.strategy";
 
 @Module({
   imports: [

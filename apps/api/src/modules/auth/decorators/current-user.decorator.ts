@@ -1,7 +1,7 @@
 import { createParamDecorator, type ExecutionContext } from "@nestjs/common";
 
-import type { AuthenticatedRequest } from "@/modules/auth/types/authenticated-request.type";
-import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.type";
+import type { AuthenticatedRequest } from "../types/authenticated-request.type";
+import type { AuthenticatedUser } from "../types/authenticated-user.type";
 
 function selectCurrentUserField(
   user: AuthenticatedUser | undefined,

@@ -12,18 +12,18 @@ import {
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
 
-import { UserRole } from "@/generated/prisma/enums";
-import { AdminEntriesService } from "@/modules/admin/admin-entries.service";
-import { AdminEntriesQueryDto } from "@/modules/admin/dto/admin-entries-query.dto";
+import { UserRole } from "../../generated/prisma/enums";
+import { CurrentUser } from "../auth/decorators/current-user.decorator";
+import { Roles } from "../auth/decorators/roles.decorator";
+import type { AuthenticatedUser } from "../auth/types/authenticated-user.type";
+import { AdminEntriesService } from "./admin-entries.service";
+import { AdminEntriesQueryDto } from "./dto/admin-entries-query.dto";
 import {
   AdminEntriesResponseDto,
   AdminEntryDetailResponseDto,
   AdminEntryLifecycleResponseDto,
-} from "@/modules/admin/dto/admin-entries-response.dto";
-import { AdminEntryLifecycleReasonDto } from "@/modules/admin/dto/admin-entry-actions.dto";
-import { CurrentUser } from "@/modules/auth/decorators/current-user.decorator";
-import { Roles } from "@/modules/auth/decorators/roles.decorator";
-import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.type";
+} from "./dto/admin-entries-response.dto";
+import { AdminEntryLifecycleReasonDto } from "./dto/admin-entry-actions.dto";
 
 @ApiTags("Admin Entries")
 @ApiExtraModels(AdminEntriesQueryDto, AdminEntryLifecycleReasonDto)

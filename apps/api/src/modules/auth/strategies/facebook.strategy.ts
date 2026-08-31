@@ -3,9 +3,9 @@ import { ConfigService } from "@nestjs/config";
 import { PassportStrategy } from "@nestjs/passport";
 import { type Profile, Strategy } from "passport-facebook";
 
-import { AuthProvider } from "@/generated/prisma/enums";
-import { FACEBOOK_AUTH_STRATEGY } from "@/modules/auth/auth.constants";
-import type { NormalizedOAuthProfile } from "@/modules/auth/types/oauth-profile.type";
+import { AuthProvider } from "../../../generated/prisma/enums";
+import { FACEBOOK_AUTH_STRATEGY } from "../auth.constants";
+import type { NormalizedOAuthProfile } from "../types/oauth-profile.type";
 
 type FacebookProfile = Profile & {
   emails?: Array<{ value: string }>;

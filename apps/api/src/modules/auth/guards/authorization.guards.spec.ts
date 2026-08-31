@@ -1,22 +1,22 @@
-jest.mock("@/database/prisma.service", () => ({
+jest.mock("../../../database/prisma.service", () => ({
   PrismaService: class PrismaService {},
 }));
 
 import { ForbiddenException, HttpException } from "@nestjs/common";
 import { APP_GUARD, type Reflector } from "@nestjs/core";
 
-import { UserRole, UserStatus } from "@/generated/prisma/enums";
+import { UserRole, UserStatus } from "../../../generated/prisma/enums";
 import {
   AUTH_ERROR_CODES,
   IS_PUBLIC_ROUTE_KEY,
   REQUIRE_VERIFIED_EMAIL_KEY,
   ROLES_KEY,
-} from "@/modules/auth/auth.constants";
-import { selectCurrentUserField } from "@/modules/auth/decorators/current-user.decorator";
-import { JwtAuthGuard } from "@/modules/auth/guards/jwt-auth.guard";
-import { RolesGuard } from "@/modules/auth/guards/roles.guard";
-import { VerifiedEmailGuard } from "@/modules/auth/guards/verified-email.guard";
-import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.type";
+} from "../auth.constants";
+import { selectCurrentUserField } from "../decorators/current-user.decorator";
+import type { AuthenticatedUser } from "../types/authenticated-user.type";
+import { JwtAuthGuard } from "./jwt-auth.guard";
+import { RolesGuard } from "./roles.guard";
+import { VerifiedEmailGuard } from "./verified-email.guard";
 
 const verifiedUser: AuthenticatedUser = {
   id: "90fc7cb5-984d-4ac7-83e6-81ebf63a5c63",
@@ -156,7 +156,9 @@ describe("authorization guards", () => {
     process.env.CLOUDINARY_API_KEY ??= "test-key";
     process.env.CLOUDINARY_API_SECRET ??= "test-secret";
     process.env.YOUTUBE_API_KEY ??= "test-youtube-key";
-    const { AppModule } = jest.requireActual("@/app.module") as typeof import("@/app.module");
+    const { AppModule } = jest.requireActual(
+      "../../../app.module",
+    ) as typeof import("../../../app.module");
     const providers = Reflect.getMetadata("providers", AppModule) as Array<{
       provide?: unknown;
       useClass?: { name: string };

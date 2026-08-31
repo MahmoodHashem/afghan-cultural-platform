@@ -13,22 +13,19 @@ import {
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
 
-import { UserRole } from "@/generated/prisma/enums";
-import { CurrentUser } from "@/modules/auth/decorators/current-user.decorator";
-import { RequireVerifiedEmail } from "@/modules/auth/decorators/require-verified-email.decorator";
-import { Roles } from "@/modules/auth/decorators/roles.decorator";
-import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.type";
-import {
-  ApproveSubmissionDto,
-  ModerationReasonDto,
-} from "@/modules/moderation/dto/moderation-decision.dto";
-import { ModerationSubmissionsQueryDto } from "@/modules/moderation/dto/moderation-query.dto";
+import { UserRole } from "../../generated/prisma/enums";
+import { CurrentUser } from "../auth/decorators/current-user.decorator";
+import { RequireVerifiedEmail } from "../auth/decorators/require-verified-email.decorator";
+import { Roles } from "../auth/decorators/roles.decorator";
+import type { AuthenticatedUser } from "../auth/types/authenticated-user.type";
+import { ApproveSubmissionDto, ModerationReasonDto } from "./dto/moderation-decision.dto";
+import { ModerationSubmissionsQueryDto } from "./dto/moderation-query.dto";
 import {
   ModerationDecisionResponseDto,
   ModerationSubmissionListResponseDto,
   ModerationSubmissionResponseDto,
-} from "@/modules/moderation/dto/moderation-response.dto";
-import { ModerationService } from "@/modules/moderation/moderation.service";
+} from "./dto/moderation-response.dto";
+import { ModerationService } from "./moderation.service";
 
 @ApiTags("Moderation")
 @ApiBearerAuth()

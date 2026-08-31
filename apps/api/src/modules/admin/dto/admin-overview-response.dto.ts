@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 
-import { AuditAction } from "@/generated/prisma/enums";
+import { AuditAction } from "../../../generated/prisma/enums";
 
 class AdminOverviewMetricDto {
   @ApiProperty({ example: 2901 })

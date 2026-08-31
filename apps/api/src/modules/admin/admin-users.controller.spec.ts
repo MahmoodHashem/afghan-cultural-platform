@@ -1,15 +1,15 @@
-jest.mock("@/modules/admin/admin-users.service", () => ({
+jest.mock("./admin-users.service", () => ({
   AdminUsersService: class AdminUsersService {},
 }));
 
-import { AdminUsersController } from "@/modules/admin/admin-users.controller";
-import { UpdateAdminUserStatusDto } from "@/modules/admin/dto/admin-user-actions.dto";
+import { AdminUsersController } from "./admin-users.controller";
+import { UpdateAdminUserStatusDto } from "./dto/admin-user-actions.dto";
 import {
   AdminUserActivityQueryDto,
   AdminUserCommentsQueryDto,
   AdminUserEntriesQueryDto,
   AdminUsersQueryDto,
-} from "@/modules/admin/dto/admin-users-query.dto";
+} from "./dto/admin-users-query.dto";
 
 describe("AdminUsersController runtime DTO metadata", () => {
   it("retains query DTO classes for Nest validation", () => {

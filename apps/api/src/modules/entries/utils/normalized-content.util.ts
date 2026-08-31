@@ -1,12 +1,12 @@
 import { createHash } from "node:crypto";
 
-import { isValidEntryKey, isValidEntrySlug } from "@/modules/entries/utils/entry-slug.util";
+import { isValidEntryKey, isValidEntrySlug } from "./entry-slug.util";
 import {
   extractInternalEntryReferences,
   extractPlainTextFromTiptap,
   type TiptapDocument,
   validateTiptapDocument,
-} from "@/modules/entries/utils/tiptap-content.util";
+} from "./tiptap-content.util";
 
 type ReviewStatus = "APPROVED" | "NEEDS_REVIEW" | "READY";
 type NormalizedGeographicScope = "PROVINCE" | "NATIONAL" | "NONE";

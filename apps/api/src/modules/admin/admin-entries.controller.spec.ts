@@ -1,12 +1,12 @@
-jest.mock("@/modules/admin/admin-entries.service", () => ({
+jest.mock("./admin-entries.service", () => ({
   AdminEntriesService: class AdminEntriesService {},
 }));
 
-import { UserRole } from "@/generated/prisma/enums";
-import { AdminEntriesController } from "@/modules/admin/admin-entries.controller";
-import { AdminEntriesQueryDto } from "@/modules/admin/dto/admin-entries-query.dto";
-import { AdminEntryLifecycleReasonDto } from "@/modules/admin/dto/admin-entry-actions.dto";
-import { ROLES_KEY } from "@/modules/auth/auth.constants";
+import { UserRole } from "../../generated/prisma/enums";
+import { ROLES_KEY } from "../auth/auth.constants";
+import { AdminEntriesController } from "./admin-entries.controller";
+import { AdminEntriesQueryDto } from "./dto/admin-entries-query.dto";
+import { AdminEntryLifecycleReasonDto } from "./dto/admin-entry-actions.dto";
 
 describe("AdminEntriesController metadata", () => {
   it("retains runtime DTO classes for whitelist validation", () => {

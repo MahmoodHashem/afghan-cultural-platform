@@ -5,7 +5,7 @@ import {
   GeographicScope,
   ModerationDecision,
   VersionReason,
-} from "@/generated/prisma/enums";
+} from "../../../generated/prisma/enums";
 
 class AdminEntryPaginationMetaDto {
   @ApiProperty() page!: number;

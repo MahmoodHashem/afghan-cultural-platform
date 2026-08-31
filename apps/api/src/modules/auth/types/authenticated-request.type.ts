@@ -1,6 +1,6 @@
 import type { Request } from "express";
 
-import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.type";
+import type { AuthenticatedUser } from "./authenticated-user.type";
 
 type AuthenticatedRequest = Request & {
   user?: AuthenticatedUser;

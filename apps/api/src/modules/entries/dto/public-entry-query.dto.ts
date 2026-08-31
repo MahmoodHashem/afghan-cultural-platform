@@ -2,7 +2,7 @@ import { ApiPropertyOptional } from "@nestjs/swagger";
 import { Transform } from "class-transformer";
 import { IsEnum, IsInt, IsOptional, IsString, Max, MaxLength, Min } from "class-validator";
 
-import { GeographicScope } from "@/generated/prisma/enums";
+import { GeographicScope } from "../../../generated/prisma/enums";
 
 const PUBLIC_ENTRY_SORT_VALUES = ["newest", "oldest", "recentlyUpdated"] as const;
 

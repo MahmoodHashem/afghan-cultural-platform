@@ -8,11 +8,8 @@ import {
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
-import { ENTRY_ERROR_CODES } from "@/modules/entries/entries.constants";
-import {
-  createCanonicalYouTubeUrl,
-  extractYouTubeVideoId,
-} from "@/modules/entries/utils/youtube-url.util";
+import { ENTRY_ERROR_CODES } from "./entries.constants";
+import { createCanonicalYouTubeUrl, extractYouTubeVideoId } from "./utils/youtube-url.util";
 
 const YOUTUBE_METADATA_TIMEOUT_MS = 6_000;
 const MAX_STORED_DESCRIPTION_LENGTH = 1_000;

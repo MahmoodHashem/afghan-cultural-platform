@@ -1,4 +1,4 @@
-import { hashPassword, hashRefreshToken, verifyPassword } from "@/modules/auth/utils/password.util";
+import { hashPassword, hashRefreshToken, verifyPassword } from "./password.util";
 
 describe("password utilities", () => {
   it("hashes and verifies a valid password", async () => {

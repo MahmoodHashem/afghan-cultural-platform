@@ -1,6 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
-import { EntryCommentStatus, EntryStatus, UserRole, UserStatus } from "@/generated/prisma/enums";
+import {
+  EntryCommentStatus,
+  EntryStatus,
+  UserRole,
+  UserStatus,
+} from "../../../generated/prisma/enums";
 
 class ProfileProvinceDto {
   @ApiProperty()

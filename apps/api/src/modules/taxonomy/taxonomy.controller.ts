@@ -29,9 +29,9 @@ import {
 } from "@nestjs/swagger";
 import { memoryStorage } from "multer";
 
-import { UserRole } from "@/generated/prisma/enums";
-import { Public } from "@/modules/auth/decorators/public.decorator";
-import { Roles } from "@/modules/auth/decorators/roles.decorator";
+import { UserRole } from "../../generated/prisma/enums";
+import { Public } from "../auth/decorators/public.decorator";
+import { Roles } from "../auth/decorators/roles.decorator";
 import {
   CreateDescribedTaxonomyDto,
   CreateDistrictDto,
@@ -43,13 +43,13 @@ import {
   UpdateProvinceDto,
   UpdateProvinceImageDto,
   UpdateTagDto,
-} from "@/modules/taxonomy/dto/taxonomy-management.dto";
+} from "./dto/taxonomy-management.dto";
 import {
   AdminDistrictQueryDto,
   AdminTaxonomyQueryDto,
   DistrictQueryDto,
   TaxonomyQueryDto,
-} from "@/modules/taxonomy/dto/taxonomy-query.dto";
+} from "./dto/taxonomy-query.dto";
 import {
   AdminCategoryListResponseDto,
   AdminContentTypeListResponseDto,
@@ -64,8 +64,8 @@ import {
   TaxonomyItemResponseDto,
   TaxonomyListResponseDto,
   TaxonomyMessageResponseDto,
-} from "@/modules/taxonomy/dto/taxonomy-response.dto";
-import { TaxonomyService } from "@/modules/taxonomy/taxonomy.service";
+} from "./dto/taxonomy-response.dto";
+import { TaxonomyService } from "./taxonomy.service";
 
 @ApiTags("Taxonomy")
 @ApiExtraModels(

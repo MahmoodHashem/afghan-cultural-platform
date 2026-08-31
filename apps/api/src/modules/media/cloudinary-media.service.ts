@@ -3,7 +3,7 @@ import { BadRequestException, Inject, Injectable, Logger } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config";
 import { v2 as cloudinary, type UploadApiResponse } from "cloudinary";
 
-import { MEDIA_ERROR_CODES } from "@/modules/media/media.constants";
+import { MEDIA_ERROR_CODES } from "./media.constants";
 
 type UploadedCloudinaryImage = {
   publicId: string;

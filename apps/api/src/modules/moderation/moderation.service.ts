@@ -7,18 +7,15 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 
-import { PrismaService } from "@/database/prisma.service";
-import type { Prisma } from "@/generated/prisma/client";
-import { AuditAction, EntryStatus, ModerationDecision } from "@/generated/prisma/enums";
-import { AuditService } from "@/modules/audit/audit.service";
-import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.type";
-import { contentVersionSelect, mapContentVersion } from "@/modules/entries/entries.mapper";
-import type {
-  ApproveSubmissionDto,
-  ModerationReasonDto,
-} from "@/modules/moderation/dto/moderation-decision.dto";
-import type { ModerationSubmissionsQueryDto } from "@/modules/moderation/dto/moderation-query.dto";
-import { MODERATION_ERROR_CODES } from "@/modules/moderation/moderation.constants";
+import { PrismaService } from "../../database/prisma.service";
+import type { Prisma } from "../../generated/prisma/client";
+import { AuditAction, EntryStatus, ModerationDecision } from "../../generated/prisma/enums";
+import { AuditService } from "../audit/audit.service";
+import type { AuthenticatedUser } from "../auth/types/authenticated-user.type";
+import { contentVersionSelect, mapContentVersion } from "../entries/entries.mapper";
+import type { ApproveSubmissionDto, ModerationReasonDto } from "./dto/moderation-decision.dto";
+import type { ModerationSubmissionsQueryDto } from "./dto/moderation-query.dto";
+import { MODERATION_ERROR_CODES } from "./moderation.constants";
 
 type NormalizedModerationQuery = {
   page: number;

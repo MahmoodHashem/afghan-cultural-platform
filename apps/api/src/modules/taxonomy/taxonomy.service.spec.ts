@@ -1,14 +1,14 @@
-jest.mock("@/database/prisma.service", () => ({
+jest.mock("../../database/prisma.service", () => ({
   PrismaService: class PrismaService {},
 }));
 
 import { BadRequestException, ConflictException, NotFoundException } from "@nestjs/common";
 import type { ConfigService } from "@nestjs/config";
 
-import type { PrismaService } from "@/database/prisma.service";
-import type { CloudinaryMediaService } from "@/modules/media/cloudinary-media.service";
-import { TAXONOMY_ERROR_CODES } from "@/modules/taxonomy/taxonomy.constants";
-import { TaxonomyService } from "@/modules/taxonomy/taxonomy.service";
+import type { PrismaService } from "../../database/prisma.service";
+import type { CloudinaryMediaService } from "../media/cloudinary-media.service";
+import { TAXONOMY_ERROR_CODES } from "./taxonomy.constants";
+import { TaxonomyService } from "./taxonomy.service";
 
 type DelegateMock = {
   count: jest.Mock;

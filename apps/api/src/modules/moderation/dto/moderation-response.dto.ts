@@ -1,7 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
-import { EntryStatus, ModerationDecision } from "@/generated/prisma/enums";
-import { ContentVersionDto } from "@/modules/entries/dto/entry-response.dto";
+import { EntryStatus, ModerationDecision } from "../../../generated/prisma/enums";
+import { ContentVersionDto } from "../../entries/dto/entry-response.dto";
 
 class ModerationAuthorDto {
   @ApiProperty()

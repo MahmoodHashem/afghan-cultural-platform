@@ -7,7 +7,7 @@ import {
   EntryStatus,
   UserRole,
   UserStatus,
-} from "@/generated/prisma/enums";
+} from "../../../generated/prisma/enums";
 
 class AdminPaginationMetaDto {
   @ApiProperty({ example: 1 })

@@ -1,4 +1,4 @@
-import { SLUG_PATTERN } from "@/modules/taxonomy/dto/taxonomy-management.dto";
+import { SLUG_PATTERN } from "./dto/taxonomy-management.dto";
 
 const PERSIAN_TRANSLITERATION: Record<string, string> = {
   آ: "a",

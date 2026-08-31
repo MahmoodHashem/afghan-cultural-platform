@@ -8,12 +8,8 @@ import {
 import { Reflector } from "@nestjs/core";
 import { AuthGuard } from "@nestjs/passport";
 
-import {
-  AUTH_ERROR_CODES,
-  IS_PUBLIC_ROUTE_KEY,
-  JWT_ACCESS_STRATEGY,
-} from "@/modules/auth/auth.constants";
-import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.type";
+import { AUTH_ERROR_CODES, IS_PUBLIC_ROUTE_KEY, JWT_ACCESS_STRATEGY } from "../auth.constants";
+import type { AuthenticatedUser } from "../types/authenticated-user.type";
 
 @Injectable()
 class JwtAuthGuard extends AuthGuard(JWT_ACCESS_STRATEGY) {

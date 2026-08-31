@@ -12,7 +12,7 @@ import {
   Min,
 } from "class-validator";
 
-import { EntryStatus, GeographicScope } from "@/generated/prisma/enums";
+import { EntryStatus, GeographicScope } from "../../../generated/prisma/enums";
 
 const ADMIN_ENTRY_SORT_FIELDS = [
   "createdAt",

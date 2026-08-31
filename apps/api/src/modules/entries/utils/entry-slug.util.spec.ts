@@ -6,7 +6,7 @@ import {
   isValidEntryKey,
   isValidEntrySlug,
   normalizeEntrySlug,
-} from "@/modules/entries/utils/entry-slug.util";
+} from "./entry-slug.util";
 
 describe("entry slug utilities", () => {
   it("creates a Persian public slug from a Persian title", () => {

@@ -3,20 +3,20 @@ import { ConfigModule } from "@nestjs/config";
 import { APP_GUARD } from "@nestjs/core";
 import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
 
-import { RequestIdMiddleware } from "@/common/middleware/request-id.middleware";
-import { envValidationSchema } from "@/config/env.validation";
-import { PrismaModule } from "@/database/prisma.module";
-import { HealthModule } from "@/health/health.module";
-import { AdminModule } from "@/modules/admin/admin.module";
-import { AuthModule } from "@/modules/auth/auth.module";
-import { JwtAuthGuard } from "@/modules/auth/guards/jwt-auth.guard";
-import { RolesGuard } from "@/modules/auth/guards/roles.guard";
-import { VerifiedEmailGuard } from "@/modules/auth/guards/verified-email.guard";
-import { CommunityModule } from "@/modules/community/community.module";
-import { EntriesModule } from "@/modules/entries/entries.module";
-import { ModerationModule } from "@/modules/moderation/moderation.module";
-import { ProfileModule } from "@/modules/profile/profile.module";
-import { TaxonomyModule } from "@/modules/taxonomy/taxonomy.module";
+import { RequestIdMiddleware } from "./common/middleware/request-id.middleware";
+import { envValidationSchema } from "./config/env.validation";
+import { PrismaModule } from "./database/prisma.module";
+import { HealthModule } from "./health/health.module";
+import { AdminModule } from "./modules/admin/admin.module";
+import { AuthModule } from "./modules/auth/auth.module";
+import { JwtAuthGuard } from "./modules/auth/guards/jwt-auth.guard";
+import { RolesGuard } from "./modules/auth/guards/roles.guard";
+import { VerifiedEmailGuard } from "./modules/auth/guards/verified-email.guard";
+import { CommunityModule } from "./modules/community/community.module";
+import { EntriesModule } from "./modules/entries/entries.module";
+import { ModerationModule } from "./modules/moderation/moderation.module";
+import { ProfileModule } from "./modules/profile/profile.module";
+import { TaxonomyModule } from "./modules/taxonomy/taxonomy.module";
 
 @Module({
   imports: [

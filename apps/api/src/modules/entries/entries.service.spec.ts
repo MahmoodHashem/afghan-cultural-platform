@@ -1,4 +1,4 @@
-jest.mock("@/database/prisma.service", () => ({
+jest.mock("../../database/prisma.service", () => ({
   PrismaService: class PrismaService {},
 }));
 
@@ -12,21 +12,21 @@ import type { ConfigService } from "@nestjs/config";
 import { plainToInstance } from "class-transformer";
 import { validate } from "class-validator";
 
-import type { PrismaService } from "@/database/prisma.service";
+import type { PrismaService } from "../../database/prisma.service";
 import {
   EntryStatus,
   GeographicScope,
   SourceType,
   UserRole,
   UserStatus,
-} from "@/generated/prisma/enums";
-import type { AuditService } from "@/modules/audit/audit.service";
-import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.type";
-import { CreateEntryDraftDto } from "@/modules/entries/dto/create-entry-draft.dto";
-import { PublicEntryQueryDto } from "@/modules/entries/dto/public-entry-query.dto";
-import { ENTRY_ERROR_CODES } from "@/modules/entries/entries.constants";
-import { EntriesService } from "@/modules/entries/entries.service";
-import type { CloudinaryMediaService } from "@/modules/media/cloudinary-media.service";
+} from "../../generated/prisma/enums";
+import type { AuditService } from "../audit/audit.service";
+import type { AuthenticatedUser } from "../auth/types/authenticated-user.type";
+import type { CloudinaryMediaService } from "../media/cloudinary-media.service";
+import { CreateEntryDraftDto } from "./dto/create-entry-draft.dto";
+import { PublicEntryQueryDto } from "./dto/public-entry-query.dto";
+import { ENTRY_ERROR_CODES } from "./entries.constants";
+import { EntriesService } from "./entries.service";
 
 type DelegateMock = {
   aggregate: jest.Mock;

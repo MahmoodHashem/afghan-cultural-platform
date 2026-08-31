@@ -3,9 +3,9 @@ import { ConfigService } from "@nestjs/config";
 import { PassportStrategy } from "@nestjs/passport";
 import { type Profile, Strategy } from "passport-google-oauth20";
 
-import { AuthProvider } from "@/generated/prisma/enums";
-import { GOOGLE_AUTH_STRATEGY } from "@/modules/auth/auth.constants";
-import type { NormalizedOAuthProfile } from "@/modules/auth/types/oauth-profile.type";
+import { AuthProvider } from "../../../generated/prisma/enums";
+import { GOOGLE_AUTH_STRATEGY } from "../auth.constants";
+import type { NormalizedOAuthProfile } from "../types/oauth-profile.type";
 
 @Injectable()
 class GoogleStrategy extends PassportStrategy(Strategy, GOOGLE_AUTH_STRATEGY) {

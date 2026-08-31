@@ -1,5 +1,5 @@
-import type { Prisma } from "@/generated/prisma/client";
-import { EntryCommentStatus } from "@/generated/prisma/enums";
+import type { Prisma } from "../../generated/prisma/client";
+import { EntryCommentStatus } from "../../generated/prisma/enums";
 
 const sourceSelect = {
   id: true,

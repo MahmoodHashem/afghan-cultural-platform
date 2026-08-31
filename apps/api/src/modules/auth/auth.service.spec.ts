@@ -1,4 +1,4 @@
-jest.mock("@/database/prisma.service", () => ({
+jest.mock("../../database/prisma.service", () => ({
   PrismaService: class PrismaService {},
 }));
 
@@ -7,27 +7,24 @@ import { ConfigModule, type ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { Test, type TestingModule } from "@nestjs/testing";
 
-import { MailService } from "@/common/mail/mail.service";
-import { PrismaService } from "@/database/prisma.service";
-import { AuthProvider, UserRole, UserStatus } from "@/generated/prisma/enums";
+import { MailService } from "../../common/mail/mail.service";
+import { PrismaService } from "../../database/prisma.service";
+import { AuthProvider, UserRole, UserStatus } from "../../generated/prisma/enums";
+import type { UsersService } from "../users/users.service";
 import {
   AUTH_ERROR_CODES,
   EMAIL_VERIFICATION_NEUTRAL_MESSAGE,
   PASSWORD_RESET_NEUTRAL_MESSAGE,
-} from "@/modules/auth/auth.constants";
-import { AuthController } from "@/modules/auth/auth.controller";
-import { AuthModule } from "@/modules/auth/auth.module";
-import { AuthService } from "@/modules/auth/auth.service";
-import type {
-  AuthRequestContext,
-  RefreshCookie,
-} from "@/modules/auth/types/auth-request-context.type";
-import type { AuthSessionResponse } from "@/modules/auth/types/auth-response.type";
-import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.type";
-import type { JwtAccessTokenPayload } from "@/modules/auth/types/jwt-payload.type";
-import type { NormalizedOAuthProfile } from "@/modules/auth/types/oauth-profile.type";
-import { hashToken } from "@/modules/auth/utils/token.util";
-import type { UsersService } from "@/modules/users/users.service";
+} from "./auth.constants";
+import { AuthController } from "./auth.controller";
+import { AuthModule } from "./auth.module";
+import { AuthService } from "./auth.service";
+import type { AuthRequestContext, RefreshCookie } from "./types/auth-request-context.type";
+import type { AuthSessionResponse } from "./types/auth-response.type";
+import type { AuthenticatedUser } from "./types/authenticated-user.type";
+import type { JwtAccessTokenPayload } from "./types/jwt-payload.type";
+import type { NormalizedOAuthProfile } from "./types/oauth-profile.type";
+import { hashToken } from "./utils/token.util";
 
 type PrismaMock = {
   emailVerificationToken: {

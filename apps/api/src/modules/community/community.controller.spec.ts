@@ -1,19 +1,13 @@
-jest.mock("@/database/prisma.service", () => ({
+jest.mock("../../database/prisma.service", () => ({
   PrismaService: class PrismaService {},
 }));
 
 import { ValidationPipe } from "@nestjs/common";
 
-import { IS_PUBLIC_ROUTE_KEY, REQUIRE_VERIFIED_EMAIL_KEY } from "@/modules/auth/auth.constants";
-import { CommunityController } from "@/modules/community/community.controller";
-import {
-  CommentPaginationQueryDto,
-  EntryCommentQueryDto,
-} from "@/modules/community/dto/comment-query.dto";
-import {
-  CreateEntryCommentDto,
-  UpdateEntryCommentDto,
-} from "@/modules/community/dto/community-feedback.dto";
+import { IS_PUBLIC_ROUTE_KEY, REQUIRE_VERIFIED_EMAIL_KEY } from "../auth/auth.constants";
+import { CommunityController } from "./community.controller";
+import { CommentPaginationQueryDto, EntryCommentQueryDto } from "./dto/comment-query.dto";
+import { CreateEntryCommentDto, UpdateEntryCommentDto } from "./dto/community-feedback.dto";
 
 describe("CommunityController like authorization metadata", () => {
   it("requires authentication for personal like state", () => {

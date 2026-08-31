@@ -29,20 +29,17 @@ import {
 import { Throttle } from "@nestjs/throttler";
 import { memoryStorage } from "multer";
 
-import { CurrentUser } from "@/modules/auth/decorators/current-user.decorator";
-import { RequireVerifiedEmail } from "@/modules/auth/decorators/require-verified-email.decorator";
-import type { AuthenticatedUser } from "@/modules/auth/types/authenticated-user.type";
-import {
-  CreateEntryDraftDto,
-  UpdateEntryDraftDto,
-} from "@/modules/entries/dto/create-entry-draft.dto";
+import { CurrentUser } from "../auth/decorators/current-user.decorator";
+import { RequireVerifiedEmail } from "../auth/decorators/require-verified-email.decorator";
+import type { AuthenticatedUser } from "../auth/types/authenticated-user.type";
+import { CreateEntryDraftDto, UpdateEntryDraftDto } from "./dto/create-entry-draft.dto";
 import {
   ReorderEntryImagesDto,
   UpdateEntryImageMetadataDto,
   UploadEntryImageDto,
-} from "@/modules/entries/dto/entry-images.dto";
-import { OwnEntriesQueryDto } from "@/modules/entries/dto/entry-query.dto";
-import { EntryReferenceSearchQueryDto } from "@/modules/entries/dto/entry-references.dto";
+} from "./dto/entry-images.dto";
+import { OwnEntriesQueryDto } from "./dto/entry-query.dto";
+import { EntryReferenceSearchQueryDto } from "./dto/entry-references.dto";
 import {
   EntryImageResponseDto,
   EntryImagesResponseDto,
@@ -57,21 +54,21 @@ import {
   EntrySubmissionResponseDto,
   EntryTagsResponseDto,
   EntryYouTubeVideoResponseDto,
-} from "@/modules/entries/dto/entry-response.dto";
+} from "./dto/entry-response.dto";
 import {
   CreateEntrySourceDto,
   ReorderEntrySourcesDto,
   UpdateEntrySourceDto,
-} from "@/modules/entries/dto/entry-sources.dto";
-import { EntryTagsDto } from "@/modules/entries/dto/entry-tags.dto";
+} from "./dto/entry-sources.dto";
+import { EntryTagsDto } from "./dto/entry-tags.dto";
 import {
   UpdateEntryYouTubeVideoDto,
   UpsertEntryYouTubeVideoDto,
   YouTubeMetadataRequestDto,
   YouTubeMetadataResponseDto,
-} from "@/modules/entries/dto/entry-youtube.dto";
-import { EntriesService } from "@/modules/entries/entries.service";
-import { YouTubeMetadataService } from "@/modules/entries/youtube-metadata.service";
+} from "./dto/entry-youtube.dto";
+import { EntriesService } from "./entries.service";
+import { YouTubeMetadataService } from "./youtube-metadata.service";
 
 @ApiTags("Entries")
 @ApiBearerAuth()

@@ -1,15 +1,12 @@
-jest.mock("@/database/prisma.service", () => ({
+jest.mock("../../database/prisma.service", () => ({
   PrismaService: class PrismaService {},
 }));
 
 import { ValidationPipe } from "@nestjs/common";
 
-import { IS_PUBLIC_ROUTE_KEY, REQUIRE_VERIFIED_EMAIL_KEY } from "@/modules/auth/auth.constants";
-import {
-  ProfileBookmarksQueryDto,
-  ProfileCommentsQueryDto,
-} from "@/modules/profile/dto/profile-query.dto";
-import { ProfileController } from "@/modules/profile/profile.controller";
+import { IS_PUBLIC_ROUTE_KEY, REQUIRE_VERIFIED_EMAIL_KEY } from "../auth/auth.constants";
+import { ProfileBookmarksQueryDto, ProfileCommentsQueryDto } from "./dto/profile-query.dto";
+import { ProfileController } from "./profile.controller";
 
 describe("ProfileController authorization metadata", () => {
   it("does not mark owner profile routes as public", () => {
