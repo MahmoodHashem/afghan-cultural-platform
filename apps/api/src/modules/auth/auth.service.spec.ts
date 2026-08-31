@@ -1421,6 +1421,7 @@ function createConfigService(): ConfigService {
     SMTP_PASSWORD: "smtp-password",
     SMTP_FROM: "noreply@example.com",
     SMTP_FROM_NAME: "Afghan Culture Platform",
+    FRONTEND_URL: "http://localhost:3000",
     EMAIL_VERIFICATION_URL: "http://localhost:3000/verify-email",
     EMAIL_VERIFICATION_EXPIRES_IN_HOURS: 24,
     PASSWORD_RESET_URL: "http://localhost:3000/reset-password",

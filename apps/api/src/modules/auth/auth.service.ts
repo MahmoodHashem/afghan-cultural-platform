@@ -11,6 +11,7 @@ import { ConfigService } from "@nestjs/config";
 import { JwtService, type JwtSignOptions } from "@nestjs/jwt";
 
 import { MailService } from "../../common/mail/mail.service";
+import { createEmailVerificationMessage } from "../../common/mail/templates/email-verification.template";
 import { PrismaService } from "../../database/prisma.service";
 import { AuthProvider, UserRole, UserStatus } from "../../generated/prisma/enums";
 import type { UserCredentials } from "../users/users.service";
@@ -790,14 +791,22 @@ class AuthService {
     const verificationUrl = new URL(
       this.configService.getOrThrow<string>("EMAIL_VERIFICATION_URL"),
     );
+    const frontendUrl = this.configService.getOrThrow<string>("FRONTEND_URL");
+    const expiresInHours = this.configService.getOrThrow<number>(
+      "EMAIL_VERIFICATION_EXPIRES_IN_HOURS",
+    );
 
     verificationUrl.searchParams.set("token", token);
+    const message = createEmailVerificationMessage({
+      displayName: user.displayName,
+      verificationUrl: verificationUrl.toString(),
+      expiresInHours,
+      logoUrl: new URL("/images/small-logo.png", frontendUrl).toString(),
+    });
 
     await this.mailService.sendMail({
       to: user.email,
-      subject: "Verify your email address",
-      text: `Please verify your email address: ${verificationUrl.toString()}`,
-      html: `<p>Please verify your email address:</p><p><a href="${verificationUrl.toString()}">Verify email</a></p>`,
+      ...message,
     });
   }
 
