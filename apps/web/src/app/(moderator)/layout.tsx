@@ -1,6 +1,12 @@
+import type { Metadata } from "next";
+
 import { PublicHeader } from "@/components/layout/public-header";
 import { HomeFooter } from "@/features/home/components/home-footer";
 import { ModeratorNavigation } from "@/features/moderation/components/moderator-navigation";
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 function ModeratorShellLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (

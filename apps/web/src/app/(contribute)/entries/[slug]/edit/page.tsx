@@ -11,7 +11,7 @@ type EditEntryPageProps = {
 };
 
 export const metadata: Metadata = {
-  title: "ویرایش مطلب | میراث افغانستان",
+  title: "ویرایش مطلب",
   description: "ویرایش پیش‌نویس مطلب فرهنگی در میراث افغانستان.",
   robots: {
     index: false,

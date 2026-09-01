@@ -9,7 +9,7 @@ import {
 import { CorrectionQueue } from "@/features/moderation/components/content-moderation-queues";
 
 export const metadata: Metadata = {
-  title: "پیشنهادهای اصلاح | میراث افغانستان",
+  title: "پیشنهادهای اصلاح",
   robots: { index: false, follow: false },
 };
 

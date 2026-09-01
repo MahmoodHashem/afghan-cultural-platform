@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { OAuthCallbackCompletion } from "@/features/auth/components/oauth-callback-completion";
 
 export const metadata: Metadata = {
-  title: "تکمیل ورود | میراث افغانستان",
+  title: "تکمیل ورود",
   description: "تکمیل ورود به میراث افغانستان.",
   robots: {
     index: false,

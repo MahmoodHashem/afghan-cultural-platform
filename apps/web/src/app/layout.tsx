@@ -4,6 +4,7 @@ import { Suspense } from "react";
 
 import { MobileAppShell } from "@/components/layout/mobile/mobile-app-shell";
 import { ThemeProvider } from "@/components/layout/theme-provider";
+import { createRobotsMetadata, publicOpenGraphDefaults } from "@/lib/seo/metadata";
 import { getPublicSiteUrl } from "@/lib/seo/site-url";
 import { AppProviders } from "@/providers/app-providers";
 
@@ -12,8 +13,28 @@ import "./mobile-app.css";
 
 export const metadata: Metadata = {
   metadataBase: getPublicSiteUrl(),
-  title: "میراث افغانستان",
-  description: "A crowdsourced platform for preserving and sharing Afghan cultural information.",
+  title: {
+    default: "میراث افغانستان",
+    template: "%s | میراث افغانستان",
+  },
+  description: "جایی برای خواندن، ثبت و شناخت فرهنگ، تاریخ و میراث افغانستان.",
+  applicationName: "میراث افغانستان",
+  authors: [{ name: "میراث افغانستان" }],
+  creator: "میراث افغانستان",
+  publisher: "میراث افغانستان",
+  category: "فرهنگ و میراث افغانستان",
+  formatDetection: {
+    address: false,
+    email: false,
+    telephone: false,
+  },
+  openGraph: {
+    ...publicOpenGraphDefaults,
+    type: "website",
+    title: "میراث افغانستان",
+    description: "جایی برای خواندن، ثبت و شناخت فرهنگ، تاریخ و میراث افغانستان.",
+  },
+  robots: createRobotsMetadata(),
 };
 
 export const viewport: Viewport = {

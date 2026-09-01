@@ -19,6 +19,12 @@ import {
 } from "@/features/entries/utils/public-entry-query";
 import { sortTaxonomyItems } from "@/features/entries/utils/taxonomy";
 import { findTaxonomyItemByRouteSegment } from "@/features/entries/utils/taxonomy-route";
+import {
+  createCanonicalPath,
+  createRobotsMetadata,
+  hasFunctionalSearchParams,
+  publicOpenGraphDefaults,
+} from "@/lib/seo/metadata";
 import { createPersianPathSegment } from "@/lib/utils/persian";
 
 type CategoryDetailPageProps = {
@@ -29,6 +35,12 @@ type CategoryDetailPageProps = {
 };
 
 const PAGE_LIMIT = 8;
+const CATEGORY_FUNCTIONAL_SEARCH_PARAMS = [
+  "page",
+  "sort",
+  "provinceSlug",
+  "geographicScope",
+] as const;
 
 const sortLabels: Record<PublicEntrySort, string> = {
   newest: "تازه‌ترین",
@@ -36,21 +48,35 @@ const sortLabels: Record<PublicEntrySort, string> = {
   recentlyUpdated: "به‌روزشده",
 };
 
-export async function generateMetadata({ params }: CategoryDetailPageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+  searchParams,
+}: CategoryDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
   const category = await getCategoryByRouteSegment(slug);
 
   if (!category) {
     return {
-      title: "موضوع پیدا نشد | میراث افغانستان",
+      title: "موضوع پیدا نشد",
       robots: { index: false, follow: false },
     };
   }
 
+  const resolvedSearchParams = searchParams ? await searchParams : {};
+  const canonicalPath = createCanonicalPath("categories", createPersianPathSegment(category.name));
+  const isFiltered = hasFunctionalSearchParams(
+    resolvedSearchParams,
+    CATEGORY_FUNCTIONAL_SEARCH_PARAMS,
+  );
+
   return {
-    title: `${category.name} | موضوع‌ها | میراث افغانستان`,
+    title: `${category.name} | موضوع‌ها`,
     description: `مطالب منتشرشده در موضوع ${category.name}.`,
+    alternates: { canonical: canonicalPath },
+    robots: createRobotsMetadata(!isFiltered),
     openGraph: {
+      ...publicOpenGraphDefaults,
+      type: "website",
       title: `${category.name} | میراث افغانستان`,
       description: `مطالب منتشرشده درباره ${category.name}.`,
       images: ["/images/herat-grand-mosque.webp"],

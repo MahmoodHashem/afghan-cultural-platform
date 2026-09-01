@@ -7,7 +7,7 @@ import { RegisterForm } from "@/features/auth/components/register-form";
 import { REGISTER_BACKGROUND_SRC } from "@/features/auth/constants/auth-assets";
 
 export const metadata: Metadata = {
-  title: "ایجاد حساب کاربری | میراث افغانستان",
+  title: "ایجاد حساب کاربری",
   description: "ایجاد حساب کاربری در میراث افغانستان.",
   robots: {
     index: false,

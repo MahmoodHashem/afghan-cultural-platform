@@ -9,7 +9,7 @@ import {
 import { CorrectionReview } from "@/features/moderation/components/content-moderation-details";
 
 export const metadata: Metadata = {
-  title: "بررسی پیشنهاد اصلاح | میراث افغانستان",
+  title: "بررسی پیشنهاد اصلاح",
   robots: { index: false, follow: false },
 };
 

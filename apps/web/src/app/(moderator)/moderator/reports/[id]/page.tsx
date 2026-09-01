@@ -9,7 +9,7 @@ import {
 import { ReportReview } from "@/features/moderation/components/content-moderation-details";
 
 export const metadata: Metadata = {
-  title: "بررسی گزارش | میراث افغانستان",
+  title: "بررسی گزارش",
   robots: { index: false, follow: false },
 };
 

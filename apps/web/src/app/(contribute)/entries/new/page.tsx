@@ -5,7 +5,7 @@ import { getContributionTaxonomyData } from "@/features/entries/api/contribution
 import { CreateEntryForm } from "@/features/entries/components/create-entry-form";
 
 export const metadata: Metadata = {
-  title: "ایجاد مطلب جدید | میراث افغانستان",
+  title: "ایجاد مطلب جدید",
   description: "نوشتن و ارسال مطلب فرهنگی برای بررسی در میراث افغانستان.",
   robots: {
     index: false,

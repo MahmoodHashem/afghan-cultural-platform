@@ -6,11 +6,15 @@ import {
 } from "@/features/entries/api/public-entries-api";
 import { CategoriesIndexContent } from "@/features/entries/components/taxonomy-discovery-pages";
 import { sortTaxonomyItems } from "@/features/entries/utils/taxonomy";
+import { publicOpenGraphDefaults } from "@/lib/seo/metadata";
 
 export const metadata: Metadata = {
-  title: "موضوع‌ها | میراث افغانستان",
+  title: "موضوع‌ها",
   description: "مطالب فرهنگی افغانستان را بر اساس موضوع ببینید.",
+  alternates: { canonical: "/categories" },
   openGraph: {
+    ...publicOpenGraphDefaults,
+    type: "website",
     title: "موضوع‌ها | میراث افغانستان",
     description: "مطالب فرهنگی افغانستان را بر اساس موضوع ببینید.",
     images: ["/images/herat-grand-mosque.webp"],

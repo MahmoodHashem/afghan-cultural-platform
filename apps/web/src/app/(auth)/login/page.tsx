@@ -7,7 +7,7 @@ import { LoginForm } from "@/features/auth/components/login-form";
 import { LOGIN_BACKGROUND_SRC } from "@/features/auth/constants/auth-assets";
 
 export const metadata: Metadata = {
-  title: "ورود به حساب | میراث افغانستان",
+  title: "ورود به حساب",
   description: "ورود به حساب کاربری میراث افغانستان.",
   robots: {
     index: false,

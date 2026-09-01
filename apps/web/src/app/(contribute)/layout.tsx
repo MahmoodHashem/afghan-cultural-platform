@@ -5,6 +5,6 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function AuthRouteLayout({ children }: { children: ReactNode }) {
+export default function ContributionLayout({ children }: Readonly<{ children: ReactNode }>) {
   return children;
 }

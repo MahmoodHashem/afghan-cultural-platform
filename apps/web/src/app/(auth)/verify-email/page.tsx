@@ -5,7 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmailVerificationCompletion } from "@/features/auth/components/email-verification-completion";
 
 export const metadata: Metadata = {
-  title: "تأیید ایمیل | میراث افغانستان",
+  title: "تأیید ایمیل",
   description: "تأیید ایمیل حساب کاربری میراث افغانستان.",
   robots: { index: false, follow: false },
 };

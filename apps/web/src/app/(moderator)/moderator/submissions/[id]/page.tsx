@@ -13,7 +13,7 @@ type ModerationSubmissionPageProps = {
 };
 
 export const metadata: Metadata = {
-  title: "بررسی مطلب | میراث افغانستان",
+  title: "بررسی مطلب",
   description: "خواندن و ثبت نتیجه بررسی مطلب فرستاده‌شده.",
   robots: { index: false, follow: false },
 };

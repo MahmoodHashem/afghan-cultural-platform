@@ -10,7 +10,7 @@ import { getContributionTaxonomyData } from "@/features/entries/api/contribution
 import { ModerationQueue } from "@/features/moderation/components/moderation-queue";
 
 export const metadata: Metadata = {
-  title: "صف بررسی مطالب | میراث افغانستان",
+  title: "صف بررسی مطالب",
   description: "بررسی مطالب فرستاده‌شده در میراث افغانستان.",
   robots: { index: false, follow: false },
 };

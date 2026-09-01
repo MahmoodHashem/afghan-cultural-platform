@@ -9,7 +9,7 @@ import {
 import { ModerationHistory } from "@/features/moderation/components/content-moderation-queues";
 
 export const metadata: Metadata = {
-  title: "تاریخچه بررسی | میراث افغانستان",
+  title: "تاریخچه بررسی",
   robots: { index: false, follow: false },
 };
 

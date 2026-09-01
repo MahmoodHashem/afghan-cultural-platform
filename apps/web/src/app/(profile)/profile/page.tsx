@@ -5,7 +5,7 @@ import { RequireAuth } from "@/features/auth/components/route-gates";
 import { OwnerProfilePage } from "@/features/profile/components/owner-profile-page";
 
 export const metadata: Metadata = {
-  title: "پروفایل من | میراث افغانستان",
+  title: "پروفایل من",
   description: "مدیریت نوشته‌ها، دیدگاه‌ها و ذخیره‌های حساب کاربری در میراث افغانستان.",
   robots: {
     index: false,

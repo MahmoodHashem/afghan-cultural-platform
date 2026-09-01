@@ -9,6 +9,7 @@ import {
 import { EntryDetailContent } from "@/features/entries/components/entry-detail-content";
 import { EntryScrollControls } from "@/features/entries/components/entry-scroll-controls";
 import { createEntryDetailBreadcrumbItems } from "@/features/entries/utils/entry-breadcrumb";
+import { createCanonicalPath, publicOpenGraphDefaults } from "@/lib/seo/metadata";
 
 type EntryDetailPageProps = {
   params: Promise<{
@@ -22,15 +23,19 @@ export async function generateMetadata({ params }: EntryDetailPageProps): Promis
 
   if (!entry) {
     return {
-      title: "مطلب پیدا نشد | میراث افغانستان",
+      title: "مطلب پیدا نشد",
       robots: { index: false, follow: false },
     };
   }
 
   return {
-    title: `${entry.seo.title} | میراث افغانستان`,
+    title: entry.seo.title,
     description: entry.seo.summary,
+    alternates: {
+      canonical: createCanonicalPath("entries", entry.seo.canonicalSlug),
+    },
     openGraph: {
+      ...publicOpenGraphDefaults,
       title: entry.seo.title,
       description: entry.seo.summary,
       images: entry.seo.image ? [entry.seo.image] : ["/images/HERAT02.jpg"],

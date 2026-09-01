@@ -12,20 +12,48 @@ import {
   getPositiveIntegerSearchParam,
   getPublicEntrySort,
 } from "@/features/entries/utils/public-entry-query";
+import {
+  createRobotsMetadata,
+  hasFunctionalSearchParams,
+  publicOpenGraphDefaults,
+} from "@/lib/seo/metadata";
 
 type ExplorePageProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export const metadata: Metadata = {
-  title: "مطالب فرهنگی | میراث افغانستان",
-  description: "مطالب فرهنگی افغانستان را بر اساس ولایت، موضوع و نوع محتوا پیدا کنید.",
-  openGraph: {
-    title: "مطالب فرهنگی | میراث افغانستان",
-    description: "مطالب منتشرشده درباره فرهنگ افغانستان.",
-    images: ["/images/HERAT02.jpg"],
-  },
-};
+const EXPLORE_FUNCTIONAL_SEARCH_PARAMS = [
+  "page",
+  "sort",
+  "search",
+  "provinceSlug",
+  "categorySlug",
+  "contentTypeSlug",
+  "tagSlug",
+  "geographicScope",
+] as const;
+
+export async function generateMetadata({ searchParams }: ExplorePageProps): Promise<Metadata> {
+  const resolvedSearchParams = searchParams ? await searchParams : {};
+  const isFiltered = hasFunctionalSearchParams(
+    resolvedSearchParams,
+    EXPLORE_FUNCTIONAL_SEARCH_PARAMS,
+  );
+
+  return {
+    title: "مطالب فرهنگی",
+    description: "مطالب فرهنگی افغانستان را بر اساس ولایت، موضوع و نوع محتوا پیدا کنید.",
+    alternates: { canonical: "/explore" },
+    robots: createRobotsMetadata(!isFiltered),
+    openGraph: {
+      ...publicOpenGraphDefaults,
+      type: "website",
+      title: "مطالب فرهنگی | میراث افغانستان",
+      description: "مطالب منتشرشده درباره فرهنگ افغانستان.",
+      images: ["/images/HERAT02.jpg"],
+    },
+  };
+}
 
 export default async function ExplorePage({ searchParams }: ExplorePageProps) {
   const resolvedSearchParams = searchParams ? await searchParams : {};

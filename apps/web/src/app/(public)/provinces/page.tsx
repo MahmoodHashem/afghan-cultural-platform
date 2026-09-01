@@ -6,11 +6,15 @@ import {
 } from "@/features/entries/api/public-entries-api";
 import { ProvinceIndexContent } from "@/features/entries/components/taxonomy-discovery-pages";
 import { sortTaxonomyItems } from "@/features/entries/utils/taxonomy";
+import { publicOpenGraphDefaults } from "@/lib/seo/metadata";
 
 export const metadata: Metadata = {
-  title: "ولایت‌ها | میراث افغانستان",
+  title: "ولایت‌ها",
   description: "با فرهنگ و میراث ولایت‌های افغانستان آشنا شوید.",
+  alternates: { canonical: "/provinces" },
   openGraph: {
+    ...publicOpenGraphDefaults,
+    type: "website",
     title: "ولایت‌ها | میراث افغانستان",
     description: "با فرهنگ و میراث ولایت‌های افغانستان آشنا شوید.",
     images: ["/images/HERAT02.jpg"],

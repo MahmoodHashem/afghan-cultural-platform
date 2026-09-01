@@ -9,7 +9,7 @@ import {
 import { ReportsQueue } from "@/features/moderation/components/content-moderation-queues";
 
 export const metadata: Metadata = {
-  title: "گزارش‌ها | میراث افغانستان",
+  title: "گزارش‌ها",
   robots: { index: false, follow: false },
 };
 

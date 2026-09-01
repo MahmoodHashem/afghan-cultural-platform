@@ -16,6 +16,12 @@ import {
 import { sortTaxonomyItems } from "@/features/entries/utils/taxonomy";
 import { findTaxonomyItemByRouteSegment } from "@/features/entries/utils/taxonomy-route";
 import { getProvinceImage } from "@/lib/images/province-images";
+import {
+  createCanonicalPath,
+  createRobotsMetadata,
+  hasFunctionalSearchParams,
+  publicOpenGraphDefaults,
+} from "@/lib/seo/metadata";
 import { createPersianPathSegment } from "@/lib/utils/persian";
 
 type ProvinceDetailPageProps = {
@@ -26,25 +32,39 @@ type ProvinceDetailPageProps = {
 };
 
 const PAGE_LIMIT = 8;
+const PROVINCE_FUNCTIONAL_SEARCH_PARAMS = ["page", "categorySlug"] as const;
 
-export async function generateMetadata({ params }: ProvinceDetailPageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+  searchParams,
+}: ProvinceDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
   const province = await getProvinceByRouteSegment(slug);
 
   if (!province) {
     return {
-      title: "ولایت پیدا نشد | میراث افغانستان",
+      title: "ولایت پیدا نشد",
       robots: { index: false, follow: false },
     };
   }
 
   const description = province.description || `مطالب مربوط به ${province.name}.`;
   const image = getProvinceImage(province);
+  const resolvedSearchParams = searchParams ? await searchParams : {};
+  const canonicalPath = createCanonicalPath("provinces", createPersianPathSegment(province.name));
+  const isFiltered = hasFunctionalSearchParams(
+    resolvedSearchParams,
+    PROVINCE_FUNCTIONAL_SEARCH_PARAMS,
+  );
 
   return {
-    title: `${province.name} | ولایت‌ها | میراث افغانستان`,
+    title: `${province.name} | ولایت‌ها`,
     description,
+    alternates: { canonical: canonicalPath },
+    robots: createRobotsMetadata(!isFiltered),
     openGraph: {
+      ...publicOpenGraphDefaults,
+      type: "website",
       title: `${province.name} | میراث افغانستان`,
       description,
       images: [image.src],
