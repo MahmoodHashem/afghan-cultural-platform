@@ -9,7 +9,9 @@ import {
 import { EntryDetailContent } from "@/features/entries/components/entry-detail-content";
 import { EntryScrollControls } from "@/features/entries/components/entry-scroll-controls";
 import { createEntryDetailBreadcrumbItems } from "@/features/entries/utils/entry-breadcrumb";
-import { createCanonicalPath, publicOpenGraphDefaults } from "@/lib/seo/metadata";
+import { JsonLd } from "@/lib/seo/json-ld";
+import { createCanonicalPath, createSocialMetadata } from "@/lib/seo/metadata";
+import { createArticleStructuredData } from "@/lib/seo/structured-data";
 
 type EntryDetailPageProps = {
   params: Promise<{
@@ -28,21 +30,32 @@ export async function generateMetadata({ params }: EntryDetailPageProps): Promis
     };
   }
 
+  const canonicalPath = createCanonicalPath("entries", entry.seo.canonicalSlug);
+  const coverImage = entry.coverImage;
+
   return {
     title: entry.seo.title,
     description: entry.seo.summary,
-    alternates: {
-      canonical: createCanonicalPath("entries", entry.seo.canonicalSlug),
-    },
-    openGraph: {
-      ...publicOpenGraphDefaults,
+    alternates: { canonical: canonicalPath },
+    ...createSocialMetadata({
       title: entry.seo.title,
       description: entry.seo.summary,
-      images: entry.seo.image ? [entry.seo.image] : ["/images/HERAT02.jpg"],
-      publishedTime: entry.seo.publishedAt,
-      modifiedTime: entry.seo.modifiedAt,
-      authors: [entry.seo.author],
-    },
+      canonicalPath,
+      image: coverImage
+        ? {
+            url: coverImage.secureUrl,
+            width: coverImage.width,
+            height: coverImage.height,
+            alt: coverImage.altText,
+          }
+        : null,
+      article: {
+        publishedTime: entry.seo.publishedAt,
+        modifiedTime: entry.seo.modifiedAt,
+        section: entry.category.name,
+        tags: entry.tags.map((tag) => tag.name),
+      },
+    }),
   };
 }
 
@@ -56,9 +69,23 @@ export default async function EntryDetailPage({ params }: EntryDetailPageProps) 
 
   const comments = await getPublicEntryComments(entry.id, entry.commentCount);
   const breadcrumbItems = createEntryDetailBreadcrumbItems(entry.title);
+  const canonicalPath = createCanonicalPath("entries", entry.seo.canonicalSlug);
 
   return (
     <>
+      <JsonLd
+        data={createArticleStructuredData({
+          headline: entry.seo.title,
+          description: entry.seo.summary,
+          canonicalPath,
+          authorName: entry.seo.author,
+          publishedAt: entry.seo.publishedAt,
+          modifiedAt: entry.seo.modifiedAt,
+          images: entry.images.map((image) => image.secureUrl),
+          category: entry.category.name,
+          tags: entry.tags.map((tag) => tag.name),
+        })}
+      />
       <PageTransition>
         <EngagementAccessProvider
           entryId={entry.id}

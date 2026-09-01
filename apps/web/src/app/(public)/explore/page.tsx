@@ -12,11 +12,16 @@ import {
   getPositiveIntegerSearchParam,
   getPublicEntrySort,
 } from "@/features/entries/utils/public-entry-query";
+import { JsonLd } from "@/lib/seo/json-ld";
 import {
+  createCanonicalPath,
   createRobotsMetadata,
+  createSocialMetadata,
   hasFunctionalSearchParams,
-  publicOpenGraphDefaults,
 } from "@/lib/seo/metadata";
+import { createCollectionStructuredData } from "@/lib/seo/structured-data";
+
+const EXPLORE_DESCRIPTION = "مطالب فرهنگی افغانستان را بر اساس ولایت، موضوع و نوع محتوا پیدا کنید.";
 
 type ExplorePageProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
@@ -42,16 +47,14 @@ export async function generateMetadata({ searchParams }: ExplorePageProps): Prom
 
   return {
     title: "مطالب فرهنگی",
-    description: "مطالب فرهنگی افغانستان را بر اساس ولایت، موضوع و نوع محتوا پیدا کنید.",
+    description: EXPLORE_DESCRIPTION,
     alternates: { canonical: "/explore" },
     robots: createRobotsMetadata(!isFiltered),
-    openGraph: {
-      ...publicOpenGraphDefaults,
-      type: "website",
+    ...createSocialMetadata({
       title: "مطالب فرهنگی | میراث افغانستان",
-      description: "مطالب منتشرشده درباره فرهنگ افغانستان.",
-      images: ["/images/HERAT02.jpg"],
-    },
+      description: EXPLORE_DESCRIPTION,
+      canonicalPath: "/explore",
+    }),
   };
 }
 
@@ -62,16 +65,40 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
     getPublishedEntries(query),
     getExploreTaxonomyData(),
   ]);
+  const isFiltered = hasFunctionalSearchParams(
+    resolvedSearchParams,
+    EXPLORE_FUNCTIONAL_SEARCH_PARAMS,
+  );
 
   return (
-    <PageTransition>
-      <ExploreContent
-        entries={entries}
-        taxonomy={taxonomy}
-        query={query}
-        isEntriesUnavailable={entries.isUnavailable}
-      />
-    </PageTransition>
+    <>
+      {!isFiltered && !entries.isUnavailable ? (
+        <JsonLd
+          data={createCollectionStructuredData({
+            name: "مطالب فرهنگی افغانستان",
+            description: EXPLORE_DESCRIPTION,
+            canonicalPath: "/explore",
+            breadcrumbs: [
+              { name: "خانه", path: "/" },
+              { name: "مطالب", path: "/explore" },
+            ],
+            items: entries.data.map((entry) => ({
+              name: entry.title,
+              path: createCanonicalPath("entries", entry.slug),
+            })),
+            totalItems: entries.meta.total,
+          })}
+        />
+      ) : null}
+      <PageTransition>
+        <ExploreContent
+          entries={entries}
+          taxonomy={taxonomy}
+          query={query}
+          isEntriesUnavailable={entries.isUnavailable}
+        />
+      </PageTransition>
+    </>
   );
 }
 

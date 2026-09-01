@@ -19,12 +19,14 @@ import {
 } from "@/features/entries/utils/public-entry-query";
 import { sortTaxonomyItems } from "@/features/entries/utils/taxonomy";
 import { findTaxonomyItemByRouteSegment } from "@/features/entries/utils/taxonomy-route";
+import { JsonLd } from "@/lib/seo/json-ld";
 import {
   createCanonicalPath,
   createRobotsMetadata,
+  createSocialMetadata,
   hasFunctionalSearchParams,
-  publicOpenGraphDefaults,
 } from "@/lib/seo/metadata";
+import { createCollectionStructuredData } from "@/lib/seo/structured-data";
 import { createPersianPathSegment } from "@/lib/utils/persian";
 
 type CategoryDetailPageProps = {
@@ -64,6 +66,7 @@ export async function generateMetadata({
 
   const resolvedSearchParams = searchParams ? await searchParams : {};
   const canonicalPath = createCanonicalPath("categories", createPersianPathSegment(category.name));
+  const description = `مطالب منتشرشده درباره ${category.name}.`;
   const isFiltered = hasFunctionalSearchParams(
     resolvedSearchParams,
     CATEGORY_FUNCTIONAL_SEARCH_PARAMS,
@@ -71,16 +74,14 @@ export async function generateMetadata({
 
   return {
     title: `${category.name} | موضوع‌ها`,
-    description: `مطالب منتشرشده در موضوع ${category.name}.`,
+    description,
     alternates: { canonical: canonicalPath },
     robots: createRobotsMetadata(!isFiltered),
-    openGraph: {
-      ...publicOpenGraphDefaults,
-      type: "website",
+    ...createSocialMetadata({
       title: `${category.name} | میراث افغانستان`,
-      description: `مطالب منتشرشده درباره ${category.name}.`,
-      images: ["/images/herat-grand-mosque.webp"],
-    },
+      description,
+      canonicalPath,
+    }),
   };
 }
 
@@ -110,6 +111,11 @@ export default async function CategoryDetailPage({
     ? "PROVINCE"
     : selectedGeographicScope;
   const baseHref = `/categories/${encodeURIComponent(createPersianPathSegment(category.name))}`;
+  const canonicalPath = createCanonicalPath("categories", createPersianPathSegment(category.name));
+  const isFiltered = hasFunctionalSearchParams(
+    resolvedSearchParams,
+    CATEGORY_FUNCTIONAL_SEARCH_PARAMS,
+  );
   const entryQuery: PublicEntryListQuery = {
     page,
     limit: PAGE_LIMIT,
@@ -148,47 +154,68 @@ export default async function CategoryDetailPage({
   const provinceFilters = provinceCounts.filter((province) => province.entryCount > 0);
 
   return (
-    <PageTransition>
-      <CategoryDetailContent
-        category={{
-          ...category,
-          entryCount: categoryTotal.count,
-        }}
-        entries={entries}
-        provinceFilters={provinceFilters}
-        allAfghanistanHref={createCategoryHref(baseHref, { sort })}
-        nationalHref={createCategoryHref(baseHref, { geographicScope: "NATIONAL", sort })}
-        isAllAfghanistanActive={!effectiveProvinceSlug && !selectedGeographicScope}
-        isNationalActive={selectedGeographicScope === "NATIONAL"}
-        nationalCount={nationalCountResult.count}
-        sortOptions={Object.entries(sortLabels).map(([value, label]) => ({
-          label,
-          value: value as PublicEntrySort,
-          href: createCategoryHref(baseHref, {
-            provinceSlug: effectiveProvinceSlug,
-            geographicScope: effectiveGeographicScope,
-            sort: value as PublicEntrySort,
-          }),
-          isActive: sort === value,
-        }))}
-        createPageHref={(nextPage) =>
-          createCategoryHref(baseHref, {
-            provinceSlug: effectiveProvinceSlug,
-            geographicScope: effectiveGeographicScope,
-            sort,
-            page: nextPage,
-          })
-        }
-        isUnavailable={
-          categoriesResponse.isUnavailable ||
-          provincesResponse.isUnavailable ||
-          entries.isUnavailable ||
-          categoryTotal.isUnavailable ||
-          nationalCountResult.isUnavailable ||
-          provinceCounts.some((province) => province.isUnavailable)
-        }
-      />
-    </PageTransition>
+    <>
+      {!isFiltered && !entries.isUnavailable && !categoryTotal.isUnavailable ? (
+        <JsonLd
+          data={createCollectionStructuredData({
+            name: `مطالب موضوع ${category.name}`,
+            description: `مطالب منتشرشده درباره ${category.name}.`,
+            canonicalPath,
+            breadcrumbs: [
+              { name: "خانه", path: "/" },
+              { name: "موضوع‌ها", path: "/categories" },
+              { name: category.name, path: canonicalPath },
+            ],
+            items: entries.data.map((entry) => ({
+              name: entry.title,
+              path: createCanonicalPath("entries", entry.slug),
+            })),
+            totalItems: categoryTotal.count,
+          })}
+        />
+      ) : null}
+      <PageTransition>
+        <CategoryDetailContent
+          category={{
+            ...category,
+            entryCount: categoryTotal.count,
+          }}
+          entries={entries}
+          provinceFilters={provinceFilters}
+          allAfghanistanHref={createCategoryHref(baseHref, { sort })}
+          nationalHref={createCategoryHref(baseHref, { geographicScope: "NATIONAL", sort })}
+          isAllAfghanistanActive={!effectiveProvinceSlug && !selectedGeographicScope}
+          isNationalActive={selectedGeographicScope === "NATIONAL"}
+          nationalCount={nationalCountResult.count}
+          sortOptions={Object.entries(sortLabels).map(([value, label]) => ({
+            label,
+            value: value as PublicEntrySort,
+            href: createCategoryHref(baseHref, {
+              provinceSlug: effectiveProvinceSlug,
+              geographicScope: effectiveGeographicScope,
+              sort: value as PublicEntrySort,
+            }),
+            isActive: sort === value,
+          }))}
+          createPageHref={(nextPage) =>
+            createCategoryHref(baseHref, {
+              provinceSlug: effectiveProvinceSlug,
+              geographicScope: effectiveGeographicScope,
+              sort,
+              page: nextPage,
+            })
+          }
+          isUnavailable={
+            categoriesResponse.isUnavailable ||
+            provincesResponse.isUnavailable ||
+            entries.isUnavailable ||
+            categoryTotal.isUnavailable ||
+            nationalCountResult.isUnavailable ||
+            provinceCounts.some((province) => province.isUnavailable)
+          }
+        />
+      </PageTransition>
+    </>
   );
 }
 

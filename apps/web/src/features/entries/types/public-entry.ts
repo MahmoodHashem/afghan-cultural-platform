@@ -19,6 +19,8 @@ type TaxonomyItem = {
     width: number | null;
     height: number | null;
   } | null;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 type PublicEntryImage = {

@@ -31,6 +31,10 @@ type PublicEntryListResult = EntryListResponse & {
   isUnavailable: boolean;
 };
 
+type PublicFetchOptions = {
+  revalidate?: number;
+};
+
 type TaxonomyResult<TItem> = TaxonomyListResponse<TItem> & {
   isUnavailable: boolean;
 };
@@ -63,7 +67,10 @@ const EMPTY_TAXONOMY_RESPONSE: TaxonomyListResponse<TaxonomyItem> = {
   },
 };
 
-async function getPublishedEntries(query: PublicEntryListQuery): Promise<PublicEntryListResult> {
+async function getPublishedEntries(
+  query: PublicEntryListQuery,
+  options?: PublicFetchOptions,
+): Promise<PublicEntryListResult> {
   const searchParams = new URLSearchParams();
 
   searchParams.set("page", String(query.page ?? 1));
@@ -78,7 +85,11 @@ async function getPublishedEntries(query: PublicEntryListQuery): Promise<PublicE
   setOptionalSearchParam(searchParams, "tagSlug", query.tagSlug);
   setOptionalSearchParam(searchParams, "geographicScope", query.geographicScope);
 
-  return fetchApi<EntryListResponse>(`/entries?${searchParams.toString()}`, EMPTY_ENTRY_RESPONSE);
+  return fetchApi<EntryListResponse>(
+    `/entries?${searchParams.toString()}`,
+    EMPTY_ENTRY_RESPONSE,
+    options,
+  );
 }
 
 async function getPublishedEntryCount(query: Omit<PublicEntryListQuery, "page" | "limit">) {
@@ -158,22 +169,29 @@ async function getExploreTaxonomyData(): Promise<ExploreTaxonomyData> {
   };
 }
 
-async function getPublicProvinces() {
-  return fetchTaxonomy("/taxonomy/provinces?limit=100");
+async function getPublicProvinces(options?: PublicFetchOptions) {
+  return fetchTaxonomy("/taxonomy/provinces?limit=100", options);
 }
 
-async function getPublicCategories() {
-  return fetchTaxonomy("/taxonomy/categories?limit=100");
+async function getPublicCategories(options?: PublicFetchOptions) {
+  return fetchTaxonomy("/taxonomy/categories?limit=100", options);
 }
 
-async function fetchTaxonomy(path: string): Promise<TaxonomyResult<TaxonomyItem>> {
-  return fetchApi<TaxonomyListResponse<TaxonomyItem>>(path, EMPTY_TAXONOMY_RESPONSE);
+async function fetchTaxonomy(
+  path: string,
+  options?: PublicFetchOptions,
+): Promise<TaxonomyResult<TaxonomyItem>> {
+  return fetchApi<TaxonomyListResponse<TaxonomyItem>>(path, EMPTY_TAXONOMY_RESPONSE, options);
 }
 
-async function fetchApi<TResponse>(path: string, fallback: TResponse) {
+async function fetchApi<TResponse>(
+  path: string,
+  fallback: TResponse,
+  options?: PublicFetchOptions,
+) {
   try {
     const response = await fetch(`${getPublicApiBaseUrl()}${path}`, {
-      next: { revalidate: 120 },
+      next: { revalidate: options?.revalidate ?? 120 },
     });
 
     if (!response.ok) {

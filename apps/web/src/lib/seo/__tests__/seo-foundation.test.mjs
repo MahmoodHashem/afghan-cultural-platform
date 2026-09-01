@@ -11,10 +11,16 @@ function read(relativePath) {
 
 const rootLayout = read("src/app/layout.tsx");
 const robotsRoute = read("src/app/robots.ts");
+const sitemapRoute = read("src/app/sitemap.ts");
+const publicEntriesApi = read("src/features/entries/api/public-entries-api.ts");
 const seoMetadata = read("src/lib/seo/metadata.ts");
+const jsonLd = read("src/lib/seo/json-ld.tsx");
+const structuredData = read("src/lib/seo/structured-data.ts");
 const homePage = read("src/app/page.tsx");
 const explorePage = read("src/app/(public)/explore/page.tsx");
+const categoriesPage = read("src/app/(public)/categories/page.tsx");
 const categoryPage = read("src/app/(public)/categories/[slug]/page.tsx");
+const provincesPage = read("src/app/(public)/provinces/page.tsx");
 const provincePage = read("src/app/(public)/provinces/[slug]/page.tsx");
 const entryPage = read("src/app/(public)/entries/[slug]/page.tsx");
 const authLayout = read("src/app/(auth)/layout.tsx");
@@ -35,15 +41,70 @@ test("robots blocks non-production deployments and allows the canonical producti
   assert.match(robotsRoute, /disallow: "\/"/);
   assert.match(robotsRoute, /allow: "\/"/);
   assert.match(robotsRoute, /host: siteUrl\.origin/);
-  assert.doesNotMatch(robotsRoute, /sitemap/);
+  assert.match(robotsRoute, /sitemap: new URL\("\/sitemap\.xml", siteUrl\)\.toString\(\)/);
+  assert.ok(robotsRoute.indexOf("sitemap:") > robotsRoute.indexOf("if (!isSiteIndexingEnabled())"));
 });
 
 test("global metadata uses Persian defaults and a safe title template", () => {
   assert.match(rootLayout, /template: "%s \| میراث افغانستان"/);
-  assert.match(rootLayout, /applicationName: "میراث افغانستان"/);
-  assert.match(rootLayout, /جایی برای خواندن، ثبت و شناخت فرهنگ/);
-  assert.match(rootLayout, /publicOpenGraphDefaults/);
+  assert.match(rootLayout, /applicationName: SITE_NAME/);
+  assert.match(seoMetadata, /جایی برای خواندن، ثبت و شناخت فرهنگ/);
+  assert.match(rootLayout, /createSocialMetadata/);
   assert.match(homePage, /title: \{ absolute: "میراث افغانستان \| فرهنگ و تاریخ افغانستان" \}/);
+});
+
+test("dynamic sitemap includes only canonical public discovery records", () => {
+  assert.match(sitemapRoute, /if \(!isSiteIndexingEnabled\(\)\) \{\s+return \[\];/);
+  assert.match(sitemapRoute, /export const revalidate = 3600/);
+  assert.match(sitemapRoute, /SITEMAP_REVALIDATE_SECONDS = 3600/);
+  assert.match(
+    sitemapRoute,
+    /STATIC_PUBLIC_PATHS = \["\/", "\/explore", "\/provinces", "\/categories"\]/,
+  );
+  assert.match(sitemapRoute, /getPublicProvinces\(\{ revalidate: SITEMAP_REVALIDATE_SECONDS \}\)/);
+  assert.match(sitemapRoute, /getPublicCategories\(\{ revalidate: SITEMAP_REVALIDATE_SECONDS \}\)/);
+  assert.match(sitemapRoute, /limit: SITEMAP_PAGE_SIZE/);
+  assert.match(sitemapRoute, /revalidate: SITEMAP_REVALIDATE_SECONDS/);
+  assert.match(publicEntriesApi, /options\?\.revalidate \?\? 120/);
+  assert.match(sitemapRoute, /page <= firstPage\.meta\.totalPages/);
+  assert.match(sitemapRoute, /lastModified: toValidDate\(entry\.updatedAt\)/);
+  assert.match(sitemapRoute, /new Map\(records\.map/);
+  assert.doesNotMatch(sitemapRoute, /admin|moderator|profile|entries\/new/);
+});
+
+test("social metadata provides canonical Open Graph and large Twitter previews", () => {
+  assert.match(seoMetadata, /DEFAULT_SOCIAL_IMAGE/);
+  assert.match(seoMetadata, /width: 1200/);
+  assert.match(seoMetadata, /height: 675/);
+  assert.match(seoMetadata, /url: canonicalPath/);
+  assert.match(seoMetadata, /card: "summary_large_image"/);
+  assert.match(entryPage, /article: \{/);
+  assert.match(entryPage, /publishedTime: entry\.seo\.publishedAt/);
+  assert.match(entryPage, /section: entry\.category\.name/);
+  assert.match(provincePage, /image: \{ url: image\.src, alt: image\.alt \}/);
+});
+
+test("JSON-LD is safely serialized and uses the approved rich-result entities", () => {
+  assert.match(jsonLd, /if \(!isSiteIndexingEnabled\(\)\) \{\s+return null;/);
+  assert.match(jsonLd, /replaceAll\("<", "\\\\u003c"\)/);
+  assert.match(jsonLd, /type="application\/ld\+json"/);
+  for (const entity of ["Organization", "WebSite", "CollectionPage", "BreadcrumbList", "Article"]) {
+    assert.match(structuredData, new RegExp(`"@type": "${entity}"`));
+  }
+  assert.match(structuredData, /inLanguage: "fa-AF"/);
+  assert.match(structuredData, /isAccessibleForFree: true/);
+  assert.doesNotMatch(structuredData, /sameAs|aggregateRating|reviewRating|PostalAddress/);
+});
+
+test("public pages render the matching structured data only on clean collections", () => {
+  assert.match(homePage, /createHomeStructuredData\(\)/);
+  assert.match(categoriesPage, /createCollectionStructuredData/);
+  assert.match(provincesPage, /createCollectionStructuredData/);
+  assert.match(explorePage, /!isFiltered && !entries\.isUnavailable/);
+  assert.match(categoryPage, /!isFiltered && !entries\.isUnavailable/);
+  assert.match(provincePage, /!isFiltered && !entries\.isUnavailable/);
+  assert.match(entryPage, /createArticleStructuredData/);
+  assert.match(structuredData, /\{ name: "مطالب", path: "\/explore" \}/);
 });
 
 test("clean public routes expose canonical URLs", () => {

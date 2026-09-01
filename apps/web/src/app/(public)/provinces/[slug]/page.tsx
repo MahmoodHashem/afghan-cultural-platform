@@ -16,12 +16,14 @@ import {
 import { sortTaxonomyItems } from "@/features/entries/utils/taxonomy";
 import { findTaxonomyItemByRouteSegment } from "@/features/entries/utils/taxonomy-route";
 import { getProvinceImage } from "@/lib/images/province-images";
+import { JsonLd } from "@/lib/seo/json-ld";
 import {
   createCanonicalPath,
   createRobotsMetadata,
+  createSocialMetadata,
   hasFunctionalSearchParams,
-  publicOpenGraphDefaults,
 } from "@/lib/seo/metadata";
+import { createCollectionStructuredData } from "@/lib/seo/structured-data";
 import { createPersianPathSegment } from "@/lib/utils/persian";
 
 type ProvinceDetailPageProps = {
@@ -62,13 +64,12 @@ export async function generateMetadata({
     description,
     alternates: { canonical: canonicalPath },
     robots: createRobotsMetadata(!isFiltered),
-    openGraph: {
-      ...publicOpenGraphDefaults,
-      type: "website",
+    ...createSocialMetadata({
       title: `${province.name} | میراث افغانستان`,
       description,
-      images: [image.src],
-    },
+      canonicalPath,
+      image: { url: image.src, alt: image.alt },
+    }),
   };
 }
 
@@ -91,6 +92,11 @@ export default async function ProvinceDetailPage({
   const page = getPositiveIntegerSearchParam(resolvedSearchParams.page, 1);
   const selectedCategorySlug = getOptionalSearchParam(resolvedSearchParams.categorySlug);
   const baseHref = `/provinces/${encodeURIComponent(createPersianPathSegment(province.name))}`;
+  const canonicalPath = createCanonicalPath("provinces", createPersianPathSegment(province.name));
+  const isFiltered = hasFunctionalSearchParams(
+    resolvedSearchParams,
+    PROVINCE_FUNCTIONAL_SEARCH_PARAMS,
+  );
   const entryQuery: PublicEntryListQuery = {
     page,
     limit: PAGE_LIMIT,
@@ -123,27 +129,48 @@ export default async function ProvinceDetailPage({
   const categoryFilters = categoryCounts.filter((category) => category.entryCount > 0);
 
   return (
-    <PageTransition>
-      <ProvinceDetailContent
-        province={province}
-        entries={entries}
-        categoryFilters={categoryFilters}
-        allCategoriesHref={baseHref}
-        isAllCategoriesActive={!selectedCategorySlug}
-        createPageHref={(nextPage) =>
-          createProvinceHref(baseHref, {
-            categorySlug: selectedCategorySlug,
-            page: nextPage,
-          })
-        }
-        isUnavailable={
-          provincesResponse.isUnavailable ||
-          categoriesResponse.isUnavailable ||
-          entries.isUnavailable ||
-          categoryCounts.some((category) => category.isUnavailable)
-        }
-      />
-    </PageTransition>
+    <>
+      {!isFiltered && !entries.isUnavailable ? (
+        <JsonLd
+          data={createCollectionStructuredData({
+            name: `مطالب فرهنگی ولایت ${province.name}`,
+            description: province.description || `مطالب منتشرشده درباره ولایت ${province.name}.`,
+            canonicalPath,
+            breadcrumbs: [
+              { name: "خانه", path: "/" },
+              { name: "ولایت‌ها", path: "/provinces" },
+              { name: province.name, path: canonicalPath },
+            ],
+            items: entries.data.map((entry) => ({
+              name: entry.title,
+              path: createCanonicalPath("entries", entry.slug),
+            })),
+            totalItems: entries.meta.total,
+          })}
+        />
+      ) : null}
+      <PageTransition>
+        <ProvinceDetailContent
+          province={province}
+          entries={entries}
+          categoryFilters={categoryFilters}
+          allCategoriesHref={baseHref}
+          isAllCategoriesActive={!selectedCategorySlug}
+          createPageHref={(nextPage) =>
+            createProvinceHref(baseHref, {
+              categorySlug: selectedCategorySlug,
+              page: nextPage,
+            })
+          }
+          isUnavailable={
+            provincesResponse.isUnavailable ||
+            categoriesResponse.isUnavailable ||
+            entries.isUnavailable ||
+            categoryCounts.some((category) => category.isUnavailable)
+          }
+        />
+      </PageTransition>
+    </>
   );
 }
 
