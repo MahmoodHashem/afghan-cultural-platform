@@ -51,10 +51,10 @@ class BaseTaxonomyDto {
 }
 
 class CreateProvinceDto extends BaseTaxonomyDto {
-  @ApiPropertyOptional({ maxLength: 500 })
+  @ApiPropertyOptional({ maxLength: 1500 })
   @IsOptional()
   @IsString()
-  @MaxLength(500)
+  @MaxLength(1500)
   description?: string;
 }
 

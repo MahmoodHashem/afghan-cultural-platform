@@ -25,6 +25,7 @@
     "prisma:studio": "pnpm --filter @afghan-culture/api prisma:studio",
     "prisma:seed": "pnpm --filter @afghan-culture/api prisma:seed",
     "prisma:seed:taxonomy": "pnpm --filter @afghan-culture/api prisma:seed:taxonomy",
+    "prisma:seed:province-descriptions": "pnpm --filter @afghan-culture/api prisma:seed:province-descriptions",
     "prisma:seed:demo": "pnpm --filter @afghan-culture/api prisma:seed:demo",
     "check": "biome check .",
     "check:write": "biome check . --write",

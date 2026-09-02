@@ -12,7 +12,7 @@ const adminProvinceSchema = z.object({
     .trim()
     .min(2, "نام ولایت باید دست‌کم دو حرف باشد.")
     .max(120, "نام ولایت بیش از حد طولانی است."),
-  description: z.string().trim().max(500, "توضیح ولایت نباید بیشتر از ۵۰۰ حرف باشد."),
+  description: z.string().trim().max(1500, "توضیح ولایت نباید بیشتر از ۱۵۰۰ حرف باشد."),
   sortOrder: sortOrderSchema,
   isActive: z.boolean(),
 });
