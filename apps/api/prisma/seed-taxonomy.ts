@@ -5,45 +5,100 @@ type SeedPrismaClient = ReturnType<typeof createSeedPrismaClient>;
 
 async function seedTaxonomy(prisma: SeedPrismaClient): Promise<void> {
   for (const province of provinces) {
-    await prisma.province.upsert({
-      where: { slug: province.slug },
-      update: {
-        name: province.name,
-        sortOrder: province.sortOrder,
-      },
-      create: {
-        ...province,
-        isActive: true,
-      },
+    const matches = await prisma.province.findMany({
+      where: { OR: [{ slug: province.slug }, { name: province.name }] },
+      select: { id: true },
+      take: 2,
     });
+
+    assertSingleTaxonomyMatch("province", province.name, province.slug, matches);
+
+    if (matches[0]) {
+      await prisma.province.update({
+        where: { id: matches[0].id },
+        data: {
+          name: province.name,
+          slug: province.slug,
+          sortOrder: province.sortOrder,
+        },
+      });
+    } else {
+      await prisma.province.create({
+        data: {
+          ...province,
+          isActive: true,
+        },
+      });
+    }
   }
 
   for (const category of categories) {
-    await prisma.category.upsert({
-      where: { slug: category.slug },
-      update: {
-        name: category.name,
-        sortOrder: category.sortOrder,
-      },
-      create: {
-        ...category,
-        isActive: true,
-      },
+    const matches = await prisma.category.findMany({
+      where: { OR: [{ slug: category.slug }, { name: category.name }] },
+      select: { id: true },
+      take: 2,
     });
+
+    assertSingleTaxonomyMatch("category", category.name, category.slug, matches);
+
+    if (matches[0]) {
+      await prisma.category.update({
+        where: { id: matches[0].id },
+        data: {
+          name: category.name,
+          slug: category.slug,
+          sortOrder: category.sortOrder,
+        },
+      });
+    } else {
+      await prisma.category.create({
+        data: {
+          ...category,
+          isActive: true,
+        },
+      });
+    }
   }
 
   for (const contentType of contentTypes) {
-    await prisma.contentType.upsert({
-      where: { slug: contentType.slug },
-      update: {
-        name: contentType.name,
-        sortOrder: contentType.sortOrder,
-      },
-      create: {
-        ...contentType,
-        isActive: true,
-      },
+    const matches = await prisma.contentType.findMany({
+      where: { OR: [{ slug: contentType.slug }, { name: contentType.name }] },
+      select: { id: true },
+      take: 2,
     });
+
+    assertSingleTaxonomyMatch("content type", contentType.name, contentType.slug, matches);
+
+    if (matches[0]) {
+      await prisma.contentType.update({
+        where: { id: matches[0].id },
+        data: {
+          name: contentType.name,
+          slug: contentType.slug,
+          sortOrder: contentType.sortOrder,
+        },
+      });
+    } else {
+      await prisma.contentType.create({
+        data: {
+          ...contentType,
+          isActive: true,
+        },
+      });
+    }
+  }
+}
+
+function assertSingleTaxonomyMatch(
+  kind: string,
+  name: string,
+  slug: string,
+  matches: Array<{ id: string }>,
+): void {
+  if (matches.length > 1) {
+    throw new Error(
+      `Cannot reconcile ${kind} taxonomy seed for name "${name}" and slug "${slug}" because they belong to different records.`,
+    );
   }
 }
 
