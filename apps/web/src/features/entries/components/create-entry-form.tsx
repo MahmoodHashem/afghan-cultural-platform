@@ -318,13 +318,20 @@ function CreateEntryForm({ initialDraftId, taxonomy }: CreateEntryFormProps) {
       const wasNewDraft = !draftId;
 
       setDraftId(savedDraft.id);
-      await syncRelatedContent(savedDraft.id, values);
-      form.reset(form.getValues());
-      setSaveState("saved");
 
       if (wasNewDraft) {
         router.replace(`/entries/${savedDraft.id}/edit`);
       }
+
+      const relatedContentSynced = await syncRelatedContent(savedDraft.id, values);
+
+      if (!relatedContentSynced) {
+        setSaveState("unsaved");
+        return null;
+      }
+
+      form.reset(form.getValues());
+      setSaveState("saved");
 
       if (showSuccessToast) {
         toast.success("پیش‌نویس ذخیره شد.");
@@ -346,7 +353,8 @@ function CreateEntryForm({ initialDraftId, taxonomy }: CreateEntryFormProps) {
       await replaceEntryTags(entryId, values.tagIds);
       await syncSources(entryId, values);
       await syncYouTubeVideo(entryId, values);
-      await stagedImages.syncPendingImages(entryId);
+      const imagesSynced = await stagedImages.syncPendingImages(entryId);
+      return imagesSynced;
     } finally {
       setIsSyncingMedia(false);
     }

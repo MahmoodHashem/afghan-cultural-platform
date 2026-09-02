@@ -32,12 +32,32 @@ function detectImageMimeType(buffer: Buffer): string | null {
 
 function isSupportedImageFile(file: Express.Multer.File): boolean {
   const detectedMimeType = detectImageMimeType(file.buffer);
+  const declaredMimeType = normalizeImageMimeType(file.mimetype);
 
   return (
     detectedMimeType !== null &&
-    SUPPORTED_IMAGE_MIME_TYPES.has(file.mimetype) &&
-    detectedMimeType === file.mimetype
+    SUPPORTED_IMAGE_MIME_TYPES.has(declaredMimeType) &&
+    detectedMimeType === declaredMimeType
   );
 }
 
-export { detectImageMimeType, isSupportedImageFile, SUPPORTED_IMAGE_MIME_TYPES };
+function normalizeImageMimeType(mimeType: string) {
+  const normalizedMimeType = mimeType.toLowerCase().trim();
+
+  if (normalizedMimeType === "image/jpg" || normalizedMimeType === "image/pjpeg") {
+    return "image/jpeg";
+  }
+
+  if (normalizedMimeType === "image/x-png") {
+    return "image/png";
+  }
+
+  return normalizedMimeType;
+}
+
+export {
+  detectImageMimeType,
+  isSupportedImageFile,
+  normalizeImageMimeType,
+  SUPPORTED_IMAGE_MIME_TYPES,
+};

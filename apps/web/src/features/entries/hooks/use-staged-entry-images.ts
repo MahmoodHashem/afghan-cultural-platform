@@ -11,6 +11,7 @@ import {
 import type { StagedImage } from "@/features/entries/types/create-entry-form";
 import { getEntryFormErrorMessage } from "@/features/entries/utils/create-entry-errors";
 import { emptyToUndefined } from "@/features/entries/utils/create-entry-form-utils";
+import { normalizeEntryImage } from "@/features/entries/utils/normalize-entry-image";
 import {
   MAX_IMAGE_SIZE_BYTES,
   MAX_IMAGE_SIZE_MB,
@@ -73,7 +74,7 @@ export function useStagedEntryImages({
     );
   }, [draftId, initialImages]);
 
-  function selectImages(files: FileList | null) {
+  async function selectImages(files: FileList | null) {
     if (!files?.length) {
       return;
     }
@@ -98,8 +99,23 @@ export function useStagedEntryImages({
       return;
     }
 
+    const normalizedFiles = await Promise.allSettled(
+      selectedFiles.map((file) => normalizeEntryImage(file)),
+    );
+    const readyFiles = normalizedFiles.flatMap((result) =>
+      result.status === "fulfilled" ? [result.value] : [],
+    );
+
+    if (readyFiles.length < selectedFiles.length) {
+      toast.error("یک یا چند تصویر قابل خواندن نبود. لطفاً تصویر JPEG، PNG یا WebP انتخاب کنید.");
+    }
+
+    if (readyFiles.length === 0) {
+      return;
+    }
+
     const title = getTitle();
-    const nextImages = selectedFiles.map((file) => ({
+    const nextImages = readyFiles.map((file) => ({
       clientId: crypto.randomUUID(),
       file,
       previewUrl: URL.createObjectURL(file),
@@ -165,12 +181,15 @@ export function useStagedEntryImages({
   }
 
   async function syncPendingImages(entryId: string) {
+    let hasFailedImage = false;
+
     for (const [index, image] of images.entries()) {
       if (image.status === "uploaded" || image.status === "uploading") {
         continue;
       }
 
       if (!image.file) {
+        hasFailedImage = true;
         patchImageWithoutDirty(image.clientId, {
           status: "error",
           error: "فایل تصویر دوباره انتخاب شود.",
@@ -179,6 +198,7 @@ export function useStagedEntryImages({
       }
 
       if (!image.altText.trim()) {
+        hasFailedImage = true;
         patchImageWithoutDirty(image.clientId, {
           status: "error",
           error: "متن جایگزین تصویر را بنویسید.",
@@ -187,6 +207,7 @@ export function useStagedEntryImages({
       }
 
       if (!image.permissionConfirmed) {
+        hasFailedImage = true;
         patchImageWithoutDirty(image.clientId, {
           status: "error",
           error: "اجازه استفاده از تصویر را تأیید کنید.",
@@ -210,6 +231,7 @@ export function useStagedEntryImages({
           uploadedImage,
         });
       } catch (error) {
+        hasFailedImage = true;
         patchImageWithoutDirty(image.clientId, {
           status: "error",
           error: getEntryFormErrorMessage(error),
@@ -217,6 +239,8 @@ export function useStagedEntryImages({
         toast.error("پیش‌نویس ذخیره شد، اما یک تصویر بارگذاری نشد.");
       }
     }
+
+    return !hasFailedImage;
   }
 
   function patchImageWithoutDirty(clientId: string, patch: Partial<StagedImage>) {

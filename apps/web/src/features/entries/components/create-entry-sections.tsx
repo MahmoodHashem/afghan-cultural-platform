@@ -215,7 +215,7 @@ export function DetailsSection({
 type ImagesSectionProps = {
   imageInputRef: RefObject<HTMLInputElement | null>;
   images: StagedImage[];
-  onAddImages: (files: FileList | null) => void;
+  onAddImages: (files: FileList | null) => Promise<void>;
   onChangeImage: (clientId: string, patch: Partial<StagedImage>) => void;
   onMoveImage: (clientId: string, direction: "up" | "down") => void;
   onRemoveImage: (image: StagedImage) => void;
@@ -259,7 +259,7 @@ export function ImagesSection({
     setIsDragging(false);
 
     if (!isImageLimitReached) {
-      onAddImages(event.dataTransfer.files);
+      void onAddImages(event.dataTransfer.files);
     }
   }
 
@@ -273,7 +273,7 @@ export function ImagesSection({
         multiple
         className="hidden"
         onChange={(event) => {
-          onAddImages(event.target.files);
+          void onAddImages(event.target.files);
           event.target.value = "";
         }}
       />

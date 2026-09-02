@@ -10,6 +10,11 @@ import { PrismaPg } from "@prisma/adapter-pg";
 
 import { PrismaClient } from "../generated/prisma/client";
 
+const SERVERLESS_TRANSACTION_OPTIONS = {
+  maxWait: 10_000,
+  timeout: 20_000,
+} as const;
+
 @Injectable()
 class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(PrismaService.name);
@@ -18,7 +23,7 @@ class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestro
     const databaseUrl = configService.getOrThrow<string>("DATABASE_URL");
     const adapter = new PrismaPg({ connectionString: databaseUrl });
 
-    super({ adapter });
+    super({ adapter, transactionOptions: SERVERLESS_TRANSACTION_OPTIONS });
   }
 
   async onModuleInit(): Promise<void> {
