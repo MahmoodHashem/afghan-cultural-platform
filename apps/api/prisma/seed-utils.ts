@@ -17,9 +17,9 @@ function getDatabaseUrl(): string {
   return databaseUrl;
 }
 
-function createSeedPrismaClient(): PrismaClient {
+function createSeedPrismaClient(connectionString = getDatabaseUrl()): PrismaClient {
   return new PrismaClient({
-    adapter: new PrismaPg({ connectionString: getDatabaseUrl() }),
+    adapter: new PrismaPg({ connectionString }),
   });
 }
 
