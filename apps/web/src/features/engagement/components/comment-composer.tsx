@@ -6,7 +6,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { PaperAirplaneIcon } from "@/components/icons/animated/paper-airplane";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { CommentEmojiPicker } from "@/features/engagement/components/comment-emoji-picker";
@@ -24,6 +24,8 @@ type CommentComposerProps = {
   mode?: "root" | "reply" | "edit";
   authorName: string;
   authorSeed?: string;
+  authorImageUrl?: string | null;
+  showAvatar?: boolean;
   initialBody?: string;
   isPending: boolean;
   autoFocus?: boolean;
@@ -36,6 +38,8 @@ function CommentComposer({
   mode = "root",
   authorName,
   authorSeed = authorName,
+  authorImageUrl,
+  showAvatar = true,
   initialBody = "",
   isPending,
   autoFocus = false,
@@ -134,11 +138,14 @@ function CommentComposer({
       )}
     >
       <div className={cn("flex items-start gap-3", !compact && "sm:gap-4")}>
-        <Avatar className={cn("bg-primary-light transition-[width,height] duration-200 size-9")}>
-          <AvatarFallback className={cn("font-bold", getUserAvatarColorClass(authorSeed))}>
-            {createUserInitials(authorName)}
-          </AvatarFallback>
-        </Avatar>
+        {showAvatar ? (
+          <Avatar className={cn("bg-primary-light transition-[width,height] duration-200 size-9")}>
+            {authorImageUrl ? <AvatarImage src={authorImageUrl} alt={authorName} /> : null}
+            <AvatarFallback className={cn("font-bold", getUserAvatarColorClass(authorSeed))}>
+              {createUserInitials(authorName)}
+            </AvatarFallback>
+          </Avatar>
+        ) : null}
         <div className="min-w-0 flex-1">
           <label htmlFor={fieldId} className="sr-only">
             {mode === "reply" ? "نوشتن پاسخ" : mode === "edit" ? "ویرایش دیدگاه" : "نوشتن دیدگاه"}

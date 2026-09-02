@@ -165,6 +165,7 @@ function CommentThread({ entryId, comment, depth = 0, now }: CommentThreadProps)
                     mode="edit"
                     authorName={activeAuthor.displayName}
                     authorSeed={activeAuthor.id}
+                    authorImageUrl={activeAuthor.profileImageUrl}
                     initialBody={activeBody}
                     isPending={updateComment.isPending}
                     autoFocus
@@ -276,6 +277,8 @@ function CommentThread({ entryId, comment, depth = 0, now }: CommentThreadProps)
               mode="reply"
               authorName={user?.displayName ?? "کاربر"}
               authorSeed={user?.id ?? "guest"}
+              authorImageUrl={user?.profileImageUrl}
+              showAvatar={Boolean(user)}
               initialBody={pendingReply?.body ?? ""}
               isPending={createComment.isPending}
               autoFocus
