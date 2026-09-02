@@ -4,6 +4,7 @@ import type { EntryCommentListResponse } from "@/features/engagement/types/entry
 import { getPublicApiBaseUrl } from "@/lib/api/env";
 import { setOptionalSearchParam } from "@/lib/utils/url-search-params";
 import type {
+  DistrictTaxonomyItem,
   EntryDetailResponse,
   EntryListResponse,
   PublicEntryDetail,
@@ -58,6 +59,16 @@ const EMPTY_ENTRY_RESPONSE: EntryListResponse = {
 };
 
 const EMPTY_TAXONOMY_RESPONSE: TaxonomyListResponse<TaxonomyItem> = {
+  data: [],
+  meta: {
+    page: 1,
+    limit: 0,
+    total: 0,
+    totalPages: 0,
+  },
+};
+
+const EMPTY_DISTRICT_RESPONSE: TaxonomyListResponse<DistrictTaxonomyItem> = {
   data: [],
   meta: {
     page: 1,
@@ -177,6 +188,14 @@ async function getPublicCategories(options?: PublicFetchOptions) {
   return fetchTaxonomy("/taxonomy/categories?limit=100", options);
 }
 
+async function getPublicDistricts(provinceSlug: string, options?: PublicFetchOptions) {
+  return fetchApi<TaxonomyListResponse<DistrictTaxonomyItem>>(
+    `/taxonomy/districts?provinceSlug=${encodeURIComponent(provinceSlug)}&limit=100`,
+    EMPTY_DISTRICT_RESPONSE,
+    options,
+  );
+}
+
 async function fetchTaxonomy(
   path: string,
   options?: PublicFetchOptions,
@@ -215,6 +234,7 @@ export type { GeographicScope, PublicEntryListQuery, PublicEntrySort };
 export {
   getExploreTaxonomyData,
   getPublicCategories,
+  getPublicDistricts,
   getPublicEntryComments,
   getPublicProvinces,
   getPublishedEntries,

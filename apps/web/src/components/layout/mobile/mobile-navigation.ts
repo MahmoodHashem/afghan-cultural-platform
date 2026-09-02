@@ -6,6 +6,7 @@ import {
   UserCircleIcon,
 } from "@heroicons/react/24/outline";
 import type { ComponentType, SVGProps } from "react";
+import { safeDecodeURIComponent } from "@/lib/utils/persian";
 
 type MobileNavKey = "home" | "explore" | "create" | "provinces" | "profile";
 
@@ -65,7 +66,7 @@ function getMobileRouteContext(pathname: string): MobileRouteContext | null {
   if (pathname.startsWith("/provinces/")) {
     return {
       kind: "province",
-      title: "ولایت",
+      title: getTaxonomyNameFromPath(pathname, "ولایت"),
       backHref: "/provinces",
       backLabel: "بازگشت به ولایت‌ها",
     };
@@ -94,6 +95,14 @@ function getMobileRouteContext(pathname: string): MobileRouteContext | null {
   if (pathname === "/profile") return { kind: "profile", title: "حساب کاربری" };
 
   return null;
+}
+
+function getTaxonomyNameFromPath(pathname: string, fallback: string) {
+  const segment = pathname.split("/")[2];
+  if (!segment) return fallback;
+
+  const name = safeDecodeURIComponent(segment).replaceAll("-", " ").trim();
+  return name || fallback;
 }
 
 function isMobileNavItemActive(key: MobileNavKey, pathname: string) {

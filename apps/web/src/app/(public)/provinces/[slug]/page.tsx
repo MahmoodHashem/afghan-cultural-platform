@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { PageTransition } from "@/components/layout/page-transition";
 import {
   getPublicCategories,
+  getPublicDistricts,
   getPublicProvinces,
   getPublishedEntries,
   getPublishedEntryCount,
@@ -25,6 +26,7 @@ import {
 } from "@/lib/seo/metadata";
 import { createCollectionStructuredData } from "@/lib/seo/structured-data";
 import { createPersianPathSegment } from "@/lib/utils/persian";
+import ProvinceDetailLoading from "./loading";
 
 type ProvinceDetailPageProps = {
   params: Promise<{
@@ -34,7 +36,7 @@ type ProvinceDetailPageProps = {
 };
 
 const PAGE_LIMIT = 8;
-const PROVINCE_FUNCTIONAL_SEARCH_PARAMS = ["page", "categorySlug"] as const;
+const PROVINCE_FUNCTIONAL_SEARCH_PARAMS = ["page", "categorySlug", "districtSlug"] as const;
 
 export async function generateMetadata({
   params,
@@ -91,27 +93,39 @@ export default async function ProvinceDetailPage({
 
   const page = getPositiveIntegerSearchParam(resolvedSearchParams.page, 1);
   const selectedCategorySlug = getOptionalSearchParam(resolvedSearchParams.categorySlug);
+  const requestedDistrictSlug = getOptionalSearchParam(resolvedSearchParams.districtSlug);
   const baseHref = `/provinces/${encodeURIComponent(createPersianPathSegment(province.name))}`;
   const canonicalPath = createCanonicalPath("provinces", createPersianPathSegment(province.name));
   const isFiltered = hasFunctionalSearchParams(
     resolvedSearchParams,
     PROVINCE_FUNCTIONAL_SEARCH_PARAMS,
   );
+  const districtsResponse = await getPublicDistricts(province.slug);
+  const selectedDistrict = districtsResponse.data.find(
+    (district) => district.slug === requestedDistrictSlug,
+  );
+  const selectedDistrictSlug = selectedDistrict?.slug;
   const entryQuery: PublicEntryListQuery = {
     page,
     limit: PAGE_LIMIT,
     sort: "newest",
     provinceSlug: province.slug,
+    districtSlug: selectedDistrictSlug,
     geographicScope: "PROVINCE",
     categorySlug: selectedCategorySlug,
   };
 
-  const [entries, categoryCounts] = await Promise.all([
+  const [entries, provinceEntryCount, categoryCounts] = await Promise.all([
     getPublishedEntries(entryQuery),
+    getPublishedEntryCount({
+      provinceSlug: province.slug,
+      geographicScope: "PROVINCE",
+    }),
     Promise.all(
       sortTaxonomyItems(categoriesResponse.data).map(async (category) => {
         const { count, isUnavailable } = await getPublishedEntryCount({
           provinceSlug: province.slug,
+          districtSlug: selectedDistrictSlug,
           geographicScope: "PROVINCE",
           categorySlug: category.slug,
         });
@@ -120,13 +134,31 @@ export default async function ProvinceDetailPage({
           ...category,
           entryCount: count,
           isUnavailable,
-          href: createProvinceHref(baseHref, { categorySlug: category.slug }),
+          href: createProvinceHref(baseHref, {
+            categorySlug: category.slug,
+            districtSlug: selectedDistrictSlug,
+          }),
           isActive: selectedCategorySlug === category.slug,
         };
       }),
     ),
   ]);
   const categoryFilters = categoryCounts.filter((category) => category.entryCount > 0);
+  const allCategoriesHref = createProvinceHref(baseHref, {
+    districtSlug: selectedDistrictSlug,
+  });
+  const allDistrictsHref = createProvinceHref(baseHref, {
+    categorySlug: selectedCategorySlug,
+  });
+  const districtLinks = districtsResponse.data.map((district) => ({
+    id: district.id,
+    name: district.name,
+    slug: district.slug,
+    href: createProvinceHref(baseHref, {
+      districtSlug: district.slug,
+    }),
+    isActive: district.slug === selectedDistrictSlug,
+  }));
 
   return (
     <>
@@ -153,19 +185,26 @@ export default async function ProvinceDetailPage({
         <ProvinceDetailContent
           province={province}
           entries={entries}
+          provinceEntryCount={provinceEntryCount.count}
+          districts={districtLinks}
           categoryFilters={categoryFilters}
-          allCategoriesHref={baseHref}
+          allCategoriesHref={allCategoriesHref}
+          allDistrictsHref={allDistrictsHref}
           isAllCategoriesActive={!selectedCategorySlug}
+          selectedDistrictName={selectedDistrict?.name}
           createPageHref={(nextPage) =>
             createProvinceHref(baseHref, {
               categorySlug: selectedCategorySlug,
+              districtSlug: selectedDistrictSlug,
               page: nextPage,
             })
           }
           isUnavailable={
             provincesResponse.isUnavailable ||
             categoriesResponse.isUnavailable ||
+            districtsResponse.isUnavailable ||
             entries.isUnavailable ||
+            provinceEntryCount.isUnavailable ||
             categoryCounts.some((category) => category.isUnavailable)
           }
         />
@@ -184,6 +223,7 @@ function createProvinceHref(
   baseHref: string,
   query: {
     categorySlug?: string;
+    districtSlug?: string;
     page?: number;
   },
 ) {
@@ -191,6 +231,10 @@ function createProvinceHref(
 
   if (query.categorySlug) {
     searchParams.set("categorySlug", query.categorySlug);
+  }
+
+  if (query.districtSlug) {
+    searchParams.set("districtSlug", query.districtSlug);
   }
 
   if (query.page && query.page > 1) {

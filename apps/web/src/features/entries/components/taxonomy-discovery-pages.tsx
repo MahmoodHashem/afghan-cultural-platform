@@ -4,9 +4,12 @@ import {
   ArrowRightIcon,
   BookOpenIcon,
   BuildingLibraryIcon,
+  BuildingOffice2Icon,
   BuildingStorefrontIcon,
   CakeIcon,
   ChatBubbleLeftRightIcon,
+  DocumentTextIcon,
+  MapPinIcon,
   PaintBrushIcon,
   PuzzlePieceIcon,
   SparklesIcon,
@@ -16,7 +19,7 @@ import {
 } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import Link from "next/link";
-import type { ComponentType, ReactNode } from "react";
+import type { ComponentType, ReactNode, SVGProps } from "react";
 
 import { PageBreadcrumb } from "@/components/layout/page-breadcrumb";
 import { buttonVariants } from "@/components/ui/button";
@@ -29,6 +32,7 @@ import type { EntryBreadcrumbContext } from "../utils/entry-breadcrumb";
 import { taxonomyItemHref } from "../utils/taxonomy-route";
 import type { FilterTabItem } from "./filter-tabs";
 import { FilterableEntryResults } from "./filterable-entry-results";
+import { type DistrictLinkItem, ProvinceDistrictBrowser } from "./province-district-browser";
 import { ProvinceSearchGrid } from "./province-search-grid";
 
 type CountedTaxonomyItem = TaxonomyItem & {
@@ -55,9 +59,13 @@ type ProvinceIndexContentProps = {
 type ProvinceDetailContentProps = {
   province: TaxonomyItem;
   entries: EntryListResponse;
+  provinceEntryCount: number;
+  districts: DistrictLinkItem[];
   categoryFilters: TaxonomyFilterItem[];
   allCategoriesHref: string;
+  allDistrictsHref: string;
   isAllCategoriesActive: boolean;
+  selectedDistrictName?: string;
   createPageHref: (page: number) => string;
   isUnavailable: boolean;
 };
@@ -157,9 +165,13 @@ function ProvinceIndexContent({ provinces, isUnavailable }: ProvinceIndexContent
 function ProvinceDetailContent({
   province,
   entries,
+  provinceEntryCount,
+  districts,
   categoryFilters,
   allCategoriesHref,
+  allDistrictsHref,
   isAllCategoriesActive,
+  selectedDistrictName,
   createPageHref,
   isUnavailable,
 }: ProvinceDetailContentProps) {
@@ -176,32 +188,51 @@ function ProvinceDetailContent({
           ]}
         />
 
-        <div className="mt-7 grid gap-7 rounded-[28px] border border-border bg-card p-5 shadow-[0_2px_10px_rgba(0,0,0,.04)] sm:p-7 lg:grid-cols-[1fr_420px] lg:items-center">
-          <div className="space-y-5">
-            <div className="space-y-3">
-              <h1 className="text-[38px] font-bold leading-[1.35] text-primary sm:text-[44px]">
-                {province.name}
-              </h1>
-              <p className="max-w-2xl text-[16px] leading-8 text-muted-foreground">
-                {province.description || `مطالب مربوط به ${province.name} را ببینید.`}
-              </p>
-            </div>
-            <StatsCards
-              items={[
-                { label: "مطلب", value: entries.meta.total },
-                { label: "موضوع فعال", value: categoryFilters.length },
-              ]}
-            />
+        <div className="mt-8 grid gap-7 lg:grid-cols-[minmax(0,1fr)_minmax(360px,460px)] lg:items-center lg:gap-12">
+          <div>
+            <h1 className="mt-2 text-[38px] font-bold leading-[1.35] text-foreground sm:text-[46px]">
+              {province.name}
+            </h1>
+            <p className="mt-4 max-w-3xl whitespace-pre-line text-[15px] leading-8 text-muted-foreground sm:text-[16px] sm:leading-9">
+              {province.description || `مطالب مربوط به ${province.name} را ببینید.`}
+            </p>
+            <dl className="mt-6 flex flex-wrap gap-x-7 gap-y-3 border-t border-border pt-5">
+              <ProvinceStat
+                icon={DocumentTextIcon}
+                label="مطلب منتشرشده"
+                value={provinceEntryCount}
+              />
+              <ProvinceStat icon={BuildingOffice2Icon} label="ولسوالی" value={districts.length} />
+            </dl>
           </div>
 
           <ProvinceHeroImage province={province} />
         </div>
 
-        <section className="mt-10 space-y-6">
-          <div className="text-center">
-            <h2 className="text-[24px] font-bold text-foreground sm:text-[28px]">
-              فرهنگ و میراث {province.name}
-            </h2>
+        {districts.length > 0 ? (
+          <div className="mt-11 sm:mt-14">
+            <ProvinceDistrictBrowser
+              provinceName={province.name}
+              districts={districts}
+              allDistrictsHref={allDistrictsHref}
+            />
+          </div>
+        ) : null}
+
+        <section id="province-entries" className="mt-11 scroll-mt-28 space-y-6 sm:mt-14">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="text-[13px] font-semibold text-primary">فرهنگ و میراث</p>
+              <h2 className="mt-1 text-[24px] font-bold text-foreground sm:text-[28px]">
+                مطالب مربوط به {province.name}
+              </h2>
+            </div>
+            {selectedDistrictName ? (
+              <div className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary-light px-3 py-1.5 text-[12px] font-semibold text-primary">
+                <MapPinIcon className="size-4" aria-hidden="true" />
+                {selectedDistrictName}
+              </div>
+            ) : null}
           </div>
 
           {isUnavailable ? <ApiNotice /> : null}
@@ -225,6 +256,14 @@ function ProvinceDetailContent({
             ]}
             entries={entries}
             emptyKind="province"
+            emptyStateOverride={
+              selectedDistrictName
+                ? {
+                    title: `هنوز مطلبی درباره ولسوالی ${selectedDistrictName} منتشر نشده است.`,
+                    description: `اگر درباره فرهنگ و تاریخ ولسوالی ${selectedDistrictName} چیزی می‌دانید، می‌توانید آن را ثبت کنید.`,
+                  }
+                : undefined
+            }
             createPageHref={createPageHref}
             breadcrumbParent={[
               { label: "ولایت‌ها", href: "/provinces" },
@@ -447,7 +486,7 @@ function ProvinceHeroImage({ province }: { province: TaxonomyItem }) {
   const image = getProvinceImage(province);
 
   return (
-    <div className="relative min-h-[220px] overflow-hidden rounded-[24px] bg-muted lg:min-h-[260px]">
+    <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-muted sm:aspect-[16/10] lg:aspect-[4/3]">
       <Image
         src={image.src}
         alt={image.alt}
@@ -456,26 +495,27 @@ function ProvinceHeroImage({ province }: { province: TaxonomyItem }) {
         className="object-cover"
         priority
       />
-      <div className="absolute inset-0 bg-linear-to-l from-background/0 via-background/5 to-background/45" />
     </div>
   );
 }
 
-function StatsCards({ items }: { items: Array<{ label: string; value: number }> }) {
+function ProvinceStat({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: ComponentType<SVGProps<SVGSVGElement>>;
+  label: string;
+  value: number;
+}) {
   return (
-    <dl className="grid max-w-md grid-cols-2 gap-3">
-      {items.map((item) => (
-        <div
-          key={item.label}
-          className="rounded-2xl border border-border bg-background px-4 py-3 text-center"
-        >
-          <dt className="text-[12px] font-medium text-muted-foreground">{item.label}</dt>
-          <dd className="mt-1 text-[22px] font-bold text-foreground">
-            {formatPersianNumber(item.value)}
-          </dd>
-        </div>
-      ))}
-    </dl>
+    <div className="flex items-center gap-2.5">
+      <Icon className="size-5 text-primary" aria-hidden="true" />
+      <div className="flex items-baseline gap-1.5">
+        <dt className="text-[12px] text-muted-foreground">{label}</dt>
+        <dd className="text-[17px] font-bold text-foreground">{formatPersianNumber(value)}</dd>
+      </div>
+    </div>
   );
 }
 
@@ -486,6 +526,7 @@ function EntryResults({
   emptyKind,
   createPageHref,
   breadcrumbParent,
+  emptyStateOverride,
 }: {
   tabsAriaLabel: string;
   tabs: FilterTabItem[];
@@ -493,6 +534,10 @@ function EntryResults({
   emptyKind: "province" | "category";
   createPageHref: (page: number) => string;
   breadcrumbParent: EntryBreadcrumbContext;
+  emptyStateOverride?: {
+    title: string;
+    description: string;
+  };
 }) {
   return (
     <FilterableEntryResults
@@ -501,13 +546,15 @@ function EntryResults({
       entries={entries.data}
       emptyState={{
         title:
-          emptyKind === "province"
+          emptyStateOverride?.title ??
+          (emptyKind === "province"
             ? "هنوز مطلبی برای این ولایت منتشر نشده است."
-            : "هنوز مطلبی در این بخش منتشر نشده است.",
+            : "هنوز مطلبی در این بخش منتشر نشده است."),
         description:
-          emptyKind === "province"
+          emptyStateOverride?.description ??
+          (emptyKind === "province"
             ? "اگر درباره فرهنگ و تاریخ این ولایت چیزی می‌دانید، می‌توانید آن را ثبت کنید."
-            : "اگر درباره این موضوع چیزی می‌دانید، می‌توانید آن را ثبت کنید.",
+            : "اگر درباره این موضوع چیزی می‌دانید، می‌توانید آن را ثبت کنید."),
         actionHref: "/entries/new",
         actionLabel: "افزودن مطلب",
       }}

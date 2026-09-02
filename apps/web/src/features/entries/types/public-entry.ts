@@ -23,6 +23,11 @@ type TaxonomyItem = {
   updatedAt?: string;
 };
 
+type DistrictTaxonomyItem = TaxonomyItem & {
+  provinceId: string;
+  province?: TaxonomyItem;
+};
+
 type PublicEntryImage = {
   id: string;
   secureUrl: string;
@@ -145,6 +150,7 @@ type TaxonomyListResponse<TItem> = {
 };
 
 export type {
+  DistrictTaxonomyItem,
   EntryDetailResponse,
   EntryListResponse,
   PaginationMeta,
