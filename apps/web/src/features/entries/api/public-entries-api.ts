@@ -2,6 +2,7 @@ import "server-only";
 
 import type { EntryCommentListResponse } from "@/features/engagement/types/entry-engagement";
 import { getPublicApiBaseUrl } from "@/lib/api/env";
+import { PUBLIC_ENTRIES_CACHE_TAG } from "@/lib/cache/public-entry-cache";
 import { setOptionalSearchParam } from "@/lib/utils/url-search-params";
 import type {
   DistrictTaxonomyItem,
@@ -34,6 +35,7 @@ type PublicEntryListResult = EntryListResponse & {
 
 type PublicFetchOptions = {
   revalidate?: number;
+  tags?: string[];
 };
 
 type TaxonomyResult<TItem> = TaxonomyListResponse<TItem> & {
@@ -96,11 +98,10 @@ async function getPublishedEntries(
   setOptionalSearchParam(searchParams, "tagSlug", query.tagSlug);
   setOptionalSearchParam(searchParams, "geographicScope", query.geographicScope);
 
-  return fetchApi<EntryListResponse>(
-    `/entries?${searchParams.toString()}`,
-    EMPTY_ENTRY_RESPONSE,
-    options,
-  );
+  return fetchApi<EntryListResponse>(`/entries?${searchParams.toString()}`, EMPTY_ENTRY_RESPONSE, {
+    ...options,
+    tags: [PUBLIC_ENTRIES_CACHE_TAG],
+  });
 }
 
 async function getPublishedEntryCount(query: Omit<PublicEntryListQuery, "page" | "limit">) {
@@ -117,7 +118,7 @@ async function getPublishedEntryBySlug(slug: string): Promise<PublicEntryDetail 
     const response = await fetch(
       `${getPublicApiBaseUrl()}/entries/${encodeURIComponent(normalizeSlug(slug))}`,
       {
-        next: { revalidate: 120 },
+        next: { revalidate: 120, tags: [PUBLIC_ENTRIES_CACHE_TAG] },
       },
     );
 
@@ -210,7 +211,7 @@ async function fetchApi<TResponse>(
 ) {
   try {
     const response = await fetch(`${getPublicApiBaseUrl()}${path}`, {
-      next: { revalidate: options?.revalidate ?? 120 },
+      next: { revalidate: options?.revalidate ?? 120, tags: options?.tags },
     });
 
     if (!response.ok) {

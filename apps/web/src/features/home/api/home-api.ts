@@ -8,6 +8,7 @@ import type {
   TaxonomyListResponse,
 } from "@/features/entries/types/public-entry";
 import { getPublicApiBaseUrl } from "@/lib/api/env";
+import { PUBLIC_ENTRIES_CACHE_TAG } from "@/lib/cache/public-entry-cache";
 
 type HomeData = {
   latestEntries: PublicEntryCard[];
@@ -72,7 +73,9 @@ async function getHomeData(): Promise<HomeData> {
 }
 
 async function fetchEntryList(path: string) {
-  return fetchApiList<EntryListResponse>(path, { data: [], meta: EMPTY_META });
+  return fetchApiList<EntryListResponse>(path, { data: [], meta: EMPTY_META }, [
+    PUBLIC_ENTRIES_CACHE_TAG,
+  ]);
 }
 
 async function fetchTaxonomyList<TItem>(path: string) {
@@ -82,10 +85,11 @@ async function fetchTaxonomyList<TItem>(path: string) {
 async function fetchApiList<TResponse extends { data: unknown[]; meta: PaginationMeta }>(
   path: string,
   fallback: TResponse,
+  tags?: string[],
 ) {
   try {
     const response = await fetch(`${getPublicApiBaseUrl()}${path}`, {
-      next: { revalidate: 120 },
+      next: { revalidate: 120, tags },
     });
 
     if (!response.ok) {

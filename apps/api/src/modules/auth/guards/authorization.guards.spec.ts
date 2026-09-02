@@ -156,6 +156,7 @@ describe("authorization guards", () => {
     process.env.CLOUDINARY_API_KEY ??= "test-key";
     process.env.CLOUDINARY_API_SECRET ??= "test-secret";
     process.env.YOUTUBE_API_KEY ??= "test-youtube-key";
+    process.env.CACHE_REVALIDATION_SECRET ??= "test-cache-revalidation-secret-123456";
     const { AppModule } = jest.requireActual(
       "../../../app.module",
     ) as typeof import("../../../app.module");

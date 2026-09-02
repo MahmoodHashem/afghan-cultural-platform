@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 
+import { PublicEntryCacheService } from "../../common/cache/public-entry-cache.service";
 import { PrismaModule } from "../../database/prisma.module";
 import { AuditModule } from "../audit/audit.module";
 import { CommunityModerationController } from "./community-moderation.controller";
@@ -11,7 +12,7 @@ import { ModerationService } from "./moderation.service";
 @Module({
   imports: [PrismaModule, AuditModule],
   controllers: [ModerationController, CommunityModerationController, ContentModerationController],
-  providers: [ModerationService, ContentModerationService],
+  providers: [ModerationService, ContentModerationService, PublicEntryCacheService],
   exports: [ModerationService, ContentModerationService],
 })
 class ModerationModule {}

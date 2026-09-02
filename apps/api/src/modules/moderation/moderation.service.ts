@@ -7,6 +7,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 
+import { PublicEntryCacheService } from "../../common/cache/public-entry-cache.service";
 import { PrismaService } from "../../database/prisma.service";
 import type { Prisma } from "../../generated/prisma/client";
 import { AuditAction, EntryStatus, ModerationDecision } from "../../generated/prisma/enums";
@@ -103,6 +104,8 @@ class ModerationService {
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(AuditService) private readonly auditService: AuditService,
+    @Inject(PublicEntryCacheService)
+    private readonly publicEntryCacheService: PublicEntryCacheService,
   ) {}
 
   async listSubmissions(query: ModerationSubmissionsQueryDto) {
@@ -148,14 +151,18 @@ class ModerationService {
     };
   }
 
-  approveSubmission(user: AuthenticatedUser, id: string, input: ApproveSubmissionDto = {}) {
-    return this.decideSubmission(user, id, {
+  async approveSubmission(user: AuthenticatedUser, id: string, input: ApproveSubmissionDto = {}) {
+    const result = await this.decideSubmission(user, id, {
       decision: ModerationDecision.APPROVE,
       nextStatus: EntryStatus.PUBLISHED,
       comments: this.normalizeOptionalText(input.comments),
       auditAction: AuditAction.ENTRY_APPROVED,
       forbidSelfApproval: true,
     });
+
+    await this.publicEntryCacheService.revalidatePublishedEntries();
+
+    return result;
   }
 
   requestChanges(user: AuthenticatedUser, id: string, input: ModerationReasonDto) {

@@ -10,6 +10,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 
+import type { PublicEntryCacheService } from "../../common/cache/public-entry-cache.service";
 import type { PrismaService } from "../../database/prisma.service";
 import {
   EntryStatus,
@@ -43,6 +44,10 @@ type AuditServiceMock = {
   createWithClient: jest.Mock;
 };
 
+type PublicEntryCacheServiceMock = {
+  revalidatePublishedEntries: jest.Mock;
+};
+
 const moderator: AuthenticatedUser = {
   id: "11111111-1111-4111-8111-111111111111",
   email: "moderator@example.com",
@@ -74,14 +79,19 @@ const ids = {
 describe("ModerationService", () => {
   let prisma: PrismaMock;
   let auditService: AuditServiceMock;
+  let publicEntryCacheService: PublicEntryCacheServiceMock;
   let service: ModerationService;
 
   beforeEach(() => {
     prisma = createPrismaMock();
     auditService = createAuditServiceMock();
+    publicEntryCacheService = {
+      revalidatePublishedEntries: jest.fn().mockResolvedValue(undefined),
+    };
     service = new ModerationService(
       prisma as unknown as PrismaService,
       auditService as unknown as AuditService,
+      publicEntryCacheService as unknown as PublicEntryCacheService,
     );
   });
 
@@ -177,6 +187,7 @@ describe("ModerationService", () => {
     );
     expect(response.data.entry.status).toBe(EntryStatus.PUBLISHED);
     expect(response.data.review.decision).toBe(ModerationDecision.APPROVE);
+    expect(publicEntryCacheService.revalidatePublishedEntries).toHaveBeenCalledTimes(1);
   });
 
   it("lets an admin approve a submission", async () => {
@@ -221,6 +232,7 @@ describe("ModerationService", () => {
       ForbiddenException,
     );
     expect(prisma.culturalEntry.updateMany).not.toHaveBeenCalled();
+    expect(publicEntryCacheService.revalidatePublishedEntries).not.toHaveBeenCalled();
   });
 
   it("requests changes with required feedback", async () => {
@@ -255,6 +267,7 @@ describe("ModerationService", () => {
       }),
     );
     expect(response.data.review.comments).toBe("لطفاً منبع تصویر را روشن کنید.");
+    expect(publicEntryCacheService.revalidatePublishedEntries).not.toHaveBeenCalled();
   });
 
   it("rejects a submission with a required reason", async () => {
@@ -292,6 +305,7 @@ describe("ModerationService", () => {
         }),
       }),
     );
+    expect(publicEntryCacheService.revalidatePublishedEntries).not.toHaveBeenCalled();
   });
 
   it("rejects missing moderation reasons", async () => {

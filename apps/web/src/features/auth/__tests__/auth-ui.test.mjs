@@ -740,7 +740,7 @@ test("homepage composes the public landing page from real public API data", () =
   assert.match(homePage, /<HomeFooter \/>/);
   assert.match(homeApi, /"\/entries\?limit=6&sort=newest"/);
   assert.match(homeApi, /"\/taxonomy\/provinces\?limit=8"/);
-  assert.match(homeApi, /next: \{ revalidate: 120 \}/);
+  assert.match(homeApi, /next: \{ revalidate: 120, tags \}/);
   assert.match(homeContent, /FeaturedEntryCard/);
   assert.match(homeContent, /LatestEntriesSection/);
   assert.match(homeContent, /NationalScopeSection/);
