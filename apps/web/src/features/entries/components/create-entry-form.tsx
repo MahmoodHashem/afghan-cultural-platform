@@ -232,7 +232,13 @@ function CreateEntryForm({ initialDraftId, revisionMode = false, taxonomy }: Cre
   }, [hasUnsavedChanges]);
 
   async function handleSaveDraft() {
-    await persistDraft({ showSuccessToast: true });
+    const savedDraft = await persistDraft({ showSuccessToast: true });
+
+    if (savedDraft) {
+      router.replace(
+        revisionMode ? "/profile?tab=entries" : "/profile?tab=entries&status=DRAFT",
+      );
+    }
   }
 
   async function handleSubmitForReview() {
@@ -345,13 +351,8 @@ function CreateEntryForm({ initialDraftId, revisionMode = false, taxonomy }: Cre
       const savedDraft = draftId
         ? await (revisionMode ? updateEntryRevision : updateEntryDraft)(draftId, payload)
         : await createEntryDraft(payload);
-      const wasNewDraft = !draftId;
 
       setDraftId(savedDraft.id);
-
-      if (wasNewDraft) {
-        router.replace(`/entries/${savedDraft.id}/edit`);
-      }
 
       const relatedContentSynced = await syncRelatedContent(savedDraft.id, values);
 
@@ -359,6 +360,10 @@ function CreateEntryForm({ initialDraftId, revisionMode = false, taxonomy }: Cre
         setSaveState("unsaved");
         return null;
       }
+
+      await queryClient.invalidateQueries({
+        queryKey: [revisionMode ? "entry-revision" : "entry-draft", savedDraft.id],
+      });
 
       form.reset(form.getValues());
       setSaveState("saved");
