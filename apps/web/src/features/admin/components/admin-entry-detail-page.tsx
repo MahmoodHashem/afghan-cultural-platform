@@ -8,6 +8,7 @@ import {
   EyeIcon,
   FlagIcon,
   HeartIcon,
+  PencilSquareIcon,
 } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import Link from "next/link";
@@ -15,25 +16,39 @@ import type { ReactNode } from "react";
 import { useState } from "react";
 
 import { TiptapDocument } from "@/components/common/tiptap-document";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
 import { AdminEntryLifecycleDialog } from "@/features/admin/components/admin-entry-lifecycle-dialog";
 import { AdminEntryStatusBadge } from "@/features/admin/components/admin-entry-status-badge";
 import { AdminPageHeader } from "@/features/admin/components/admin-page-header";
 import { adminGeographicScopeLabels } from "@/features/admin/constants/admin-entry-meta";
 import { useAdminEntry, useAdminEntryLifecycle } from "@/features/admin/hooks/use-admin-entries";
 import type { AdminEntryDetail } from "@/features/admin/types/admin-entries";
+import { useRequestPublishedEntryRevision } from "@/features/moderation/hooks/use-entry-revisions";
 import { cn } from "@/lib/utils";
 import { formatPersianDate, formatPersianNumber } from "@/lib/utils/formatters";
 
 function AdminEntryDetailPage({ entryId }: { entryId: string }) {
   const entryQuery = useAdminEntry(entryId);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [revisionDialogOpen, setRevisionDialogOpen] = useState(false);
+  const [revisionReason, setRevisionReason] = useState("");
   const entry = entryQuery.data;
   const action = entry?.status === "ARCHIVED" ? "restore" : "archive";
   const mutation = useAdminEntryLifecycle(entryId, action);
+  const revisionMutation = useRequestPublishedEntryRevision();
 
   if (entryQuery.isLoading) return <AdminEntryDetailSkeleton />;
   if (entryQuery.isError || !entry) {
@@ -83,6 +98,9 @@ function AdminEntryDetailPage({ entryId }: { entryId: string }) {
               >
                 <ArrowTopRightOnSquareIcon className="size-4" /> مشاهده عمومی
               </Link>
+              <Button size="sm" variant="outline" onClick={() => setRevisionDialogOpen(true)}>
+                <PencilSquareIcon className="size-4" /> پیشنهاد اصلاح به نویسنده
+              </Button>
               <Button size="sm" variant="destructive" onClick={() => setDialogOpen(true)}>
                 <ArchiveBoxIcon className="size-4" /> بایگانی
               </Button>
@@ -210,6 +228,44 @@ function AdminEntryDetailPage({ entryId }: { entryId: string }) {
           mutation.mutate({ reason }, { onSuccess: () => setDialogOpen(false) })
         }
       />
+      <AlertDialog open={revisionDialogOpen} onOpenChange={setRevisionDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>پیشنهاد اصلاح به نویسنده</AlertDialogTitle>
+            <AlertDialogDescription>
+              نسخه فعلی منتشرشده بدون تغییر می‌ماند و این توضیح در پروفایل و ویرایشگر نویسنده نمایش
+              داده می‌شود.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <Textarea
+            value={revisionReason}
+            onChange={(event) => setRevisionReason(event.target.value)}
+            rows={5}
+            maxLength={1200}
+            placeholder="مواردی را که بهتر است اصلاح شوند، روشن بنویسید..."
+            aria-label="دلیل پیشنهاد اصلاح"
+          />
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={revisionMutation.isPending}>انصراف</AlertDialogCancel>
+            <Button
+              disabled={revisionReason.trim().length < 3 || revisionMutation.isPending}
+              onClick={() =>
+                revisionMutation.mutate(
+                  { entryId, reason: revisionReason.trim() },
+                  {
+                    onSuccess: () => {
+                      setRevisionDialogOpen(false);
+                      setRevisionReason("");
+                    },
+                  },
+                )
+              }
+            >
+              {revisionMutation.isPending ? "در حال ثبت..." : "ثبت پیشنهاد اصلاح"}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
@@ -329,7 +385,47 @@ function HistoryPanel({ entry }: { entry: AdminEntryDetail }) {
           </ul>
         </div>
       ) : null}
+      {entry.revisions.length ? (
+        <div className="mt-5 border-t pt-4">
+          <p className="mb-3 text-[12px] font-semibold">ویرایش‌های مطلب منتشرشده</p>
+          <ul className="space-y-3">
+            {entry.revisions.map((revision) => (
+              <li key={revision.id} className="border-s-2 border-gold/40 ps-3 text-[11px]">
+                <div className="flex justify-between gap-2">
+                  <strong>{getAdminRevisionLabel(revision.status)}</strong>
+                  {revision.versionNumber ? (
+                    <span className="text-muted-foreground">
+                      نسخه {formatPersianNumber(revision.versionNumber)}
+                    </span>
+                  ) : null}
+                </div>
+                {revision.requestFeedback ? (
+                  <p className="mt-1 line-clamp-3 leading-5 text-muted-foreground">
+                    {revision.requestFeedback}
+                  </p>
+                ) : null}
+                <time className="mt-1 block text-muted-foreground">
+                  {formatPersianDate(revision.updatedAt)}
+                </time>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
     </Panel>
+  );
+}
+
+function getAdminRevisionLabel(status: string) {
+  return (
+    {
+      DRAFT: "پیش‌نویس ویرایش",
+      PENDING_REVIEW: "در انتظار بررسی",
+      CHANGES_REQUESTED: "نیازمند تغییر",
+      REJECTED: "ردشده",
+      APPROVED: "تأییدشده",
+      CANCELLED: "لغوشده",
+    }[status] ?? status
   );
 }
 

@@ -8,10 +8,12 @@ import {
   DocumentTextIcon,
   PencilSquareIcon,
 } from "@heroicons/react/24/outline";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, useReducedMotion } from "motion/react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 import { EyeIcon } from "@/components/icons/animated/eye";
 import { TrashIcon } from "@/components/icons/animated/trash";
 import { useMobileChromeHidden } from "@/components/layout/mobile/use-mobile-chrome-hidden";
@@ -32,7 +34,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList } from "@/components/ui/tabs";
 import { EmailVerificationButton } from "@/features/auth/components/email-verification-button";
 import { VerifiedEmailBanner } from "@/features/auth/components/verified-email-banner";
-import type { OwnEntry } from "@/features/entries/api/entry-drafts-api";
+import {
+  cancelEntryRevision,
+  type OwnEntry,
+  startEntryRevision,
+} from "@/features/entries/api/entry-drafts-api";
 import type {
   ProfileBookmark,
   ProfileComment,
@@ -45,6 +51,7 @@ import {
   getEntryStatusBadgeClassName,
   isOwnerEditableStatus,
 } from "@/features/profile/constants/entry-status";
+import { profileQueryKeys } from "@/features/profile/constants/profile-query-keys";
 import {
   useDeleteOwnDraftMutation,
   useOwnerBookmarks,
@@ -644,6 +651,14 @@ function OwnerEntryRow({ entry, onDelete }: { entry: OwnEntry; onDelete: () => v
               >
                 {statusMeta.label}
               </Badge>
+              {entry.activeRevision ? (
+                <Badge
+                  variant="outline"
+                  className="rounded-full border-primary/25 bg-primary/5 px-3 py-1 text-primary"
+                >
+                  {getRevisionStatusLabel(entry.activeRevision.status)}
+                </Badge>
+              ) : null}
               {entry.category ? (
                 <Badge variant="outline" className="rounded-full bg-background px-3 py-1">
                   {entry.category.name}
@@ -677,11 +692,29 @@ function OwnerEntryRow({ entry, onDelete }: { entry: OwnEntry; onDelete: () => v
               </div>
             </div>
           ) : null}
+          {entry.activeRevision?.requestFeedback ? (
+            <div className="flex gap-3 rounded-xl border border-terracotta/20 bg-terracotta/5 px-4 py-3 text-[14px] leading-7 text-foreground">
+              <ChatBubbleLeftRightIcon
+                className="mt-1 size-5 shrink-0 text-terracotta"
+                aria-hidden="true"
+              />
+              <div className="min-w-0">
+                <p className="font-semibold">پیشنهاد ویرایش مطلب منتشرشده</p>
+                <p className="mt-1 text-muted-foreground">{entry.activeRevision.requestFeedback}</p>
+              </div>
+            </div>
+          ) : null}
         </div>
 
         <div className="flex shrink-0 flex-wrap items-center gap-2 lg:justify-end">
           {entry.status === "PUBLISHED" ? (
-            <ProfileViewLink href={`/entries/${encodeURIComponent(entry.slug)}`} label="نمایش" />
+            <>
+              <ProfileViewLink href={`/entries/${encodeURIComponent(entry.slug)}`} label="نمایش" />
+              <PublishedEntryRevisionButton entry={entry} />
+              {entry.activeRevision && entry.activeRevision.status !== "PENDING_REVIEW" ? (
+                <CancelEntryRevisionButton entry={entry} />
+              ) : null}
+            </>
           ) : null}
           {isOwnerEditableStatus(entry.status) ? (
             <Link
@@ -696,6 +729,98 @@ function OwnerEntryRow({ entry, onDelete }: { entry: OwnEntry; onDelete: () => v
       </div>
     </article>
   );
+}
+
+function CancelEntryRevisionButton({ entry }: { entry: OwnEntry }) {
+  const queryClient = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const mutation = useMutation({
+    mutationFn: () => cancelEntryRevision(entry.id),
+    onSuccess: async () => {
+      setOpen(false);
+      await queryClient.invalidateQueries({ queryKey: profileQueryKeys.all });
+      toast.success("ویرایش مطلب لغو شد.");
+    },
+    onError: () => toast.error("لغو ویرایش انجام نشد."),
+  });
+
+  return (
+    <AlertDialog open={open} onOpenChange={setOpen}>
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        className="rounded-full text-destructive"
+        onClick={() => setOpen(true)}
+      >
+        لغو ویرایش
+      </Button>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>پیش‌نویس ویرایش لغو شود؟</AlertDialogTitle>
+          <AlertDialogDescription>
+            نسخه منتشرشده مطلب باقی می‌ماند، اما تغییرات ذخیره‌شده این ویرایش حذف می‌شوند.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={mutation.isPending}>انصراف</AlertDialogCancel>
+          <AlertDialogAction
+            disabled={mutation.isPending}
+            onClick={(event) => {
+              event.preventDefault();
+              mutation.mutate();
+            }}
+          >
+            {mutation.isPending ? "در حال لغو..." : "لغو ویرایش"}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
+
+function PublishedEntryRevisionButton({ entry }: { entry: OwnEntry }) {
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const canEdit = entry.activeRevision?.status !== "PENDING_REVIEW";
+  const mutation = useMutation({
+    mutationFn: () => startEntryRevision(entry.id),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: profileQueryKeys.all });
+      router.push(`/entries/${entry.id}/edit?mode=revision`);
+    },
+    onError: () => toast.error("امکان آغاز ویرایش مطلب فراهم نشد."),
+  });
+
+  if (entry.activeRevision?.status === "PENDING_REVIEW") {
+    return null;
+  }
+
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      className="rounded-full"
+      disabled={!canEdit || mutation.isPending}
+      onClick={() => mutation.mutate()}
+    >
+      <PencilSquareIcon className="size-4" aria-hidden="true" />
+      {entry.activeRevision ? "ادامه ویرایش" : "ویرایش مطلب"}
+    </Button>
+  );
+}
+
+function getRevisionStatusLabel(status: NonNullable<OwnEntry["activeRevision"]>["status"]) {
+  const labels = {
+    DRAFT: "پیش‌نویس ویرایش",
+    PENDING_REVIEW: "تغییرات در انتظار بررسی",
+    CHANGES_REQUESTED: "ویرایش نیازمند تغییر",
+    REJECTED: "ویرایش ردشده",
+    APPROVED: "ویرایش تأییدشده",
+    CANCELLED: "ویرایش لغوشده",
+  } as const;
+  return labels[status];
 }
 
 function ProfileViewLink({ href, label }: { href: string; label: string }) {

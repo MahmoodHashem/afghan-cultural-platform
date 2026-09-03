@@ -1,5 +1,5 @@
 import type { Prisma } from "../../generated/prisma/client";
-import { EntryCommentStatus } from "../../generated/prisma/enums";
+import { EntryCommentStatus, EntryRevisionStatus } from "../../generated/prisma/enums";
 
 const sourceSelect = {
   id: true,
@@ -140,6 +140,12 @@ const sourceOrderBy: Prisma.SourceOrderByWithRelationInput[] = [
   { displayOrder: "asc" },
   { createdAt: "asc" },
 ];
+const activeEntryRevisionStatuses: EntryRevisionStatus[] = [
+  EntryRevisionStatus.DRAFT,
+  EntryRevisionStatus.PENDING_REVIEW,
+  EntryRevisionStatus.CHANGES_REQUESTED,
+  EntryRevisionStatus.REJECTED,
+];
 
 const publishedEntryWhere = {
   status: "PUBLISHED",
@@ -219,6 +225,7 @@ const entrySelect = {
   images: {
     where: {
       isRemoved: false,
+      entryRevisionId: null,
     },
     select: imageSelect,
     orderBy: imageOrderBy,
@@ -244,6 +251,22 @@ const entrySelect = {
     orderBy: {
       createdAt: "desc",
     },
+    take: 1,
+  },
+  revisions: {
+    where: {
+      status: {
+        in: activeEntryRevisionStatuses,
+      },
+    },
+    select: {
+      id: true,
+      status: true,
+      requestFeedback: true,
+      submittedAt: true,
+      updatedAt: true,
+    },
+    orderBy: { updatedAt: "desc" },
     take: 1,
   },
 } as const;
@@ -306,6 +329,7 @@ const publicEntryCardSelect = {
   images: {
     where: {
       isRemoved: false,
+      entryRevisionId: null,
     },
     select: publicImageSelect,
     orderBy: imageOrderBy,
@@ -328,6 +352,7 @@ const publicEntryDetailSelect = {
   images: {
     where: {
       isRemoved: false,
+      entryRevisionId: null,
     },
     select: publicImageSelect,
     orderBy: imageOrderBy,
@@ -430,6 +455,7 @@ function mapEntry(entry: EntryPayload) {
         ? mapYouTubeVideo(entry.youtubeVideo)
         : null,
     latestModerationReview: entry.moderationReviews?.[0] ?? null,
+    activeRevision: entry.revisions?.[0] ?? null,
     createdAt: entry.createdAt,
     updatedAt: entry.updatedAt,
   };

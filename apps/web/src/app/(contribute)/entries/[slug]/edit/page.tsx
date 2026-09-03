@@ -8,6 +8,7 @@ type EditEntryPageProps = {
   params: Promise<{
     slug: string;
   }>;
+  searchParams: Promise<{ mode?: string }>;
 };
 
 export const metadata: Metadata = {
@@ -19,15 +20,20 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function EditEntryPage({ params }: EditEntryPageProps) {
+export default async function EditEntryPage({ params, searchParams }: EditEntryPageProps) {
   const { slug } = await params;
+  const { mode } = await searchParams;
   const taxonomy = await getContributionTaxonomyData();
 
   return (
     <RequireAuth>
       <RequireVerifiedEmail>
         <PageTransition>
-          <CreateEntryForm initialDraftId={slug} taxonomy={taxonomy} />
+          <CreateEntryForm
+            initialDraftId={slug}
+            revisionMode={mode === "revision"}
+            taxonomy={taxonomy}
+          />
         </PageTransition>
       </RequireVerifiedEmail>
     </RequireAuth>

@@ -240,6 +240,13 @@ class ContentModerationService {
               plainTextContent: true,
               normalizedSearchText: true,
               status: true,
+              revisions: {
+                where: {
+                  status: { in: ["DRAFT", "PENDING_REVIEW", "CHANGES_REQUESTED", "REJECTED"] },
+                },
+                select: { id: true },
+                take: 1,
+              },
               contentVersions: {
                 select: { id: true, versionNumber: true, snapshot: true },
                 orderBy: { versionNumber: "desc" },
@@ -278,6 +285,13 @@ class ContentModerationService {
         );
       }
 
+      if (correction.entry.revisions.length > 0) {
+        throw this.conflict(
+          MODERATION_ERROR_CODES.CORRECTION_CONFLICT,
+          "An active published-entry revision must be resolved before accepting corrections.",
+        );
+      }
+
       const latestVersion = correction.entry.contentVersions[0];
       if (!latestVersion || !this.isRecord(latestVersion.snapshot)) {
         throw this.conflict(
@@ -303,7 +317,7 @@ class ContentModerationService {
 
       const entryUpdate = await tx.culturalEntry.updateMany({
         where: { id: correction.entryId, status: EntryStatus.PUBLISHED },
-        data: patched.entryData,
+        data: { ...patched.entryData, publishedVersionId: version.id },
       });
       if (entryUpdate.count !== 1) {
         throw this.conflict(MODERATION_ERROR_CODES.CORRECTION_CONFLICT, "Correction conflict.");

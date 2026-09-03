@@ -27,6 +27,7 @@ import {
   useSubmitCorrection,
   useSubmitReport,
 } from "@/features/moderation/hooks/use-content-moderation";
+import { useRequestPublishedEntryRevision } from "@/features/moderation/hooks/use-entry-revisions";
 import type {
   CorrectionSection,
   ReportReason,
@@ -36,6 +37,7 @@ import {
   reportReasonLabels,
 } from "@/features/moderation/utils/content-moderation-labels";
 import { useAnimatedIcon } from "@/hooks/use-animated-icon";
+import { useAuthStore } from "@/stores/auth-store";
 
 const correctionSections = Object.entries(correctionSectionLabels).map(([value, label]) => ({
   value: value as CorrectionSection,
@@ -48,12 +50,13 @@ const reportReasons = Object.entries(reportReasonLabels).map(([value, label]) =>
 
 function CommunityModerationActions({ entryId }: { entryId: string }) {
   const { ensureVerifiedAccess } = useEngagementAccess();
-  const [activeSheet, setActiveSheet] = useState<"correction" | "report" | null>(null);
+  const user = useAuthStore((state) => state.user);
+  const [activeSheet, setActiveSheet] = useState<"correction" | "report" | "revision" | null>(null);
   const correctionAnimation = useAnimatedIcon();
   const reportAnimation = useAnimatedIcon();
 
-  function open(action: "correction" | "report") {
-    if (ensureVerifiedAccess(action)) {
+  function open(action: "correction" | "report" | "revision") {
+    if (ensureVerifiedAccess(action === "revision" ? "correction" : action)) {
       setActiveSheet(action);
     }
   }
@@ -73,6 +76,12 @@ function CommunityModerationActions({ entryId }: { entryId: string }) {
         <PencilSquareIcon ref={correctionAnimation.iconRef} size={16} aria-hidden="true" />
         پیشنهاد اصلاح
       </Button>
+      {user?.role === "MODERATOR" || user?.role === "ADMIN" ? (
+        <Button type="button" variant="outline" size="sm" onClick={() => open("revision")}>
+          <PencilSquareIcon size={16} aria-hidden="true" />
+          پیشنهاد اصلاح به نویسنده
+        </Button>
+      ) : null}
       <Button
         type="button"
         variant="ghost"
@@ -94,7 +103,67 @@ function CommunityModerationActions({ entryId }: { entryId: string }) {
         open={activeSheet === "report"}
         onOpenChange={(nextOpen) => setActiveSheet(nextOpen ? "report" : null)}
       />
+      <RevisionRequestSheet
+        entryId={entryId}
+        open={activeSheet === "revision"}
+        onOpenChange={(nextOpen) => setActiveSheet(nextOpen ? "revision" : null)}
+      />
     </section>
+  );
+}
+
+function RevisionRequestSheet({
+  entryId,
+  open,
+  onOpenChange,
+}: {
+  entryId: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const mutation = useRequestPublishedEntryRevision();
+  const [reason, setReason] = useState("");
+
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="right" className="w-full sm:max-w-md" dir="rtl">
+        <SheetHeader className="border-b border-border p-5 pe-14">
+          <SheetTitle>پیشنهاد اصلاح به نویسنده</SheetTitle>
+          <SheetDescription className="leading-7">
+            مطلب فعلی منتشر می‌ماند تا نویسنده تغییرات را آماده کند و ویرایش تأیید شود.
+          </SheetDescription>
+        </SheetHeader>
+        <div className="p-5">
+          <Textarea
+            value={reason}
+            onChange={(event) => setReason(event.target.value)}
+            rows={7}
+            maxLength={1200}
+            placeholder="موارد لازم برای اصلاح را روشن بنویسید..."
+            aria-label="دلیل پیشنهاد اصلاح"
+          />
+        </div>
+        <SheetFooter className="border-t border-border p-5">
+          <Button
+            type="button"
+            disabled={reason.trim().length < 3 || mutation.isPending}
+            onClick={() =>
+              mutation.mutate(
+                { entryId, reason: reason.trim() },
+                {
+                  onSuccess: () => {
+                    setReason("");
+                    onOpenChange(false);
+                  },
+                },
+              )
+            }
+          >
+            {mutation.isPending ? "در حال ثبت..." : "ثبت پیشنهاد"}
+          </Button>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   );
 }
 

@@ -328,7 +328,11 @@ function ModerationImageGallery({ images }: { images: ModerationSnapshot["images
   );
 }
 
-function ModerationVideo({ snapshot }: { snapshot: ModerationSnapshot }) {
+function ModerationVideo({
+  snapshot,
+}: {
+  snapshot: Pick<ModerationSnapshot, "title" | "youtubeVideo">;
+}) {
   const video = snapshot.youtubeVideo;
 
   if (!video) {
@@ -442,4 +446,4 @@ function ReviewErrorState({ message, onRetry }: { message: string; onRetry: () =
   );
 }
 
-export { ModerationReviewPage };
+export { ModerationImageGallery, ModerationReviewPage, ModerationSources, ModerationVideo };

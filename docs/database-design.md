@@ -930,6 +930,11 @@ are not imported by taxonomy seeding.
 - A moderator cannot approve their own entry; enforce in service logic and test it.
 - Users cannot publish directly; publish only through moderation/admin workflow.
 - Published content must not be silently overwritten.
+- Published-entry edits are stored in `EntryRevision` as private working snapshots. Draft,
+  pending, changes-requested, and rejected revisions do not alter the canonical published row.
+- A Cultural Entry may have only one active revision. Approval atomically applies its complete
+  snapshot and advances `publishedVersionId`; rejection and requested changes leave the public
+  version unchanged.
 - Administrators may edit published content, but every change must create a new `ContentVersion`.
 - Accepted corrections must create a new `ContentVersion`.
 - Internal Cultural Entry links must target existing `PUBLISHED` entries.

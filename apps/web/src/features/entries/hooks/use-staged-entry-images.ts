@@ -5,8 +5,11 @@ import { toast } from "sonner";
 
 import {
   deleteEntryImage,
+  deleteEntryRevisionImage,
   type EntryImage,
+  updateEntryRevisionImage,
   uploadEntryImage,
+  uploadEntryRevisionImage,
 } from "@/features/entries/api/entry-drafts-api";
 import type { StagedImage } from "@/features/entries/types/create-entry-form";
 import { getEntryFormErrorMessage } from "@/features/entries/utils/create-entry-errors";
@@ -24,6 +27,7 @@ type UseStagedEntryImagesOptions = {
   getTitle: () => string;
   initialImages?: EntryImage[];
   onDirty: () => void;
+  revisionMode?: boolean;
 };
 
 export function useStagedEntryImages({
@@ -31,6 +35,7 @@ export function useStagedEntryImages({
   getTitle,
   initialImages,
   onDirty,
+  revisionMode = false,
 }: UseStagedEntryImagesOptions) {
   const [images, setImages] = useState<StagedImage[]>([]);
   const imageInputRef = useRef<HTMLInputElement | null>(null);
@@ -134,7 +139,10 @@ export function useStagedEntryImages({
   async function removeImage(image: StagedImage) {
     if (draftId && image.uploadedImage) {
       try {
-        await deleteEntryImage(draftId, image.uploadedImage.id);
+        await (revisionMode ? deleteEntryRevisionImage : deleteEntryImage)(
+          draftId,
+          image.uploadedImage.id,
+        );
       } catch (error) {
         toast.error(getEntryFormErrorMessage(error));
         return;
@@ -184,7 +192,29 @@ export function useStagedEntryImages({
     let hasFailedImage = false;
 
     for (const [index, image] of images.entries()) {
-      if (image.status === "uploaded" || image.status === "uploading") {
+      if (image.status === "uploading") {
+        continue;
+      }
+
+      if (image.status === "uploaded") {
+        if (revisionMode && image.uploadedImage) {
+          try {
+            const uploadedImage = await updateEntryRevisionImage(entryId, image.uploadedImage.id, {
+              altText: image.altText.trim(),
+              caption: emptyToUndefined(image.caption),
+              photographerOrSource: emptyToUndefined(image.photographerOrSource),
+              permissionConfirmed: image.permissionConfirmed,
+              displayOrder: index,
+            });
+            patchImageWithoutDirty(image.clientId, { uploadedImage });
+          } catch (error) {
+            hasFailedImage = true;
+            patchImageWithoutDirty(image.clientId, {
+              status: "uploaded",
+              error: getEntryFormErrorMessage(error),
+            });
+          }
+        }
         continue;
       }
 
@@ -217,14 +247,17 @@ export function useStagedEntryImages({
 
       try {
         patchImageWithoutDirty(image.clientId, { status: "uploading", error: undefined });
-        const uploadedImage = await uploadEntryImage(entryId, {
-          file: image.file,
-          altText: image.altText.trim(),
-          caption: emptyToUndefined(image.caption),
-          photographerOrSource: emptyToUndefined(image.photographerOrSource),
-          permissionConfirmed: image.permissionConfirmed,
-          displayOrder: index,
-        });
+        const uploadedImage = await (revisionMode ? uploadEntryRevisionImage : uploadEntryImage)(
+          entryId,
+          {
+            file: image.file,
+            altText: image.altText.trim(),
+            caption: emptyToUndefined(image.caption),
+            photographerOrSource: emptyToUndefined(image.photographerOrSource),
+            permissionConfirmed: image.permissionConfirmed,
+            displayOrder: index,
+          },
+        );
         patchImageWithoutDirty(image.clientId, {
           status: "uploaded",
           error: undefined,

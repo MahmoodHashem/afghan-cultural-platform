@@ -54,9 +54,21 @@ enum VersionReason {
   INITIAL_SUBMISSION
   RESUBMISSION
   ACCEPTED_CORRECTION
+  PUBLISHED_REVISION
   ADMIN_UPDATE
 
   @@map("version_reason")
+}
+
+enum EntryRevisionStatus {
+  DRAFT
+  PENDING_REVIEW
+  CHANGES_REQUESTED
+  REJECTED
+  APPROVED
+  CANCELLED
+
+  @@map("entry_revision_status")
 }
 
 enum ModerationDecision {
@@ -145,6 +157,13 @@ enum AuditAction {
   ENTRY_HIDDEN
   ENTRY_ARCHIVED
   ENTRY_RESTORED
+  ENTRY_REVISION_STARTED
+  ENTRY_REVISION_REQUESTED
+  ENTRY_REVISION_SUBMITTED
+  ENTRY_REVISION_APPROVED
+  ENTRY_REVISION_CHANGES_REQUESTED
+  ENTRY_REVISION_REJECTED
+  ENTRY_REVISION_CANCELLED
   CORRECTION_SUBMITTED
   CORRECTION_ACCEPTED
   CORRECTION_REJECTED
@@ -160,27 +179,29 @@ enum AuditAction {
 }
 
 model User {
-  id                String     @id @default(uuid()) @map("id") @db.Uuid
-  email             String     @unique @map("email")
-  passwordHash      String?    @map("password_hash")
-  role              UserRole   @default(USER) @map("role")
-  status            UserStatus @default(ACTIVE) @map("status")
-  displayName       String     @map("display_name")
-  profileImageUrl   String?    @map("profile_image_url")
-  profileImageCloudinaryPublicId String? @map("profile_image_cloudinary_public_id")
-  biography         String?    @map("biography")
-  provinceId        String?    @map("province_id") @db.Uuid
-  culturalInterests String[]   @default([]) @map("cultural_interests")
-  emailVerifiedAt   DateTime?  @map("email_verified_at") @db.Timestamptz(3)
-  lastLoginAt       DateTime?  @map("last_login_at") @db.Timestamptz(3)
-  suspendedAt       DateTime?  @map("suspended_at") @db.Timestamptz(3)
-  createdAt         DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt         DateTime   @updatedAt @map("updated_at") @db.Timestamptz(3)
+  id                             String     @id @default(uuid()) @map("id") @db.Uuid
+  email                          String     @unique @map("email")
+  passwordHash                   String?    @map("password_hash")
+  role                           UserRole   @default(USER) @map("role")
+  status                         UserStatus @default(ACTIVE) @map("status")
+  displayName                    String     @map("display_name")
+  profileImageUrl                String?    @map("profile_image_url")
+  profileImageCloudinaryPublicId String?    @map("profile_image_cloudinary_public_id")
+  biography                      String?    @map("biography")
+  provinceId                     String?    @map("province_id") @db.Uuid
+  culturalInterests              String[]   @default([]) @map("cultural_interests")
+  emailVerifiedAt                DateTime?  @map("email_verified_at") @db.Timestamptz(3)
+  lastLoginAt                    DateTime?  @map("last_login_at") @db.Timestamptz(3)
+  suspendedAt                    DateTime?  @map("suspended_at") @db.Timestamptz(3)
+  createdAt                      DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                      DateTime   @updatedAt @map("updated_at") @db.Timestamptz(3)
 
   province                       Province?                @relation("UserProvince", fields: [provinceId], references: [id], onDelete: Restrict)
   oauthAccounts                  OAuthAccount[]           @relation("OAuthAccountUser")
   culturalEntries                CulturalEntry[]          @relation("EntryAuthor")
   contentVersionsCreated         ContentVersion[]         @relation("ContentVersionCreator")
+  entryRevisionsCreated          EntryRevision[]          @relation("EntryRevisionCreator")
+  entryRevisionsRequested        EntryRevision[]          @relation("EntryRevisionRequester")
   moderationReviews              ModerationReview[]       @relation("ModerationReviewer")
   correctionSuggestionsSubmitted CorrectionSuggestion[]   @relation("CorrectionSubmittedBy")
   correctionSuggestionsReviewed  CorrectionSuggestion[]   @relation("CorrectionReviewedBy")
@@ -252,6 +273,7 @@ model CulturalEntry {
   publishedAt          DateTime?       @map("published_at") @db.Timestamptz(3)
   hiddenAt             DateTime?       @map("hidden_at") @db.Timestamptz(3)
   archivedAt           DateTime?       @map("archived_at") @db.Timestamptz(3)
+  publishedVersionId   String?         @unique @map("published_version_id") @db.Uuid
   createdAt            DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt            DateTime        @updatedAt @map("updated_at") @db.Timestamptz(3)
 
@@ -267,6 +289,8 @@ model CulturalEntry {
   outgoingReferences    EntryReference[]       @relation("EntryReferenceSource")
   incomingReferences    EntryReference[]       @relation("EntryReferenceTarget")
   contentVersions       ContentVersion[]       @relation("EntryContentVersions")
+  publishedVersion      ContentVersion?        @relation("PublishedEntryVersion", fields: [publishedVersionId], references: [id], onDelete: SetNull)
+  revisions             EntryRevision[]        @relation("EntryRevisions")
   moderationReviews     ModerationReview[]     @relation("EntryModerationReviews")
   likes                 Like[]                 @relation("EntryLikes")
   comments              EntryComment[]         @relation("EntryComments")
@@ -304,20 +328,57 @@ model ContentVersion {
   createdById            String?       @map("created_by_id") @db.Uuid
   correctionSuggestionId String?       @map("correction_suggestion_id") @db.Uuid
   moderationReviewId     String?       @map("moderation_review_id") @db.Uuid
+  entryRevisionId        String?       @map("entry_revision_id") @db.Uuid
   createdAt              DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
 
   entry                         CulturalEntry          @relation("EntryContentVersions", fields: [entryId], references: [id], onDelete: Restrict)
   createdBy                     User?                  @relation("ContentVersionCreator", fields: [createdById], references: [id], onDelete: SetNull)
   correctionSuggestion          CorrectionSuggestion?  @relation("CorrectionSuggestionContentVersions", fields: [correctionSuggestionId], references: [id], onDelete: SetNull)
   moderationReview              ModerationReview?      @relation("ModerationReviewContentVersions", fields: [moderationReviewId], references: [id], onDelete: SetNull)
+  entryRevision                 EntryRevision?         @relation("EntryRevisionContentVersions", fields: [entryRevisionId], references: [id], onDelete: SetNull)
+  basedRevisions                EntryRevision[]        @relation("EntryRevisionBaseVersion")
+  publishedByEntries            CulturalEntry[]        @relation("PublishedEntryVersion")
   acceptedForCorrectionRequests CorrectionSuggestion[] @relation("AcceptedCorrectionVersion")
 
   @@unique([entryId, versionNumber])
   @@index([entryId])
   @@index([createdById])
   @@index([versionReason])
+  @@index([entryRevisionId])
   @@index([createdAt])
   @@map("content_versions")
+}
+
+model EntryRevision {
+  id               String              @id @default(uuid()) @map("id") @db.Uuid
+  entryId          String              @map("entry_id") @db.Uuid
+  status           EntryRevisionStatus @default(DRAFT) @map("status")
+  baseVersionId    String?             @map("base_version_id") @db.Uuid
+  workingSnapshot  Json                @map("working_snapshot")
+  plainTextContent String              @map("plain_text_content")
+  createdById      String              @map("created_by_id") @db.Uuid
+  requestedById    String?             @map("requested_by_id") @db.Uuid
+  requestFeedback  String?             @map("request_feedback")
+  submittedAt      DateTime?           @map("submitted_at") @db.Timestamptz(3)
+  decidedAt        DateTime?           @map("decided_at") @db.Timestamptz(3)
+  createdAt        DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt        DateTime            @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  entry             CulturalEntry      @relation("EntryRevisions", fields: [entryId], references: [id], onDelete: Restrict)
+  baseVersion       ContentVersion?    @relation("EntryRevisionBaseVersion", fields: [baseVersionId], references: [id], onDelete: SetNull)
+  createdBy         User               @relation("EntryRevisionCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  requestedBy       User?              @relation("EntryRevisionRequester", fields: [requestedById], references: [id], onDelete: SetNull)
+  contentVersions   ContentVersion[]   @relation("EntryRevisionContentVersions")
+  moderationReviews ModerationReview[] @relation("EntryRevisionModerationReviews")
+  images            Image[]            @relation("EntryRevisionImages")
+  auditLogs         AuditLog[]         @relation("AuditEntryRevision")
+
+  @@index([entryId])
+  @@index([status])
+  @@index([createdById])
+  @@index([requestedById])
+  @@index([submittedAt])
+  @@map("entry_revisions")
 }
 
 model EntryReference {
@@ -339,24 +400,29 @@ model EntryReference {
 }
 
 model ModerationReview {
-  id             String             @id @default(uuid()) @map("id") @db.Uuid
-  entryId        String             @map("entry_id") @db.Uuid
-  moderatorId    String             @map("moderator_id") @db.Uuid
-  decision       ModerationDecision @map("decision")
-  comments       String?            @map("comments")
-  previousStatus EntryStatus        @map("previous_status")
-  nextStatus     EntryStatus        @map("next_status")
-  createdAt      DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
+  id                     String               @id @default(uuid()) @map("id") @db.Uuid
+  entryId                String               @map("entry_id") @db.Uuid
+  moderatorId            String               @map("moderator_id") @db.Uuid
+  decision               ModerationDecision   @map("decision")
+  comments               String?              @map("comments")
+  previousStatus         EntryStatus          @map("previous_status")
+  nextStatus             EntryStatus          @map("next_status")
+  createdAt              DateTime             @default(now()) @map("created_at") @db.Timestamptz(3)
+  entryRevisionId        String?              @map("entry_revision_id") @db.Uuid
+  previousRevisionStatus EntryRevisionStatus? @map("previous_revision_status")
+  nextRevisionStatus     EntryRevisionStatus? @map("next_revision_status")
 
   entry           CulturalEntry    @relation("EntryModerationReviews", fields: [entryId], references: [id], onDelete: Restrict)
   moderator       User             @relation("ModerationReviewer", fields: [moderatorId], references: [id], onDelete: Restrict)
   contentVersions ContentVersion[] @relation("ModerationReviewContentVersions")
+  entryRevision   EntryRevision?   @relation("EntryRevisionModerationReviews", fields: [entryRevisionId], references: [id], onDelete: SetNull)
 
   @@index([entryId])
   @@index([moderatorId])
   @@index([decision])
   @@index([createdAt])
   @@index([decision, createdAt])
+  @@index([entryRevisionId])
   @@map("moderation_reviews")
 }
 
@@ -473,6 +539,7 @@ model EntryTag {
 model Image {
   id                   String    @id @default(uuid()) @map("id") @db.Uuid
   entryId              String    @map("entry_id") @db.Uuid
+  entryRevisionId      String?   @map("entry_revision_id") @db.Uuid
   uploadedById         String?   @map("uploaded_by_id") @db.Uuid
   cloudinaryPublicId   String    @unique @map("cloudinary_public_id")
   url                  String    @map("url")
@@ -493,14 +560,16 @@ model Image {
   createdAt            DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt            DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  entry      CulturalEntry @relation("EntryImages", fields: [entryId], references: [id], onDelete: Cascade)
-  uploadedBy User?         @relation("ImageUploadedBy", fields: [uploadedById], references: [id], onDelete: SetNull)
-  removedBy  User?         @relation("ImageRemovedBy", fields: [removedById], references: [id], onDelete: SetNull)
+  entry         CulturalEntry  @relation("EntryImages", fields: [entryId], references: [id], onDelete: Cascade)
+  uploadedBy    User?          @relation("ImageUploadedBy", fields: [uploadedById], references: [id], onDelete: SetNull)
+  removedBy     User?          @relation("ImageRemovedBy", fields: [removedById], references: [id], onDelete: SetNull)
+  entryRevision EntryRevision? @relation("EntryRevisionImages", fields: [entryRevisionId], references: [id], onDelete: SetNull)
 
   @@index([entryId])
   @@index([uploadedById])
   @@index([entryId, displayOrder])
   @@index([isRemoved])
+  @@index([entryRevisionId])
   @@map("images")
 }
 
@@ -754,6 +823,7 @@ model AuditLog {
   entryId                String?     @map("entry_id") @db.Uuid
   reportId               String?     @map("report_id") @db.Uuid
   correctionSuggestionId String?     @map("correction_suggestion_id") @db.Uuid
+  entryRevisionId        String?     @map("entry_revision_id") @db.Uuid
   metadata               Json?       @map("metadata")
   requestId              String?     @map("request_id")
   ipAddress              String?     @map("ip_address")
@@ -765,6 +835,7 @@ model AuditLog {
   entry                CulturalEntry?        @relation("AuditEntry", fields: [entryId], references: [id], onDelete: SetNull)
   report               Report?               @relation("AuditReport", fields: [reportId], references: [id], onDelete: SetNull)
   correctionSuggestion CorrectionSuggestion? @relation("AuditCorrectionSuggestion", fields: [correctionSuggestionId], references: [id], onDelete: SetNull)
+  entryRevision        EntryRevision?        @relation("AuditEntryRevision", fields: [entryRevisionId], references: [id], onDelete: SetNull)
 
   @@index([action])
   @@index([actorId])
@@ -772,6 +843,7 @@ model AuditLog {
   @@index([entryId])
   @@index([reportId])
   @@index([correctionSuggestionId])
+  @@index([entryRevisionId])
   @@index([createdAt])
   @@index([action, createdAt])
   @@map("audit_logs")

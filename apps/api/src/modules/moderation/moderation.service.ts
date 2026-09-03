@@ -224,6 +224,7 @@ class ModerationService {
         ...(decisionInput.nextStatus === EntryStatus.PUBLISHED
           ? {
               publishedAt: now,
+              publishedVersionId: submittedVersion.id,
               hiddenAt: null,
               archivedAt: null,
             }

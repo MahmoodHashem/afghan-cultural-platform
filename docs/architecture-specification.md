@@ -440,6 +440,11 @@ PUBLISHED
 - Approval immediately publishes the content.
     
 - Published content cannot be silently overwritten.
+
+- Authors revise published content in a private `EntryRevision` workspace. The canonical entry
+  remains published until a moderator approves the complete revision.
+
+- Only one draft, pending, changes-requested, or rejected revision may be active per entry.
     
 - Hidden and archived content do not appear publicly.
     
@@ -457,6 +462,8 @@ A `ContentVersion` will be created when:
 - A correction is accepted
     
 - An approved administrator update is made
+
+- A complete published-entry revision is submitted for moderation
     
 
 Saving a normal draft will not create a new permanent version every time.
@@ -479,6 +486,7 @@ Possible version reasons:
 INITIAL_SUBMISSION
 RESUBMISSION
 ACCEPTED_CORRECTION
+PUBLISHED_REVISION
 ADMIN_UPDATE
 ```
 

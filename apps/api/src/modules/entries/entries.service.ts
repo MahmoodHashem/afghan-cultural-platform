@@ -212,6 +212,7 @@ const submissionEntrySelect = {
   images: {
     where: {
       isRemoved: false,
+      entryRevisionId: null,
     },
     select: imageSelect,
     orderBy: submissionImageOrderBy,

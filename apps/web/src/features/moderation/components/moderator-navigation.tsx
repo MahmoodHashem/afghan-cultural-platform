@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 
 const items = [
   { href: "/moderator", label: "بررسی مطالب", exact: true },
+  { href: "/moderator/revisions", label: "ویرایش‌های منتشرشده" },
   { href: "/moderator/corrections", label: "پیشنهادهای اصلاح" },
   { href: "/moderator/reports", label: "گزارش‌ها" },
   { href: "/moderator/history", label: "تاریخچه بررسی" },

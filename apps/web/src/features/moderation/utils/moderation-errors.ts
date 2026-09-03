@@ -7,6 +7,11 @@ const MODERATION_ERROR_MESSAGES: Record<string, string> = {
   AUTH_ACCOUNT_SUSPENDED: "این حساب موقتاً تعلیق شده است.",
   MODERATION_SUBMISSION_NOT_FOUND: "این مطلب دیگر در صف بررسی نیست.",
   MODERATION_SELF_APPROVAL_FORBIDDEN: "نمی‌توانید مطلب خودتان را تأیید کنید.",
+  ENTRY_REVISION_NOT_FOUND: "ویرایش مورد نظر پیدا نشد.",
+  ENTRY_REVISION_INVALID_STATUS: "این ویرایش دیگر قابل بررسی نیست.",
+  ENTRY_REVISION_STALE:
+    "نسخه عمومی مطلب پس از ارسال این ویرایش تغییر کرده است. بررسی را از نسخه تازه آغاز کنید.",
+  ENTRY_REVISION_CONFLICT: "این ویرایش قبلاً بررسی شده یا وضعیت آن تغییر کرده است.",
   MODERATION_REASON_REQUIRED: "دلیل تصمیم را بنویسید.",
   MODERATION_ALREADY_DECIDED: "این مطلب پیش‌تر بررسی شده است.",
   MODERATION_CONFLICT: "بررسی‌کننده دیگری زودتر درباره این مطلب تصمیم گرفته است.",

@@ -24,6 +24,7 @@ type CreateEntryEditorHeaderProps = {
   isBusy: boolean;
   saveState: SaveState;
   submitLabel?: string;
+  saveLabel?: string;
   title?: string;
   onBack: () => void;
   onPreview: () => void;
@@ -34,6 +35,7 @@ type CreateEntryEditorHeaderProps = {
 export function CreateEntryEditorHeader({
   isBusy,
   submitLabel = "ارسال برای بررسی",
+  saveLabel = "ذخیره پیش‌نویس",
   title = "مطلب جدید",
   onBack,
   onPreview,
@@ -86,7 +88,7 @@ export function CreateEntryEditorHeader({
             {...saveAnimation.triggerProps}
           >
             <CheckCircleIcon ref={saveAnimation.iconRef} size={20} aria-hidden="true" />
-            {isBusy ? "در حال ذخیره..." : "ذخیره پیش‌نویس"}
+            {isBusy ? "در حال ذخیره..." : saveLabel}
           </Button>
           <Button
             type="button"
@@ -118,12 +120,14 @@ export function MobileEditorSaveAction({
   isBusy,
   saveState,
   submitLabel,
+  saveLabel = "ذخیره پیش‌نویس",
   onSaveDraft,
   onSubmit,
 }: {
   isBusy: boolean;
   saveState: SaveState;
   submitLabel: string;
+  saveLabel?: string;
   onSaveDraft: () => void;
   onSubmit: () => void;
 }) {
@@ -161,9 +165,7 @@ export function MobileEditorSaveAction({
           onClick={onSaveDraft}
         >
           <CheckCircleIcon ref={saveAnimation.iconRef} size={20} aria-hidden="true" />
-          <span className="truncate">
-            {saveState === "saving" ? "در حال ذخیره..." : "ذخیره پیش‌نویس"}
-          </span>
+          <span className="truncate">{saveState === "saving" ? "در حال ذخیره..." : saveLabel}</span>
         </Button>
         <Button
           type="button"

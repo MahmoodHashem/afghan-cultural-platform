@@ -77,8 +77,23 @@ type AdminEntryModerationHistory = {
   comments: string | null;
   previousStatus: AdminEntryStatus;
   nextStatus: AdminEntryStatus;
+  entryRevisionId?: string | null;
+  previousRevisionStatus?: string | null;
+  nextRevisionStatus?: string | null;
   moderator: { id: string; displayName: string };
   createdAt: string;
+};
+
+type AdminEntryRevision = {
+  id: string;
+  status: string;
+  requestFeedback: string | null;
+  versionNumber: number | null;
+  submittedAt: string | null;
+  decidedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  requestedBy: { id: string; displayName: string } | null;
 };
 
 type AdminEntryVersion = {
@@ -120,6 +135,7 @@ type AdminEntryDetail = Omit<AdminEntryListItem, "thumbnailUrl"> & {
   } | null;
   contentVersions: AdminEntryVersion[];
   moderationHistory: AdminEntryModerationHistory[];
+  revisions: AdminEntryRevision[];
   outgoingReferences: AdminEntryReference[];
   incomingReferences: AdminEntryReference[];
   hiddenAt: string | null;

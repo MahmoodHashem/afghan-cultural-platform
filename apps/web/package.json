@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "test": "node --test src/features/auth/__tests__/auth-ui.test.mjs src/lib/cache/__tests__/public-entry-cache.test.mjs src/lib/seo/__tests__/seo-foundation.test.mjs"
+    "test": "node --test src/features/auth/__tests__/auth-ui.test.mjs src/features/entries/__tests__/published-revisions.test.mjs src/lib/cache/__tests__/public-entry-cache.test.mjs src/lib/seo/__tests__/seo-foundation.test.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",

@@ -13,6 +13,7 @@ type CreateAuditLogInput = {
   entryId?: string | null;
   reportId?: string | null;
   correctionSuggestionId?: string | null;
+  entryRevisionId?: string | null;
   metadata?: Prisma.InputJsonValue;
   requestId?: string | null;
   ipAddress?: string | null;
@@ -36,6 +37,7 @@ class AuditService {
         entryId: input.entryId ?? null,
         reportId: input.reportId ?? null,
         correctionSuggestionId: input.correctionSuggestionId ?? null,
+        entryRevisionId: input.entryRevisionId ?? null,
         metadata: input.metadata,
         requestId: input.requestId ?? null,
         ipAddress: input.ipAddress ?? null,

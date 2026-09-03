@@ -25,7 +25,12 @@ type ModerationContentVersion = {
   versionNumber: number;
   snapshot: unknown;
   plainTextContent: string;
-  versionReason: "INITIAL_SUBMISSION" | "RESUBMISSION" | "ACCEPTED_CORRECTION" | "ADMIN_UPDATE";
+  versionReason:
+    | "INITIAL_SUBMISSION"
+    | "RESUBMISSION"
+    | "ACCEPTED_CORRECTION"
+    | "PUBLISHED_REVISION"
+    | "ADMIN_UPDATE";
   createdById: string | null;
   correctionSuggestionId: string | null;
   moderationReviewId: string | null;

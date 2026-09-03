@@ -13,6 +13,11 @@ export function getEntryFormErrorMessage(error: unknown) {
     ENTRY_DISTRICT_PROVINCE_MISMATCH: "ولسوالی با ولایت انتخاب‌شده سازگار نیست.",
     ENTRY_CONTENT_INVALID: "متن مطلب معتبر نیست.",
     ENTRY_INVALID_STATUS: "این مطلب در وضعیت قابل ویرایش نیست.",
+    ENTRY_REVISION_NOT_FOUND: "ویرایش فعال این مطلب پیدا نشد.",
+    ENTRY_REVISION_INVALID_STATUS: "این ویرایش اکنون قابل تغییر نیست.",
+    ENTRY_REVISION_STALE:
+      "نسخه منتشرشده پس از آغاز این ویرایش تغییر کرده است. لطفاً صفحه را تازه کنید.",
+    ENTRY_REVISION_CONFLICT: "وضعیت این ویرایش تغییر کرده است. لطفاً دوباره تلاش کنید.",
     ENTRY_SUBMISSION_INCOMPLETE: "برای ارسال، بخش‌های ضروری مطلب را کامل کنید.",
     ENTRY_SUBMISSION_REFERENCE_INVALID: "یکی از پیوندهای داخلی این مطلب معتبر نیست.",
     IMAGE_LIMIT_EXCEEDED: "تعداد تصاویر بیشتر از حد مجاز است.",

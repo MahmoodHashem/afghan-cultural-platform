@@ -13,6 +13,14 @@ type EntryStatus =
   | "HIDDEN"
   | "ARCHIVED";
 
+type EntryRevisionStatus =
+  | "DRAFT"
+  | "PENDING_REVIEW"
+  | "CHANGES_REQUESTED"
+  | "REJECTED"
+  | "APPROVED"
+  | "CANCELLED";
+
 type SourceType =
   | "BOOK"
   | "ACADEMIC_ARTICLE"
@@ -59,6 +67,7 @@ type EntryImageInput = {
   permissionConfirmed: boolean;
   displayOrder?: number;
 };
+type EntryImageMetadataInput = Omit<EntryImageInput, "file">;
 
 type EntryDraftPayload = {
   title: string;
@@ -154,6 +163,31 @@ type OwnEntry = EntryDraftPayload & {
   images?: EntryImage[];
   youtubeVideo?: EntryYouTubeVideo | null;
   latestModerationReview?: EntryModerationFeedback | null;
+  activeRevision?: {
+    id: string;
+    status: EntryRevisionStatus;
+    requestFeedback: string | null;
+    submittedAt: string | null;
+    updatedAt: string;
+  } | null;
+  revisionId?: string;
+  revisionStatus?: EntryRevisionStatus;
+  publicStatus?: EntryStatus;
+  requestFeedback?: string | null;
+  revisionCreatedBy?: {
+    id: string;
+    displayName: string;
+  } | null;
+  revisionRequestedBy?: {
+    id: string;
+    displayName: string;
+  } | null;
+  revisionVersion?: {
+    id: string;
+    versionNumber: number;
+    createdAt: string;
+  } | null;
+  submittedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -356,11 +390,128 @@ async function deleteEntryImage(entryId: string, imageId: string) {
   });
 }
 
+async function startEntryRevision(entryId: string) {
+  const response = await apiRequest<EntryResponse>(`/me/entries/${entryId}/revision`, {
+    method: "POST",
+  });
+  return response.data;
+}
+
+async function getEntryRevision(entryId: string, signal?: AbortSignal) {
+  const response = await apiRequest<EntryResponse>(`/me/entries/${entryId}/revision`, {
+    method: "GET",
+    signal,
+  });
+  return response.data;
+}
+
+async function cancelEntryRevision(entryId: string) {
+  await apiRequest(`/me/entries/${entryId}/revision`, { method: "DELETE" });
+}
+
+async function updateEntryRevision(entryId: string, input: EntryDraftPayload) {
+  const response = await apiRequest<EntryResponse>(`/me/entries/${entryId}/revision`, {
+    method: "PATCH",
+    body: input,
+  });
+  return response.data;
+}
+
+async function submitEntryRevision(entryId: string) {
+  const response = await apiRequest<{ data: { revisionId: string; versionNumber: number } }>(
+    `/me/entries/${entryId}/revision/submit`,
+    { method: "POST" },
+  );
+  return response.data;
+}
+
+async function replaceEntryRevisionTags(entryId: string, tagIds: string[]) {
+  const response = await apiRequest<EntryTagsResponse>(`/me/entries/${entryId}/revision/tags`, {
+    method: "PATCH",
+    body: { tagIds },
+  });
+  return response.data;
+}
+
+async function createEntryRevisionSource(entryId: string, input: EntrySourceInput) {
+  const response = await apiRequest<EntrySourceResponse>(
+    `/me/entries/${entryId}/revision/sources`,
+    { method: "POST", body: input },
+  );
+  return response.data;
+}
+
+async function updateEntryRevisionSource(
+  entryId: string,
+  sourceId: string,
+  input: EntrySourceInput,
+) {
+  const response = await apiRequest<EntrySourceResponse>(
+    `/me/entries/${entryId}/revision/sources/${sourceId}`,
+    { method: "PATCH", body: input },
+  );
+  return response.data;
+}
+
+async function deleteEntryRevisionSource(entryId: string, sourceId: string) {
+  await apiRequest(`/me/entries/${entryId}/revision/sources/${sourceId}`, { method: "DELETE" });
+}
+
+async function upsertEntryRevisionYouTubeVideo(entryId: string, input: EntryYouTubeVideoInput) {
+  const response = await apiRequest<EntryYouTubeVideoResponse>(
+    `/me/entries/${entryId}/revision/youtube-video`,
+    { method: "POST", body: input },
+  );
+  return response.data;
+}
+
+async function uploadEntryRevisionImage(entryId: string, input: EntryImageInput) {
+  const formData = createEntryImageFormData(input);
+  const response = await apiRequest<EntryImageResponse>(`/me/entries/${entryId}/revision/images`, {
+    method: "POST",
+    body: formData,
+  });
+  return response.data;
+}
+
+async function deleteEntryRevisionImage(entryId: string, imageId: string) {
+  await apiRequest(`/me/entries/${entryId}/revision/images/${imageId}`, { method: "DELETE" });
+}
+
+async function updateEntryRevisionImage(
+  entryId: string,
+  imageId: string,
+  input: EntryImageMetadataInput,
+) {
+  const response = await apiRequest<EntryImageResponse>(
+    `/me/entries/${entryId}/revision/images/${imageId}`,
+    { method: "PATCH", body: input },
+  );
+  return response.data;
+}
+
+async function removeEntryRevisionYouTubeVideo(entryId: string) {
+  await apiRequest(`/me/entries/${entryId}/revision/youtube-video`, { method: "DELETE" });
+}
+
+function createEntryImageFormData(input: EntryImageInput) {
+  const formData = new FormData();
+  formData.set("image", input.file);
+  formData.set("altText", input.altText);
+  formData.set("permissionConfirmed", String(input.permissionConfirmed));
+  if (input.caption) formData.set("caption", input.caption);
+  if (input.photographerOrSource) formData.set("photographerOrSource", input.photographerOrSource);
+  if (input.displayOrder !== undefined) formData.set("displayOrder", String(input.displayOrder));
+  return formData;
+}
+
 export type {
   EntryDraftPayload,
   EntryImage,
   EntryImageInput,
+  EntryImageMetadataInput,
   EntryModerationFeedback,
+  EntryRevisionStatus,
   EntrySource,
   EntrySourceInput,
   EntryStatus,
@@ -377,18 +528,32 @@ export type {
   YouTubeMetadata,
 };
 export {
+  cancelEntryRevision,
   createEntryDraft,
+  createEntryRevisionSource,
   createEntrySource,
   deleteEntryImage,
+  deleteEntryRevisionImage,
+  deleteEntryRevisionSource,
   deleteEntrySource,
   deleteOwnDraft,
+  getEntryRevision,
   getOwnEntry,
   getYouTubeMetadata,
   listOwnEntries,
+  removeEntryRevisionYouTubeVideo,
+  replaceEntryRevisionTags,
   replaceEntryTags,
+  startEntryRevision,
   submitEntryForReview,
+  submitEntryRevision,
   updateEntryDraft,
+  updateEntryRevision,
+  updateEntryRevisionImage,
+  updateEntryRevisionSource,
   updateEntrySource,
   uploadEntryImage,
+  uploadEntryRevisionImage,
+  upsertEntryRevisionYouTubeVideo,
   upsertEntryYouTubeVideo,
 };

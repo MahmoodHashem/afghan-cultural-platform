@@ -514,9 +514,9 @@ test("mobile profile uses compact app chrome without changing profile data owner
 test("profile images are normalized before upload", () => {
   assert.match(profileEditDialog, /await normalizeProfileImage\(nextFile\)/);
   assert.match(profileEditDialog, /isNormalizingImage/);
-  assert.match(profileImageNormalizer, /PROFILE_IMAGE_MAX_DIMENSION = 1024/);
-  assert.match(profileImageNormalizer, /PROFILE_IMAGE_TARGET_BYTES = 800 \* 1024/);
-  assert.match(profileImageNormalizer, /canvasToBlob\(canvas, "image\/webp", quality\)/);
+  assert.match(profileImageNormalizer, /maxDimension: 1024/);
+  assert.match(profileImageNormalizer, /targetBytes: 800 \* 1024/);
+  assert.match(profileImageNormalizer, /normalizeClientImage\(file, PROFILE_IMAGE_OPTIONS\)/);
 });
 
 test("mobile profile tabs coordinate with thresholded shell visibility", () => {
@@ -669,7 +669,10 @@ test("create entry API integration uses existing backend draft contracts", () =>
   assert.match(createEntrySections, /عنوان و توضیح ویدیو دریافت شد/);
   assert.match(contributionTaxonomyApi, /\/taxonomy\/districts\?limit=500/);
   assert.match(createEntryForm, /submitEntryForReview\(savedDraft\.id\)/);
-  assert.match(createEntryForm, /toast\.success\("مطلب برای بررسی فرستاده شد\."\)/);
+  assert.match(
+    createEntryForm,
+    /revisionMode \? "تغییرات برای بررسی فرستاده شد\." : "مطلب برای بررسی فرستاده شد\."/,
+  );
 });
 
 test("create entry supports sources, image staging, and unsaved-change warning", () => {
@@ -691,7 +694,7 @@ test("create entry has an app-like mobile shell, preview, and readiness flow", (
   assert.match(createEntryEditorLayout, /env\(safe-area-inset-bottom\)/);
   assert.match(createEntryForm, /openMobileSection/);
   assert.match(createEntryForm, /getReadinessIssues/);
-  assert.match(createEntryForm, /latestModerationReview\.comments/);
+  assert.match(createEntryForm, /latestModerationReview\?\.comments/);
   assert.match(createEntryOverlays, /EntryPreviewDialog/);
   assert.match(createEntryOverlays, /SubmissionReadinessDrawer/);
   assert.match(createEntryOverlays, /UnsavedEntryDialog/);
@@ -1306,7 +1309,10 @@ test("reports share one queue and only expose supported resolution actions", () 
 });
 
 test("community moderation actions preserve failures and require verified access", () => {
-  assert.match(communityModerationActions, /ensureVerifiedAccess\(action\)/);
+  assert.match(
+    communityModerationActions,
+    /ensureVerifiedAccess\(action === "revision" \? "correction" : action\)/,
+  );
   assert.match(communityModerationActions, /useSubmitCorrection/);
   assert.match(communityModerationActions, /useSubmitReport/);
   assert.match(communityModerationActions, /values stay intact|Keep the explanation/);

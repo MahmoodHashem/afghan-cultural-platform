@@ -12,13 +12,22 @@ import { applyApiFieldErrors } from "@/features/auth/utils/form-errors";
 import type { ContributionTaxonomyData } from "@/features/entries/api/contribution-taxonomy-api";
 import {
   createEntryDraft,
+  createEntryRevisionSource,
   createEntrySource,
+  deleteEntryRevisionSource,
   deleteEntrySource,
+  getEntryRevision,
   getOwnEntry,
+  removeEntryRevisionYouTubeVideo,
+  replaceEntryRevisionTags,
   replaceEntryTags,
   submitEntryForReview,
+  submitEntryRevision,
   updateEntryDraft,
+  updateEntryRevision,
+  updateEntryRevisionSource,
   updateEntrySource,
+  upsertEntryRevisionYouTubeVideo,
   upsertEntryYouTubeVideo,
 } from "@/features/entries/api/entry-drafts-api";
 import { useStagedEntryImages } from "@/features/entries/hooks/use-staged-entry-images";
@@ -63,13 +72,15 @@ import { CreateEntryWritingSurface } from "./create-entry-writing-surface";
 
 type CreateEntryFormProps = {
   initialDraftId?: string;
+  revisionMode?: boolean;
   taxonomy: ContributionTaxonomyData;
 };
 
 const editableEntryStatuses = new Set(["DRAFT", "CHANGES_REQUESTED"]);
+const editableRevisionStatuses = new Set(["DRAFT", "CHANGES_REQUESTED", "REJECTED"]);
 type EditorSectionKey = "details" | "images" | "sources" | "video";
 
-function CreateEntryForm({ initialDraftId, taxonomy }: CreateEntryFormProps) {
+function CreateEntryForm({ initialDraftId, revisionMode = false, taxonomy }: CreateEntryFormProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const isMobile = useIsMobile();
@@ -85,8 +96,11 @@ function CreateEntryForm({ initialDraftId, taxonomy }: CreateEntryFormProps) {
   const [readinessIssues, setReadinessIssues] = useState<ReadinessIssue[]>([]);
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
   const draftQuery = useQuery({
-    queryKey: ["entry-draft", initialDraftId],
-    queryFn: ({ signal }) => getOwnEntry(initialDraftId as string, signal),
+    queryKey: [revisionMode ? "entry-revision" : "entry-draft", initialDraftId],
+    queryFn: ({ signal }) =>
+      revisionMode
+        ? getEntryRevision(initialDraftId as string, signal)
+        : getOwnEntry(initialDraftId as string, signal),
     enabled: Boolean(initialDraftId),
   });
   const initialDraft = draftQuery.data;
@@ -121,11 +135,18 @@ function CreateEntryForm({ initialDraftId, taxonomy }: CreateEntryFormProps) {
     getTitle: () => form.getValues("title"),
     initialImages: initialDraft?.images,
     onDirty: markUnsaved,
+    revisionMode,
   });
   const { hasPendingImages, imageInputRef, images } = stagedImages;
   const isDraftLoading = Boolean(initialDraftId && draftQuery.isLoading);
   const isDraftUnavailable = Boolean(initialDraftId && draftQuery.isError);
-  const isDraftLocked = Boolean(initialDraft && !editableEntryStatuses.has(initialDraft.status));
+  const effectiveEditorStatus = revisionMode ? initialDraft?.revisionStatus : initialDraft?.status;
+  const isDraftLocked = Boolean(
+    initialDraft &&
+      !(revisionMode ? editableRevisionStatuses : editableEntryStatuses).has(
+        effectiveEditorStatus ?? "",
+      ),
+  );
   const isBusy = saveState === "saving" || isSyncingMedia || isDraftLoading || isDraftLocked;
   const hasUnsavedChanges = isDirty || hasPendingImages || saveState === "unsaved";
 
@@ -224,12 +245,21 @@ function CreateEntryForm({ initialDraftId, taxonomy }: CreateEntryFormProps) {
     setSaveState("saving");
 
     try {
-      const submission = await submitEntryForReview(savedDraft.id);
-      setDraftId(submission.entry.id);
+      if (revisionMode) {
+        await submitEntryRevision(savedDraft.id);
+        setDraftId(savedDraft.id);
+      } else {
+        const submission = await submitEntryForReview(savedDraft.id);
+        setDraftId(submission.entry.id);
+      }
       setSaveState("submitted");
       await queryClient.invalidateQueries({ queryKey: profileQueryKeys.all });
-      toast.success("مطلب برای بررسی فرستاده شد.");
-      router.replace("/profile?tab=entries&status=PENDING_REVIEW");
+      toast.success(
+        revisionMode ? "تغییرات برای بررسی فرستاده شد." : "مطلب برای بررسی فرستاده شد.",
+      );
+      router.replace(
+        revisionMode ? "/profile?tab=entries" : "/profile?tab=entries&status=PENDING_REVIEW",
+      );
     } catch (error) {
       applyApiFieldErrors(error, setError, createEntryFieldNameMap);
       setSaveState("unsaved");
@@ -313,7 +343,7 @@ function CreateEntryForm({ initialDraftId, taxonomy }: CreateEntryFormProps) {
 
     try {
       const savedDraft = draftId
-        ? await updateEntryDraft(draftId, payload)
+        ? await (revisionMode ? updateEntryRevision : updateEntryDraft)(draftId, payload)
         : await createEntryDraft(payload);
       const wasNewDraft = !draftId;
 
@@ -334,7 +364,7 @@ function CreateEntryForm({ initialDraftId, taxonomy }: CreateEntryFormProps) {
       setSaveState("saved");
 
       if (showSuccessToast) {
-        toast.success("پیش‌نویس ذخیره شد.");
+        toast.success(revisionMode ? "تغییرات ذخیره شد." : "پیش‌نویس ذخیره شد.");
       }
 
       return savedDraft;
@@ -350,7 +380,7 @@ function CreateEntryForm({ initialDraftId, taxonomy }: CreateEntryFormProps) {
     setIsSyncingMedia(true);
 
     try {
-      await replaceEntryTags(entryId, values.tagIds);
+      await (revisionMode ? replaceEntryRevisionTags : replaceEntryTags)(entryId, values.tagIds);
       await syncSources(entryId, values);
       await syncYouTubeVideo(entryId, values);
       const imagesSynced = await stagedImages.syncPendingImages(entryId);
@@ -372,10 +402,17 @@ function CreateEntryForm({ initialDraftId, taxonomy }: CreateEntryFormProps) {
         const { id, ...source } = input;
 
         if (id) {
-          return updateEntrySource(entryId, id, source);
+          return (revisionMode ? updateEntryRevisionSource : updateEntrySource)(
+            entryId,
+            id,
+            source,
+          );
         }
 
-        const createdSource = await createEntrySource(entryId, source);
+        const createdSource = await (revisionMode ? createEntryRevisionSource : createEntrySource)(
+          entryId,
+          source,
+        );
 
         if (values.sources[index]) {
           sourceFields.update(index, {
@@ -391,10 +428,13 @@ function CreateEntryForm({ initialDraftId, taxonomy }: CreateEntryFormProps) {
 
   async function syncYouTubeVideo(entryId: string, values: CreateEntryFormValues) {
     if (!values.youtubeUrl?.trim()) {
+      if (revisionMode && initialDraft?.youtubeVideo) {
+        await removeEntryRevisionYouTubeVideo(entryId);
+      }
       return;
     }
 
-    await upsertEntryYouTubeVideo(entryId, {
+    await (revisionMode ? upsertEntryRevisionYouTubeVideo : upsertEntryYouTubeVideo)(entryId, {
       url: values.youtubeUrl.trim(),
       title: emptyToUndefined(values.youtubeTitle),
       description: emptyToUndefined(values.youtubeDescription),
@@ -406,7 +446,7 @@ function CreateEntryForm({ initialDraftId, taxonomy }: CreateEntryFormProps) {
 
     if (draftId && source?.id) {
       try {
-        await deleteEntrySource(draftId, source.id);
+        await (revisionMode ? deleteEntryRevisionSource : deleteEntrySource)(draftId, source.id);
       } catch (error) {
         toast.error(getEntryFormErrorMessage(error));
         return;
@@ -421,11 +461,21 @@ function CreateEntryForm({ initialDraftId, taxonomy }: CreateEntryFormProps) {
     <LazyMotion features={domAnimation}>
       <div className="min-h-screen bg-background text-foreground">
         <CreateEntryEditorHeader
-          title={initialDraftId ? "ویرایش مطلب" : "مطلب جدید"}
+          title={
+            revisionMode ? "ویرایش مطلب منتشرشده" : initialDraftId ? "ویرایش مطلب" : "مطلب جدید"
+          }
           isBusy={isBusy}
           saveState={saveState}
+          saveLabel={revisionMode ? "ذخیره تغییرات" : undefined}
           submitLabel={
-            initialDraft?.status === "CHANGES_REQUESTED" ? "ارسال دوباره برای بررسی" : undefined
+            revisionMode
+              ? initialDraft?.revisionStatus === "CHANGES_REQUESTED" ||
+                initialDraft?.revisionStatus === "REJECTED"
+                ? "ارسال دوباره تغییرات"
+                : "ارسال تغییرات برای بررسی"
+              : initialDraft?.status === "CHANGES_REQUESTED"
+                ? "ارسال دوباره برای بررسی"
+                : undefined
           }
           onBack={handleBack}
           onPreview={handlePreview}
@@ -439,12 +489,17 @@ function CreateEntryForm({ initialDraftId, taxonomy }: CreateEntryFormProps) {
           {isDraftLocked ? <DraftEditorLockedState /> : null}
           {!isDraftLoading && !isDraftUnavailable && !isDraftLocked ? (
             <form className="bg-background px-0 py-6 sm:px-8 lg:px-14" noValidate>
-              {initialDraft?.status === "CHANGES_REQUESTED" &&
-              initialDraft.latestModerationReview?.comments ? (
+              {((revisionMode &&
+                (initialDraft?.revisionStatus === "CHANGES_REQUESTED" ||
+                  initialDraft?.revisionStatus === "REJECTED")) ||
+                (!revisionMode &&
+                  (initialDraft?.status === "CHANGES_REQUESTED" ||
+                    initialDraft?.status === "REJECTED"))) &&
+              (initialDraft.requestFeedback || initialDraft.latestModerationReview?.comments) ? (
                 <div className="mb-8 rounded-xl border border-terracotta/20 bg-terracotta/5 px-4 py-4 text-[14px] leading-7">
                   <p className="font-semibold text-foreground">نظر بررسی‌کننده</p>
                   <p className="mt-1 text-muted-foreground">
-                    {initialDraft.latestModerationReview.comments}
+                    {initialDraft.requestFeedback ?? initialDraft.latestModerationReview?.comments}
                   </p>
                 </div>
               ) : null}
@@ -539,8 +594,13 @@ function CreateEntryForm({ initialDraftId, taxonomy }: CreateEntryFormProps) {
           <MobileEditorSaveAction
             isBusy={isBusy}
             saveState={saveState}
+            saveLabel={revisionMode ? "ذخیره تغییرات" : undefined}
             submitLabel={
-              initialDraft?.status === "CHANGES_REQUESTED" ? "ارسال دوباره" : "ارسال برای بررسی"
+              revisionMode
+                ? "ارسال تغییرات"
+                : initialDraft?.status === "CHANGES_REQUESTED"
+                  ? "ارسال دوباره"
+                  : "ارسال برای بررسی"
             }
             onSaveDraft={handleSaveDraft}
             onSubmit={handleRequestSubmit}
@@ -560,9 +620,11 @@ function CreateEntryForm({ initialDraftId, taxonomy }: CreateEntryFormProps) {
           issues={readinessIssues}
           isBusy={isBusy}
           submitLabel={
-            initialDraft?.status === "CHANGES_REQUESTED"
-              ? "ارسال دوباره برای بررسی"
-              : "ارسال برای بررسی"
+            revisionMode
+              ? "ارسال تغییرات برای بررسی"
+              : initialDraft?.status === "CHANGES_REQUESTED"
+                ? "ارسال دوباره برای بررسی"
+                : "ارسال برای بررسی"
           }
           onSelectIssue={handleSelectReadinessIssue}
           onConfirm={async () => {

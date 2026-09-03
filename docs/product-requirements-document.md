@@ -1079,6 +1079,12 @@ they may be referenced by Cultural Entries.
 
 Archiving is allowed only for published content and restoration returns only previously published archived content to `PUBLISHED`. Both actions require a reason, create moderation and audit history, and preserve the original publication timestamp and content versions.
 
+**FR-ADM-10A:** Authors shall be able to revise their own published Cultural Entries through a
+private revision workspace. Moderators and administrators may request a revision with feedback.
+The existing published version remains public while changes are drafted or reviewed. An approved
+revision replaces the canonical content atomically, preserves the slug and original publication
+date, and creates permanent version, moderation, and audit history.
+
 **FR-ADM-11:** The administrator shall be able to manage featured content.
 
 **FR-ADM-12:** The administrator shall be able to manage report reasons.
