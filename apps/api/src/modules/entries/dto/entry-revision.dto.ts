@@ -1,53 +1,62 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { Transform } from "class-transformer";
+import { Transform, Type } from "class-transformer";
 import {
+  ArrayUnique,
   IsArray,
   IsInt,
-  IsNotEmpty,
   IsOptional,
   IsString,
   IsUUID,
   Max,
   MaxLength,
   Min,
+  MinLength,
 } from "class-validator";
 
+const normalizeText = ({ value }: { value: unknown }) =>
+  typeof value === "string" ? value.trim() : value;
+
 class ReplaceRevisionTagsDto {
-  @ApiProperty({ type: [String] })
+  @ApiProperty({ type: [String], format: "uuid" })
   @IsArray()
+  @ArrayUnique()
   @IsUUID("4", { each: true })
   tagIds!: string[];
 }
 
 class RevisionReasonDto {
-  @ApiProperty({ minLength: 3, maxLength: 1200 })
+  @ApiProperty({ minLength: 3, maxLength: 600 })
+  @Transform(normalizeText)
   @IsString()
-  @IsNotEmpty()
-  @MaxLength(1200)
+  @MinLength(3)
+  @MaxLength(600)
   reason!: string;
 }
 
 class ApproveRevisionDto {
-  @ApiPropertyOptional({ maxLength: 1200 })
+  @ApiPropertyOptional({ maxLength: 600 })
   @IsOptional()
+  @Transform(normalizeText)
   @IsString()
-  @MaxLength(1200)
+  @MaxLength(600)
   comments?: string;
 }
 
 class RevisionQueueQueryDto {
+  @ApiPropertyOptional({ minimum: 1, default: 1 })
   @IsOptional()
-  @Transform(({ value }) => (value === undefined ? undefined : Number(value)))
+  @Type(() => Number)
   @IsInt()
   @Min(1)
-  page?: number = 1;
+  page = 1;
 
+  @ApiPropertyOptional({ minimum: 1, maximum: 50, default: 20 })
   @IsOptional()
-  @Transform(({ value }) => (value === undefined ? undefined : Number(value)))
+  @Type(() => Number)
   @IsInt()
   @Min(1)
   @Max(50)
-  limit?: number = 20;
+  limit = 20;
 }
 
 export { ApproveRevisionDto, ReplaceRevisionTagsDto, RevisionQueueQueryDto, RevisionReasonDto };

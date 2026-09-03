@@ -2,6 +2,7 @@ jest.mock("../../database/prisma.service", () => ({ PrismaService: class PrismaS
 
 import { UserRole } from "../../generated/prisma/enums";
 import { REQUIRE_VERIFIED_EMAIL_KEY, ROLES_KEY } from "../auth/auth.constants";
+import { RevisionReasonDto } from "../entries/dto/entry-revision.dto";
 import { EntryRevisionModerationController } from "./entry-revision-moderation.controller";
 
 describe("EntryRevisionModerationController authorization metadata", () => {
@@ -13,5 +14,15 @@ describe("EntryRevisionModerationController authorization metadata", () => {
       UserRole.MODERATOR,
       UserRole.ADMIN,
     ]);
+  });
+
+  it("keeps the reason DTO available to runtime validation", () => {
+    const parameterTypes = Reflect.getMetadata(
+      "design:paramtypes",
+      EntryRevisionModerationController.prototype,
+      "requestRevision",
+    );
+
+    expect(parameterTypes[2]).toBe(RevisionReasonDto);
   });
 });
