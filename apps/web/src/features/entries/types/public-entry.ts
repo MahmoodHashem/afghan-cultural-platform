@@ -63,6 +63,8 @@ type PublicEntryCard = {
   likeCount: number;
   bookmarkCount: number;
   commentCount: number;
+  likedByCurrentUser?: boolean;
+  savedByCurrentUser?: boolean;
 };
 
 type PublicEntrySource = {

@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { EngagementAccessProvider } from "@/features/engagement/components/engagement-access-provider";
 import { useAnimatedIcon } from "@/hooks/use-animated-icon";
 import { cn } from "@/lib/utils";
 import { formatPersianNumber } from "@/lib/utils/formatters";
@@ -64,26 +65,28 @@ function ExploreResultsPanel({
       <ExploreToolbar query={query} taxonomy={taxonomy} total={total} />
 
       {entries.length > 0 ? (
-        <motion.div layout className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-          <AnimatePresence mode="popLayout">
-            {entries.map((entry, index) => (
-              <motion.div
-                key={entry.id}
-                layout
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.18, ease: "easeOut" }}
-              >
-                <PublicEntryCardView
-                  entry={entry}
-                  imageIndex={index}
-                  breadcrumbParent={breadcrumbParent}
-                />
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </motion.div>
+        <EngagementAccessProvider>
+          <motion.div layout className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            <AnimatePresence mode="popLayout">
+              {entries.map((entry, index) => (
+                <motion.div
+                  key={entry.id}
+                  layout
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.18, ease: "easeOut" }}
+                >
+                  <PublicEntryCardView
+                    entry={entry}
+                    imageIndex={index}
+                    breadcrumbParent={breadcrumbParent}
+                  />
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </motion.div>
+        </EngagementAccessProvider>
       ) : (
         <EmptySearchState isSearching={isSearching} />
       )}

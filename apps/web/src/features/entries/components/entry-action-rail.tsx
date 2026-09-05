@@ -89,7 +89,7 @@ function EntryActionRail({
         setProgress(nextProgress);
         setShowMobileDock(
           (entryIntro ? entryIntro.getBoundingClientRect().bottom <= 72 : window.scrollY > 420) &&
-            !hasReachedComments,
+          !hasReachedComments,
         );
       });
     };
@@ -228,26 +228,26 @@ function EntryActionRail({
 
       {portalRoot
         ? createPortal(
-            <motion.nav
-              initial={false}
-              animate={
-                showMobileDock && !readingChromeHidden
-                  ? { opacity: 1, x: 0, scale: 1 }
-                  : { opacity: 0, x: 72, scale: 0.96 }
-              }
-              transition={getRailTransition(reducedMotion)}
-              aria-label="تعامل با مطلب"
-              aria-hidden={!showMobileDock || readingChromeHidden}
-              inert={!showMobileDock || readingChromeHidden}
-              className={cn(
-                "fixed right-2 z-40 flex flex-col will-change-transform lg:hidden",
-                "inset-x-auto bottom-[calc(5rem+env(safe-area-inset-bottom))]  flex flex-col grid-cols-none items-center gap-1.5 bg-card ms-2 rounded-2xl py-2 shadow border",
-              )}
-            >
-              {renderActions("mobile")}
-            </motion.nav>,
-            portalRoot,
-          )
+          <motion.nav
+            initial={false}
+            animate={
+              showMobileDock && !readingChromeHidden
+                ? { opacity: 1, x: 0, scale: 1 }
+                : { opacity: 0, x: 72, scale: 0.96 }
+            }
+            transition={getRailTransition(reducedMotion)}
+            aria-label="تعامل با مطلب"
+            aria-hidden={!showMobileDock || readingChromeHidden}
+            inert={!showMobileDock || readingChromeHidden}
+            className={cn(
+              "fixed right-2 z-40 flex flex-col will-change-transform lg:hidden",
+              "inset-x-auto bottom-[calc(5rem+env(safe-area-inset-bottom))]  flex flex-col grid-cols-none items-center gap-1.5 bg-card ms-2 rounded-2xl py-2 shadow border",
+            )}
+          >
+            {renderActions("mobile")}
+          </motion.nav>,
+          portalRoot,
+        )
         : null}
       <EntryShareDialog
         open={shareOpen}
@@ -270,7 +270,7 @@ function getRailTransition(reducedMotion: boolean) {
   } as const;
 }
 
-function ActionButton({
+export function ActionButton({
   label,
   count,
   active,
@@ -279,6 +279,8 @@ function ActionButton({
   orientation = "desktop",
   icon: Icon,
   onClick,
+  className,
+  size = 24,
 }: {
   label: string;
   count?: number;
@@ -287,7 +289,9 @@ function ActionButton({
   disabled?: boolean;
   orientation?: "mobile" | "desktop";
   icon: AnimatedActionIcon;
-  onClick: () => void;
+  onClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
+  className?: string;
+  size?: number;
 }) {
   const { iconRef, playStateChange, triggerProps } = useAnimatedIcon();
   const previousActiveRef = useRef(active);
@@ -309,6 +313,7 @@ function ActionButton({
         "group flex min-h-12 min-w-12 flex-col items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-muted hover:text-primary focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/40 disabled:pointer-events-none disabled:opacity-60",
         orientation === "mobile" && "rounded-full text-foreground",
         active === true && "text-primary",
+        className,
       )}
       aria-label={label}
       aria-pressed={active}
@@ -316,7 +321,7 @@ function ActionButton({
     >
       <Icon
         ref={iconRef}
-        size={24}
+        size={size}
         className={cn(active === true && "[&>svg]:fill-current")}
         aria-hidden="true"
       />

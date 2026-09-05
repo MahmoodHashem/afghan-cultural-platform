@@ -10,6 +10,7 @@ import { EngagementAccessDialog } from "@/features/engagement/components/engagem
 import { EngagementAccessContext } from "@/features/engagement/contexts/engagement-access-context";
 import type {
   EngagementAccessContextValue,
+  EngagementAccessTarget,
   EngagementAction,
   EngagementIntentInput,
   PendingEngagementIntent,
@@ -30,8 +31,8 @@ function EngagementAccessProvider({
   entryPath,
   children,
 }: {
-  entryId: string;
-  entryPath: string;
+  entryId?: string;
+  entryPath?: string;
   children: ReactNode;
 }) {
   const queryClient = useQueryClient();
@@ -49,7 +50,7 @@ function EngagementAccessProvider({
     status === "authenticated" && user?.status === "ACTIVE" && Boolean(user.emailVerified);
 
   useEffect(() => {
-    setPendingIntent(readPendingEngagementIntent(entryId));
+    setPendingIntent(entryId ? readPendingEngagementIntent(entryId) : null);
   }, [entryId]);
 
   const openAccessDialog = useCallback((action: EngagementAction) => {
@@ -159,9 +160,19 @@ function EngagementAccessProvider({
   }, [syncCurrentUser, user?.id]);
 
   const saveIntent = useCallback(
-    (intent: EngagementIntentInput) => {
-      const returnPath = intent.kind === "comment" ? `${entryPath}#entry-comments` : entryPath;
-      const pending = createPendingEngagementIntent({ entryId, returnPath, intent });
+    (intent: EngagementIntentInput, target?: EngagementAccessTarget) => {
+      const targetEntryId = target?.entryId ?? entryId;
+      const targetEntryPath = target?.entryPath ?? entryPath;
+
+      if (!targetEntryId || !targetEntryPath) return;
+
+      const returnPath =
+        intent.kind === "comment" ? `${targetEntryPath}#entry-comments` : targetEntryPath;
+      const pending = createPendingEngagementIntent({
+        entryId: targetEntryId,
+        returnPath,
+        intent,
+      });
 
       if (pending) {
         writePendingEngagementIntent(pending);
@@ -172,14 +183,14 @@ function EngagementAccessProvider({
   );
 
   const ensureVerifiedAccess = useCallback(
-    (action: EngagementAction, intent?: EngagementIntentInput) => {
+    (action: EngagementAction, intent?: EngagementIntentInput, target?: EngagementAccessTarget) => {
       if (status === "initializing") return false;
 
       if (status === "authenticated" && user?.status === "ACTIVE" && user.emailVerified) {
         return true;
       }
 
-      if (intent) saveIntent(intent);
+      if (intent) saveIntent(intent, target);
       openAccessDialog(action);
       return false;
     },
@@ -258,7 +269,7 @@ function EngagementAccessProvider({
           action={dialogAction}
           reason={accessReason}
           user={user}
-          returnPath={pendingIntent?.returnPath ?? entryPath}
+          returnPath={pendingIntent?.returnPath ?? entryPath ?? "/explore"}
           open={dialogOpen}
           onOpenChange={(open) => {
             if (open) {

@@ -7,6 +7,11 @@ type EngagementIntentInput =
   | { kind: "bookmark"; desiredState: boolean }
   | { kind: "comment"; body: string; parentId?: string };
 
+type EngagementAccessTarget = {
+  entryId: string;
+  entryPath: string;
+};
+
 type PendingEngagementIntent = (
   | { kind: "like"; desiredState: boolean }
   | { kind: "bookmark"; desiredState: boolean }
@@ -24,7 +29,11 @@ type EngagementAccessContextValue = {
   isAuthenticated: boolean;
   canContribute: boolean;
   pendingIntent: PendingEngagementIntent | null;
-  ensureVerifiedAccess: (action: EngagementAction, intent?: EngagementIntentInput) => boolean;
+  ensureVerifiedAccess: (
+    action: EngagementAction,
+    intent?: EngagementIntentInput,
+    target?: EngagementAccessTarget,
+  ) => boolean;
   takePendingToggleIntent: (
     kind: "like" | "bookmark",
   ) => Extract<PendingEngagementIntent, { kind: "like" | "bookmark" }> | null;
@@ -36,6 +45,7 @@ type EngagementAccessContextValue = {
 
 export type {
   EngagementAccessContextValue,
+  EngagementAccessTarget,
   EngagementAction,
   EngagementIntentInput,
   PendingEngagementIntent,
