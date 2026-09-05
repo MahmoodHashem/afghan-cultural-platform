@@ -1,10 +1,11 @@
 function createUserInitials(displayName: string) {
-  return displayName
+  const initials = displayName
     .trim()
     .split(/\s+/)
     .slice(0, 2)
-    .map((part) => part[0])
-    .join("");
+    .map((part) => part[0]);
+
+  return initials.length > 1 ? initials.join("\u200C") : (initials[0] ?? "");
 }
 
 const userAvatarColorClasses = [

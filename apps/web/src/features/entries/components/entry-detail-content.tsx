@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 
 import { createTiptapHeadings, TiptapDocument } from "@/components/common/tiptap-document";
 import type { PageBreadcrumbItem } from "@/components/layout/page-breadcrumb";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { EntryComments } from "@/features/engagement/components/entry-comments";
@@ -14,7 +15,9 @@ import { EntryDetailBreadcrumb } from "@/features/entries/components/entry-detai
 import { EntryDetailHeaderContext } from "@/features/entries/components/entry-detail-header-context";
 import { EntryTableOfContents } from "@/features/entries/components/entry-table-of-contents";
 import { CommunityModerationActions } from "@/features/moderation/components/community-moderation-actions";
+import { cn } from "@/lib/utils";
 import { formatPersianDate } from "@/lib/utils/formatters";
+import { createUserInitials, getUserAvatarColorClass } from "@/lib/utils/user";
 import type { PublicEntryDetail } from "../types/public-entry";
 import { getEntryLocationLabel } from "../utils/geography";
 
@@ -57,33 +60,36 @@ function EntryDetailContent({
               />
             </div>
 
-            <div className="grid gap-6 lg:mt-8 lg:grid-cols-[1fr_420px] lg:items-end lg:gap-8">
-              <div className="space-y-4 sm:space-y-5">
-                <div className="flex flex-wrap gap-2">
-                  <Badge className="rounded-full bg-primary-light px-2.5 text-[11px] text-primary sm:text-[12px]">
-                    {entry.category.name}
-                  </Badge>
-                  <Badge
-                    variant="outline"
-                    className="rounded-full px-2.5 text-[11px] sm:text-[12px]"
-                  >
-                    {entry.contentType.name}
-                  </Badge>
-                  <Badge
-                    variant="outline"
-                    className="rounded-full px-2.5 text-[11px] sm:text-[12px]"
-                  >
-                    {getEntryLocationLabel(entry)}
-                  </Badge>
+            <div className="grid gap-6 lg:mt-8 lg:grid-cols-[1fr_420px] lg:items-start lg:gap-8">
+              <div className="space-y-4 sm:space-y-5 flex flex-col justify-between h-full">
+                <div className="flex flex-col gap-4 sm:gap-5">
+                  <div className="flex flex-wrap gap-2 ">
+                    <Badge className="rounded-full bg-primary-light px-2.5 text-[11px] text-primary sm:text-[12px]">
+                      {entry.category.name}
+                    </Badge>
+                    <Badge
+                      variant="outline"
+                      className="rounded-full px-2.5 text-[11px] sm:text-[12px]"
+                    >
+                      {entry.contentType.name}
+                    </Badge>
+                    <Badge
+                      variant="outline"
+                      className="rounded-full px-2.5 text-[11px] sm:text-[12px]"
+                    >
+                      {getEntryLocationLabel(entry)}
+                    </Badge>
+                  </div>
+                  <div className="space-y-3 sm:space-y-4">
+                    <h1 className="max-w-4xl text-[29px] font-bold leading-[1.55] text-foreground sm:text-[52px] sm:leading-[1.35]">
+                      {entry.title}
+                    </h1>
+                    <p className="max-w-3xl text-[15px] leading-8 text-muted-foreground sm:text-[18px] sm:leading-9">
+                      {entry.summary}
+                    </p>
+                  </div>
                 </div>
-                <div className="space-y-3 sm:space-y-4">
-                  <h1 className="max-w-4xl text-[29px] font-bold leading-[1.55] text-foreground sm:text-[52px] sm:leading-[1.35]">
-                    {entry.title}
-                  </h1>
-                  <p className="max-w-3xl text-[15px] leading-8 text-muted-foreground sm:text-[18px] sm:leading-9">
-                    {entry.summary}
-                  </p>
-                </div>
+
                 <EntryMeta entry={entry} />
               </div>
 
@@ -152,10 +158,20 @@ function EntryDetailContent({
 }
 
 function EntryMeta({ entry }: { entry: PublicEntryDetail }) {
+  console.log("Author:", entry.author.profileImageUrl);
   return (
     <dl className="flex flex-wrap gap-x-4 gap-y-2 text-[12px] text-muted-foreground sm:gap-x-6 sm:gap-y-3 sm:text-[14px]">
       <div className="inline-flex items-center gap-2">
-        <UserCircleIcon className="size-5" aria-hidden="true" />
+        <Avatar size="default" className={cn("bg-primary-light", "size-6")}>
+          {entry.author.profileImageUrl ? (
+            <AvatarImage src={entry.author.profileImageUrl} alt="" />
+          ) : null}
+          <AvatarFallback
+            className={cn("text-[9px] font-bold", getUserAvatarColorClass(entry.author.id))}
+          >
+            {createUserInitials(entry.author.displayName)}
+          </AvatarFallback>
+        </Avatar>
         <dt className="sr-only">نویسنده</dt>
         <dd>{entry.author.displayName}</dd>
       </div>
@@ -183,7 +199,7 @@ function ImageGallery({ images }: { images: PublicEntryDetail["images"] }) {
             key={image.id}
             className="w-[86vw] max-w-sm shrink-0 snap-center overflow-hidden rounded-xl border border-border bg-card sm:w-auto sm:max-w-none sm:rounded-2xl"
           >
-            <div className="relative aspect-[4/3]">
+            <div className="relative aspect-4/3">
               <Image
                 src={image.secureUrl}
                 alt={image.altText}

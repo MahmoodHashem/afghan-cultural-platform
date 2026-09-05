@@ -18,11 +18,11 @@ import { memoryStorage } from "multer";
 import { CurrentUser } from "../auth/decorators/current-user.decorator";
 import { RequireVerifiedEmail } from "../auth/decorators/require-verified-email.decorator";
 import type { AuthenticatedUser } from "../auth/types/authenticated-user.type";
-import { UpdateEntryDraftDto } from "./dto/create-entry-draft.dto";
-import { UpdateEntryImageMetadataDto, UploadEntryImageDto } from "./dto/entry-images.dto";
-import { ReplaceRevisionTagsDto } from "./dto/entry-revision.dto";
-import { CreateEntrySourceDto, UpdateEntrySourceDto } from "./dto/entry-sources.dto";
-import { UpsertEntryYouTubeVideoDto } from "./dto/entry-youtube.dto";
+import type { UpdateEntryDraftDto } from "./dto/create-entry-draft.dto";
+import type { UpdateEntryImageMetadataDto, UploadEntryImageDto } from "./dto/entry-images.dto";
+import type { ReplaceRevisionTagsDto } from "./dto/entry-revision.dto";
+import type { CreateEntrySourceDto, UpdateEntrySourceDto } from "./dto/entry-sources.dto";
+import type { UpsertEntryYouTubeVideoDto } from "./dto/entry-youtube.dto";
 import { EntryRevisionsService } from "./entry-revisions.service";
 
 @ApiTags("Entry revisions")

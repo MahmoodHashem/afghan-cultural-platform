@@ -235,9 +235,7 @@ function CreateEntryForm({ initialDraftId, revisionMode = false, taxonomy }: Cre
     const savedDraft = await persistDraft({ showSuccessToast: true });
 
     if (savedDraft) {
-      router.replace(
-        revisionMode ? "/profile?tab=entries" : "/profile?tab=entries&status=DRAFT",
-      );
+      router.replace(revisionMode ? "/profile?tab=entries" : "/profile?tab=entries&status=DRAFT");
     }
   }
 
