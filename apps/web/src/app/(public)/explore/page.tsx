@@ -20,6 +20,7 @@ import {
   hasFunctionalSearchParams,
 } from "@/lib/seo/metadata";
 import { createCollectionStructuredData } from "@/lib/seo/structured-data";
+import ExploreLoading from "./loading";
 
 const EXPLORE_DESCRIPTION = "مطالب فرهنگی افغانستان را بر اساس ولایت، موضوع و نوع محتوا پیدا کنید.";
 

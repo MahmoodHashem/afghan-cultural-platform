@@ -81,10 +81,10 @@ const profileTabs: Array<{
   label: string;
   icon: typeof DocumentTextIcon;
 }> = [
-  { value: "entries", label: "مطالب من", icon: DocumentTextIcon },
-  { value: "comments", label: "دیدگاه‌ها", icon: ChatBubbleLeftRightIcon },
-  { value: "bookmarks", label: "ذخیره‌ها", icon: BookmarkIcon },
-];
+    { value: "entries", label: "مطالب من", icon: DocumentTextIcon },
+    { value: "comments", label: "دیدگاه‌ها", icon: ChatBubbleLeftRightIcon },
+    { value: "bookmarks", label: "ذخیره‌ها", icon: BookmarkIcon },
+  ];
 
 const ownerEntrySkeletonKeys = ["first", "second", "third", "fourth"] as const;
 const ownerFeedbackSkeletonKeys = ["first", "second", "third"] as const;
@@ -225,7 +225,7 @@ function ProfileStats({ stats }: { stats: ReturnType<typeof useOwnerEntryStats> 
           <div key={item.label} className="flex min-w-20 flex-col items-center px-2 lg:px-3">
             <dd className="text-[22px] font-semibold text-foreground lg:mt-2 lg:text-[29px] lg:font-normal">
               {stats.isLoading ? (
-                <Skeleton className="h-8 w-14" />
+                <Skeleton className="h-12 w-8" />
               ) : stats.isError ? (
                 <>
                   <span aria-hidden="true">—</span>
@@ -672,11 +672,11 @@ function OwnerEntryRow({ entry, onDelete }: { entry: OwnEntry; onDelete: () => v
             </div>
           </div>
           {entry.latestModerationReview?.comments &&
-          (entry.status === "CHANGES_REQUESTED" || entry.status === "REJECTED") ? (
+            (entry.status === "CHANGES_REQUESTED" || entry.status === "REJECTED") ? (
             <div className="flex gap-3 rounded-xl border border-terracotta/20 bg-terracotta/5 px-4 py-3 text-[14px] leading-7 text-foreground">
               <ChatBubbleLeftRightIcon
                 className="mt-1 size-5 shrink-0 text-terracotta"
-                aria-hidden="true"
+                aria-hidden="true"  
               />
               <div className="min-w-0">
                 <p className="font-semibold">

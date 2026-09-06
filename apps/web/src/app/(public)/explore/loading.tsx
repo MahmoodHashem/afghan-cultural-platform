@@ -8,47 +8,29 @@ function ExploreLoading() {
       aria-busy="true"
       aria-label="در حال بارگذاری محتوا"
     >
-      <section className="border-b border-border bg-card pt-24 pb-10 sm:pt-28">
+      <section className="border-b border-border bg-card pt-22 pb-7 sm:pt-26 sm:pb-8">
         <div className="content-container">
-          <div className="grid gap-8 lg:grid-cols-[1fr_360px] lg:items-end">
-            <div className="space-y-4">
-              <Skeleton className="h-5 w-36 rounded-full" />
-              <Skeleton className="h-4 w-24 rounded-full" />
-              <Skeleton className="h-12 w-full max-w-xl rounded-2xl" />
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-full max-w-2xl rounded-full" />
-                <Skeleton className="h-4 w-3/4 max-w-xl rounded-full" />
-              </div>
-            </div>
-            <Card className="rounded-2xl border-border bg-background shadow-[0_2px_10px_rgba(0,0,0,.04)]">
-              <CardContent className="grid grid-cols-2 gap-3 p-4">
-                <Skeleton className="h-16 rounded-xl" />
-                <Skeleton className="h-16 rounded-xl" />
-              </CardContent>
-            </Card>
-          </div>
+          <Skeleton className="h-4 w-36 rounded-full" />
         </div>
       </section>
 
-      <section className="content-container grid gap-8 py-10 lg:grid-cols-[320px_1fr] lg:items-start">
-        <aside className="space-y-4">
-          <Card className="rounded-2xl border-border bg-card">
-            <CardContent className="space-y-5 p-4">
-              <Skeleton className="h-6 w-32 rounded-full" />
-              {[1, 2, 3, 4, 5].map((item) => (
-                <div key={item} className="space-y-2">
-                  <Skeleton className="h-4 w-20 rounded-full" />
-                  <Skeleton className="h-10 rounded-xl" />
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </aside>
-
-        <div className="space-y-6">
-          <div className="flex items-center justify-between gap-4">
-            <Skeleton className="h-5 w-44 rounded-full" />
-            <Skeleton className="h-8 w-28 rounded-full" />
+      <section className="content-container gap-6 py-6 sm:py-7">
+        <div className="space-y-5">
+          <Skeleton className="h-10 w-full rounded-full" />
+          <div className="hidden items-center gap-3 md:flex">
+            {[1, 2, 3, 4].map((item) => (
+              <Skeleton key={item} className="h-10 w-32 rounded-lg" />
+            ))}
+          </div>
+          <div className="border-b border-border px-1 pt-1 pb-3">
+            <div className="flex items-center justify-between gap-3">
+              <Skeleton className="h-10 w-24 rounded-lg" />
+              <Skeleton className="h-5 w-28 rounded-full" />
+            </div>
+            <div className="mt-3 flex gap-2 overflow-hidden md:hidden">
+              <Skeleton className="h-7 w-24 shrink-0 rounded-full" />
+              <Skeleton className="h-7 w-28 shrink-0 rounded-full" />
+            </div>
           </div>
           <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
             {[1, 2, 3, 4, 5, 6].map((item) => (
