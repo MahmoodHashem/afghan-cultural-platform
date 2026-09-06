@@ -97,7 +97,7 @@ function BrandColumn() {
         جایی برای گردآوری و شناخت فرهنگ افغانستان
       </p>
 
-      <fieldset className="flex items-center gap-4">
+      {/* <fieldset className="flex items-center gap-4">
         <legend className="sr-only">شبکه‌های اجتماعی</legend>
         {socialIcons.map((icon) => (
           <button
@@ -112,7 +112,7 @@ function BrandColumn() {
             <SocialIcon path={icon.path} />
           </button>
         ))}
-      </fieldset>
+      </fieldset> */}
     </section>
   );
 }
