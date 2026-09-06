@@ -1,4 +1,5 @@
 import { isApiError } from "@/lib/api/api-error";
+import { getApiErrorMessageByCode } from "@/lib/api/api-error-messages";
 
 const authErrorMessages: Record<string, string> = {
   AUTH_INVALID_CREDENTIALS: "ایمیل یا رمز عبور نادرست است.",
@@ -34,7 +35,9 @@ const authErrorMessages: Record<string, string> = {
 };
 
 function getAuthErrorMessageByCode(code: string, requestId?: string) {
-  return withRequestId(authErrorMessages[code] ?? "خطایی رخ داد.", requestId);
+  return authErrorMessages[code]
+    ? withRequestId(authErrorMessages[code], requestId)
+    : getApiErrorMessageByCode(code, requestId);
 }
 
 function getAuthErrorMessage(error: unknown) {

@@ -1,4 +1,5 @@
 import { isApiError } from "@/lib/api/api-error";
+import { getApiErrorMessage } from "@/lib/api/api-error-messages";
 
 const engagementErrorMessages: Record<string, string> = {
   AUTH_EMAIL_VERIFICATION_REQUIRED: "برای این کار باید ایمیل خود را تأیید کنید.",
@@ -23,9 +24,13 @@ function getEngagementErrorMessage(error: unknown): string {
     return "این کار انجام نشد. کمی بعد دوباره تلاش کنید.";
   }
 
-  const message = engagementErrorMessages[error.code] ?? "این کار انجام نشد. دوباره تلاش کنید.";
+  const message = engagementErrorMessages[error.code] ?? getApiErrorMessage(error);
 
-  return error.requestId ? `${message} شناسه درخواست: ${error.requestId}` : message;
+  return engagementErrorMessages[error.code]
+    ? error.requestId
+      ? `${message} شناسه درخواست: ${error.requestId}`
+      : message
+    : message;
 }
 
 export { getEngagementErrorMessage };

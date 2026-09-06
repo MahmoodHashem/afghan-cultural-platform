@@ -1,4 +1,5 @@
 import { ApiError } from "@/lib/api/api-error";
+import { getApiErrorMessage } from "@/lib/api/api-error-messages";
 
 const messages: Record<string, string> = {
   ADMIN_ENTRY_NOT_FOUND: "این مطلب پیدا نشد.",
@@ -12,12 +13,7 @@ const messages: Record<string, string> = {
 
 function getAdminEntryErrorMessage(error: unknown) {
   if (error instanceof ApiError) {
-    return (
-      messages[error.code] ??
-      (error.requestId
-        ? `انجام این کار ممکن نشد. شناسه درخواست: ${error.requestId}`
-        : "انجام این کار ممکن نشد.")
-    );
+    return messages[error.code] ?? getApiErrorMessage(error);
   }
   return "ارتباط با سرور برقرار نشد.";
 }

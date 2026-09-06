@@ -16,6 +16,7 @@ import {
 } from "@/features/engagement/schemas/entry-comment-schema";
 import { useAnimatedIcon } from "@/hooks/use-animated-icon";
 import { isApiError } from "@/lib/api/api-error";
+import { getPersianFieldErrorMessage } from "@/lib/api/api-field-errors";
 import { cn } from "@/lib/utils";
 import { formatPersianNumber } from "@/lib/utils/formatters";
 import { createUserInitials, getUserAvatarColorClass } from "@/lib/utils/user";
@@ -86,7 +87,11 @@ function CommentComposer({
       if (isApiError(error)) {
         const fieldError = error.fieldErrors.find((item) => item.field === "body");
         if (fieldError) {
-          setError("body", { type: "server", message: fieldError.message }, { shouldFocus: true });
+          setError(
+            "body",
+            { type: "server", message: getPersianFieldErrorMessage(fieldError) },
+            { shouldFocus: true },
+          );
         }
       }
     }

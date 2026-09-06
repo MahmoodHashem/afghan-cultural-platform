@@ -1,4 +1,5 @@
 import { isApiError } from "@/lib/api/api-error";
+import { getApiErrorMessage } from "@/lib/api/api-error-messages";
 
 const topicErrorMessages: Record<string, string> = {
   TAXONOMY_DUPLICATE_NAME: "موضوعی با این نام از قبل وجود دارد.",
@@ -12,12 +13,7 @@ const topicErrorMessages: Record<string, string> = {
 function getAdminTopicErrorMessage(error: unknown, singular = "موضوع") {
   if (!isApiError(error)) return "ارتباط با سرور برقرار نشد.";
   const knownMessage = topicErrorMessages[error.code]?.replaceAll("موضوع", singular);
-  return (
-    knownMessage ??
-    (error.requestId
-      ? `ثبت تغییرات ممکن نشد. شناسه درخواست: ${error.requestId}`
-      : "ثبت تغییرات ممکن نشد.")
-  );
+  return knownMessage ?? getApiErrorMessage(error);
 }
 
 export { getAdminTopicErrorMessage };

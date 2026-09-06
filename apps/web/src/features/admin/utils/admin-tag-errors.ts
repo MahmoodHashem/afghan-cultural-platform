@@ -1,4 +1,5 @@
 import { isApiError } from "@/lib/api/api-error";
+import { getApiErrorMessage } from "@/lib/api/api-error-messages";
 
 const tagErrorMessages: Record<string, string> = {
   TAXONOMY_DUPLICATE_NAME: "برچسبی با این نام از قبل وجود دارد.",
@@ -10,12 +11,7 @@ const tagErrorMessages: Record<string, string> = {
 
 function getAdminTagErrorMessage(error: unknown) {
   if (!isApiError(error)) return "ارتباط با سرور برقرار نشد.";
-  return (
-    tagErrorMessages[error.code] ??
-    (error.requestId
-      ? `ثبت تغییرات ممکن نشد. شناسه درخواست: ${error.requestId}`
-      : "ثبت تغییرات ممکن نشد.")
-  );
+  return tagErrorMessages[error.code] ?? getApiErrorMessage(error);
 }
 
 export { getAdminTagErrorMessage };

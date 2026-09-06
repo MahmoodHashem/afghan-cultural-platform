@@ -1,4 +1,5 @@
 import { isApiError } from "@/lib/api/api-error";
+import { getApiErrorMessage } from "@/lib/api/api-error-messages";
 
 const MODERATION_ERROR_MESSAGES: Record<string, string> = {
   AUTH_UNAUTHORIZED: "برای ادامه باید وارد حساب شوید.",
@@ -37,8 +38,10 @@ function getModerationErrorMessage(error: unknown) {
     return "این کار انجام نشد. کمی بعد دوباره تلاش کنید.";
   }
 
-  const message = MODERATION_ERROR_MESSAGES[error.code] ?? "این کار انجام نشد.";
-  return error.requestId ? `${message} شناسه درخواست: ${error.requestId}` : message;
+  const message = MODERATION_ERROR_MESSAGES[error.code];
+  return message
+    ? `${message}${error.requestId ? ` شناسه درخواست: ${error.requestId}` : ""}`
+    : getApiErrorMessage(error);
 }
 
 function isStaleModerationError(error: unknown) {

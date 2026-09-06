@@ -26,6 +26,7 @@ import {
 } from "@/features/admin/schemas/admin-topic-schema";
 import type { AdminTopic } from "@/features/admin/types/admin-topics";
 import { isApiError } from "@/lib/api/api-error";
+import { getPersianFieldErrorMessage } from "@/lib/api/api-field-errors";
 
 const EMPTY_VALUES: AdminTopicFormValues = {
   name: "",
@@ -59,11 +60,11 @@ function AdminTopicFormSheet({
     form.reset(
       topic
         ? {
-            name: topic.name,
-            description: topic.description ?? "",
-            sortOrder: topic.sortOrder,
-            isActive: topic.isActive,
-          }
+          name: topic.name,
+          description: topic.description ?? "",
+          sortOrder: topic.sortOrder,
+          isActive: topic.isActive,
+        }
         : EMPTY_VALUES,
     );
   }, [form, open, topic]);
@@ -76,7 +77,10 @@ function AdminTopicFormSheet({
       if (!isApiError(error)) return;
       for (const fieldError of error.fieldErrors) {
         if (isTopicField(fieldError.field)) {
-          form.setError(fieldError.field, { type: "server", message: fieldError.message });
+          form.setError(fieldError.field, {
+            type: "server",
+            message: getPersianFieldErrorMessage(fieldError),
+          });
         }
       }
     }

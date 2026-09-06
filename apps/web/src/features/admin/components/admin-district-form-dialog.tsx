@@ -23,6 +23,7 @@ import {
 } from "@/features/admin/schemas/admin-geography-schema";
 import type { AdminDistrict } from "@/features/admin/types/admin-provinces";
 import { isApiError } from "@/lib/api/api-error";
+import { getPersianFieldErrorMessage } from "@/lib/api/api-field-errors";
 
 const EMPTY_VALUES: AdminDistrictFormValues = { name: "", sortOrder: 0, isActive: true };
 
@@ -63,7 +64,7 @@ function AdminDistrictFormDialog({
         if (["name", "sortOrder", "isActive"].includes(fieldError.field)) {
           form.setError(fieldError.field as keyof AdminDistrictFormInput, {
             type: "server",
-            message: fieldError.message,
+            message: getPersianFieldErrorMessage(fieldError),
           });
         }
       }

@@ -24,6 +24,7 @@ import {
 } from "@/features/admin/schemas/admin-geography-schema";
 import type { AdminProvinceDetail } from "@/features/admin/types/admin-provinces";
 import { isApiError } from "@/lib/api/api-error";
+import { getPersianFieldErrorMessage } from "@/lib/api/api-field-errors";
 
 function AdminProvinceFormSheet({
   province,
@@ -68,7 +69,7 @@ function AdminProvinceFormSheet({
         if (["name", "description", "sortOrder", "isActive"].includes(fieldError.field)) {
           form.setError(fieldError.field as keyof AdminProvinceFormInput, {
             type: "server",
-            message: fieldError.message,
+            message: getPersianFieldErrorMessage(fieldError),
           });
         }
       }

@@ -2,6 +2,7 @@ import type { FieldValues, Path, UseFormSetError } from "react-hook-form";
 
 import { getAuthErrorMessage } from "@/features/auth/utils/auth-error-messages";
 import { isApiError } from "@/lib/api/api-error";
+import { getPersianFieldErrorMessage } from "@/lib/api/api-field-errors";
 
 type FieldNameMap<TFormValues extends FieldValues> = Partial<Record<string, Path<TFormValues>>>;
 
@@ -24,7 +25,7 @@ function applyApiFieldErrors<TFormValues extends FieldValues>(
         fieldName,
         {
           type: "server",
-          message: getPersianFieldErrorMessage(fieldError.field, fieldError.message),
+          message: getPersianFieldErrorMessage(fieldError),
         },
         {
           shouldFocus: !appliedFieldError,
@@ -35,22 +36,6 @@ function applyApiFieldErrors<TFormValues extends FieldValues>(
   }
 
   return appliedFieldError;
-}
-
-function getPersianFieldErrorMessage(field: string, message: string) {
-  if (field === "email") {
-    return "ایمیل معتبر وارد کنید.";
-  }
-
-  if (field === "displayName") {
-    return "نام و نام خانوادگی باید بین ۲ تا ۸۰ حرف باشد.";
-  }
-
-  if (field === "password") {
-    return "رمز عبور را مطابق شرایط امنیتی وارد کنید.";
-  }
-
-  return message || "لطفاً این فیلد را بررسی کنید.";
 }
 
 function getAuthFormErrorMessage(error: unknown) {

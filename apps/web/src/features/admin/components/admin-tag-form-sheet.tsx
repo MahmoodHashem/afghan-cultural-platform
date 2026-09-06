@@ -18,6 +18,7 @@ import { Label } from "@/components/ui/label";
 import { type AdminTagFormValues, adminTagSchema } from "@/features/admin/schemas/admin-tag-schema";
 import type { AdminTag } from "@/features/admin/types/admin-tags";
 import { isApiError } from "@/lib/api/api-error";
+import { getPersianFieldErrorMessage } from "@/lib/api/api-field-errors";
 
 const EMPTY_VALUES: AdminTagFormValues = { name: "", isActive: true };
 
@@ -51,7 +52,10 @@ function AdminTagFormSheet({
       if (!isApiError(error)) return;
       for (const fieldError of error.fieldErrors) {
         if (fieldError.field === "name" || fieldError.field === "isActive") {
-          form.setError(fieldError.field, { type: "server", message: fieldError.message });
+          form.setError(fieldError.field, {
+            type: "server",
+            message: getPersianFieldErrorMessage(fieldError),
+          });
         }
       }
     }

@@ -1,4 +1,5 @@
 import { ApiError } from "@/lib/api/api-error";
+import { getApiErrorMessage } from "@/lib/api/api-error-messages";
 
 const ADMIN_USER_ERROR_MESSAGES: Record<string, string> = {
   ADMIN_USER_NOT_FOUND: "این حساب پیدا نشد یا دیگر در دسترس نیست.",
@@ -14,12 +15,7 @@ const ADMIN_USER_ERROR_MESSAGES: Record<string, string> = {
 
 function getAdminUserErrorMessage(error: unknown) {
   if (error instanceof ApiError) {
-    return (
-      ADMIN_USER_ERROR_MESSAGES[error.code] ??
-      (error.requestId
-        ? `انجام این کار ممکن نشد. شناسه درخواست: ${error.requestId}`
-        : "انجام این کار ممکن نشد. دوباره تلاش کنید.")
-    );
+    return ADMIN_USER_ERROR_MESSAGES[error.code] ?? getApiErrorMessage(error);
   }
 
   return "انجام این کار ممکن نشد. دوباره تلاش کنید.";

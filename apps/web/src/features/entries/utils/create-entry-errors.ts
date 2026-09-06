@@ -1,4 +1,5 @@
 import { isApiError } from "@/lib/api/api-error";
+import { getApiErrorMessage } from "@/lib/api/api-error-messages";
 
 export function getEntryFormErrorMessage(error: unknown) {
   if (!isApiError(error)) {
@@ -32,5 +33,5 @@ export function getEntryFormErrorMessage(error: unknown) {
     NETWORK_ERROR: "ارتباط با سرور برقرار نشد.",
   };
 
-  return messages[error.code] ?? `خطایی رخ داد. شناسه درخواست: ${error.requestId ?? "نامشخص"}`;
+  return messages[error.code] ?? getApiErrorMessage(error);
 }

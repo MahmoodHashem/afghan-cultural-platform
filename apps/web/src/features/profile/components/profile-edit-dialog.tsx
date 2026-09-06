@@ -38,6 +38,7 @@ import {
 } from "@/features/profile/schemas/profile-schema";
 import { normalizeProfileImage } from "@/features/profile/utils/normalize-profile-image";
 import { isApiError } from "@/lib/api/api-error";
+import { getPersianFieldErrorMessage } from "@/lib/api/api-field-errors";
 import { MAX_IMAGE_SIZE_BYTES, MAX_IMAGE_SIZE_MB } from "@/lib/images/image-upload-limits";
 import { cn } from "@/lib/utils";
 import { formatPersianNumber } from "@/lib/utils/formatters";
@@ -104,7 +105,7 @@ function ProfileEditDialog({
         if (displayNameError) {
           form.setError("displayName", {
             type: "server",
-            message: "نام باید بین ۲ تا ۸۰ حرف باشد.",
+            message: getPersianFieldErrorMessage(displayNameError),
           });
         }
       }

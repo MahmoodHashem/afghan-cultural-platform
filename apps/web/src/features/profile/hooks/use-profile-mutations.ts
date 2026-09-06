@@ -13,6 +13,7 @@ import {
 } from "@/features/profile/api/profile-api";
 import { profileQueryKeys } from "@/features/profile/constants/profile-query-keys";
 import { isApiError } from "@/lib/api/api-error";
+import { getApiErrorMessage } from "@/lib/api/api-error-messages";
 import { useAuthStore } from "@/stores/auth-store";
 
 function useProfileIdentityMutation() {
@@ -83,7 +84,9 @@ function getProfileMutationError(error: unknown) {
     }
   }
 
-  return "ذخیره تغییرات انجام نشد. دوباره تلاش کنید.";
+  return isApiError(error)
+    ? getApiErrorMessage(error)
+    : "ذخیره تغییرات انجام نشد. دوباره تلاش کنید.";
 }
 
 export { useProfileIdentityMutation, useProfileImageDeleteMutation, useProfileImageUploadMutation };
