@@ -5,7 +5,8 @@ import type { ReactNode } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { EngagementAccessProvider } from "@/features/engagement/components/engagement-access-provider";
+import { PublicEntryCardView } from "@/features/entries/components/public-entry-card";
 import type { PublicEntryCard, TaxonomyItem } from "@/features/entries/types/public-entry";
 import { createEntryHref } from "@/features/entries/utils/entry-breadcrumb";
 import { getEntryLocationLabel } from "@/features/entries/utils/geography";
@@ -167,7 +168,7 @@ function CompactEntryCard({ entry, imageIndex }: { entry: PublicEntryCard; image
         href={createEntryHref(entry)}
         className="grid gap-4 outline-none focus-visible:ring-3 focus-visible:ring-ring/40 sm:grid-cols-[132px_1fr] lg:grid-cols-[148px_1fr]"
       >
-        <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-muted">
+        <div className="relative aspect-4/3 overflow-hidden rounded-xl bg-muted">
           <EntryImage
             entry={entry}
             fallbackIndex={imageIndex}
@@ -211,54 +212,19 @@ function LatestEntriesSection({ entries }: { entries: PublicEntryCard[] }) {
       </div>
 
       {entries.length > 0 ? (
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {entries.map((entry, index) => (
-            <ScrollReveal key={entry.id} delay={index * 0.04}>
-              <EntryCard entry={entry} imageIndex={index} />
-            </ScrollReveal>
-          ))}
-        </div>
+        <EngagementAccessProvider>
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {entries.map((entry, index) => (
+              <ScrollReveal key={entry.id} delay={index * 0.04}>
+                <PublicEntryCardView entry={entry} imageIndex={index} />
+              </ScrollReveal>
+            ))}
+          </div>
+        </EngagementAccessProvider>
       ) : (
         <WideEmptyState />
       )}
     </ScrollReveal>
-  );
-}
-
-function EntryCard({ entry, imageIndex }: { entry: PublicEntryCard; imageIndex: number }) {
-  return (
-    <Card className="group overflow-hidden rounded-2xl border-border bg-card p-0 shadow-[0_2px_10px_rgba(0,0,0,.04)]">
-      <Link
-        href={createEntryHref(entry)}
-        className="block outline-none focus-visible:ring-3 focus-visible:ring-ring/40"
-      >
-        <div className="relative aspect-[4/3] overflow-hidden bg-muted">
-          <EntryImage
-            entry={entry}
-            fallbackIndex={imageIndex}
-            className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
-            sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
-          />
-        </div>
-        <CardContent className="space-y-3 p-4">
-          <div className="flex flex-wrap gap-2">
-            <Badge variant="outline" className="rounded-full text-[12px]">
-              {entry.category.name}
-            </Badge>
-          </div>
-          <h3 className="line-clamp-2 text-[19px] font-bold leading-8 text-foreground">
-            {entry.title}
-          </h3>
-          <p className="line-clamp-3 text-[14px] leading-7 text-muted-foreground">
-            {entry.summary}
-          </p>
-          <div className="flex items-center justify-between gap-3 text-[12px] text-muted-foreground">
-            <span>{getEntryLocationLabel(entry)}</span>
-            <span>{formatPersianDate(entry.publishedAt)}</span>
-          </div>
-        </CardContent>
-      </Link>
-    </Card>
   );
 }
 
