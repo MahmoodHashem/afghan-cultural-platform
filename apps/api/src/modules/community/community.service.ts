@@ -380,10 +380,10 @@ class CommunityService {
       .replace(/\n{3,}/g, "\n\n")
       .trim();
 
-    if (normalizedBody.length < 5 || normalizedBody.length > 1000) {
+    if (normalizedBody.length < 1 || normalizedBody.length > 1000) {
       throw new BadRequestException({
         error: COMMUNITY_ERROR_CODES.COMMENT_BODY_INVALID,
-        message: "Comment body must be between 5 and 1000 normalized characters.",
+        message: "Comment body must be between 1 and 1000 normalized characters.",
       });
     }
 

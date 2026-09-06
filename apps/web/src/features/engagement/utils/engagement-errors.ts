@@ -8,7 +8,7 @@ const engagementErrorMessages: Record<string, string> = {
   COMMUNITY_ENTRY_NOT_FOUND: "این مطلب دیگر برای تعامل در دسترس نیست.",
   PROFILE_BOOKMARK_ENTRY_NOT_FOUND: "این مطلب دیگر برای ذخیره‌کردن در دسترس نیست.",
   COMMENT_NOT_FOUND: "این دیدگاه پیدا نشد یا دیگر در دسترس نیست.",
-  COMMENT_BODY_INVALID: "متن دیدگاه باید بین ۵ تا ۱۰۰۰ حرف باشد.",
+  COMMENT_BODY_INVALID: "متن دیدگاه باید بین ۱ تا ۱۰۰۰ حرف باشد.",
   COMMENT_PARENT_INVALID: "دیدگاهی که به آن پاسخ می‌دهید معتبر نیست.",
   COMMENT_PARENT_UNAVAILABLE: "این گفتگو دیگر پاسخ تازه نمی‌پذیرد.",
   COMMENT_NOT_OWNED: "فقط نویسنده دیدگاه می‌تواند آن را تغییر دهد.",

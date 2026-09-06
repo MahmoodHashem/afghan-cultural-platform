@@ -2,9 +2,9 @@ import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { IsOptional, IsString, IsUUID, MaxLength, MinLength } from "class-validator";
 
 class CreateEntryCommentDto {
-  @ApiProperty({ minLength: 5, maxLength: 1000 })
+  @ApiProperty({ minLength: 1, maxLength: 1000 })
   @IsString()
-  @MinLength(5)
+  @MinLength(1)
   @MaxLength(1000)
   body!: string;
 
@@ -15,9 +15,9 @@ class CreateEntryCommentDto {
 }
 
 class UpdateEntryCommentDto {
-  @ApiProperty({ minLength: 5, maxLength: 1000 })
+  @ApiProperty({ minLength: 1, maxLength: 1000 })
   @IsString()
-  @MinLength(5)
+  @MinLength(1)
   @MaxLength(1000)
   body!: string;
 }
