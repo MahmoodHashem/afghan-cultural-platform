@@ -89,7 +89,7 @@ function EntryActionRail({
         setProgress(nextProgress);
         setShowMobileDock(
           (entryIntro ? entryIntro.getBoundingClientRect().bottom <= 72 : window.scrollY > 420) &&
-          !hasReachedComments,
+            !hasReachedComments,
         );
       });
     };
@@ -228,26 +228,26 @@ function EntryActionRail({
 
       {portalRoot
         ? createPortal(
-          <motion.nav
-            initial={false}
-            animate={
-              showMobileDock && !readingChromeHidden
-                ? { opacity: 1, x: 0, scale: 1 }
-                : { opacity: 0, x: 72, scale: 0.96 }
-            }
-            transition={getRailTransition(reducedMotion)}
-            aria-label="تعامل با مطلب"
-            aria-hidden={!showMobileDock || readingChromeHidden}
-            inert={!showMobileDock || readingChromeHidden}
-            className={cn(
-              "fixed right-2 z-40 flex flex-col will-change-transform lg:hidden",
-              "inset-x-auto bottom-[calc(5rem+env(safe-area-inset-bottom))]  flex flex-col grid-cols-none items-center gap-1.5 bg-card ms-2 rounded-2xl py-2 shadow border",
-            )}
-          >
-            {renderActions("mobile")}
-          </motion.nav>,
-          portalRoot,
-        )
+            <motion.nav
+              initial={false}
+              animate={
+                showMobileDock && !readingChromeHidden
+                  ? { opacity: 1, x: 0, scale: 1 }
+                  : { opacity: 0, x: 72, scale: 0.96 }
+              }
+              transition={getRailTransition(reducedMotion)}
+              aria-label="تعامل با مطلب"
+              aria-hidden={!showMobileDock || readingChromeHidden}
+              inert={!showMobileDock || readingChromeHidden}
+              className={cn(
+                "fixed right-2 z-40 flex flex-col will-change-transform lg:hidden",
+                "inset-x-auto bottom-[calc(5rem+env(safe-area-inset-bottom))]  flex flex-col grid-cols-none items-center gap-1.5 bg-card ms-2 rounded-2xl py-2 shadow border",
+              )}
+            >
+              {renderActions("mobile")}
+            </motion.nav>,
+            portalRoot,
+          )
         : null}
       <EntryShareDialog
         open={shareOpen}

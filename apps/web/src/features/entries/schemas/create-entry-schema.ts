@@ -6,6 +6,9 @@ import { hasTiptapPlainText, isTiptapDocument } from "@/features/entries/utils/t
 import { isSupportedYouTubeUrl } from "@/features/entries/utils/youtube-url";
 
 const GEOGRAPHIC_SCOPE_VALUES = ["PROVINCE", "NATIONAL", "NONE"] as const;
+// These consntants are for SEO metadata , should not be changed without consulting the SEO team. They are used in the create-entry-form schema and in the create-entry-draft.dto.ts file.
+const TITLE_MAX_LENGTH = 60;
+const SUMMARY_MAX_LENGTH = 160;
 const SOURCE_TYPE_VALUES = [
   "BOOK",
   "ACADEMIC_ARTICLE",
@@ -42,12 +45,12 @@ const createEntryFormSchema = z
       .string()
       .trim()
       .min(2, "عنوان باید دست‌کم ۲ حرف باشد.")
-      .max(180, "عنوان باید کوتاه‌تر باشد."),
+      .max(TITLE_MAX_LENGTH, "عنوان باید کوتاه‌تر باشد."),
     summary: z
       .string()
       .trim()
       .min(10, "خلاصه باید کمی کامل‌تر باشد.")
-      .max(700, "خلاصه باید کوتاه‌تر باشد."),
+      .max(SUMMARY_MAX_LENGTH, "خلاصه باید کوتاه‌تر باشد."),
     contentJson: z
       .custom<RichTextContent>((value) => isTiptapDocument(value), "متن مطلب معتبر نیست.")
       .refine((value) => hasTiptapPlainText(value), {
@@ -67,7 +70,7 @@ const createEntryFormSchema = z
       .optional()
       .refine((value) => !value || isSupportedYouTubeUrl(value), "نشانی یوتیوب معتبر وارد کنید."),
     youtubeTitle: z.string().max(220, "عنوان ویدیو کوتاه‌تر باشد.").optional(),
-    youtubeDescription: z.string().max(1000, "توضیح ویدیو کوتاه‌تر باشد.").optional(),
+    youtubeDescription: z.string().max(400, "توضیح ویدیو کوتاه‌تر باشد.").optional(),
   })
   .superRefine((value, context) => {
     if (value.geographicScope === "PROVINCE" && !value.provinceId) {
@@ -121,5 +124,7 @@ export {
   GEOGRAPHIC_SCOPE_VALUES,
   geographicScopeLabels,
   SOURCE_TYPE_VALUES,
+  SUMMARY_MAX_LENGTH,
   sourceTypeLabels,
+  TITLE_MAX_LENGTH,
 };

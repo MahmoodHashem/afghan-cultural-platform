@@ -13,18 +13,18 @@ import {
 import { GeographicScope } from "../../../generated/prisma/enums";
 
 class CreateEntryDraftDto {
-  @ApiProperty({ minLength: 2, maxLength: 180 })
+  @ApiProperty({ minLength: 2, maxLength: 60 })
   @IsString()
   @IsNotEmpty()
   @MinLength(2)
-  @MaxLength(180)
+  @MaxLength(60)
   title!: string;
 
-  @ApiProperty({ minLength: 10, maxLength: 700 })
+  @ApiProperty({ minLength: 10, maxLength: 160 })
   @IsString()
   @IsNotEmpty()
   @MinLength(10)
-  @MaxLength(700)
+  @MaxLength(160)
   summary!: string;
 
   @ApiProperty({
