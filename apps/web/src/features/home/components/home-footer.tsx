@@ -2,8 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { siFacebook, siInstagram, siX, siYoutube } from "simple-icons";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { formatPersianNumber } from "@/lib/utils/formatters";
 
@@ -57,11 +55,10 @@ function Footer() {
   return (
     <footer className="w-full border-t border-border bg-background text-foreground">
       <div className="w-full px-6 py-10 sm:px-10 lg:px-14 xl:px-20">
-        <div className="grid w-full grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-[1.15fr_0.7fr_0.7fr_1.15fr] lg:gap-12">
+        <div className="grid w-full grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-[1.15fr_0.7fr_0.7fr] lg:gap-12">
           <BrandColumn />
           <FooterLinksGroup group={quickLinks} />
           <FooterLinksGroup group={resourceLinks} />
-          <NewsletterColumn />
         </div>
 
         <p className="mt-8 text-center text-[14px] text-muted-foreground">
@@ -137,35 +134,6 @@ function FooterLinksGroup({ group }: { group: FooterLinkGroup }) {
         ))}
       </ul>
     </nav>
-  );
-}
-
-function NewsletterColumn() {
-  return (
-    <section className="space-y-5 lg:border-s lg:border-border lg:ps-12">
-      <div className="space-y-3">
-        <h2 className="text-[19px] font-bold text-foreground">تازه‌های میراث افغانستان</h2>
-        <p className="max-w-md text-[15px] leading-8 text-muted-foreground">
-          تازه‌ترین نوشته‌ها را در ایمیل خود دریافت کنید.
-        </p>
-      </div>
-
-      <div className="max-w-md space-y-3">
-        <label htmlFor="footer-email" className="sr-only">
-          ایمیل شما
-        </label>
-        <Input
-          id="footer-email"
-          type="email"
-          dir="ltr"
-          placeholder="ایمیل شما"
-          className="h-12 rounded-xl border-border bg-background px-4 text-start shadow-none"
-        />
-        <Button type="button" className="h-12 w-full rounded-xl bg-primary hover:bg-primary-hover">
-          عضویت
-        </Button>
-      </div>
-    </section>
   );
 }
 
