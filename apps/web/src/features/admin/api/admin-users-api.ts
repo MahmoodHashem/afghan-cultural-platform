@@ -8,7 +8,9 @@ import type {
   AdminUserEntriesQuery,
   AdminUserEntry,
   AdminUserListItem,
+  AdminUserRoleUpdateResult,
   AdminUsersQuery,
+  UpdateAdminUserRoleInput,
   UpdateAdminUserStatusInput,
 } from "@/features/admin/types/admin-users";
 import { apiRequest } from "@/lib/api/api-client";
@@ -72,6 +74,17 @@ async function updateAdminUserStatus(userId: string, input: UpdateAdminUserStatu
   return response.data;
 }
 
+async function updateAdminUserRole(userId: string, input: UpdateAdminUserRoleInput) {
+  const response = await apiRequest<{ data: AdminUserRoleUpdateResult }>(
+    `/admin/users/${userId}/role`,
+    {
+      method: "PATCH",
+      body: input,
+    },
+  );
+  return response.data;
+}
+
 async function revokeAdminUserSessions(userId: string) {
   const response = await apiRequest<{ data: { userId: string; revokedSessions: number } }>(
     `/admin/users/${userId}/revoke-sessions`,
@@ -100,5 +113,6 @@ export {
   listAdminUserEntries,
   listAdminUsers,
   revokeAdminUserSessions,
+  updateAdminUserRole,
   updateAdminUserStatus,
 };

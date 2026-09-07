@@ -7,6 +7,7 @@ import {
   HandThumbUpIcon,
   NoSymbolIcon,
   ShieldCheckIcon,
+  ShieldExclamationIcon,
 } from "@heroicons/react/24/outline";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -28,11 +29,13 @@ function AdminUserSummary({
   isCurrentUser,
   onStatusAction,
   onRevokeSessions,
+  onRoleAction,
 }: {
   user: AdminUserDetail;
   isCurrentUser: boolean;
   onStatusAction: () => void;
   onRevokeSessions: () => void;
+  onRoleAction: () => void;
 }) {
   const stats = [
     { label: "همه مطالب", value: user.stats.entries.total, icon: DocumentTextIcon },
@@ -64,6 +67,18 @@ function AdminUserSummary({
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
+          {user.role === "USER" || user.role === "MODERATOR" ? (
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isCurrentUser}
+              title={isCurrentUser ? "نمی‌توانید نقش حساب خودتان را تغییر دهید" : undefined}
+              onClick={onRoleAction}
+            >
+              <ShieldExclamationIcon className="size-4" aria-hidden="true" />
+              {user.role === "USER" ? "افزودن به ناظران" : "برداشتن دسترسی ناظر"}
+            </Button>
+          ) : null}
           <Button type="button" variant="outline" onClick={onRevokeSessions}>
             <ShieldCheckIcon className="size-4" aria-hidden="true" />
             پایان نشست‌ها

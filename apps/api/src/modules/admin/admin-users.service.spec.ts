@@ -51,6 +51,7 @@ describe("AdminUsersService", () => {
         lastLoginAt: null,
         createdAt: new Date(),
         oauthAccounts: [{ provider: AuthProvider.GOOGLE }],
+        auditLogsAsTargetUser: [],
         _count: { culturalEntries: 3, entryComments: 2, bookmarks: 4 },
       },
     ]);
@@ -187,6 +188,174 @@ describe("AdminUsersService", () => {
       prisma,
       expect.objectContaining({ action: AuditAction.USER_SESSIONS_REVOKED }),
     );
+  });
+
+  it("promotes a verified active user and records the role change", async () => {
+    const prisma = createPrismaMock();
+    const auditService = createAuditServiceMock();
+    prisma.user.findUnique.mockResolvedValue({
+      id: "22222222-2222-2222-2222-222222222222",
+      displayName: "کاربر",
+      email: "user@example.com",
+      profileImageUrl: null,
+      role: UserRole.USER,
+      status: UserStatus.ACTIVE,
+      emailVerifiedAt: new Date(),
+    });
+    prisma.user.updateMany.mockResolvedValue({ count: 1 });
+    prisma.user.findUniqueOrThrow.mockResolvedValue({
+      id: "22222222-2222-2222-2222-222222222222",
+      displayName: "کاربر",
+      email: "user@example.com",
+      profileImageUrl: null,
+      role: UserRole.MODERATOR,
+      status: UserStatus.ACTIVE,
+      emailVerifiedAt: new Date(),
+      updatedAt: new Date(),
+    });
+    const service = createService(prisma, auditService);
+
+    const response = await service.updateUserRole(actor, "22222222-2222-2222-2222-222222222222", {
+      role: UserRole.MODERATOR,
+      reason: "همکاری در بررسی محتوا",
+    });
+
+    expect(response.data.role).toBe(UserRole.MODERATOR);
+    expect(prisma.user.updateMany).toHaveBeenCalledWith({
+      where: {
+        id: "22222222-2222-2222-2222-222222222222",
+        role: UserRole.USER,
+      },
+      data: { role: UserRole.MODERATOR },
+    });
+    expect(auditService.createWithClient).toHaveBeenCalledWith(
+      prisma,
+      expect.objectContaining({
+        action: AuditAction.USER_ROLE_CHANGED,
+        actorId: actor.id,
+        targetUserId: "22222222-2222-2222-2222-222222222222",
+        metadata: {
+          previousRole: UserRole.USER,
+          newRole: UserRole.MODERATOR,
+          reason: "همکاری در بررسی محتوا",
+        },
+      }),
+    );
+  });
+
+  it("demotes a moderator without deleting historical moderation records", async () => {
+    const prisma = createPrismaMock();
+    prisma.user.findUnique.mockResolvedValue({
+      id: "22222222-2222-2222-2222-222222222222",
+      role: UserRole.MODERATOR,
+      status: UserStatus.ACTIVE,
+      emailVerifiedAt: new Date(),
+    });
+    prisma.user.updateMany.mockResolvedValue({ count: 1 });
+    prisma.user.findUniqueOrThrow.mockResolvedValue({
+      id: "22222222-2222-2222-2222-222222222222",
+      displayName: "ناظر",
+      email: "moderator@example.com",
+      profileImageUrl: null,
+      role: UserRole.USER,
+      status: UserStatus.ACTIVE,
+      emailVerifiedAt: new Date(),
+      updatedAt: new Date(),
+    });
+    const service = createService(prisma);
+
+    await service.updateUserRole(actor, "22222222-2222-2222-2222-222222222222", {
+      role: UserRole.USER,
+      reason: "پایان همکاری",
+    });
+
+    expect(prisma.user.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({ data: { role: UserRole.USER } }),
+    );
+  });
+
+  it.each([
+    {
+      status: UserStatus.SUSPENDED,
+      emailVerifiedAt: new Date(),
+      label: "suspended",
+    },
+    { status: UserStatus.ACTIVE, emailVerifiedAt: null, label: "unverified" },
+  ])("rejects promotion of a $label account", async ({ status, emailVerifiedAt }) => {
+    const prisma = createPrismaMock();
+    prisma.user.findUnique.mockResolvedValue({
+      id: "22222222-2222-2222-2222-222222222222",
+      role: UserRole.USER,
+      status,
+      emailVerifiedAt,
+    });
+    const service = createService(prisma);
+
+    await expect(
+      service.updateUserRole(actor, "22222222-2222-2222-2222-222222222222", {
+        role: UserRole.MODERATOR,
+        reason: "انتخاب ناظر",
+      }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(prisma.user.updateMany).not.toHaveBeenCalled();
+  });
+
+  it("protects administrator roles and self-role changes", async () => {
+    const prisma = createPrismaMock();
+    const service = createService(prisma);
+
+    await expect(
+      service.updateUserRole(actor, actor.id, {
+        role: UserRole.MODERATOR,
+        reason: "تغییر نقش",
+      }),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+
+    prisma.user.findUnique.mockResolvedValue({
+      id: "22222222-2222-2222-2222-222222222222",
+      role: UserRole.ADMIN,
+      status: UserStatus.ACTIVE,
+      emailVerifiedAt: new Date(),
+    });
+    await expect(
+      service.updateUserRole(actor, "22222222-2222-2222-2222-222222222222", {
+        role: UserRole.USER,
+        reason: "تغییر نقش",
+      }),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+  });
+
+  it("rejects missing reasons, invalid transitions, and stale role updates", async () => {
+    const prisma = createPrismaMock();
+    const service = createService(prisma);
+
+    await expect(
+      service.updateUserRole(actor, "22222222-2222-2222-2222-222222222222", {
+        role: UserRole.MODERATOR,
+        reason: "  ",
+      }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+
+    prisma.user.findUnique.mockResolvedValue({
+      id: "22222222-2222-2222-2222-222222222222",
+      role: UserRole.USER,
+      status: UserStatus.ACTIVE,
+      emailVerifiedAt: new Date(),
+    });
+    await expect(
+      service.updateUserRole(actor, "22222222-2222-2222-2222-222222222222", {
+        role: UserRole.USER,
+        reason: "تغییر نقش",
+      }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+
+    prisma.user.updateMany.mockResolvedValue({ count: 0 });
+    await expect(
+      service.updateUserRole(actor, "22222222-2222-2222-2222-222222222222", {
+        role: UserRole.MODERATOR,
+        reason: "انتخاب ناظر",
+      }),
+    ).rejects.toBeInstanceOf(ConflictException);
   });
 });
 

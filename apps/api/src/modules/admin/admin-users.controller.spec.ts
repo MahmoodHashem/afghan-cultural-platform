@@ -2,8 +2,10 @@ jest.mock("./admin-users.service", () => ({
   AdminUsersService: class AdminUsersService {},
 }));
 
+import { UserRole } from "../../generated/prisma/enums";
+import { ROLES_KEY } from "../auth/auth.constants";
 import { AdminUsersController } from "./admin-users.controller";
-import { UpdateAdminUserStatusDto } from "./dto/admin-user-actions.dto";
+import { UpdateAdminUserRoleDto, UpdateAdminUserStatusDto } from "./dto/admin-user-actions.dto";
 import {
   AdminUserActivityQueryDto,
   AdminUserCommentsQueryDto,
@@ -35,5 +37,19 @@ describe("AdminUsersController runtime DTO metadata", () => {
     );
 
     expect(parameterTypes.at(-1)).toBe(UpdateAdminUserStatusDto);
+  });
+
+  it("retains the role body DTO class for Nest validation", () => {
+    const parameterTypes = Reflect.getMetadata(
+      "design:paramtypes",
+      AdminUsersController.prototype,
+      "updateUserRole",
+    );
+
+    expect(parameterTypes.at(-1)).toBe(UpdateAdminUserRoleDto);
+  });
+
+  it("requires the ADMIN role for moderator management", () => {
+    expect(Reflect.getMetadata(ROLES_KEY, AdminUsersController)).toEqual([UserRole.ADMIN]);
   });
 });

@@ -16,10 +16,12 @@ import {
   AdminUserRecords,
   type AdminUserRecordTab,
 } from "@/features/admin/components/admin-user-records";
+import { AdminUserRoleDialog } from "@/features/admin/components/admin-user-role-dialog";
 import { AdminUserSummary } from "@/features/admin/components/admin-user-summary";
 import {
   useAdminUser,
   useRevokeAdminUserSessions,
+  useUpdateAdminUserRole,
   useUpdateAdminUserStatus,
 } from "@/features/admin/hooks/use-admin-users";
 import { getAdminUserErrorMessage } from "@/features/admin/utils/admin-user-errors";
@@ -31,9 +33,11 @@ function AdminUserDetailPage({ userId }: { userId: string }) {
   const userQuery = useAdminUser(userId);
   const statusMutation = useUpdateAdminUserStatus(userId);
   const revokeMutation = useRevokeAdminUserSessions(userId);
+  const roleMutation = useUpdateAdminUserRole(userId);
   const currentUserId = useAuthStore((state) => state.user?.id);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [revokeDialogOpen, setRevokeDialogOpen] = useState(false);
+  const [roleDialogOpen, setRoleDialogOpen] = useState(false);
   const [, startTransition] = useTransition();
   const tab = parseTab(searchParams.get("tab"));
   const page = parsePage(searchParams.get("page"));
@@ -101,6 +105,7 @@ function AdminUserDetailPage({ userId }: { userId: string }) {
         isCurrentUser={user.id === currentUserId}
         onStatusAction={() => setStatusDialogOpen(true)}
         onRevokeSessions={() => setRevokeDialogOpen(true)}
+        onRoleAction={() => setRoleDialogOpen(true)}
       />
 
       <AdminUserRecords
@@ -128,6 +133,20 @@ function AdminUserDetailPage({ userId }: { userId: string }) {
         onConfirm={() =>
           revokeMutation.mutate(undefined, { onSuccess: () => setRevokeDialogOpen(false) })
         }
+      />
+      <AdminUserRoleDialog
+        user={user}
+        targetRole={user.role === "MODERATOR" ? "USER" : "MODERATOR"}
+        open={roleDialogOpen}
+        pending={roleMutation.isPending}
+        onOpenChange={setRoleDialogOpen}
+        onConfirm={async (reason) => {
+          await roleMutation.mutateAsync({
+            role: user.role === "MODERATOR" ? "USER" : "MODERATOR",
+            reason,
+          });
+          setRoleDialogOpen(false);
+        }}
       />
     </div>
   );

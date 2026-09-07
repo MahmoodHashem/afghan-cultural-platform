@@ -9,11 +9,14 @@ import {
 
 import { PrismaService } from "../../database/prisma.service";
 import type { Prisma } from "../../generated/prisma/client";
-import { AuditAction, EntryStatus, UserStatus } from "../../generated/prisma/enums";
+import { AuditAction, EntryStatus, UserRole, UserStatus } from "../../generated/prisma/enums";
 import { AuditService } from "../audit/audit.service";
 import type { AuthenticatedUser } from "../auth/types/authenticated-user.type";
 import { ADMIN_USER_ERROR_CODES } from "./admin.constants";
-import type { UpdateAdminUserStatusDto } from "./dto/admin-user-actions.dto";
+import type {
+  UpdateAdminUserRoleDto,
+  UpdateAdminUserStatusDto,
+} from "./dto/admin-user-actions.dto";
 import type {
   AdminUserActivityQueryDto,
   AdminUserCommentsQueryDto,
@@ -46,6 +49,12 @@ const adminUserListSelect = {
       entryComments: true,
       bookmarks: true,
     },
+  },
+  auditLogsAsTargetUser: {
+    where: { action: AuditAction.USER_ROLE_CHANGED },
+    select: { createdAt: true },
+    orderBy: { createdAt: "desc" as const },
+    take: 1,
   },
 } as const;
 
@@ -413,6 +422,120 @@ class AdminUsersService {
     });
   }
 
+  async updateUserRole(actor: AuthenticatedUser, userId: string, input: UpdateAdminUserRoleDto) {
+    if (actor.id === userId) {
+      throw new ForbiddenException({
+        error: ADMIN_USER_ERROR_CODES.SELF_ACTION_FORBIDDEN,
+        message: "Administrators cannot change their own role.",
+      });
+    }
+
+    const reason = normalizeReason(input.reason);
+    if (!reason || reason.length < 3) {
+      throw new BadRequestException({
+        error: ADMIN_USER_ERROR_CODES.ROLE_REASON_REQUIRED,
+        message: "A role-change reason of at least 3 characters is required.",
+      });
+    }
+
+    const existingUser = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        displayName: true,
+        email: true,
+        profileImageUrl: true,
+        role: true,
+        status: true,
+        emailVerifiedAt: true,
+      },
+    });
+
+    if (!existingUser) throw this.userNotFound();
+
+    if (existingUser.role === UserRole.ADMIN) {
+      throw new ForbiddenException({
+        error: ADMIN_USER_ERROR_CODES.ROLE_PROTECTED_ADMIN,
+        message: "Administrator roles cannot be changed from moderator management.",
+      });
+    }
+
+    const isPromotion = existingUser.role === UserRole.USER && input.role === UserRole.MODERATOR;
+    const isDemotion = existingUser.role === UserRole.MODERATOR && input.role === UserRole.USER;
+    if (!isPromotion && !isDemotion) {
+      throw new BadRequestException({
+        error: ADMIN_USER_ERROR_CODES.ROLE_INVALID_TRANSITION,
+        message: "Only USER and MODERATOR role transitions are supported.",
+      });
+    }
+
+    if (isPromotion && existingUser.status !== UserStatus.ACTIVE) {
+      throw new BadRequestException({
+        error: ADMIN_USER_ERROR_CODES.ROLE_PROMOTION_REQUIRES_ACTIVE_ACCOUNT,
+        message: "A suspended account cannot be promoted to moderator.",
+      });
+    }
+
+    if (isPromotion && !existingUser.emailVerifiedAt) {
+      throw new BadRequestException({
+        error: ADMIN_USER_ERROR_CODES.ROLE_PROMOTION_REQUIRES_VERIFIED_EMAIL,
+        message: "Email verification is required before moderator promotion.",
+      });
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      const changed = await tx.user.updateMany({
+        where: { id: userId, role: existingUser.role },
+        data: { role: input.role },
+      });
+
+      if (changed.count !== 1) {
+        throw new ConflictException({
+          error: ADMIN_USER_ERROR_CODES.ROLE_CONFLICT,
+          message: "The user role changed before this action completed.",
+        });
+      }
+
+      await this.auditService.createWithClient(tx, {
+        action: AuditAction.USER_ROLE_CHANGED,
+        actorId: actor.id,
+        targetUserId: userId,
+        metadata: {
+          previousRole: existingUser.role,
+          newRole: input.role,
+          reason,
+        },
+      });
+
+      const updated = await tx.user.findUniqueOrThrow({
+        where: { id: userId },
+        select: {
+          id: true,
+          displayName: true,
+          email: true,
+          profileImageUrl: true,
+          role: true,
+          status: true,
+          emailVerifiedAt: true,
+          updatedAt: true,
+        },
+      });
+
+      return {
+        data: {
+          id: updated.id,
+          displayName: updated.displayName,
+          email: updated.email,
+          profileImageUrl: updated.profileImageUrl,
+          role: updated.role,
+          status: updated.status,
+          emailVerified: Boolean(updated.emailVerifiedAt),
+          updatedAt: updated.updatedAt,
+        },
+      };
+    });
+  }
+
   private createUsersWhere(query: AdminUsersQueryDto): Prisma.UserWhereInput {
     const search = query.search?.trim();
 
@@ -502,6 +625,7 @@ function mapAdminUserListItem(user: AdminUserListPayload | AdminUserDetailPayloa
     },
     lastLoginAt: user.lastLoginAt,
     createdAt: user.createdAt,
+    roleChangedAt: user.auditLogsAsTargetUser[0]?.createdAt ?? null,
   };
 }
 

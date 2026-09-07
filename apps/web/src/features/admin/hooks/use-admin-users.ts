@@ -10,24 +10,49 @@ import {
   listAdminUserEntries,
   listAdminUsers,
   revokeAdminUserSessions,
+  updateAdminUserRole,
   updateAdminUserStatus,
 } from "@/features/admin/api/admin-users-api";
+import { adminAuditQueryKeys } from "@/features/admin/constants/admin-audit-query-keys";
+import { adminOverviewQueryKeys } from "@/features/admin/constants/admin-overview-query-keys";
 import { adminUsersQueryKeys } from "@/features/admin/constants/admin-users-query-keys";
 import type {
   AdminUserActivityQuery,
   AdminUserCommentsQuery,
   AdminUserEntriesQuery,
   AdminUsersQuery,
+  UpdateAdminUserRoleInput,
   UpdateAdminUserStatusInput,
 } from "@/features/admin/types/admin-users";
 import { getAdminUserErrorMessage } from "@/features/admin/utils/admin-user-errors";
 
-function useAdminUsers(query: AdminUsersQuery) {
+function useAdminUsers(query: AdminUsersQuery, enabled = true) {
   return useQuery({
     queryKey: adminUsersQueryKeys.list(query),
     queryFn: ({ signal }) => listAdminUsers(query, signal),
+    enabled,
     placeholderData: keepPreviousData,
     staleTime: 30_000,
+  });
+}
+
+function useUpdateAdminUserRole(userId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: UpdateAdminUserRoleInput) => updateAdminUserRole(userId, input),
+    onSuccess: async (result) => {
+      toast.success(
+        result.role === "MODERATOR" ? "ناظر جدید افزوده شد." : "دسترسی ناظر برداشته شد.",
+      );
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: adminUsersQueryKeys.lists() }),
+        queryClient.invalidateQueries({ queryKey: adminUsersQueryKeys.detail(userId) }),
+        queryClient.invalidateQueries({ queryKey: adminOverviewQueryKeys.all }),
+        queryClient.invalidateQueries({ queryKey: adminAuditQueryKeys.all }),
+      ]);
+    },
+    onError: (error) => toast.error(getAdminUserErrorMessage(error)),
   });
 }
 
@@ -107,5 +132,6 @@ export {
   useAdminUserEntries,
   useAdminUsers,
   useRevokeAdminUserSessions,
+  useUpdateAdminUserRole,
   useUpdateAdminUserStatus,
 };

@@ -27,7 +27,7 @@ import { CurrentUser } from "../auth/decorators/current-user.decorator";
 import { Roles } from "../auth/decorators/roles.decorator";
 import type { AuthenticatedUser } from "../auth/types/authenticated-user.type";
 import { AdminUsersService } from "./admin-users.service";
-import { UpdateAdminUserStatusDto } from "./dto/admin-user-actions.dto";
+import { UpdateAdminUserRoleDto, UpdateAdminUserStatusDto } from "./dto/admin-user-actions.dto";
 import {
   AdminUserActivityQueryDto,
   AdminUserCommentsQueryDto,
@@ -40,6 +40,7 @@ import {
   AdminUserCommentsResponseDto,
   AdminUserDetailResponseDto,
   AdminUserEntriesResponseDto,
+  AdminUserRoleEnvelopeDto,
   AdminUserStatusEnvelopeDto,
   AdminUsersResponseDto,
 } from "./dto/admin-users-response.dto";
@@ -51,6 +52,7 @@ import {
   AdminUserCommentsQueryDto,
   AdminUserActivityQueryDto,
   UpdateAdminUserStatusDto,
+  UpdateAdminUserRoleDto,
 )
 @ApiBearerAuth()
 @ApiUnauthorizedResponse({ description: "Missing or invalid bearer token" })
@@ -133,6 +135,30 @@ class AdminUsersController {
     @Body() body: UpdateAdminUserStatusDto,
   ) {
     return this.adminUsersService.updateUserStatus(actor, userId, body);
+  }
+
+  @Patch(":id/role")
+  @ApiOperation({
+    summary: "Promote a user to moderator or return a moderator to the user role",
+    description:
+      "Only USER and MODERATOR transitions are supported. Promotion requires an active, verified account. Administrator accounts and self-role changes are protected. Every successful change is audited.",
+  })
+  @ApiOkResponse({ type: AdminUserRoleEnvelopeDto })
+  @ApiBadRequestResponse({
+    description:
+      "ADMIN_USER_ROLE_REASON_REQUIRED, ADMIN_USER_ROLE_INVALID_TRANSITION, ADMIN_USER_ROLE_PROMOTION_REQUIRES_VERIFIED_EMAIL, or ADMIN_USER_ROLE_PROMOTION_REQUIRES_ACTIVE_ACCOUNT",
+  })
+  @ApiForbiddenResponse({
+    description: "ADMIN_USER_SELF_ACTION_FORBIDDEN or ADMIN_USER_ROLE_PROTECTED_ADMIN",
+  })
+  @ApiNotFoundResponse({ description: "ADMIN_USER_NOT_FOUND" })
+  @ApiConflictResponse({ description: "ADMIN_USER_ROLE_CONFLICT" })
+  updateUserRole(
+    @CurrentUser() actor: AuthenticatedUser,
+    @Param("id", ParseUUIDPipe) userId: string,
+    @Body() body: UpdateAdminUserRoleDto,
+  ) {
+    return this.adminUsersService.updateUserRole(actor, userId, body);
   }
 
   @Post(":id/revoke-sessions")

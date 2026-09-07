@@ -42,6 +42,7 @@ type AdminUserListItem = {
   counts: AdminUserCounts;
   lastLoginAt: string | null;
   createdAt: string;
+  roleChangedAt: string | null;
 };
 
 type AdminUserEntryStatusCounts = {
@@ -144,6 +145,22 @@ type UpdateAdminUserStatusInput = {
   reason?: string;
 };
 
+type UpdateAdminUserRoleInput = {
+  role: "USER" | "MODERATOR";
+  reason: string;
+};
+
+type AdminUserRoleUpdateResult = {
+  id: string;
+  displayName: string;
+  email: string;
+  profileImageUrl: string | null;
+  role: AdminUserRole;
+  status: AdminUserStatus;
+  emailVerified: boolean;
+  updatedAt: string;
+};
+
 export type {
   AdminAccountAuditAction,
   AdminAuthMethod,
@@ -161,7 +178,9 @@ export type {
   AdminUserEntry,
   AdminUserListItem,
   AdminUserRole,
+  AdminUserRoleUpdateResult,
   AdminUserStatus,
   AdminUsersQuery,
+  UpdateAdminUserRoleInput,
   UpdateAdminUserStatusInput,
 };

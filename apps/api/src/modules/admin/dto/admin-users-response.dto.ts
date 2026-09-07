@@ -67,6 +67,9 @@ class AdminUserListItemDto {
 
   @ApiProperty()
   createdAt!: Date;
+
+  @ApiProperty({ nullable: true })
+  roleChangedAt!: Date | null;
 }
 
 class AdminUsersResponseDto {
@@ -298,6 +301,37 @@ class AdminUserStatusEnvelopeDto {
   data!: AdminUserStatusResponseDto;
 }
 
+class AdminUserRoleResponseDto {
+  @ApiProperty({ format: "uuid" })
+  id!: string;
+
+  @ApiProperty()
+  displayName!: string;
+
+  @ApiProperty()
+  email!: string;
+
+  @ApiProperty({ nullable: true })
+  profileImageUrl!: string | null;
+
+  @ApiProperty({ enum: UserRole })
+  role!: UserRole;
+
+  @ApiProperty({ enum: UserStatus })
+  status!: UserStatus;
+
+  @ApiProperty()
+  emailVerified!: boolean;
+
+  @ApiProperty()
+  updatedAt!: Date;
+}
+
+class AdminUserRoleEnvelopeDto {
+  @ApiProperty({ type: AdminUserRoleResponseDto })
+  data!: AdminUserRoleResponseDto;
+}
+
 class AdminRevokeSessionsResponseDto {
   @ApiProperty({ format: "uuid" })
   userId!: string;
@@ -328,6 +362,8 @@ export {
   AdminUserEntryStatusCountsDto,
   AdminUserListItemDto,
   AdminUserProviderDto,
+  AdminUserRoleEnvelopeDto,
+  AdminUserRoleResponseDto,
   AdminUserStatusEnvelopeDto,
   AdminUserStatusResponseDto,
   AdminUsersResponseDto,

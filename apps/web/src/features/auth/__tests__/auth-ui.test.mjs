@@ -253,9 +253,15 @@ const adminDistrictsTable = read("src/features/admin/components/admin-districts-
 const adminProvinceImageDialog = read(
   "src/features/admin/components/admin-province-image-dialog.tsx",
 );
+const adminModeratorsRoute = read("src/app/(admin)/admin/moderators/page.tsx");
+const adminModeratorsPage = read("src/features/admin/components/admin-moderators-page.tsx");
+const adminModeratorsTable = read("src/features/admin/components/admin-moderators-table.tsx");
+const adminAddModeratorDialog = read(
+  "src/features/admin/components/admin-add-moderator-dialog.tsx",
+);
+const adminUserRoleDialog = read("src/features/admin/components/admin-user-role-dialog.tsx");
 const shadcnSidebar = read("src/components/ui/sidebar.tsx");
 const adminPageRoutes = [
-  "src/app/(admin)/admin/moderators/page.tsx",
   "src/app/(admin)/admin/reports/page.tsx",
   "src/app/(admin)/admin/audit/page.tsx",
   "src/app/(admin)/admin/settings/page.tsx",
@@ -1441,6 +1447,21 @@ test("admin user filters and detail records preserve useful URL state", () => {
   assert.match(adminUserRecords, /value="activity"/);
 });
 
+test("admin moderators reuse user contracts with audited role management", () => {
+  assert.match(adminModeratorsRoute, /AdminModeratorsPage/);
+  assert.match(adminModeratorsPage, /role: "MODERATOR"/);
+  assert.match(adminModeratorsPage, /useSearchParams/);
+  assert.match(adminModeratorsTable, /tableFeatures/);
+  assert.match(adminModeratorsTable, /roleChangedAt/);
+  assert.match(adminAddModeratorDialog, /role: "USER"/);
+  assert.match(adminAddModeratorDialog, /status: "ACTIVE"/);
+  assert.match(adminAddModeratorDialog, /emailVerified: true/);
+  assert.match(adminUserRoleDialog, /adminUserRoleReasonSchema/);
+  assert.match(adminUsersApi, /\/admin\/users\/\$\{userId\}\/role/);
+  assert.match(adminUsersHooks, /useUpdateAdminUserRole/);
+  assert.doesNotMatch(adminUsersHooks, /useUpdateAdminUserRole[\s\S]*?onMutate/);
+});
+
 test("admin user table transitions preserve previous data and reduced-motion behavior", () => {
   assert.match(adminUsersHooks, /placeholderData: keepPreviousData/);
   assert.match(adminUsersToolbar, /AnimatePresence/);
@@ -1586,7 +1607,7 @@ test("admin province profile uses confirmed image and taxonomy API contracts", (
 test("remaining admin destinations are deliberately minimal placeholders", () => {
   assert.match(adminPlaceholder, /این بخش در مرحله بعد پیاده‌سازی می‌شود/);
   assert.doesNotMatch(adminPlaceholder, /chart|table|statistics/i);
-  assert.equal(adminPageRoutes.length, 4);
+  assert.equal(adminPageRoutes.length, 3);
   for (const route of adminPageRoutes) {
     assert.match(route, /AdminPlaceholderPage/);
     assert.match(route, /createAdminMetadata/);

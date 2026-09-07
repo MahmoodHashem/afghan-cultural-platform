@@ -1,7 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { IsEnum, IsOptional, IsString, MaxLength } from "class-validator";
+import { IsEnum, IsIn, IsOptional, IsString, MaxLength } from "class-validator";
 
-import { UserStatus } from "../../../generated/prisma/enums";
+import { UserRole, UserStatus } from "../../../generated/prisma/enums";
 
 class UpdateAdminUserStatusDto {
   @ApiProperty({ enum: UserStatus })
@@ -15,4 +15,15 @@ class UpdateAdminUserStatusDto {
   reason?: string;
 }
 
-export { UpdateAdminUserStatusDto };
+class UpdateAdminUserRoleDto {
+  @ApiProperty({ enum: [UserRole.USER, UserRole.MODERATOR] })
+  @IsIn([UserRole.USER, UserRole.MODERATOR])
+  role!: UserRole;
+
+  @ApiProperty({ minLength: 3, maxLength: 600 })
+  @IsString()
+  @MaxLength(600)
+  reason!: string;
+}
+
+export { UpdateAdminUserRoleDto, UpdateAdminUserStatusDto };
