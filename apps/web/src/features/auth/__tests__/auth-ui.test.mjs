@@ -260,9 +260,18 @@ const adminAddModeratorDialog = read(
   "src/features/admin/components/admin-add-moderator-dialog.tsx",
 );
 const adminUserRoleDialog = read("src/features/admin/components/admin-user-role-dialog.tsx");
+const adminReportsRoute = read("src/app/(admin)/admin/reports/page.tsx");
+const adminReportDetailRoute = read("src/app/(admin)/admin/reports/[id]/page.tsx");
+const adminReportsPage = read("src/features/admin/components/admin-reports-page.tsx");
+const adminReportsTable = read("src/features/admin/components/admin-reports-table.tsx");
+const adminReportsToolbar = read("src/features/admin/components/admin-reports-toolbar.tsx");
+const adminReportDetail = read("src/features/admin/components/admin-report-detail-page.tsx");
+const adminReportResolution = read(
+  "src/features/admin/components/admin-report-resolution-dialog.tsx",
+);
+const adminReportsUrl = read("src/features/admin/utils/admin-reports-url.ts");
 const shadcnSidebar = read("src/components/ui/sidebar.tsx");
 const adminPageRoutes = [
-  "src/app/(admin)/admin/reports/page.tsx",
   "src/app/(admin)/admin/audit/page.tsx",
   "src/app/(admin)/admin/settings/page.tsx",
 ].map(read);
@@ -1604,10 +1613,37 @@ test("admin province profile uses confirmed image and taxonomy API contracts", (
   assert.match(provinceImages, /province\.image\.secureUrl/);
 });
 
+test("admin reports reuse confirmed moderation contracts in the Admin shell", () => {
+  assert.match(adminReportsRoute, /AdminReportsView/);
+  assert.match(adminReportDetailRoute, /AdminReportDetailPage/);
+  assert.match(adminReportsPage, /useReportsQueue\(query\)/);
+  assert.match(adminReportsPage, /createAdminReportsHref/);
+  assert.match(adminReportsTable, /tableFeatures/);
+  assert.match(adminReportsTable, /\/admin\/reports\/\$\{report\.id\}/);
+  assert.match(adminReportsToolbar, /query\.status/);
+  assert.match(adminReportsToolbar, /query\.targetType/);
+  assert.match(adminReportsToolbar, /query\.reason/);
+  assert.match(adminReportsUrl, /status && statuses\.has/);
+  assert.match(adminReportsUrl, /targetType && targetTypes\.has/);
+});
+
+test("admin report decisions are constrained and server-confirmed", () => {
+  assert.match(adminReportDetail, /useResolveReport/);
+  assert.match(adminReportDetail, /await mutation\.mutateAsync/);
+  assert.match(adminReportDetail, /report\.status !== "RESOLVED"/);
+  assert.match(adminReportResolution, /adminReportResolutionSchema/);
+  assert.match(adminReportResolution, /commentReportActions/);
+  assert.match(adminReportResolution, /entryReportActions/);
+  assert.match(adminReportResolution, /disabled=\{pending\}/);
+  assert.match(contentModerationHooks, /\["admin", "overview"\]/);
+  assert.match(contentModerationHooks, /\["admin", "entries"\]/);
+  assert.match(contentModerationHooks, /\["admin", "audit"\]/);
+});
+
 test("remaining admin destinations are deliberately minimal placeholders", () => {
   assert.match(adminPlaceholder, /این بخش در مرحله بعد پیاده‌سازی می‌شود/);
   assert.doesNotMatch(adminPlaceholder, /chart|table|statistics/i);
-  assert.equal(adminPageRoutes.length, 3);
+  assert.equal(adminPageRoutes.length, 2);
   for (const route of adminPageRoutes) {
     assert.match(route, /AdminPlaceholderPage/);
     assert.match(route, /createAdminMetadata/);

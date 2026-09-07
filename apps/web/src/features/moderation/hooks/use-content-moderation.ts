@@ -102,6 +102,9 @@ function useResolveReport() {
         }),
         queryClient.invalidateQueries({ queryKey: ["public-entries"] }),
         queryClient.invalidateQueries({ queryKey: contentModerationKeys.histories() }),
+        queryClient.invalidateQueries({ queryKey: ["admin", "overview"] }),
+        queryClient.invalidateQueries({ queryKey: ["admin", "entries"] }),
+        queryClient.invalidateQueries({ queryKey: ["admin", "audit"] }),
       ]);
     },
     onError: (error) => toast.error(getModerationErrorMessage(error)),
