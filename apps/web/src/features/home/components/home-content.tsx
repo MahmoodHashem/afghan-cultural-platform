@@ -27,7 +27,7 @@ function HomeContent({ data }: { data: HomeData }) {
   const secondaryEntries = data.latestEntries.slice(1, 5);
 
   return (
-    <section className="relative z-10 -mt-14 rounded-t-[2rem] bg-background pt-16 shadow-[0_-24px_80px_rgba(250,248,243,0.55)] sm:rounded-t-[3rem]">
+    <section className="relative z-10 bg-background pt-16 shadow-[0_-24px_80px_rgba(250,248,243,0.55)] ">
       <div className="space-y-20 pb-16 sm:space-y-24 sm:pb-20">
         {data.isApiUnavailable ? <ApiUnavailableNotice /> : null}
 
