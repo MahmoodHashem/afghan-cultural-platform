@@ -55,6 +55,7 @@ function AdminReportResolutionDialog({
   onConfirm: (notes: string) => Promise<void>;
 }) {
   const actions = targetType === "COMMENT" ? commentReportActions : entryReportActions;
+  const actionItems = actions.map((value) => ({ value, label: reportActionLabels[value] }));
   const form = useForm<AdminReportResolutionValues>({
     resolver: zodResolver(adminReportResolutionSchema),
     defaultValues: { notes: "" },
@@ -85,6 +86,7 @@ function AdminReportResolutionDialog({
           <div className="space-y-2">
             <Label htmlFor="admin-report-action">تصمیم</Label>
             <Select
+              items={actionItems}
               value={action}
               onValueChange={(value) => value && onActionChange(value as ReportResolutionAction)}
               disabled={pending}
@@ -94,9 +96,9 @@ function AdminReportResolutionDialog({
               </SelectTrigger>
               <SelectContent align="end">
                 <SelectGroup>
-                  {actions.map((value) => (
-                    <SelectItem key={value} value={value}>
-                      {reportActionLabels[value]}
+                  {actionItems.map((item) => (
+                    <SelectItem key={item.value} value={item.value}>
+                      {item.label}
                     </SelectItem>
                   ))}
                 </SelectGroup>

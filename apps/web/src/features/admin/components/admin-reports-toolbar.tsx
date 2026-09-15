@@ -100,8 +100,16 @@ function ReportFilter({
   disabled: boolean;
   onChange: (value: string | undefined) => void;
 }) {
+  const items = [
+    { value: ALL, label: placeholder },
+    ...options.map(([optionValue, optionLabel]) => ({
+      value: optionValue,
+      label: optionLabel,
+    })),
+  ];
   return (
     <Select
+      items={items}
       value={value ?? ALL}
       onValueChange={(next) => onChange(!next || next === ALL ? undefined : next)}
       disabled={disabled}
@@ -111,10 +119,9 @@ function ReportFilter({
       </SelectTrigger>
       <SelectContent align="start">
         <SelectGroup>
-          <SelectItem value={ALL}>{placeholder}</SelectItem>
-          {options.map(([optionValue, optionLabel]) => (
-            <SelectItem key={optionValue} value={optionValue}>
-              {optionLabel}
+          {items.map((item) => (
+            <SelectItem key={item.value} value={item.value}>
+              {item.label}
             </SelectItem>
           ))}
         </SelectGroup>

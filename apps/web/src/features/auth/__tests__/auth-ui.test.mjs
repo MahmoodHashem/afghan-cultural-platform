@@ -270,11 +270,16 @@ const adminReportResolution = read(
   "src/features/admin/components/admin-report-resolution-dialog.tsx",
 );
 const adminReportsUrl = read("src/features/admin/utils/admin-reports-url.ts");
+const adminAuditRoute = read("src/app/(admin)/admin/audit/page.tsx");
+const adminAuditApi = read("src/features/admin/api/admin-audit-api.ts");
+const adminAuditHook = read("src/features/admin/hooks/use-admin-audit.ts");
+const adminAuditPage = read("src/features/admin/components/admin-audit-page.tsx");
+const adminAuditTable = read("src/features/admin/components/admin-audit-table.tsx");
+const adminAuditToolbar = read("src/features/admin/components/admin-audit-toolbar.tsx");
+const adminAuditDetails = read("src/features/admin/components/admin-audit-details-dialog.tsx");
+const adminAuditUrl = read("src/features/admin/utils/admin-audit-url.ts");
 const shadcnSidebar = read("src/components/ui/sidebar.tsx");
-const adminPageRoutes = [
-  "src/app/(admin)/admin/audit/page.tsx",
-  "src/app/(admin)/admin/settings/page.tsx",
-].map(read);
+const adminPageRoutes = ["src/app/(admin)/admin/settings/page.tsx"].map(read);
 
 test("login page renders required fields and links", () => {
   assert.match(loginPage, /title="خوش آمدید"/);
@@ -1640,10 +1645,26 @@ test("admin report decisions are constrained and server-confirmed", () => {
   assert.match(contentModerationHooks, /\["admin", "audit"\]/);
 });
 
+test("global Admin audit uses a safe paginated read contract", () => {
+  assert.match(adminAuditRoute, /AdminAuditPage/);
+  assert.match(adminAuditApi, /\/admin\/audit\?/);
+  assert.match(adminAuditHook, /placeholderData: keepPreviousData/);
+  assert.match(adminAuditPage, /useAdminAudit\(query\)/);
+  assert.match(adminAuditPage, /createAdminAuditHref/);
+  assert.match(adminAuditTable, /tableFeatures/);
+  assert.match(adminAuditTable, /AdminAuditDetailsDialog|onInspect/);
+  assert.match(adminAuditToolbar, /query\.action/);
+  assert.match(adminAuditToolbar, /query\.dateFrom/);
+  assert.match(adminAuditToolbar, /query\.dateTo/);
+  assert.match(adminAuditUrl, /actions\.has/);
+  assert.match(adminAuditDetails, /adminAuditMetadataLabels/);
+  assert.doesNotMatch(adminAuditDetails, /ipAddress|userAgent|requestId/);
+});
+
 test("remaining admin destinations are deliberately minimal placeholders", () => {
   assert.match(adminPlaceholder, /این بخش در مرحله بعد پیاده‌سازی می‌شود/);
   assert.doesNotMatch(adminPlaceholder, /chart|table|statistics/i);
-  assert.equal(adminPageRoutes.length, 2);
+  assert.equal(adminPageRoutes.length, 1);
   for (const route of adminPageRoutes) {
     assert.match(route, /AdminPlaceholderPage/);
     assert.match(route, /createAdminMetadata/);

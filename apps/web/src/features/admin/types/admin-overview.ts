@@ -4,6 +4,7 @@ type AdminAuditAction =
   | "ENTRY_REJECTED"
   | "ENTRY_CHANGES_REQUESTED"
   | "ENTRY_HIDDEN"
+  | "ENTRY_ARCHIVED"
   | "ENTRY_RESTORED"
   | "ENTRY_REVISION_STARTED"
   | "ENTRY_REVISION_REQUESTED"
@@ -19,7 +20,9 @@ type AdminAuditAction =
   | "REPORT_RESOLVED"
   | "COMMENT_HIDDEN"
   | "USER_ROLE_CHANGED"
-  | "USER_SUSPENDED";
+  | "USER_SUSPENDED"
+  | "USER_REACTIVATED"
+  | "USER_SESSIONS_REVOKED";
 
 type AdminOverviewMetric = {
   total: number;

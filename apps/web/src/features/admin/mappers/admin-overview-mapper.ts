@@ -13,6 +13,7 @@ const activityMetadata: Record<AdminAuditAction, { label: string; tone: AdminAct
   ENTRY_REJECTED: { label: "رد مطلب", tone: "red" },
   ENTRY_CHANGES_REQUESTED: { label: "درخواست تغییر", tone: "orange" },
   ENTRY_HIDDEN: { label: "پنهان‌کردن مطلب", tone: "red" },
+  ENTRY_ARCHIVED: { label: "بایگانی مطلب", tone: "orange" },
   ENTRY_RESTORED: { label: "بازگردانی مطلب", tone: "green" },
   ENTRY_REVISION_STARTED: { label: "آغاز ویرایش", tone: "blue" },
   ENTRY_REVISION_REQUESTED: { label: "درخواست اصلاح", tone: "orange" },
@@ -29,6 +30,8 @@ const activityMetadata: Record<AdminAuditAction, { label: string; tone: AdminAct
   COMMENT_HIDDEN: { label: "پنهان‌کردن دیدگاه", tone: "red" },
   USER_ROLE_CHANGED: { label: "تغییر نقش", tone: "neutral" },
   USER_SUSPENDED: { label: "تعلیق کاربر", tone: "red" },
+  USER_REACTIVATED: { label: "فعال‌سازی کاربر", tone: "green" },
+  USER_SESSIONS_REVOKED: { label: "خروج از نشست‌ها", tone: "orange" },
 };
 
 function mapAdminOverview(data: AdminOverviewData): AdminOverviewViewModel {
@@ -59,6 +62,7 @@ function createActivityDescription(activity: AdminOverviewActivity) {
     ENTRY_REJECTED: `${entryTitle} رد شد.`,
     ENTRY_CHANGES_REQUESTED: `${entryTitle} برای اصلاح به نویسنده برگشت.`,
     ENTRY_HIDDEN: `${entryTitle} از نمایش عمومی پنهان شد.`,
+    ENTRY_ARCHIVED: `${entryTitle} بایگانی شد.`,
     ENTRY_RESTORED: `${entryTitle} دوباره در دسترس قرار گرفت.`,
     ENTRY_REVISION_STARTED: `ویرایش ${entryTitle} آغاز شد.`,
     ENTRY_REVISION_REQUESTED: `اصلاح ${entryTitle} از نویسنده درخواست شد.`,
@@ -75,9 +79,15 @@ function createActivityDescription(activity: AdminOverviewActivity) {
     COMMENT_HIDDEN: `یک دیدگاه مربوط به ${entryTitle} پنهان شد.`,
     USER_ROLE_CHANGED: `نقش ${targetUser} تغییر کرد.`,
     USER_SUSPENDED: `حساب ${targetUser} تعلیق شد.`,
+    USER_REACTIVATED: `حساب ${targetUser} دوباره فعال شد.`,
+    USER_SESSIONS_REVOKED: `نشست‌های فعال ${targetUser} پایان یافت.`,
   };
 
   return descriptions[activity.action];
 }
 
-export { mapAdminActivity, mapAdminOverview };
+function getAdminAuditActionMeta(action: AdminAuditAction) {
+  return activityMetadata[action];
+}
+
+export { createActivityDescription, getAdminAuditActionMeta, mapAdminActivity, mapAdminOverview };
