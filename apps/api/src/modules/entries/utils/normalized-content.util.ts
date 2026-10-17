@@ -80,6 +80,9 @@ const REVIEW_STATUSES = new Set(["APPROVED", "NEEDS_REVIEW", "READY"]);
 const UNSUPPORTED_HTML_PATTERN = /<\/?\s*(script|iframe|table|img|video|youtube)\b/i;
 
 function parseNormalizedEntryMarkdown(fileName: string, markdown: string): NormalizedEntryDocument {
+
+  // Split the markdown into a YAML front matter block delimited by --- lines
+  // and the remaining body content, allowing the body to be empty.
   const match = /^---\n([\s\S]*?)\n---\n?([\s\S]*)$/u.exec(markdown);
 
   if (!match) {

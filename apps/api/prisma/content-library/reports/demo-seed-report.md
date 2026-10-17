@@ -1,6 +1,6 @@
 # Demo Content Seed Report
 
-Generated at: 2026-08-02T08:59:21.428Z
+Generated at: 2026-10-17T14:17:06.849Z
 
 ## Files
 
@@ -37,8 +37,8 @@ Generated at: 2026-08-02T08:59:21.428Z
 
 ## Idempotency
 
-- Stable on this run; counts did not increase.
-- Counts before: {"users":7,"entries":15,"tags":45,"sources":24,"entryTags":50,"contentVersions":14,"moderationReviews":13,"auditLogs":27,"internalReferences":13}
+- Seed wrote missing or changed demo records on this run. Run again to confirm stability.
+- Counts before: {"users":0,"entries":0,"tags":0,"sources":0,"entryTags":0,"contentVersions":0,"moderationReviews":0,"auditLogs":0,"internalReferences":0}
 - Counts after: {"users":7,"entries":15,"tags":45,"sources":24,"entryTags":50,"contentVersions":14,"moderationReviews":13,"auditLogs":27,"internalReferences":13}
 
 ## Demo Tags
