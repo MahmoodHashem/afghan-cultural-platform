@@ -71,7 +71,7 @@ function CorrectionReview({ correctionId }: { correctionId: string }) {
       ) : null}
       <Link
         href={`/entries/${encodeURIComponent(correction.entry.slug ?? "")}`}
-        className="text-[14px] font-semibold text-primary hover:text-primary-hover"
+        className="text-[14px] font-semibold text-brand-ink hover:text-brand"
       >
         دیدن مطلب منتشرشده
       </Link>
@@ -155,7 +155,7 @@ function ReportReview({ reportId }: { reportId: string }) {
       )}
       <Link
         href={`/entries/${encodeURIComponent(report.entry.slug ?? "")}`}
-        className="text-[14px] font-semibold text-primary hover:text-primary-hover"
+        className="text-[14px] font-semibold text-brand-ink hover:text-brand"
       >
         دیدن مطلب
       </Link>
@@ -217,8 +217,8 @@ function DetailShell({
         ]}
       />
       <header className="space-y-2">
-        <h1 className="text-[30px] font-bold sm:text-[38px]">{title}</h1>
-        <p className="text-[14px] text-muted-foreground">{subtitle}</p>
+        <h1 className="text-page-title text-ink">{title}</h1>
+        <p className="text-[14px] text-copy">{subtitle}</p>
       </header>
       <div className="mx-auto max-w-5xl space-y-6">{children}</div>
     </section>
@@ -238,12 +238,12 @@ function ComparisonPanel({
     <section
       className={
         tone === "primary"
-          ? "rounded-xl border border-primary/25 bg-primary-light/35 p-5"
-          : "rounded-xl border border-border bg-card p-5"
+          ? "rounded-control border border-brand/25 bg-brand-soft p-5"
+          : "rounded-control border border-line-soft bg-surface p-5"
       }
     >
       <h2 className="mb-3 text-[14px] font-bold">{title}</h2>
-      <p className="max-h-[520px] overflow-y-auto whitespace-pre-wrap text-[15px] leading-8 text-muted-foreground">
+      <p className="max-h-[520px] overflow-y-auto whitespace-pre-wrap text-[15px] leading-8 text-copy">
         {text}
       </p>
     </section>
@@ -252,16 +252,16 @@ function ComparisonPanel({
 
 function ContextBlock({ title, text }: { title: string; text: string }) {
   return (
-    <section className="rounded-xl border border-border bg-card p-5">
+    <section className="rounded-control border border-line-soft bg-surface p-5">
       <h2 className="text-[15px] font-bold">{title}</h2>
-      <p className="mt-3 whitespace-pre-wrap text-[15px] leading-8 text-muted-foreground">{text}</p>
+      <p className="mt-3 whitespace-pre-wrap text-[15px] leading-8 text-copy">{text}</p>
     </section>
   );
 }
 
 function ActionPanel({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="sticky bottom-4 space-y-4 rounded-xl border border-primary/20 bg-card p-5 shadow-[0_10px_35px_rgba(31,41,55,.10)]">
+    <section className="sticky bottom-4 space-y-4 rounded-control border border-brand/20 bg-surface p-5 shadow-lift">
       <h2 className="font-bold">{title}</h2>
       {children}
     </section>
@@ -270,7 +270,7 @@ function ActionPanel({ title, children }: { title: string; children: React.React
 
 function ResolvedState({ label }: { label: string }) {
   return (
-    <div className="rounded-xl border border-border bg-muted/40 p-5 text-[14px] font-semibold text-muted-foreground">
+    <div className="rounded-control border border-line-soft bg-paper p-5 text-[14px] font-semibold text-copy">
       {label}
     </div>
   );
@@ -280,8 +280,8 @@ function DetailSkeleton() {
   return (
     <div className="content-container space-y-4 pb-16">
       <Skeleton className="h-8 w-72" />
-      <Skeleton className="h-72 rounded-xl" />
-      <Skeleton className="h-40 rounded-xl" />
+      <Skeleton className="h-72 rounded-control" />
+      <Skeleton className="h-40 rounded-control" />
     </div>
   );
 }
@@ -289,7 +289,7 @@ function DetailSkeleton() {
 function DetailError({ onRetry }: { onRetry: () => unknown }) {
   return (
     <div className="content-container pb-16">
-      <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-10 text-center">
+      <div className="rounded-control border border-brand/20 bg-brand-soft p-10 text-center">
         <p className="font-bold">این مورد باز نشد</p>
         <Button className="mt-4" variant="outline" onClick={onRetry}>
           تلاش دوباره

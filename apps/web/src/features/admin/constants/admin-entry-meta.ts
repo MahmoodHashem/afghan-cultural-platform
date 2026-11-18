@@ -8,7 +8,7 @@ const adminEntryStatusMeta: Record<
   PENDING_REVIEW: {
     label: "در انتظار بررسی",
     shortLabel: "در انتظار",
-    className: "border-gold/40 bg-tint-sand text-saffron-deep dark:text-gold",
+    className: "border-saffron/30 bg-tint-sand text-saffron-deep dark:text-gold",
   },
   CHANGES_REQUESTED: {
     label: "نیازمند تغییر",

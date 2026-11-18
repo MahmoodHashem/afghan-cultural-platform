@@ -215,14 +215,15 @@
   --container-content: 1200px;
   --container-article: 780px;
 
-  --sidebar: var(--surface);
-  --sidebar-foreground: var(--ink);
+  /* Admin sidebar is a night panel in both themes, like the footer. */
+  --sidebar: var(--footer-bg);
+  --sidebar-foreground: #d3dbe6;
   --sidebar-primary: var(--brand-btn);
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: var(--brand-soft);
-  --sidebar-accent-foreground: var(--brand-ink);
-  --sidebar-border: var(--line);
-  --sidebar-ring: var(--brand);
+  --sidebar-accent: rgb(255 255 255 / 0.08);
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgb(255 255 255 / 0.08);
+  --sidebar-ring: var(--gold);
 }
 
 .dark {

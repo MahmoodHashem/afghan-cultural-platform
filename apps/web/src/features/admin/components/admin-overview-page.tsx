@@ -22,15 +22,15 @@ function AdminOverviewPage() {
 
       {overview.isError ? (
         <section
-          className="flex min-h-72 flex-col items-center justify-center gap-4 rounded-xl border border-border bg-card px-6 text-center"
+          className="flex min-h-72 flex-col items-center justify-center gap-4 rounded-control border border-line-soft bg-surface px-6 text-center"
           role="alert"
         >
-          <span className="flex size-12 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+          <span className="flex size-12 items-center justify-center rounded-full bg-brand-soft text-brand-ink">
             <ExclamationTriangleIcon className="size-6" aria-hidden="true" />
           </span>
           <div className="space-y-1.5">
-            <h2 className="text-[16px] font-semibold text-foreground">نمای کلی بارگذاری نشد</h2>
-            <p className="text-[13px] text-muted-foreground">
+            <h2 className="text-[16px] font-semibold text-ink">نمای کلی بارگذاری نشد</h2>
+            <p className="text-[13px] text-copy">
               ارتباط با سرور برقرار نشد. کمی بعد دوباره تلاش کنید.
             </p>
           </div>

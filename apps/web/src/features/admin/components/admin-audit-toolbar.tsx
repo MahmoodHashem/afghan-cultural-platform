@@ -57,9 +57,9 @@ function AdminAuditToolbar({
           >
             <label
               htmlFor="admin-audit-search"
-              className="flex h-10 min-w-0 flex-1 items-center gap-2 rounded-lg border border-input bg-card px-3 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/35"
+              className="flex h-10 min-w-0 flex-1 items-center gap-2 rounded-control border border-line bg-surface px-3 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/35"
             >
-              <MagnifyingGlassIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+              <MagnifyingGlassIcon className="size-4 shrink-0 text-copy" aria-hidden />
               <span className="sr-only">جست‌وجوی تاریخچه</span>
               <Input
                 id="admin-audit-search"
@@ -76,8 +76,8 @@ function AdminAuditToolbar({
           </form>
         </search>
         <div className="flex items-center justify-between gap-3">
-          <p className="text-[13px] text-muted-foreground" aria-live="polite">
-            <strong className="text-foreground">{formatPersianNumber(total)}</strong> رویداد
+          <p className="text-[13px] text-copy" aria-live="polite">
+            <strong className="text-ink">{formatPersianNumber(total)}</strong> رویداد
           </p>
           {hasFilters ? (
             <Button type="button" variant="ghost" size="sm" onClick={onClear} disabled={pending}>
@@ -88,10 +88,10 @@ function AdminAuditToolbar({
       </div>
 
       <div className="flex items-end gap-2 overflow-x-auto pb-1 [scrollbar-width:thin]">
-        <span className="mb-2 flex shrink-0 items-center gap-1.5 text-[12px] font-semibold text-muted-foreground">
+        <span className="mb-2 flex shrink-0 items-center gap-1.5 text-[12px] font-semibold text-copy">
           <FunnelIcon className="size-4" aria-hidden /> فیلترها
         </span>
-        <div className="grid shrink-0 gap-1 text-[11px] text-muted-foreground">
+        <div className="grid shrink-0 gap-1 text-[11px] text-copy">
           <span>نوع فعالیت</span>
           <Select
             items={actionItems}
@@ -150,7 +150,7 @@ function DateFilter({
   onChange: (value: string | undefined) => void;
 }) {
   return (
-    <label htmlFor={id} className="grid shrink-0 gap-1 text-[11px] text-muted-foreground">
+    <label htmlFor={id} className="grid shrink-0 gap-1 text-[11px] text-copy">
       {label}
       <Input
         id={id}

@@ -39,7 +39,7 @@ function AdminModeratorsToolbar({
   useEffect(() => setSearch(query.search ?? ""), [query.search]);
 
   return (
-    <div className="space-y-4 border-b border-border p-4 md:p-5">
+    <div className="space-y-4 border-b border-line-soft p-4 md:p-5">
       <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
         <search className="min-w-0 flex-1">
           <form
@@ -51,9 +51,9 @@ function AdminModeratorsToolbar({
           >
             <label
               htmlFor="admin-moderator-search"
-              className="flex h-10 min-w-0 flex-1 items-center gap-2 rounded-lg border border-input bg-card px-3 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/35"
+              className="flex h-10 min-w-0 flex-1 items-center gap-2 rounded-control border border-line bg-surface px-3 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/35"
             >
-              <MagnifyingGlassIcon className="size-4 text-muted-foreground" aria-hidden="true" />
+              <MagnifyingGlassIcon className="size-4 text-copy" aria-hidden="true" />
               <span className="sr-only">جست‌وجوی ناظر</span>
               <Input
                 id="admin-moderator-search"
@@ -72,8 +72,8 @@ function AdminModeratorsToolbar({
         </search>
 
         <div className="flex items-center justify-between gap-3">
-          <p className="text-[13px] text-muted-foreground" aria-live="polite">
-            <strong className="text-foreground">{formatPersianNumber(total)}</strong> ناظر
+          <p className="text-[13px] text-copy" aria-live="polite">
+            <strong className="text-ink">{formatPersianNumber(total)}</strong> ناظر
           </p>
           <Button type="button" onClick={onAdd}>
             <UserPlusIcon className="size-4" aria-hidden="true" />

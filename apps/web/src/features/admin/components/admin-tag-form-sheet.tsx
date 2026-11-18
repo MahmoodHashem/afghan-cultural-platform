@@ -64,7 +64,7 @@ function AdminTagFormSheet({
   return (
     <Dialog open={open} onOpenChange={pending ? undefined : onOpenChange}>
       <DialogContent className="gap-0 overflow-hidden p-0 sm:max-w-md">
-        <DialogHeader className="border-b border-border px-5 py-5 text-start">
+        <DialogHeader className="border-b border-line-soft px-5 py-5 text-start">
           <DialogTitle className="text-[18px] font-semibold">
             {tag ? "ویرایش برچسب" : "برچسب جدید"}
           </DialogTitle>
@@ -76,7 +76,7 @@ function AdminTagFormSheet({
         <form id="admin-tag-form" onSubmit={submit} className="space-y-5 p-5">
           <div className="space-y-2">
             <Label htmlFor="admin-tag-name">
-              نام برچسب <span className="text-destructive">*</span>
+              نام برچسب <span className="text-brand-ink">*</span>
             </Label>
             <Input
               id="admin-tag-name"
@@ -87,13 +87,13 @@ function AdminTagFormSheet({
               placeholder="برای نمونه: معماری تیموری"
             />
             {form.formState.errors.name && (
-              <p className="text-[12px] text-destructive">{form.formState.errors.name.message}</p>
+              <p className="text-[12px] text-brand-ink">{form.formState.errors.name.message}</p>
             )}
           </div>
 
           <label
             htmlFor="admin-tag-active"
-            className="flex cursor-pointer items-start gap-3 rounded-lg border border-border p-3.5"
+            className="flex cursor-pointer items-start gap-3 rounded-control border border-line-soft p-3.5"
           >
             <Checkbox
               id="admin-tag-active"
@@ -103,14 +103,14 @@ function AdminTagFormSheet({
             />
             <span className="space-y-0.5">
               <span className="block text-[13px] font-semibold">برچسب فعال باشد</span>
-              <span className="block text-[12px] leading-6 text-muted-foreground">
+              <span className="block text-[12px] leading-6 text-copy">
                 برچسب فعال برای مطالب جدید قابل انتخاب است.
               </span>
             </span>
           </label>
         </form>
 
-        <div className="border-t border-border bg-muted/25 sm:justify-start p-4">
+        <div className="border-t border-line-soft bg-paper sm:justify-start p-4">
           <Button type="submit" form="admin-tag-form" disabled={pending}>
             {pending ? "در حال ذخیره..." : tag ? "ذخیره تغییرات" : "ساخت برچسب"}
           </Button>

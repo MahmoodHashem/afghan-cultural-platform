@@ -41,7 +41,7 @@ function AdminUserStatusDialog({
 
   return (
     <AlertDialog open={open} onOpenChange={pending ? undefined : onOpenChange}>
-      <AlertDialogContent className="max-w-lg rounded-xl p-5 sm:max-w-lg">
+      <AlertDialogContent className="max-w-lg rounded-control p-5 sm:max-w-lg">
         <AlertDialogHeader className="place-items-start text-start">
           <AlertDialogTitle className="text-[18px]">
             {isSuspending ? "تعلیق حساب" : "فعال‌سازی دوباره حساب"}
@@ -65,7 +65,7 @@ function AdminUserStatusDialog({
               disabled={pending}
               className="min-h-28 resize-none"
             />
-            <p className="text-[12px] text-muted-foreground">
+            <p className="text-[12px] text-copy">
               این توضیح در تاریخچه مدیریتی حساب ثبت می‌شود.
             </p>
           </div>
@@ -111,7 +111,7 @@ function AdminRevokeSessionsDialog({
 }) {
   return (
     <AlertDialog open={open} onOpenChange={pending ? undefined : onOpenChange}>
-      <AlertDialogContent className="max-w-lg rounded-xl p-5 sm:max-w-lg">
+      <AlertDialogContent className="max-w-lg rounded-control p-5 sm:max-w-lg">
         <AlertDialogHeader className="place-items-start text-start">
           <AlertDialogTitle className="text-[18px]">پایان همه نشست‌ها</AlertDialogTitle>
           <AlertDialogDescription className="text-[13px] leading-7">

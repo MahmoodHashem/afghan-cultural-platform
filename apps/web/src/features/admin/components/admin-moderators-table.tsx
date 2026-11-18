@@ -62,7 +62,7 @@ function AdminModeratorsTable({
           id: "activity",
           header: "فعالیت",
           cell: ({ row }) => (
-            <span className="text-[12px] text-muted-foreground">
+            <span className="text-[12px] text-copy">
               {formatPersianNumber(row.original.counts.entries)} مطلب ·{" "}
               {formatPersianNumber(row.original.counts.comments)} دیدگاه ·{" "}
               {formatPersianNumber(row.original.counts.bookmarks)} ذخیره
@@ -94,7 +94,7 @@ function AdminModeratorsTable({
       <div className="flex min-h-64 items-center justify-center px-6 text-center">
         <div className="space-y-2">
           <h2 className="text-[16px] font-semibold">ناظری پیدا نشد</h2>
-          <p className="text-[13px] text-muted-foreground">
+          <p className="text-[13px] text-copy">
             فیلترها را تغییر دهید یا یک ناظر جدید اضافه کنید.
           </p>
         </div>
@@ -106,18 +106,18 @@ function AdminModeratorsTable({
     <div className="relative overflow-hidden" aria-busy={updating}>
       <div className="hidden lg:block">
         <table className="grid w-full" aria-label="فهرست ناظران" aria-rowcount={meta.total + 1}>
-          <thead className="grid bg-muted/35">
+          <thead className="grid bg-paper">
             {table.getHeaderGroups().map((group) => (
               <tr
                 key={group.id}
-                className="grid h-11 border-b border-border"
+                className="grid h-11 border-b border-line-soft"
                 style={{ gridTemplateColumns: GRID_COLUMNS }}
               >
                 {group.headers.map((header) => (
                   <th
                     key={header.id}
                     scope="col"
-                    className="flex min-w-0 items-center overflow-hidden px-4 text-[12px] font-medium whitespace-nowrap text-muted-foreground"
+                    className="flex min-w-0 items-center overflow-hidden px-4 text-[12px] font-medium whitespace-nowrap text-copy"
                   >
                     {header.isPlaceholder ? null : <table.FlexRender header={header} />}
                   </th>
@@ -135,7 +135,7 @@ function AdminModeratorsTable({
                   animate={{ opacity: updating ? 0.62 : 1, x: 0, y: 0 }}
                   exit={reducedMotion ? { opacity: 0 } : { opacity: 0, x: pageDirection * -8 }}
                   transition={{ duration: reducedMotion ? 0 : 0.18 }}
-                  className="grid min-h-18 border-b border-border transition-colors hover:bg-muted/50"
+                  className="grid min-h-18 border-b border-line-soft transition-colors hover:bg-paper"
                   style={{ gridTemplateColumns: GRID_COLUMNS }}
                 >
                   {row.getAllCells().map((cell) => (
@@ -153,7 +153,7 @@ function AdminModeratorsTable({
         </table>
       </div>
 
-      <div className="divide-y divide-border lg:hidden">
+      <div className="divide-y divide-line-soft lg:hidden">
         <AnimatePresence initial={false} mode="popLayout">
           {moderators.map((user) => (
             <motion.article
@@ -173,7 +173,7 @@ function AdminModeratorsTable({
                 <AdminUserStatusBadge status={user.status} />
                 <AdminEmailVerificationBadge verified={user.emailVerified} />
               </div>
-              <div className="grid grid-cols-2 gap-3 text-[12px] text-muted-foreground">
+              <div className="grid grid-cols-2 gap-3 text-[12px] text-copy">
                 <span>{formatPersianNumber(user.counts.entries)} مطلب</span>
                 <span>{formatPersianNumber(user.counts.comments)} دیدگاه</span>
                 <span>{formatPersianNumber(user.counts.bookmarks)} ذخیره</span>
@@ -199,7 +199,7 @@ function ModeratorIdentity({ user }: { user: AdminUserListItem }) {
   return (
     <Link
       href={`/admin/users/${user.id}`}
-      className="flex min-w-0 items-center gap-3 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="flex min-w-0 items-center gap-3 rounded-control focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <Avatar className="size-9">
         {user.profileImageUrl ? <AvatarImage src={user.profileImageUrl} alt="" /> : null}
@@ -209,7 +209,7 @@ function ModeratorIdentity({ user }: { user: AdminUserListItem }) {
       </Avatar>
       <span className="min-w-0">
         <span className="block truncate text-[13px] font-semibold">{user.displayName}</span>
-        <span className="block max-w-52 truncate text-[11px] text-muted-foreground" dir="ltr">
+        <span className="block max-w-52 truncate text-[11px] text-copy" dir="ltr">
           {user.email}
         </span>
       </span>
@@ -248,7 +248,7 @@ function ModeratorActions({
 
 function MutedDate({ value }: { value: string | null }) {
   return (
-    <span className="text-[12px] text-muted-foreground">
+    <span className="text-[12px] text-copy">
       {value ? formatPersianDate(value) : "ثبت نشده"}
     </span>
   );
@@ -264,10 +264,10 @@ function ModeratorsPagination({
   if (meta.totalPages <= 1) return null;
   return (
     <nav
-      className="flex items-center justify-between border-t border-border px-4 py-3"
+      className="flex items-center justify-between border-t border-line-soft px-4 py-3"
       aria-label="صفحه‌بندی ناظران"
     >
-      <span className="text-[12px] text-muted-foreground">
+      <span className="text-[12px] text-copy">
         صفحه {formatPersianNumber(meta.page)} از {formatPersianNumber(meta.totalPages)}
       </span>
       <div className="flex gap-2">
@@ -296,7 +296,7 @@ function ModeratorsSkeleton() {
   return (
     <div className="space-y-1 p-4" role="status" aria-label="در حال بارگذاری ناظران">
       {["one", "two", "three", "four", "five"].map((item) => (
-        <div key={item} className="flex h-16 items-center gap-3 border-b border-border/70 px-2">
+        <div key={item} className="flex h-16 items-center gap-3 border-b border-line-soft px-2">
           <Skeleton className="size-9 rounded-full" />
           <div className="flex-1 space-y-2">
             <Skeleton className="h-3.5 w-36" />

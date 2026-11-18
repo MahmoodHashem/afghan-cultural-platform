@@ -45,7 +45,7 @@ function AdminReportsPage() {
         title="گزارش‌ها"
         description="بررسی گزارش‌های مطالب و دیدگاه‌ها و ثبت تصمیم‌های نظارتی"
       />
-      <Card className="gap-0 overflow-hidden rounded-xl py-0">
+      <Card className="gap-0 overflow-hidden rounded-control py-0">
         <AdminReportsToolbar
           query={query}
           total={reportsQuery.data?.meta.total ?? 0}
@@ -61,12 +61,12 @@ function AdminReportsPage() {
             className="flex min-h-72 flex-col items-center justify-center gap-4 px-6 text-center"
             role="alert"
           >
-            <span className="flex size-11 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+            <span className="flex size-11 items-center justify-center rounded-full bg-brand-soft text-brand-ink">
               <ExclamationTriangleIcon className="size-5" aria-hidden="true" />
             </span>
             <div className="space-y-1">
               <h2 className="text-[16px] font-semibold">فهرست گزارش‌ها بارگذاری نشد</h2>
-              <p className="text-[13px] text-muted-foreground">
+              <p className="text-[13px] text-copy">
                 ارتباط با سرور برقرار نشد. دوباره تلاش کنید.
               </p>
             </div>

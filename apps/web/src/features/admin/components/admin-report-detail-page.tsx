@@ -50,7 +50,7 @@ function AdminReportDetailPage({ reportId }: { reportId: string }) {
       <section className="flex min-h-96 items-center justify-center">
         <div className="space-y-4 text-center">
           <h1 className="text-xl font-semibold">گزارش بارگذاری نشد</h1>
-          <p className="text-sm text-muted-foreground">ممکن است گزارش حذف شده یا در دسترس نباشد.</p>
+          <p className="text-sm text-copy">ممکن است گزارش حذف شده یا در دسترس نباشد.</p>
           <Button variant="outline" onClick={() => void reportQuery.refetch()}>
             تلاش دوباره
           </Button>
@@ -74,7 +74,7 @@ function AdminReportDetailPage({ reportId }: { reportId: string }) {
         }
       />
 
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card p-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-control border bg-surface p-4">
         <div className="flex flex-wrap items-center gap-2">
           <AdminReportStatusBadge status={report.status} />
           <Badge variant="outline">{adminReportTargetLabels[report.targetType]}</Badge>
@@ -93,11 +93,11 @@ function AdminReportDetailPage({ reportId }: { reportId: string }) {
 
           {report.entryComment ? (
             <Panel title="دیدگاه گزارش‌شده" icon={<ChatBubbleLeftRightIcon />}>
-              <blockquote className="border-s-2 border-primary/30 ps-4">
+              <blockquote className="border-s-2 border-brand/30 ps-4">
                 <p className="whitespace-pre-wrap text-[14px] leading-8">
                   {report.entryComment.body}
                 </p>
-                <footer className="mt-3 flex flex-wrap gap-3 text-[12px] text-muted-foreground">
+                <footer className="mt-3 flex flex-wrap gap-3 text-[12px] text-copy">
                   <span>{report.entryComment.author.displayName}</span>
                   <time dateTime={report.entryComment.createdAt}>
                     {formatPersianDate(report.entryComment.createdAt)}
@@ -109,7 +109,7 @@ function AdminReportDetailPage({ reportId }: { reportId: string }) {
             <Panel title="مطلب گزارش‌شده" icon={<DocumentTextIcon />}>
               <div className="space-y-3">
                 <h2 className="text-[18px] font-semibold">{report.entry.title}</h2>
-                <p className="text-[14px] leading-8 text-muted-foreground">
+                <p className="text-[14px] leading-8 text-copy">
                   {report.entry.summary}
                 </p>
               </div>
@@ -130,7 +130,7 @@ function AdminReportDetailPage({ reportId }: { reportId: string }) {
                 {report.resolutionNotes ? (
                   <p className="whitespace-pre-wrap">{report.resolutionNotes}</p>
                 ) : null}
-                <p className="text-muted-foreground">
+                <p className="text-copy">
                   {report.reviewedBy?.displayName ?? "بررسی‌کننده نامشخص"}
                   {report.resolvedAt ? ` · ${formatPersianDate(report.resolvedAt)}` : ""}
                 </p>
@@ -197,7 +197,7 @@ function Panel({ title, icon, children }: { title: string; icon: ReactNode; chil
     <Card className="gap-0 py-0">
       <CardHeader className="border-b py-4">
         <CardTitle className="flex items-center gap-2 text-[15px]">
-          <span className="text-primary [&>svg]:size-5" aria-hidden="true">
+          <span className="text-brand-ink [&>svg]:size-5" aria-hidden="true">
             {icon}
           </span>
           {title}
@@ -211,11 +211,11 @@ function Panel({ title, icon, children }: { title: string; icon: ReactNode; chil
 function MetaRow({ label, value, icon }: { label: string; value: string; icon: ReactNode }) {
   return (
     <div className="flex gap-3 text-[12px]">
-      <span className="mt-0.5 text-muted-foreground [&>svg]:size-4" aria-hidden="true">
+      <span className="mt-0.5 text-copy [&>svg]:size-4" aria-hidden="true">
         {icon}
       </span>
       <span className="min-w-0">
-        <span className="block text-muted-foreground">{label}</span>
+        <span className="block text-copy">{label}</span>
         <span className="mt-0.5 block font-medium">{value}</span>
       </span>
     </div>
@@ -229,13 +229,13 @@ function AdminReportDetailSkeleton() {
         <Skeleton className="h-9 w-44" />
         <Skeleton className="h-4 w-80 max-w-full" />
       </div>
-      <Skeleton className="h-16 w-full rounded-xl" />
+      <Skeleton className="h-16 w-full rounded-control" />
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_20rem]">
         <div className="space-y-6">
-          <Skeleton className="h-52 rounded-xl" />
-          <Skeleton className="h-64 rounded-xl" />
+          <Skeleton className="h-52 rounded-control" />
+          <Skeleton className="h-64 rounded-control" />
         </div>
-        <Skeleton className="h-56 rounded-xl" />
+        <Skeleton className="h-56 rounded-control" />
       </div>
     </div>
   );

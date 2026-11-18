@@ -140,7 +140,7 @@ function AdminTopicsPage({ kind = "topics" }: { kind?: AdminDescribedTaxonomyKin
         }
       />
 
-      <Card className="gap-0 overflow-hidden rounded-xl py-0">
+      <Card className="gap-0 overflow-hidden rounded-control py-0">
         {!reorderMode ? (
           <AdminTopicsToolbar
             config={config}
@@ -151,7 +151,7 @@ function AdminTopicsPage({ kind = "topics" }: { kind?: AdminDescribedTaxonomyKin
             onClear={() => startTransition(() => router.replace(config.route, { scroll: false }))}
           />
         ) : (
-          <div className="border-b border-primary/20 bg-primary/5 px-4 py-3 text-[13px] leading-6 text-primary md:px-5">
+          <div className="border-b border-brand/20 bg-brand-soft px-4 py-3 text-[13px] leading-6 text-brand-ink md:px-5">
             با دکمه‌های بالا و پایین، ترتیب نمایش موضوع‌ها را تغییر دهید و سپس آن را ذخیره کنید.
           </div>
         )}
@@ -161,12 +161,12 @@ function AdminTopicsPage({ kind = "topics" }: { kind?: AdminDescribedTaxonomyKin
             className="flex min-h-72 flex-col items-center justify-center gap-4 px-6 text-center"
             role="alert"
           >
-            <span className="flex size-11 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+            <span className="flex size-11 items-center justify-center rounded-full bg-brand-soft text-brand-ink">
               <ExclamationTriangleIcon className="size-5" aria-hidden="true" />
             </span>
             <div className="space-y-1">
               <h2 className="text-[16px] font-semibold">فهرست {config.plural} بارگذاری نشد</h2>
-              <p className="text-[13px] text-muted-foreground">
+              <p className="text-[13px] text-copy">
                 ارتباط با سرور برقرار نشد. دوباره تلاش کنید.
               </p>
             </div>

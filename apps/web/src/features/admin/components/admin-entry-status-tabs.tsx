@@ -36,7 +36,7 @@ function AdminEntryStatusTabs({
 
   return (
     <div
-      className="flex gap-1 overflow-x-auto border-b border-border px-3 [scrollbar-width:thin]"
+      className="flex gap-1 overflow-x-auto border-b border-line-soft px-3 [scrollbar-width:thin]"
       role="tablist"
       aria-label="وضعیت مطالب"
     >
@@ -51,12 +51,12 @@ function AdminEntryStatusTabs({
             disabled={disabled}
             onClick={() => onChange(item.value)}
             className={cn(
-              "relative flex h-12 shrink-0 items-center gap-2 px-3 text-[12px] font-medium text-muted-foreground outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",
-              active && "text-primary",
+              "relative flex h-12 shrink-0 items-center gap-2 px-3 text-[12px] font-medium text-copy outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",
+              active && "text-brand-ink",
             )}
           >
             <span className="relative z-10">{item.label}</span>
-            <span className="relative z-10 rounded-full bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
+            <span className="relative z-10 rounded-full bg-line-soft px-1.5 py-0.5 text-[10px] text-copy">
               {formatPersianNumber(item.count)}
             </span>
             {active ? (

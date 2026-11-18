@@ -38,10 +38,10 @@ function AdminReportsToolbar({
   const hasFilters = Boolean(query.status || query.targetType || query.reason);
 
   return (
-    <div className="flex flex-col gap-4 border-b border-border p-4 md:p-5">
+    <div className="flex flex-col gap-4 border-b border-line-soft p-4 md:p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-[13px] text-muted-foreground" aria-live="polite">
-          <strong className="text-foreground">{formatPersianNumber(total)}</strong> گزارش
+        <p className="text-[13px] text-copy" aria-live="polite">
+          <strong className="text-ink">{formatPersianNumber(total)}</strong> گزارش
         </p>
         {hasFilters ? (
           <Button type="button" variant="ghost" size="sm" onClick={onClear} disabled={pending}>
@@ -51,7 +51,7 @@ function AdminReportsToolbar({
       </div>
 
       <div className="flex items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:thin]">
-        <span className="flex shrink-0 items-center gap-1.5 text-[12px] font-semibold text-muted-foreground">
+        <span className="flex shrink-0 items-center gap-1.5 text-[12px] font-semibold text-copy">
           <FunnelIcon className="size-4" aria-hidden="true" /> فیلترها
         </span>
         <ReportFilter

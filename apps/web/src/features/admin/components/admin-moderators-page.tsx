@@ -60,7 +60,7 @@ function AdminModeratorsPage() {
         description="مدیریت دسترسی ناظران و مشاهده فعالیت حساب‌های مسئول بررسی محتوا"
       />
 
-      <Card className="gap-0 overflow-hidden rounded-xl py-0">
+      <Card className="gap-0 overflow-hidden rounded-control py-0">
         <AdminModeratorsToolbar
           query={query}
           total={moderatorsQuery.data?.meta.total ?? 0}
@@ -78,10 +78,10 @@ function AdminModeratorsPage() {
             className="flex min-h-72 flex-col items-center justify-center gap-4 px-6 text-center"
             role="alert"
           >
-            <ExclamationTriangleIcon className="size-8 text-destructive" aria-hidden="true" />
+            <ExclamationTriangleIcon className="size-8 text-brand-ink" aria-hidden="true" />
             <div className="space-y-1">
               <h2 className="text-[16px] font-semibold">فهرست ناظران بارگذاری نشد</h2>
-              <p className="text-[13px] text-muted-foreground">
+              <p className="text-[13px] text-copy">
                 ارتباط با سرور برقرار نشد. دوباره تلاش کنید.
               </p>
             </div>

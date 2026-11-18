@@ -84,7 +84,7 @@ function AdminUsersTable({
           id: "authMethods",
           header: "روش ورود",
           cell: ({ row }) => (
-            <span className="text-[12px] text-muted-foreground">
+            <span className="text-[12px] text-copy">
               {row.original.authMethods.map((method) => adminAuthMethodLabels[method]).join("، ") ||
                 "نامشخص"}
             </span>
@@ -94,7 +94,7 @@ function AdminUsersTable({
           id: "entries",
           header: "مطالب",
           cell: ({ row }) => (
-            <span className="font-semibold text-foreground">
+            <span className="font-semibold text-ink">
               {formatPersianNumber(row.original.counts.entries)}
             </span>
           ),
@@ -102,7 +102,7 @@ function AdminUsersTable({
         adminUserColumnHelper.accessor("lastLoginAt", {
           header: "آخرین ورود",
           cell: ({ row }) => (
-            <span className="text-[12px] text-muted-foreground">
+            <span className="text-[12px] text-copy">
               {row.original.lastLoginAt ? formatPersianDate(row.original.lastLoginAt) : "ثبت نشده"}
             </span>
           ),
@@ -110,7 +110,7 @@ function AdminUsersTable({
         adminUserColumnHelper.accessor("createdAt", {
           header: "عضویت",
           cell: ({ row }) => (
-            <span className="text-[12px] text-muted-foreground">
+            <span className="text-[12px] text-copy">
               {formatPersianDate(row.original.createdAt)}
             </span>
           ),
@@ -151,7 +151,7 @@ function AdminUsersTable({
             <div className="flex min-h-64 items-center justify-center px-6 text-center">
               <div className="space-y-2">
                 <h2 className="text-[16px] font-semibold">کاربری پیدا نشد</h2>
-                <p className="text-[13px] text-muted-foreground">
+                <p className="text-[13px] text-copy">
                   عبارت جست‌وجو یا فیلترها را تغییر دهید.
                 </p>
               </div>
@@ -166,18 +166,18 @@ function AdminUsersTable({
                   aria-label="فهرست کاربران"
                   aria-rowcount={meta.total + 1}
                 >
-                  <thead className="grid bg-muted/35">
+                  <thead className="grid bg-paper">
                     {table.getHeaderGroups().map((headerGroup) => (
                       <tr
                         key={headerGroup.id}
-                        className="grid h-11 border-b border-border"
+                        className="grid h-11 border-b border-line-soft"
                         style={{ gridTemplateColumns: ADMIN_USERS_GRID_COLUMNS }}
                       >
                         {headerGroup.headers.map((header) => (
                           <th
                             key={header.id}
                             scope="col"
-                            className="flex min-w-0 items-center overflow-hidden px-4 text-[12px] font-medium whitespace-nowrap text-muted-foreground"
+                            className="flex min-w-0 items-center overflow-hidden px-4 text-[12px] font-medium whitespace-nowrap text-copy"
                           >
                             {header.isPlaceholder ? null : <table.FlexRender header={header} />}
                           </th>
@@ -207,7 +207,7 @@ function AdminUsersTable({
                               : { opacity: 0, x: pageDirection * -8 }
                           }
                           transition={{ duration: prefersReducedMotion ? 0 : 0.18 }}
-                          className="grid h-18 border-b border-border transition-colors hover:bg-muted/50"
+                          className="grid h-18 border-b border-line-soft transition-colors hover:bg-paper"
                           style={{ gridTemplateColumns: ADMIN_USERS_GRID_COLUMNS }}
                         >
                           {row.getAllCells().map((cell) => (
@@ -225,7 +225,7 @@ function AdminUsersTable({
                 </table>
               </div>
 
-              <div className="divide-y divide-border lg:hidden">
+              <div className="divide-y divide-line-soft lg:hidden">
                 <AnimatePresence initial={false} mode="popLayout">
                   {users.map((user) => (
                     <motion.article
@@ -254,7 +254,7 @@ function AdminUsersTable({
                         <AnimatedUserStatusBadge status={user.status} />
                         <AdminEmailVerificationBadge verified={user.emailVerified} />
                       </div>
-                      <div className="grid grid-cols-2 gap-3 text-[12px] text-muted-foreground">
+                      <div className="grid grid-cols-2 gap-3 text-[12px] text-copy">
                         <span>{formatPersianNumber(user.counts.entries)} مطلب</span>
                         <span>عضویت: {formatPersianDate(user.createdAt)}</span>
                       </div>
@@ -276,7 +276,7 @@ function AdminUsersTable({
       <AnimatePresence>
         {updating ? (
           <motion.div
-            className="absolute inset-x-0 top-0 z-10 h-0.5 overflow-hidden bg-primary/10"
+            className="absolute inset-x-0 top-0 z-10 h-0.5 overflow-hidden bg-brand-soft"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -328,7 +328,7 @@ function UserIdentity({ user }: { user: AdminUserListItem }) {
   return (
     <Link
       href={`/admin/users/${user.id}`}
-      className="flex min-w-0 items-center gap-3 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="flex min-w-0 items-center gap-3 rounded-control focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <Avatar className="size-9">
         {user.profileImageUrl ? <AvatarImage src={user.profileImageUrl} alt="" /> : null}
@@ -337,10 +337,10 @@ function UserIdentity({ user }: { user: AdminUserListItem }) {
         </AvatarFallback>
       </Avatar>
       <span className="min-w-0">
-        <span className="block truncate text-[13px] font-semibold text-foreground">
+        <span className="block truncate text-[13px] font-semibold text-ink">
           {user.displayName}
         </span>
-        <span className="block max-w-52 truncate text-[11px] text-muted-foreground" dir="ltr">
+        <span className="block max-w-52 truncate text-[11px] text-copy" dir="ltr">
           {user.email}
         </span>
       </span>
@@ -405,10 +405,10 @@ function AdminUsersPagination({
 
   return (
     <nav
-      className="flex items-center justify-between gap-3 border-t border-border px-4 py-3"
+      className="flex items-center justify-between gap-3 border-t border-line-soft px-4 py-3"
       aria-label="صفحه‌بندی کاربران"
     >
-      <div className="grid overflow-hidden text-[12px] text-muted-foreground">
+      <div className="grid overflow-hidden text-[12px] text-copy">
         <AnimatePresence initial={false} mode="popLayout">
           <motion.p
             key={meta.page}
@@ -451,7 +451,7 @@ function AdminUsersTableSkeleton() {
   return (
     <div className="space-y-1 p-4" role="status" aria-label="در حال بارگذاری کاربران">
       {rows.map((row) => (
-        <div key={row} className="flex h-16 items-center gap-3 border-b border-border/70 px-2">
+        <div key={row} className="flex h-16 items-center gap-3 border-b border-line-soft px-2">
           <Skeleton className="size-9 rounded-full" />
           <div className="flex-1 space-y-2">
             <Skeleton className="h-3.5 w-36" />

@@ -52,7 +52,7 @@ function AdminAddModeratorDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="gap-0 overflow-hidden p-0 sm:max-w-xl" dir="rtl">
-        <DialogHeader className="border-b border-border px-5 py-5 text-start">
+        <DialogHeader className="border-b border-line-soft px-5 py-5 text-start">
           <DialogTitle className="text-[18px] font-semibold">انتخاب ناظر جدید</DialogTitle>
           <DialogDescription className="text-[13px] leading-7">
             از میان کاربران فعال با ایمیل تأییدشده جست‌وجو کنید.
@@ -62,9 +62,9 @@ function AdminAddModeratorDialog({
         <div className="space-y-4 p-5">
           <label
             htmlFor="admin-moderator-candidate-search"
-            className="flex h-10 items-center gap-2 rounded-lg border border-input px-3 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/35"
+            className="flex h-10 items-center gap-2 rounded-control border border-line px-3 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/35"
           >
-            <MagnifyingGlassIcon className="size-4 text-muted-foreground" aria-hidden="true" />
+            <MagnifyingGlassIcon className="size-4 text-copy" aria-hidden="true" />
             <span className="sr-only">جست‌وجوی کاربر واجد شرایط</span>
             <Input
               id="admin-moderator-candidate-search"
@@ -79,7 +79,7 @@ function AdminAddModeratorDialog({
           </label>
 
           <div
-            className="min-h-60 overflow-y-auto rounded-lg border border-border"
+            className="min-h-60 overflow-y-auto rounded-control border border-line-soft"
             aria-live="polite"
           >
             {!canSearch ? (
@@ -113,7 +113,7 @@ function AdminAddModeratorDialog({
                   <button
                     key={user.id}
                     type="button"
-                    className="flex w-full items-center gap-3 border-b border-border px-4 py-3 text-start transition-colors last:border-b-0 hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+                    className="flex w-full items-center gap-3 border-b border-line-soft px-4 py-3 text-start transition-colors last:border-b-0 hover:bg-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
                     onClick={() => onSelect(user)}
                   >
                     <Avatar className="size-10">
@@ -128,7 +128,7 @@ function AdminAddModeratorDialog({
                       <span className="block truncate text-[13px] font-semibold">
                         {user.displayName}
                       </span>
-                      <span className="block truncate text-[11px] text-muted-foreground" dir="ltr">
+                      <span className="block truncate text-[11px] text-copy" dir="ltr">
                         {user.email}
                       </span>
                     </span>
@@ -156,10 +156,10 @@ function CandidateState({
 }) {
   return (
     <div className="flex min-h-60 flex-col items-center justify-center gap-3 px-6 text-center">
-      {icon ? <span className="size-7 text-muted-foreground [&>svg]:size-full">{icon}</span> : null}
+      {icon ? <span className="size-7 text-copy [&>svg]:size-full">{icon}</span> : null}
       <div className="space-y-1">
         <p className="text-[14px] font-semibold">{title}</p>
-        <p className="text-[12px] leading-6 text-muted-foreground">{description}</p>
+        <p className="text-[12px] leading-6 text-copy">{description}</p>
       </div>
       {action}
     </div>

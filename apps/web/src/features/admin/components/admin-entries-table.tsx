@@ -58,7 +58,7 @@ function AdminEntriesTable({
           header: "نویسنده",
           cell: ({ row }) => (
             <Link
-              className="truncate text-[12px] hover:text-primary"
+              className="truncate text-[12px] hover:text-brand-ink"
               href={`/admin/users/${row.original.author.id}`}
             >
               {row.original.author.displayName}
@@ -69,7 +69,7 @@ function AdminEntriesTable({
           id: "category",
           header: "موضوع",
           cell: ({ row }) => (
-            <span className="truncate text-[12px] text-muted-foreground">
+            <span className="truncate text-[12px] text-copy">
               {row.original.category.name}
             </span>
           ),
@@ -78,7 +78,7 @@ function AdminEntriesTable({
           id: "location",
           header: "محدوده",
           cell: ({ row }) => (
-            <span className="truncate text-[12px] text-muted-foreground">
+            <span className="truncate text-[12px] text-copy">
               {entryLocation(row.original)}
             </span>
           ),
@@ -94,7 +94,7 @@ function AdminEntriesTable({
         helper.accessor("updatedAt", {
           header: "آخرین ویرایش",
           cell: ({ row }) => (
-            <span className="text-[12px] text-muted-foreground">
+            <span className="text-[12px] text-copy">
               {formatPersianDate(row.original.updatedAt)}
             </span>
           ),
@@ -124,7 +124,7 @@ function AdminEntriesTable({
             <div className="flex min-h-64 items-center justify-center p-6 text-center">
               <div className="space-y-2">
                 <h2 className="text-[16px] font-semibold">مطلبی پیدا نشد</h2>
-                <p className="text-[13px] text-muted-foreground">
+                <p className="text-[13px] text-copy">
                   عبارت جست‌وجو یا فیلترها را تغییر دهید.
                 </p>
               </div>
@@ -138,7 +138,7 @@ function AdminEntriesTable({
                   aria-label="فهرست مطالب"
                   aria-rowcount={meta.total + 1}
                 >
-                  <thead className="grid bg-muted/35">
+                  <thead className="grid bg-paper">
                     {table.getHeaderGroups().map((group) => (
                       <tr
                         key={group.id}
@@ -148,7 +148,7 @@ function AdminEntriesTable({
                         {group.headers.map((header) => (
                           <th
                             key={header.id}
-                            className="flex min-w-0 items-center overflow-hidden px-4 text-start text-[12px] font-medium whitespace-nowrap text-muted-foreground"
+                            className="flex min-w-0 items-center overflow-hidden px-4 text-start text-[12px] font-medium whitespace-nowrap text-copy"
                           >
                             {header.isPlaceholder ? null : <table.FlexRender header={header} />}
                           </th>
@@ -170,7 +170,7 @@ function AdminEntriesTable({
                           animate={{ opacity: 1, x: 0, y: 0 }}
                           exit={{ opacity: 0, x: reducedMotion ? 0 : pageDirection * -8 }}
                           transition={{ duration: reducedMotion ? 0 : 0.18 }}
-                          className="grid min-h-20 border-b transition-colors hover:bg-muted/40"
+                          className="grid min-h-20 border-b transition-colors hover:bg-paper"
                           style={{ gridTemplateColumns: COLUMNS }}
                         >
                           {row.getAllCells().map((cell) => (
@@ -204,10 +204,10 @@ function AdminEntriesTable({
                       </div>
                       <div className="flex flex-wrap items-center gap-2">
                         <AdminEntryStatusBadge status={entry.status} />
-                        <span className="text-[12px] text-muted-foreground">
+                        <span className="text-[12px] text-copy">
                           {entry.category.name}
                         </span>
-                        <span className="text-[12px] text-muted-foreground">
+                        <span className="text-[12px] text-copy">
                           {entryLocation(entry)}
                         </span>
                       </div>
@@ -234,20 +234,20 @@ function EntryIdentity({ entry }: { entry: AdminEntryListItem }) {
   return (
     <Link
       href={`/admin/entries/${entry.id}`}
-      className="flex min-w-0 items-center gap-3 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="flex min-w-0 items-center gap-3 rounded-control focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
-      <span className="relative size-11 shrink-0 overflow-hidden rounded-lg bg-muted">
+      <span className="relative size-11 shrink-0 overflow-hidden rounded-control bg-line-soft">
         {entry.thumbnailUrl ? (
           <Image src={entry.thumbnailUrl} alt="" fill sizes="44px" className="object-cover" />
         ) : (
-          <span className="flex size-full items-center justify-center text-[11px] text-muted-foreground">
+          <span className="flex size-full items-center justify-center text-[11px] text-copy">
             بدون تصویر
           </span>
         )}
       </span>
       <span className="min-w-0">
         <span className="block truncate text-[13px] font-semibold">{entry.title}</span>
-        <span className="line-clamp-1 text-[11px] text-muted-foreground">{entry.summary}</span>
+        <span className="line-clamp-1 text-[11px] text-copy">{entry.summary}</span>
       </span>
     </Link>
   );
@@ -322,7 +322,7 @@ function EntriesPagination({
       >
         قبلی
       </Button>
-      <span className="text-[12px] text-muted-foreground">
+      <span className="text-[12px] text-copy">
         صفحه {formatPersianNumber(meta.page)} از {formatPersianNumber(meta.totalPages)}
       </span>
       <Button
@@ -344,7 +344,7 @@ function AdminEntriesSkeleton() {
     <div className="space-y-0">
       {rows.map((row) => (
         <div key={row} className="flex h-20 items-center gap-4 border-b px-4">
-          <Skeleton className="size-11 rounded-lg" />
+          <Skeleton className="size-11 rounded-control" />
           <div className="flex-1 space-y-2">
             <Skeleton className="h-3 w-1/3" />
             <Skeleton className="h-2.5 w-2/3" />

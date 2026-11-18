@@ -18,7 +18,7 @@ const adminReportTargetLabels: Record<ReportTargetType, string> = {
 
 const adminReportStatusClasses: Record<ReportStatus, string> = {
   OPEN: "border-brand/25 bg-brand-soft text-brand-ink",
-  UNDER_REVIEW: "border-gold/40 bg-tint-sand text-saffron-deep dark:text-gold",
+  UNDER_REVIEW: "border-saffron/30 bg-tint-sand text-saffron-deep dark:text-gold",
   RESOLVED: "border-ok/25 bg-ok-soft text-ok",
 };
 

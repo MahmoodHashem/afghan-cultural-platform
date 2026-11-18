@@ -50,7 +50,7 @@ function AdminTagsTable({
         tagColumnHelper.accessor("normalizedName", {
           header: "نام یکسان‌شده",
           cell: ({ row }) => (
-            <span className="truncate text-[12px] text-muted-foreground">
+            <span className="truncate text-[12px] text-copy">
               {row.original.normalizedName}
             </span>
           ),
@@ -58,7 +58,7 @@ function AdminTagsTable({
         tagColumnHelper.accessor("slug", {
           header: "نشانی",
           cell: ({ row }) => (
-            <span dir="ltr" className="truncate text-[12px] text-muted-foreground">
+            <span dir="ltr" className="truncate text-[12px] text-copy">
               {row.original.slug}
             </span>
           ),
@@ -83,7 +83,7 @@ function AdminTagsTable({
         tagColumnHelper.accessor("updatedAt", {
           header: "آخرین ویرایش",
           cell: ({ row }) => (
-            <span className="text-[12px] text-muted-foreground">
+            <span className="text-[12px] text-copy">
               {formatPersianDate(row.original.updatedAt)}
             </span>
           ),
@@ -120,7 +120,7 @@ function AdminTagsTable({
             <div className="flex min-h-64 items-center justify-center px-6 text-center">
               <div className="space-y-2">
                 <h2 className="text-[16px] font-semibold">برچسبی پیدا نشد</h2>
-                <p className="text-[13px] text-muted-foreground">
+                <p className="text-[13px] text-copy">
                   عبارت جست‌وجو یا فیلترها را تغییر دهید.
                 </p>
               </div>
@@ -134,18 +134,18 @@ function AdminTagsTable({
                   aria-label="فهرست برچسب‌ها"
                   aria-rowcount={meta.total + 1}
                 >
-                  <thead className="grid bg-muted/35">
+                  <thead className="grid bg-paper">
                     {table.getHeaderGroups().map((group) => (
                       <tr
                         key={group.id}
-                        className="grid h-11 border-b border-border"
+                        className="grid h-11 border-b border-line-soft"
                         style={{ gridTemplateColumns: TAG_GRID_COLUMNS }}
                       >
                         {group.headers.map((header) => (
                           <th
                             key={header.id}
                             scope="col"
-                            className="flex min-w-0 items-center overflow-hidden px-4 text-[12px] font-medium whitespace-nowrap text-muted-foreground"
+                            className="flex min-w-0 items-center overflow-hidden px-4 text-[12px] font-medium whitespace-nowrap text-copy"
                           >
                             {header.isPlaceholder ? null : <table.FlexRender header={header} />}
                           </th>
@@ -162,7 +162,7 @@ function AdminTagsTable({
                           initial={prefersReducedMotion ? false : { opacity: 0, y: 5 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -4 }}
-                          className="grid min-h-18 border-b border-border transition-colors hover:bg-muted/45"
+                          className="grid min-h-18 border-b border-line-soft transition-colors hover:bg-paper"
                           style={{ gridTemplateColumns: TAG_GRID_COLUMNS }}
                         >
                           {row.getAllCells().map((cell) => (
@@ -179,7 +179,7 @@ function AdminTagsTable({
                   </tbody>
                 </table>
               </div>
-              <div className="divide-y divide-border lg:hidden">
+              <div className="divide-y divide-line-soft lg:hidden">
                 <AnimatePresence initial={false} mode="popLayout">
                   {tags.map((tag) => (
                     <motion.article
@@ -193,7 +193,7 @@ function AdminTagsTable({
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
                           <p className="truncate font-semibold">{tag.name}</p>
-                          <p dir="ltr" className="truncate text-[12px] text-muted-foreground">
+                          <p dir="ltr" className="truncate text-[12px] text-copy">
                             {tag.slug}
                           </p>
                         </div>
@@ -204,11 +204,11 @@ function AdminTagsTable({
                           onStatusAction={onStatusAction}
                         />
                       </div>
-                      <div className="flex flex-wrap items-center gap-2 text-[12px] text-muted-foreground">
+                      <div className="flex flex-wrap items-center gap-2 text-[12px] text-copy">
                         <TagStatusBadge active={tag.isActive} />
                         <Link
                           href={`/admin/entries?tagId=${tag.id}`}
-                          className="text-primary hover:underline"
+                          className="text-brand-ink hover:underline"
                         >
                           {formatPersianNumber(tag.entryCount)} مطلب
                         </Link>
@@ -232,7 +232,7 @@ function TagStatusBadge({ active }: { active: boolean }) {
     <Badge
       variant="outline"
       className={
-        active ? "border-primary/20 bg-primary/8 text-primary" : "bg-muted text-muted-foreground"
+        active ? "border-brand/20 bg-brand-soft text-brand-ink" : "bg-line-soft text-copy"
       }
     >
       {active ? "فعال" : "غیرفعال"}
@@ -274,9 +274,9 @@ function TagRowActions({
         aria-label={`${tag.isActive ? "غیرفعال‌کردن" : "فعال‌کردن"} ${tag.name}`}
       >
         {tag.isActive ? (
-          <NoSymbolIcon className="size-4 text-destructive" aria-hidden="true" />
+          <NoSymbolIcon className="size-4 text-brand-ink" aria-hidden="true" />
         ) : (
-          <CheckCircleIcon className="size-4 text-primary" aria-hidden="true" />
+          <CheckCircleIcon className="size-4 text-brand-ink" aria-hidden="true" />
         )}
       </Button>
     </div>
@@ -291,8 +291,8 @@ function TagsPagination({
 }) {
   if (meta.totalPages <= 1) return null;
   return (
-    <div className="flex items-center justify-between gap-3 border-t border-border p-4">
-      <p className="text-[12px] text-muted-foreground">
+    <div className="flex items-center justify-between gap-3 border-t border-line-soft p-4">
+      <p className="text-[12px] text-copy">
         صفحه {formatPersianNumber(meta.page)} از {formatPersianNumber(meta.totalPages)}
       </p>
       <div className="flex gap-2">
@@ -322,7 +322,7 @@ function TagsSkeleton() {
       {SKELETON_KEYS.map((key) => (
         <div
           key={key}
-          className="flex min-h-18 items-center gap-5 border-b border-border px-4 py-3"
+          className="flex min-h-18 items-center gap-5 border-b border-line-soft px-4 py-3"
         >
           <Skeleton className="h-4 w-32" />
           <Skeleton className="hidden h-4 w-28 sm:block" />

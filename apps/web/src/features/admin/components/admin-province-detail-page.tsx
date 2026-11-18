@@ -129,7 +129,7 @@ function AdminProvinceDetailPage({ provinceId }: { provinceId: string }) {
       <section className="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(18rem,.75fr)]">
         <Card className="overflow-hidden p-0">
           <div className="grid md:grid-cols-[minmax(16rem,.8fr)_minmax(0,1.2fr)]">
-            <div className="relative min-h-64 bg-muted">
+            <div className="relative min-h-64 bg-line-soft">
               <Image
                 src={displayedImage.src}
                 alt={displayedImage.alt}
@@ -138,7 +138,7 @@ function AdminProvinceDetailPage({ provinceId }: { provinceId: string }) {
                 className="object-cover"
               />
               {!province.image ? (
-                <Badge className="absolute start-3 top-3 bg-background/90 text-foreground">
+                <Badge className="absolute start-3 top-3 bg-paper/90 text-ink">
                   تصویر پیش‌فرض
                 </Badge>
               ) : null}
@@ -151,14 +151,14 @@ function AdminProvinceDetailPage({ provinceId }: { provinceId: string }) {
                     variant="outline"
                     className={
                       province.isActive
-                        ? "border-primary/20 bg-primary/8 text-primary"
-                        : "text-muted-foreground"
+                        ? "border-brand/20 bg-brand-soft text-brand-ink"
+                        : "text-copy"
                     }
                   >
                     {province.isActive ? "فعال" : "غیرفعال"}
                   </Badge>
                 </div>
-                <p className="text-[14px] leading-8 text-muted-foreground">
+                <p className="text-[14px] leading-8 text-copy">
                   {province.description || "هنوز توضیحی برای این ولایت ثبت نشده است."}
                 </p>
                 <dl className="grid gap-3 text-[12px] sm:grid-cols-2">
@@ -176,7 +176,7 @@ function AdminProvinceDetailPage({ provinceId }: { provinceId: string }) {
                 {province.image ? (
                   <Button
                     variant="ghost"
-                    className="text-destructive"
+                    className="text-brand-ink"
                     onClick={() => setDeleteImageOpen(true)}
                   >
                     <TrashIcon className="size-4" />
@@ -196,11 +196,11 @@ function AdminProvinceDetailPage({ provinceId }: { provinceId: string }) {
         </div>
       </section>
 
-      <Card className="gap-0 overflow-hidden rounded-xl py-0">
+      <Card className="gap-0 overflow-hidden rounded-control py-0">
         <div className="flex flex-col gap-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between md:p-5">
           <div>
             <h2 className="text-[18px] font-semibold">ولسوالی‌ها</h2>
-            <p className="mt-1 text-[13px] text-muted-foreground">
+            <p className="mt-1 text-[13px] text-copy">
               ولسوالی‌های وابسته به {province.name}
             </p>
           </div>
@@ -260,7 +260,7 @@ function AdminProvinceDetailPage({ provinceId }: { provinceId: string }) {
             onClear={() => startTransition(() => router.replace(route, { scroll: false }))}
           />
         ) : (
-          <div className="border-b bg-primary/5 px-4 py-3 text-[13px] text-primary">
+          <div className="border-b bg-brand-soft px-4 py-3 text-[13px] text-brand-ink">
             ترتیب ولسوالی‌ها را با دکمه‌های بالا و پایین تغییر دهید.
           </div>
         )}
@@ -393,9 +393,9 @@ function AdminProvinceDetailPage({ provinceId }: { provinceId: string }) {
 
 function Meta({ label, value, ltr = false }: { label: string; value: string; ltr?: boolean }) {
   return (
-    <div className="rounded-lg bg-muted/45 px-3 py-2">
-      <dt className="text-muted-foreground">{label}</dt>
-      <dd dir={ltr ? "ltr" : undefined} className="mt-1 truncate font-medium text-foreground">
+    <div className="rounded-control bg-paper px-3 py-2">
+      <dt className="text-copy">{label}</dt>
+      <dd dir={ltr ? "ltr" : undefined} className="mt-1 truncate font-medium text-ink">
         {value}
       </dd>
     </div>
@@ -404,8 +404,8 @@ function Meta({ label, value, ltr = false }: { label: string; value: string; ltr
 function Stat({ label, value }: { label: string; value: number }) {
   return (
     <Card className="justify-center gap-1 p-4 text-center">
-      <p className="text-[24px] font-bold text-primary">{formatPersianNumber(value)}</p>
-      <p className="text-[12px] text-muted-foreground">{label}</p>
+      <p className="text-[24px] font-bold text-brand-ink">{formatPersianNumber(value)}</p>
+      <p className="text-[12px] text-copy">{label}</p>
     </Card>
   );
 }
@@ -413,8 +413,8 @@ function ProvinceDetailSkeleton() {
   return (
     <div className="space-y-6">
       <Skeleton className="h-12 w-60" />
-      <Skeleton className="h-80 w-full rounded-xl" />
-      <Skeleton className="h-80 w-full rounded-xl" />
+      <Skeleton className="h-80 w-full rounded-control" />
+      <Skeleton className="h-80 w-full rounded-control" />
     </div>
   );
 }
@@ -424,10 +424,10 @@ function DetailError({ onRetry, compact = false }: { onRetry: () => void; compac
       className={`flex flex-col items-center justify-center gap-4 p-6 text-center ${compact ? "min-h-56" : "min-h-96"}`}
       role="alert"
     >
-      <ExclamationTriangleIcon className="size-8 text-destructive" />
+      <ExclamationTriangleIcon className="size-8 text-brand-ink" />
       <div>
         <h2 className="font-semibold">اطلاعات بارگذاری نشد</h2>
-        <p className="mt-1 text-[13px] text-muted-foreground">کمی بعد دوباره تلاش کنید.</p>
+        <p className="mt-1 text-[13px] text-copy">کمی بعد دوباره تلاش کنید.</p>
       </div>
       <Button variant="outline" onClick={onRetry}>
         تلاش دوباره

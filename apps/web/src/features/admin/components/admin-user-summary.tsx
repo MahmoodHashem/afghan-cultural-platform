@@ -46,7 +46,7 @@ function AdminUserSummary({
 
   return (
     <div className="space-y-5">
-      <section className="flex flex-col gap-5 rounded-xl border border-border bg-card p-5 sm:flex-row sm:items-center sm:justify-between">
+      <section className="flex flex-col gap-5 rounded-control border border-line-soft bg-surface p-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 items-center gap-4">
           <Avatar className="size-15">
             {user.profileImageUrl ? <AvatarImage src={user.profileImageUrl} alt="" /> : null}
@@ -56,11 +56,11 @@ function AdminUserSummary({
           </Avatar>
           <div className="min-w-0 space-y-2">
             <div className="flex flex-wrap items-center gap-2">
-              <h2 className="truncate text-[20px] font-bold text-foreground">{user.displayName}</h2>
+              <h2 className="truncate text-[20px] font-bold text-ink">{user.displayName}</h2>
               <AdminUserRoleBadge role={user.role} />
               <AdminUserStatusBadge status={user.status} />
             </div>
-            <p className="truncate text-[13px] text-muted-foreground" dir="ltr">
+            <p className="truncate text-[13px] text-copy" dir="ltr">
               {user.email}
             </p>
             <AdminEmailVerificationBadge verified={user.emailVerified} />
@@ -98,15 +98,15 @@ function AdminUserSummary({
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-label="آمار فعالیت کاربر">
         {stats.map((item) => (
-          <Card key={item.label} className="gap-0 rounded-xl py-0 shadow-none">
+          <Card key={item.label} className="gap-0 rounded-control py-0 shadow-none">
             <CardContent className="flex items-center justify-between gap-4 p-4">
               <div>
-                <p className="text-[12px] text-muted-foreground">{item.label}</p>
-                <p className="mt-1 text-[24px] font-bold text-foreground">
+                <p className="text-[12px] text-copy">{item.label}</p>
+                <p className="mt-1 text-[24px] font-bold text-ink">
                   {formatPersianNumber(item.value)}
                 </p>
               </div>
-              <span className="flex size-10 items-center justify-center rounded-lg bg-primary/8 text-primary">
+              <span className="flex size-10 items-center justify-center rounded-control bg-brand-soft text-brand-ink">
                 <item.icon className="size-5" aria-hidden="true" />
               </span>
             </CardContent>
@@ -115,7 +115,7 @@ function AdminUserSummary({
       </section>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1.4fr)_minmax(300px,0.8fr)]">
-        <Card className="rounded-xl shadow-none">
+        <Card className="rounded-control shadow-none">
           <CardHeader>
             <CardTitle className="text-[16px]">اطلاعات حساب</CardTitle>
           </CardHeader>
@@ -144,7 +144,7 @@ function AdminUserSummary({
           </CardContent>
         </Card>
 
-        <Card className="rounded-xl shadow-none">
+        <Card className="rounded-control shadow-none">
           <CardHeader>
             <CardTitle className="text-[16px]">مشارکت و بازخورد</CardTitle>
           </CardHeader>
@@ -154,9 +154,9 @@ function AdminUserSummary({
             <SummaryLine label="مطالب منتشرشده" value={user.stats.entries.published} />
             <SummaryLine label="مطالب در انتظار بررسی" value={user.stats.entries.pendingReview} />
             {user.biography ? (
-              <div className="border-t border-border pt-4">
-                <p className="mb-1 text-[12px] text-muted-foreground">معرفی کوتاه</p>
-                <p className="line-clamp-3 leading-6 text-foreground">{user.biography}</p>
+              <div className="border-t border-line-soft pt-4">
+                <p className="mb-1 text-[12px] text-copy">معرفی کوتاه</p>
+                <p className="line-clamp-3 leading-6 text-ink">{user.biography}</p>
               </div>
             ) : null}
           </CardContent>
@@ -169,8 +169,8 @@ function AdminUserSummary({
 function AccountFact({ label, value }: { label: string; value: string }) {
   return (
     <div className="space-y-1">
-      <p className="text-[12px] text-muted-foreground">{label}</p>
-      <p className="font-medium text-foreground">{value}</p>
+      <p className="text-[12px] text-copy">{label}</p>
+      <p className="font-medium text-ink">{value}</p>
     </div>
   );
 }
@@ -178,8 +178,8 @@ function AccountFact({ label, value }: { label: string; value: string }) {
 function SummaryLine({ label, value }: { label: string; value: number }) {
   return (
     <div className="flex items-center justify-between gap-4">
-      <span className="text-muted-foreground">{label}</span>
-      <span className="font-semibold text-foreground">{formatPersianNumber(value)}</span>
+      <span className="text-copy">{label}</span>
+      <span className="font-semibold text-ink">{formatPersianNumber(value)}</span>
     </div>
   );
 }

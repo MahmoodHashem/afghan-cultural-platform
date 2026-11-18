@@ -89,7 +89,7 @@ function AdminTopicFormSheet({
   return (
     <Sheet open={open} onOpenChange={pending ? undefined : onOpenChange}>
       <SheetContent side="right" className="w-full gap-0 sm:max-w-md">
-        <SheetHeader className="border-b border-border px-5 py-5">
+        <SheetHeader className="border-b border-line-soft px-5 py-5">
           <SheetTitle className="text-[18px] font-semibold">
             {topic ? `ویرایش ${config.singular}` : `${config.singular} جدید`}
           </SheetTitle>
@@ -143,7 +143,7 @@ function AdminTopicFormSheet({
 
           <label
             htmlFor="admin-topic-active"
-            className="flex cursor-pointer items-start gap-3 rounded-lg border border-border p-3.5"
+            className="flex cursor-pointer items-start gap-3 rounded-control border border-line-soft p-3.5"
           >
             <Checkbox
               id="admin-topic-active"
@@ -153,14 +153,14 @@ function AdminTopicFormSheet({
             />
             <span className="space-y-0.5">
               <span className="block text-[13px] font-semibold">{config.singular} فعال باشد</span>
-              <span className="block text-[12px] leading-6 text-muted-foreground">
+              <span className="block text-[12px] leading-6 text-copy">
                 موارد فعال در انتخاب‌ها و صفحه‌های عمومی دیده می‌شوند.
               </span>
             </span>
           </label>
         </form>
 
-        <SheetFooter className="border-t border-border bg-muted/25 p-4 sm:flex-row sm:justify-start">
+        <SheetFooter className="border-t border-line-soft bg-paper p-4 sm:flex-row sm:justify-start">
           <Button type="submit" form="admin-topic-form" disabled={pending}>
             {pending ? "در حال ذخیره..." : topic ? "ذخیره تغییرات" : `ساخت ${config.singular}`}
           </Button>
@@ -195,12 +195,12 @@ function TopicField({
     <div className="space-y-2">
       <Label>
         {label}
-        {required ? <span className="text-destructive"> *</span> : null}
+        {required ? <span className="text-brand-ink"> *</span> : null}
       </Label>
       {children}
-      {error ? <p className="text-[12px] leading-5 text-destructive">{error}</p> : null}
+      {error ? <p className="text-[12px] leading-5 text-brand-ink">{error}</p> : null}
       {!error && hint ? (
-        <p className="text-[12px] leading-5 text-muted-foreground">{hint}</p>
+        <p className="text-[12px] leading-5 text-copy">{hint}</p>
       ) : null}
     </div>
   );

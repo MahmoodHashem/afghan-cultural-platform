@@ -72,7 +72,7 @@ function AdminUsersToolbar({
   useEffect(() => setSearch(query.search ?? ""), [query.search]);
 
   return (
-    <div className="space-y-4 border-b border-border p-4 md:p-5">
+    <div className="space-y-4 border-b border-line-soft p-4 md:p-5">
       <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
         <search className="min-w-0 flex-1">
           <form
@@ -84,10 +84,10 @@ function AdminUsersToolbar({
           >
             <label
               htmlFor="admin-user-search"
-              className="group flex h-10 min-w-0 flex-1 items-center gap-2 rounded-lg border border-input bg-card px-3 transition-shadow focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/35"
+              className="group flex h-10 min-w-0 flex-1 items-center gap-2 rounded-control border border-line bg-surface px-3 transition-shadow focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/35"
             >
               <MagnifyingGlassIcon
-                className="size-4 shrink-0 text-muted-foreground"
+                className="size-4 shrink-0 text-copy"
                 aria-hidden="true"
               />
               <span className="sr-only">جست‌وجوی کاربر</span>
@@ -109,10 +109,10 @@ function AdminUsersToolbar({
 
         <div className="flex items-center justify-between gap-3 xl:justify-end">
           <p
-            className="flex min-w-16 items-center justify-end gap-1 text-[13px] text-muted-foreground"
+            className="flex min-w-16 items-center justify-end gap-1 text-[13px] text-copy"
             aria-live="polite"
           >
-            <span className="relative grid overflow-hidden font-semibold text-foreground">
+            <span className="relative grid overflow-hidden font-semibold text-ink">
               <AnimatePresence initial={false} mode="popLayout">
                 <motion.span
                   key={total}
@@ -155,7 +155,7 @@ function AdminUsersToolbar({
       </div>
 
       <div className="flex items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:thin]">
-        <span className="flex shrink-0 items-center gap-1.5 text-[12px] font-semibold text-muted-foreground">
+        <span className="flex shrink-0 items-center gap-1.5 text-[12px] font-semibold text-copy">
           <FunnelIcon className="size-4" aria-hidden="true" />
           فیلترها
         </span>
@@ -285,8 +285,8 @@ function ToolbarSelect({
         size="sm"
         disabled={disabled}
         className={cn(
-          "h-9 w-auto min-w-36 shrink-0 bg-card px-3 text-[12px] shadow-none transition-[border-color,box-shadow,background-color] duration-200",
-          value !== undefined && "border-primary/40 bg-primary/5 text-primary",
+          "h-9 w-auto min-w-36 shrink-0 bg-surface px-3 text-[12px] shadow-none transition-[border-color,box-shadow,background-color] duration-200",
+          value !== undefined && "border-brand/40 bg-brand-soft text-brand-ink",
         )}
       >
         <SelectValue />

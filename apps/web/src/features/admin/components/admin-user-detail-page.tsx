@@ -52,13 +52,13 @@ function AdminUserDetailPage({ userId }: { userId: string }) {
           بازگشت به کاربران
         </Button>
         <Card
-          className="flex min-h-72 flex-col items-center justify-center gap-4 rounded-xl px-6 text-center"
+          className="flex min-h-72 flex-col items-center justify-center gap-4 rounded-control px-6 text-center"
           role="alert"
         >
-          <ExclamationTriangleIcon className="size-8 text-destructive" aria-hidden="true" />
+          <ExclamationTriangleIcon className="size-8 text-brand-ink" aria-hidden="true" />
           <div className="space-y-1">
             <h1 className="text-[18px] font-semibold">اطلاعات کاربر در دسترس نیست</h1>
-            <p className="text-[13px] text-muted-foreground">
+            <p className="text-[13px] text-copy">
               {getAdminUserErrorMessage(userQuery.error)}
             </p>
           </div>
@@ -91,10 +91,10 @@ function AdminUserDetailPage({ userId }: { userId: string }) {
           بازگشت به کاربران
         </Button>
         <div>
-          <h1 className="text-[28px] font-bold leading-10 text-foreground sm:text-[34px]">
+          <h1 className="text-[28px] font-bold leading-10 text-ink sm:text-[34px]">
             جزئیات کاربر
           </h1>
-          <p className="mt-1 text-[14px] text-muted-foreground">
+          <p className="mt-1 text-[14px] text-copy">
             اطلاعات حساب، مشارکت‌ها و تاریخچه اقدام‌های مدیریتی
           </p>
         </div>
@@ -156,17 +156,17 @@ function AdminUserDetailSkeleton() {
   return (
     <div className="space-y-5" role="status" aria-label="در حال بارگذاری اطلاعات کاربر">
       <Skeleton className="h-9 w-36" />
-      <Skeleton className="h-24 w-full rounded-xl" />
+      <Skeleton className="h-24 w-full rounded-control" />
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {(["one", "two", "three", "four"] as const).map((item) => (
-          <Skeleton key={item} className="h-28 rounded-xl" />
+          <Skeleton key={item} className="h-28 rounded-control" />
         ))}
       </div>
       <div className="grid gap-5 xl:grid-cols-2">
-        <Skeleton className="h-60 rounded-xl" />
-        <Skeleton className="h-60 rounded-xl" />
+        <Skeleton className="h-60 rounded-control" />
+        <Skeleton className="h-60 rounded-control" />
       </div>
-      <Skeleton className="h-72 rounded-xl" />
+      <Skeleton className="h-72 rounded-control" />
     </div>
   );
 }

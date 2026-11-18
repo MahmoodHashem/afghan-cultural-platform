@@ -33,24 +33,24 @@ function EntryRevisionQueue() {
     <section className="content-container space-y-7 pb-16">
       <PageBreadcrumb items={[{ label: "خانه", href: "/" }, { label: "ویرایش‌های منتشرشده" }]} />
       <header className="space-y-2">
-        <p className="text-[13px] font-semibold text-primary">مدیریت محتوا</p>
-        <h1 className="text-[30px] font-bold text-foreground sm:text-[38px]">ویرایش‌های منتشرشده</h1>
-        <p className="text-[15px] leading-8 text-muted-foreground">
+        <p className="text-[13px] font-semibold text-brand-ink">مدیریت محتوا</p>
+        <h1 className="text-page-title text-ink">ویرایش‌های منتشرشده</h1>
+        <p className="text-[15px] leading-8 text-copy">
           تغییرات پیشنهادی نویسندگان را بدون تأثیر بر نسخه فعلی سایت بررسی کنید.
         </p>
       </header>
       {query.isLoading ? (
-        <div className="rounded-xl border border-border p-8 text-muted-foreground">
+        <div className="rounded-control border border-line-soft p-8 text-copy">
           در حال دریافت ویرایش‌ها...
         </div>
       ) : null}
       {query.isError ? (
-        <div className="rounded-xl border border-destructive/20 p-8 text-destructive">
+        <div className="rounded-control border border-brand/20 p-8 text-brand-ink">
           صف ویرایش‌ها باز نشد.
         </div>
       ) : null}
       {query.data?.data.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-border p-12 text-center text-muted-foreground">
+        <div className="rounded-control border border-dashed border-line-soft p-12 text-center text-copy">
           ویرایشی در انتظار بررسی نیست.
         </div>
       ) : null}
@@ -58,18 +58,18 @@ function EntryRevisionQueue() {
         {query.data?.data.map((revision) => (
           <article
             key={revision.revisionId}
-            className="grid gap-4 rounded-xl border border-border bg-card p-4 lg:grid-cols-[1fr_auto_auto] lg:items-center"
+            className="grid gap-4 rounded-control border border-line-soft bg-surface p-4 lg:grid-cols-[1fr_auto_auto] lg:items-center"
           >
             <div>
               <div className="flex flex-wrap items-center gap-2">
-                <h2 className="font-bold text-foreground">{revision.title}</h2>
+                <h2 className="font-bold text-ink">{revision.title}</h2>
                 <Badge variant="outline">ویرایش منتشرشده</Badge>
               </div>
-              <p className="mt-2 line-clamp-1 text-[13px] text-muted-foreground">
+              <p className="mt-2 line-clamp-1 text-[13px] text-copy">
                 {revision.summary}
               </p>
             </div>
-            <div className="space-y-1 text-[13px] text-muted-foreground">
+            <div className="space-y-1 text-[13px] text-copy">
               <span className="flex items-center gap-2">
                 <UserCircleIcon className="size-4" />
                 {revision.author?.displayName}
@@ -100,7 +100,7 @@ function EntryRevisionQueue() {
           >
             قبلی
           </Link>
-          <span className="py-2 text-[13px] text-muted-foreground">
+          <span className="py-2 text-[13px] text-copy">
             {formatPersianNumber(page)} از {formatPersianNumber(query.data.meta.totalPages)}
           </span>
           <Link
@@ -127,12 +127,12 @@ function EntryRevisionReview({ revisionId }: { revisionId: string }) {
 
   if (query.isLoading)
     return (
-      <div className="content-container py-16 text-muted-foreground">
+      <div className="content-container py-16 text-copy">
         در حال آماده‌سازی ویرایش...
       </div>
     );
   if (!query.data || query.isError)
-    return <div className="content-container py-16 text-destructive">ویرایش مورد نظر باز نشد.</div>;
+    return <div className="content-container py-16 text-brand-ink">ویرایش مورد نظر باز نشد.</div>;
   const revision = query.data;
 
   return (
@@ -140,16 +140,16 @@ function EntryRevisionReview({ revisionId }: { revisionId: string }) {
       <PageBreadcrumb
         items={[{ label: "ویرایش‌ها", href: "/moderator/revisions" }, { label: revision.title }]}
       />
-      <header className="border-b border-border pb-7">
+      <header className="border-b border-line-soft pb-7">
         <div className="flex flex-wrap gap-2">
           <Badge>{revision.category?.name}</Badge>
           <Badge variant="outline">{revision.contentType?.name}</Badge>
         </div>
-        <h1 className="mt-4 text-[34px] font-bold leading-[1.45]">{revision.title}</h1>
-        <p className="mt-3 max-w-3xl text-[16px] leading-8 text-muted-foreground">
+        <h1 className="mt-4 text-page-title text-ink">{revision.title}</h1>
+        <p className="mt-3 max-w-3xl text-[16px] leading-8 text-copy">
           {revision.summary}
         </p>
-        <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-[13px] text-muted-foreground">
+        <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-[13px] text-copy">
           <span className="flex items-center gap-2">
             <UserCircleIcon className="size-4" aria-hidden="true" />
             {revision.author?.displayName ?? "نویسنده نامشخص"}
@@ -193,8 +193,8 @@ function EntryRevisionReview({ revisionId }: { revisionId: string }) {
           ) : null}
         </div>
         <aside className="space-y-4 lg:sticky lg:top-24">
-          <section className="rounded-xl border border-border bg-card p-4">
-            <h2 className="font-semibold text-foreground">جزئیات ویرایش</h2>
+          <section className="rounded-control border border-line-soft bg-surface p-4">
+            <h2 className="font-semibold text-ink">جزئیات ویرایش</h2>
             <dl className="mt-4 space-y-3 text-[13px]">
               <RevisionDetail label="موضوع" value={revision.category?.name ?? "نامشخص"} />
               <RevisionDetail label="نوع مطلب" value={revision.contentType?.name ?? "نامشخص"} />
@@ -215,8 +215,8 @@ function EntryRevisionReview({ revisionId }: { revisionId: string }) {
               ) : null}
             </dl>
             {revision.tags?.length ? (
-              <div className="mt-4 border-t border-border pt-4">
-                <p className="flex items-center gap-2 text-[12px] font-semibold text-muted-foreground">
+              <div className="mt-4 border-t border-line-soft pt-4">
+                <p className="flex items-center gap-2 text-[12px] font-semibold text-copy">
                   <TagIcon className="size-4" aria-hidden="true" />
                   برچسب‌ها
                 </p>
@@ -230,7 +230,7 @@ function EntryRevisionReview({ revisionId }: { revisionId: string }) {
               </div>
             ) : null}
           </section>
-          <div className="rounded-xl border border-border bg-card p-4">
+          <div className="rounded-control border border-line-soft bg-surface p-4">
             <p className="font-semibold">نسخه فعلی تا زمان تأیید بدون تغییر می‌ماند.</p>
             <div className="mt-4 grid gap-2">
               <Button onClick={() => setDecision("APPROVE")}>تأیید و انتشار تغییرات</Button>
@@ -269,8 +269,8 @@ function EntryRevisionReview({ revisionId }: { revisionId: string }) {
 function RevisionDetail({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-start justify-between gap-4">
-      <dt className="text-muted-foreground">{label}</dt>
-      <dd className="text-start font-semibold text-foreground">{value}</dd>
+      <dt className="text-copy">{label}</dt>
+      <dd className="text-start font-semibold text-ink">{value}</dd>
     </div>
   );
 }

@@ -14,8 +14,8 @@ function AdminUserRoleBadge({ role }: { role: AdminUserRole }) {
       variant="outline"
       className={cn(
         "rounded-full",
-        role === "ADMIN" && "border-primary/25 bg-primary/8 text-primary",
-        role === "MODERATOR" && "border-gold/35 bg-gold/10 text-[#7A5A18]",
+        role === "ADMIN" && "border-brand/25 bg-brand-soft text-brand-ink",
+        role === "MODERATOR" && "border-saffron/30 bg-tint-sand text-saffron",
       )}
     >
       {adminUserRoleLabels[role]}
@@ -31,8 +31,8 @@ function AdminUserStatusBadge({ status }: { status: AdminUserStatus }) {
       className={cn(
         "rounded-full",
         isActive
-          ? "border-primary/20 bg-primary/8 text-primary"
-          : "border-destructive/20 bg-destructive/8 text-destructive",
+          ? "border-brand/20 bg-brand-soft text-brand-ink"
+          : "border-brand/20 bg-destructive/8 text-brand-ink",
       )}
     >
       {isActive ? <CheckCircleIcon /> : <NoSymbolIcon />}
@@ -46,7 +46,7 @@ function AdminEmailVerificationBadge({ verified }: { verified: boolean }) {
     <span
       className={cn(
         "inline-flex items-center gap-1 text-[12px]",
-        verified ? "text-primary" : "text-muted-foreground",
+        verified ? "text-brand-ink" : "text-copy",
       )}
     >
       {verified ? (

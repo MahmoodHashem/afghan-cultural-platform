@@ -91,7 +91,7 @@ function AdminDistrictFormDialog({
               aria-invalid={Boolean(form.formState.errors.name)}
             />
             {form.formState.errors.name ? (
-              <p className="text-[12px] text-destructive">{form.formState.errors.name.message}</p>
+              <p className="text-[12px] text-brand-ink">{form.formState.errors.name.message}</p>
             ) : null}
           </div>
           <div className="space-y-2">
@@ -108,7 +108,7 @@ function AdminDistrictFormDialog({
           </div>
           <label
             htmlFor="district-active"
-            className="flex cursor-pointer items-center gap-3 rounded-lg border p-3"
+            className="flex cursor-pointer items-center gap-3 rounded-control border p-3"
           >
             <Checkbox id="district-active" {...form.register("isActive")} disabled={pending} />
             <span className="text-[13px] font-medium">ولسوالی فعال باشد</span>

@@ -50,7 +50,7 @@ function AdminAuditDetailsDialog({
                 label="مطلب مرتبط"
                 value={
                   <Link
-                    className="font-semibold text-primary hover:text-primary-hover"
+                    className="font-semibold text-brand-ink hover:text-brand"
                     href={`/admin/entries/${item.entry.id}`}
                   >
                     {item.entry.title}
@@ -93,7 +93,7 @@ function DetailsSection({ title, children }: { title: string; children: React.Re
   return (
     <section className="space-y-3">
       <h2 className="text-[13px] font-semibold">{title}</h2>
-      <dl className="divide-y rounded-lg border px-4">{children}</dl>
+      <dl className="divide-y rounded-control border px-4">{children}</dl>
     </section>
   );
 }
@@ -101,7 +101,7 @@ function DetailsSection({ title, children }: { title: string; children: React.Re
 function Detail({ label, value, mono }: { label: string; value: React.ReactNode; mono?: boolean }) {
   return (
     <div className="grid gap-1 py-3 sm:grid-cols-[9rem_1fr] sm:gap-4">
-      <dt className="text-[12px] text-muted-foreground">{label}</dt>
+      <dt className="text-[12px] text-copy">{label}</dt>
       <dd
         className={`min-w-0 break-words text-[13px] ${mono ? "font-mono" : ""}`}
         dir={mono ? "ltr" : undefined}

@@ -57,7 +57,7 @@ function AdminUserRoleDialog({
   return (
     <Dialog open={open} onOpenChange={pending ? undefined : onOpenChange}>
       <DialogContent className="gap-0 overflow-hidden p-0 sm:max-w-lg" dir="rtl">
-        <DialogHeader className="border-b border-border px-5 py-5 text-start">
+        <DialogHeader className="border-b border-line-soft px-5 py-5 text-start">
           <DialogTitle className="text-[18px] font-semibold">
             {isPromotion ? "افزودن ناظر" : "برداشتن دسترسی ناظر"}
           </DialogTitle>
@@ -70,7 +70,7 @@ function AdminUserRoleDialog({
 
         <form id="admin-user-role-form" onSubmit={submit} className="space-y-2 p-5">
           <Label htmlFor="admin-user-role-reason">
-            دلیل تغییر نقش <span className="text-destructive">*</span>
+            دلیل تغییر نقش <span className="text-brand-ink">*</span>
           </Label>
           <Textarea
             id="admin-user-role-reason"
@@ -83,11 +83,11 @@ function AdminUserRoleDialog({
             placeholder="دلیل این تصمیم را کوتاه و روشن بنویسید..."
             className="min-h-28 resize-none"
           />
-          <p id="admin-user-role-reason-help" className="text-[12px] text-muted-foreground">
+          <p id="admin-user-role-reason-help" className="text-[12px] text-copy">
             این توضیح در تاریخچه مدیریتی حساب ثبت می‌شود.
           </p>
           {form.formState.errors.reason ? (
-            <p id="admin-user-role-reason-error" className="text-[12px] text-destructive">
+            <p id="admin-user-role-reason-error" className="text-[12px] text-brand-ink">
               {form.formState.errors.reason.message}
             </p>
           ) : null}

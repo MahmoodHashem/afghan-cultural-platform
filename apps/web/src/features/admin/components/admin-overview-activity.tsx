@@ -30,15 +30,15 @@ const activityToneClasses: Record<AdminActivityTone, string> = {
 
 function AdminOverviewActivity({ activities }: { activities: AdminActivityViewModel[] }) {
   return (
-    <Card className="rounded-xl shadow-[0_2px_10px_rgba(0,0,0,.035)]">
-      <CardHeader className="flex-row items-center justify-between gap-4 border-b border-border px-5 pb-4">
+    <Card className="rounded-control shadow-card">
+      <CardHeader className="flex-row items-center justify-between gap-4 border-b border-line-soft px-5 pb-4">
         <CardTitle className="flex items-center gap-2 text-[16px]">
-          <ClockIcon className="size-5 text-muted-foreground" aria-hidden="true" />
+          <ClockIcon className="size-5 text-copy" aria-hidden="true" />
           فعالیت‌های اخیر
         </CardTitle>
         <Link
           href="/admin/audit"
-          className="text-[12px] font-semibold text-primary outline-none hover:text-primary-hover focus-visible:ring-3 focus-visible:ring-ring/40"
+          className="text-[12px] font-semibold text-brand-ink outline-none hover:text-brand focus-visible:ring-3 focus-visible:ring-ring/40"
         >
           مشاهده همه
         </Link>
@@ -48,16 +48,16 @@ function AdminOverviewActivity({ activities }: { activities: AdminActivityViewMo
           <Table>
             <TableHeader>
               <TableRow className="hover:bg-transparent">
-                <TableHead className="min-w-72 text-[12px] text-muted-foreground">فعالیت</TableHead>
-                <TableHead className="min-w-44 text-[12px] text-muted-foreground">کاربر</TableHead>
-                <TableHead className="min-w-36 text-[12px] text-muted-foreground">نوع</TableHead>
-                <TableHead className="min-w-28 text-[12px] text-muted-foreground">زمان</TableHead>
+                <TableHead className="min-w-72 text-[12px] text-copy">فعالیت</TableHead>
+                <TableHead className="min-w-44 text-[12px] text-copy">کاربر</TableHead>
+                <TableHead className="min-w-36 text-[12px] text-copy">نوع</TableHead>
+                <TableHead className="min-w-28 text-[12px] text-copy">زمان</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {activities.map((activity) => (
                 <TableRow key={activity.id}>
-                  <TableCell className="min-w-72 whitespace-normal py-3 text-[13px] leading-6 text-foreground">
+                  <TableCell className="min-w-72 whitespace-normal py-3 text-[13px] leading-6 text-ink">
                     {activity.description}
                   </TableCell>
                   <TableCell className="py-3">
@@ -72,13 +72,13 @@ function AdminOverviewActivity({ activities }: { activities: AdminActivityViewMo
                           {createUserInitials(activity.actorName)}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="max-w-32 truncate text-[12px] text-foreground">
+                      <span className="max-w-32 truncate text-[12px] text-ink">
                         {activity.actorName}
                       </span>
                     </div>
                   </TableCell>
                   <TableCell className="py-3">
-                    <span className="inline-flex items-center gap-2 text-[12px] text-muted-foreground">
+                    <span className="inline-flex items-center gap-2 text-[12px] text-copy">
                       <span
                         className={cn("size-1.5 rounded-full", activityToneClasses[activity.tone])}
                         aria-hidden="true"
@@ -87,7 +87,7 @@ function AdminOverviewActivity({ activities }: { activities: AdminActivityViewMo
                     </span>
                   </TableCell>
                   <TableCell
-                    className="py-3 text-[12px] text-muted-foreground"
+                    className="py-3 text-[12px] text-copy"
                     title={formatPersianDate(activity.createdAt)}
                   >
                     {formatAdminRelativeTime(activity.createdAt)}
@@ -98,7 +98,7 @@ function AdminOverviewActivity({ activities }: { activities: AdminActivityViewMo
           </Table>
         ) : (
           <div className="flex min-h-36 items-center justify-center text-center">
-            <p className="text-[13px] text-muted-foreground">هنوز فعالیتی ثبت نشده است.</p>
+            <p className="text-[13px] text-copy">هنوز فعالیتی ثبت نشده است.</p>
           </div>
         )}
       </CardContent>
