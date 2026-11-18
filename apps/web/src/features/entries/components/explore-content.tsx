@@ -13,11 +13,12 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { cn } from "@/lib/utils";
 import { formatPersianNumber } from "@/lib/utils/formatters";
 import type { PublicEntryListQuery } from "../api/public-entries-api";
 import type { EntryListResponse, TaxonomyItem } from "../types/public-entry";
 import { createExploreHref } from "../utils/explore-query";
-import { ExploreResultsPanel } from "./explore-results-panel";
+import { ExploreResultsPanel, ExploreSearchBar } from "./explore-results-panel";
 
 type ExploreContentProps = {
   entries: EntryListResponse;
@@ -53,20 +54,74 @@ function ExploreContent({ entries, taxonomy, query, isEntriesUnavailable }: Expl
         }
         eyebrow="بایگانی میراث"
         title="مطالب فرهنگی افغانستان"
-        description="نوشته‌هایی درباره‌ی ولایت‌ها، مشاهیر، بناهای تاریخی، آیین‌ها و دانش محلی؛ با جست‌وجو و فیلترها آنچه را می‌خواهید پیدا کنید، یا روایت خودتان را بیفزایید."
+        description="نوشته‌هایی درباره‌ی ولایت‌ها، مشاهیر، بناهای تاریخی، آیین‌ها و دانش محلی؛ جست‌وجو کنید، از یک موضوع شروع کنید، یا روایت خودتان را بیفزایید."
         word="مطالب"
-        actions={
-          <>
-            <Link href="/entries/new" className={buttonVariants({ variant: "pill", size: "lg" })}>
+        actions={<ExploreSearchBar query={query} tone="hero" />}
+        aside={
+          <div className="hidden w-80 space-y-3 lg:block">
+            <dl className="grid grid-cols-3 gap-2">
+              {[
+                { label: "مطلب", value: entries.meta.total },
+                { label: "ولایت", value: taxonomy.provinces.length },
+                { label: "موضوع", value: taxonomy.categories.length },
+              ].map((stat) => (
+                <div
+                  key={stat.label}
+                  className="flex flex-col-reverse items-center gap-1 rounded-[16px_16px_16px_5px] border border-white/14 bg-white/8 py-3 backdrop-blur-sm"
+                >
+                  <dt className="text-[12px] text-white/65">{stat.label}</dt>
+                  <dd className="text-[24px] leading-none font-bold text-white">
+                    {formatPersianNumber(stat.value)}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+            <Link
+              href="/entries/new"
+              className={cn(buttonVariants({ variant: "pill", size: "lg" }), "w-full")}
+            >
               <PlusIcon data-icon="inline-start" aria-hidden="true" />
               افزودن مطلب تازه
             </Link>
-            <span className="text-[13px] text-white/70">
-              {formatPersianNumber(entries.meta.total)} مطلب در بایگانی
-            </span>
-          </>
+          </div>
         }
-      />
+      >
+        {taxonomy.categories.length > 0 ? (
+          <nav aria-label="شروع از یک موضوع" className="mt-6 flex flex-wrap items-center gap-2">
+            <span className="text-[12.5px] text-white/60">شروع از:</span>
+            {taxonomy.categories.slice(0, 7).map((category) => {
+              const isActive = query.categorySlug === category.slug;
+
+              return (
+                <Link
+                  key={category.id}
+                  href={createExploreHref(query, {
+                    page: 1,
+                    categorySlug: isActive ? undefined : category.slug,
+                  })}
+                  scroll={false}
+                  aria-current={isActive ? "true" : undefined}
+                  className={cn(
+                    "rounded-full border px-3.5 py-1.5 text-[12.5px] font-bold transition-colors outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
+                    isActive
+                      ? "border-white bg-white text-hero-navy-deep"
+                      : "border-white/22 bg-white/8 text-white/88 hover:border-white/45 hover:bg-white/14",
+                  )}
+                >
+                  {category.name}
+                </Link>
+              );
+            })}
+            <Link
+              href="/entries/new"
+              className="ms-1 inline-flex items-center gap-1 text-[12.5px] font-bold text-gold hover:underline lg:hidden"
+            >
+              <PlusIcon className="size-4" aria-hidden="true" />
+              افزودن مطلب
+            </Link>
+          </nav>
+        ) : null}
+      </PageHero>
 
       <section className="content-container py-8 sm:py-10">
         <div className="space-y-6">

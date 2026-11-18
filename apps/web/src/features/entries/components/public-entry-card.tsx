@@ -1,21 +1,22 @@
 "use client";
 
-import { ArrowLeftIcon, CalendarDaysIcon, MapPinIcon } from "@heroicons/react/24/outline";
+import { ArrowLeftIcon, MapPinIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import Link from "next/link";
 import type { ComponentType } from "react";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import { BookmarkIcon } from "@/components/icons/animated/bookmark";
-
 import { ChatBubbleOvalLeftEllipsisIcon } from "@/components/icons/animated/chat-bubble-oval-left-ellipsis";
 import { HeartIcon } from "@/components/icons/animated/heart";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useEngagementAccess } from "@/features/engagement/hooks/use-engagement-access";
 import { useEntryBookmark } from "@/features/engagement/hooks/use-entry-interactions";
 import { cn } from "@/lib/utils";
 import { formatPersianDate, formatPersianNumber } from "@/lib/utils/formatters";
+import { createUserInitials, getUserAvatarColorClass } from "@/lib/utils/user";
 import type { PublicEntryCard } from "../types/public-entry";
 import {
   createEntryHref,
@@ -101,12 +102,14 @@ function PublicEntryCardView({
   }
 
   const isLead = variant === "lead";
+  const author = entry.author;
+  const hasEngagement = entry.likeCount > 0 || entry.commentCount > 0;
 
   return (
     <Card
       data-variant={variant}
       className={cn(
-        "group relative h-full gap-0 overflow-hidden rounded-card border border-line bg-surface py-0 shadow-none transition-[translate,box-shadow,border-color] duration-250 ease-expo hover:-translate-y-1 hover:border-transparent hover:shadow-lift has-[a:focus-visible]:-translate-y-1 has-[a:focus-visible]:shadow-lift",
+        "group relative h-full gap-0 overflow-hidden rounded-[20px_20px_20px_6px] border border-line-soft bg-surface py-0 shadow-card transition-[translate,box-shadow] duration-300 ease-expo hover:-translate-y-1 hover:shadow-lift has-[a:focus-visible]:-translate-y-1 has-[a:focus-visible]:shadow-lift",
         isLead && "lg:flex-row",
       )}
     >
@@ -120,8 +123,8 @@ function PublicEntryCardView({
       >
         <div
           className={cn(
-            "relative aspect-video shrink-0 overflow-hidden bg-media-ph",
-            isLead && "lg:aspect-auto lg:min-h-64 lg:w-[52%]",
+            "relative aspect-[16/10] shrink-0 overflow-hidden bg-media-ph",
+            isLead && "lg:aspect-auto lg:min-h-80 lg:w-[56%]",
           )}
         >
           <Image
@@ -134,65 +137,84 @@ function PublicEntryCardView({
             fill
             sizes={
               isLead
-                ? "(min-width: 1024px) 40vw, 100vw"
+                ? "(min-width: 1024px) 45vw, 100vw"
                 : "(min-width: 1280px) 25vw, (min-width: 768px) 45vw, 100vw"
             }
-            className="object-cover transition-transform duration-500 ease-expo group-hover:scale-105"
+            className="object-cover transition-transform duration-700 ease-expo group-hover:scale-[1.04]"
           />
-          <span
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 bg-linear-155 from-ink/12 to-ink/4 transition-opacity duration-300 group-hover:opacity-0"
-          />
-          <Badge variant="corner" className="absolute top-3 start-3 z-[1]">
+          <Badge variant="corner" className="absolute bottom-3 start-3 z-[1] shadow-card">
             {entry.category.name}
           </Badge>
         </div>
 
         <CardContent
           className={cn(
-            "flex min-w-0 flex-1 flex-col px-4.5 pt-4 pb-4",
-            isLead && "lg:justify-center lg:px-6 lg:py-6",
+            "flex min-w-0 flex-1 flex-col px-5 pt-4 pb-5",
+            isLead && "lg:justify-center lg:px-9 lg:py-9",
           )}
         >
+          <p className="flex items-center gap-1.5 text-[11.5px] text-faint">
+            <MapPinIcon className="size-3.5 shrink-0" aria-hidden="true" />
+            <span className="truncate">{getEntryLocationLabel(entry)}</span>
+            <span aria-hidden="true" className="size-0.5 shrink-0 rounded-full bg-faint" />
+            <time dateTime={entry.publishedAt} className="shrink-0">
+              {formatPersianDate(entry.publishedAt)}
+            </time>
+          </p>
           <h2
             className={cn(
-              "line-clamp-2 font-bold text-ink transition-colors duration-200 group-hover:text-brand-ink",
-              isLead ? "text-[18px] leading-[1.8] lg:line-clamp-3" : "text-[14.5px] leading-[1.9]",
+              "mt-2 line-clamp-2 font-bold text-ink transition-colors duration-200 group-hover:text-brand-ink",
+              isLead
+                ? "text-[19px] leading-[1.75] lg:line-clamp-3 lg:text-[24px]"
+                : "text-[16px] leading-[1.8]",
             )}
           >
             {entry.title}
           </h2>
           <p
             className={cn(
-              "mt-1.5 text-[12.5px] leading-[2] text-copy",
-              isLead ? "line-clamp-3" : "line-clamp-2",
+              "mt-1.5 text-[13px] leading-[2] text-copy",
+              isLead ? "line-clamp-3 lg:text-[14px]" : "line-clamp-2",
             )}
           >
             {entry.summary}
           </p>
 
-          <div className="mt-2.5 mb-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px] text-faint">
-            <span className="inline-flex items-center gap-1">
-              <MapPinIcon className="size-3.5" aria-hidden="true" />
-              {getEntryLocationLabel(entry)}
+          <div className="mt-auto flex items-center justify-between gap-3 pt-4 text-[11.5px] text-faint">
+            <span className="flex min-w-0 items-center gap-2">
+              <Avatar className="size-5 shrink-0">
+                {author.profileImageUrl ? (
+                  <AvatarImage src={author.profileImageUrl} alt="" />
+                ) : null}
+                <AvatarFallback
+                  className={cn("text-[9px] font-bold", getUserAvatarColorClass(author.id))}
+                >
+                  {createUserInitials(author.displayName)}
+                </AvatarFallback>
+              </Avatar>
+              <span className="truncate text-right" dir="auto">
+                {author.displayName}
+              </span>
             </span>
-            <time dateTime={entry.publishedAt} className="inline-flex items-center gap-1">
-              <CalendarDaysIcon className="size-3.5" aria-hidden="true" />
-              {formatPersianDate(entry.publishedAt)}
-            </time>
-          </div>
-
-          <div className="mt-auto flex items-center gap-4 border-t border-line-soft pt-3 text-[11.5px] text-faint">
-            <StaticEngagementItem icon={HeartIcon} label="پسندیدن مطلب" count={entry.likeCount} />
-            <StaticEngagementItem
-              icon={ChatBubbleOvalLeftEllipsisIcon}
-              label="دیدگاه‌ها"
-              count={entry.commentCount}
-            />
-            <ArrowLeftIcon
-              className="ms-auto size-4 text-brand transition-transform duration-250 ease-expo group-hover:-translate-x-1"
-              aria-hidden="true"
-            />
+            {hasEngagement ? (
+              <span className="flex shrink-0 items-center gap-3">
+                <StaticEngagementItem
+                  icon={HeartIcon}
+                  label="پسندیدن مطلب"
+                  count={entry.likeCount}
+                />
+                <StaticEngagementItem
+                  icon={ChatBubbleOvalLeftEllipsisIcon}
+                  label="دیدگاه‌ها"
+                  count={entry.commentCount}
+                />
+              </span>
+            ) : (
+              <span className="inline-flex shrink-0 items-center gap-1 font-bold text-brand-ink opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                خواندن
+                <ArrowLeftIcon className="size-3.5" aria-hidden="true" />
+              </span>
+            )}
           </div>
         </CardContent>
       </Link>
@@ -228,34 +250,13 @@ function BookmarkImageBadge({
       icon={BookmarkIcon}
       size={18}
       className={cn(
-        "absolute top-3 end-3 z-10 flex min-h-5 min-w-5 items-center justify-center rounded-bubble-xs bg-surface/90 p-2 text-ink backdrop-blur-sm transition-colors hover:bg-surface",
+        "absolute top-3 end-3 z-10 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-black/25 p-2 text-white backdrop-blur-md transition-[background-color,color,opacity] hover:bg-surface hover:text-ink md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100",
         "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
-        bookmarked && "text-brand-ink",
+        bookmarked && "bg-surface text-brand-ink opacity-100 md:opacity-100",
         isLoading && "opacity-70",
       )}
     />
   );
-
-  // return (
-  //   <ActionButton
-  //     type="button"
-  //     onClick={onToggle}
-  //     disabled={isLoading}
-  //     aria-label={bookmarked ? "برداشتن از ذخیره‌ها" : "ذخیره مطلب"}
-  //     aria-pressed={bookmarked}
-  // className={cn(
-  //   "absolute top-3 right-3 inline-flex items-center gap-1 rounded-full bg-white/90 px-2.5 py-1.5 text-ink backdrop-blur-sm transition-colors hover:bg-white",
-  //   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-2",
-  //   bookmarked && "text-brand-ink  ",
-  //   isLoading && "opacity-70",
-  // )}
-  //   >
-  //     <span className="relative size-4">
-  //       <BookmarkIcon size={16} aria-hidden="true" />
-  //     </span>
-  //     <span className="text-[12px] font-medium tabular-nums">{formatPersianNumber(count)}</span>
-  //   </ActionButton>
-  // );
 }
 
 function StaticEngagementItem({
@@ -268,7 +269,7 @@ function StaticEngagementItem({
   count: number;
 }) {
   return (
-    <span className="inline-flex items-center gap-1.5 text-faint">
+    <span className="inline-flex items-center gap-1 text-faint">
       <span className="sr-only">{label}: </span>
       <span className="relative size-4">
         <Icon size={16} aria-hidden="true" />

@@ -30,6 +30,7 @@ import type { EntryBreadcrumbContext } from "../utils/entry-breadcrumb";
 import { createExploreHref, type NormalizedExploreQuery } from "../utils/explore-query";
 import { ExploreFilterForm } from "./explore-filter-form";
 import { ExploreFilterSheet } from "./explore-filter-sheet";
+import { ExploreFilterSidebar } from "./explore-filter-sidebar";
 import { PublicEntryCardView } from "./public-entry-card";
 
 type ExploreResultsPanelProps = {
@@ -56,55 +57,64 @@ function ExploreResultsPanel({
   const hasLeadCard = query.page === 1 && entries.length >= 4;
 
   return (
-    <div className="space-y-5">
-      <div className="sticky top-[calc(3.5rem+env(safe-area-inset-top))] z-20 -mx-1 flex items-center gap-3 bg-paper/92 px-1 py-2 backdrop-blur-md lg:top-16.5">
-        <ExploreSearchBar query={query} />
-        <SortSegment query={query} />
+    <div className="grid gap-8 lg:grid-cols-[272px_minmax(0,1fr)] lg:gap-10">
+      <div className="hidden lg:block">
+        <ExploreFilterSidebar taxonomy={taxonomy} query={query} />
       </div>
 
-      <div className="hidden md:block">
-        <ExploreFilterForm taxonomy={taxonomy} query={query} variant="bar" autoApply />
+      <div className="min-w-0 space-y-5">
+        <div className="hidden md:block lg:hidden">
+          <ExploreFilterForm taxonomy={taxonomy} query={query} variant="bar" autoApply />
+        </div>
+
+        <ExploreToolbar query={query} taxonomy={taxonomy} total={total} />
+
+        {entries.length > 0 ? (
+          <EngagementAccessProvider>
+            <motion.div layout className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+              <AnimatePresence mode="popLayout">
+                {entries.map((entry, index) => {
+                  const isLead = hasLeadCard && index === 0;
+
+                  return (
+                    <motion.div
+                      key={entry.id}
+                      layout
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      transition={{ duration: 0.18, ease: "easeOut" }}
+                      className={cn("min-w-0", isLead && "sm:col-span-2 xl:col-span-3")}
+                    >
+                      <PublicEntryCardView
+                        entry={entry}
+                        imageIndex={index}
+                        breadcrumbParent={breadcrumbParent}
+                        variant={isLead ? "lead" : "default"}
+                      />
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
+            </motion.div>
+          </EngagementAccessProvider>
+        ) : (
+          <EmptySearchState isSearching={isSearching} search={query.search} />
+        )}
       </div>
-
-      <ExploreToolbar query={query} taxonomy={taxonomy} total={total} />
-
-      {entries.length > 0 ? (
-        <EngagementAccessProvider>
-          <motion.div layout className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            <AnimatePresence mode="popLayout">
-              {entries.map((entry, index) => {
-                const isLead = hasLeadCard && index === 0;
-
-                return (
-                  <motion.div
-                    key={entry.id}
-                    layout
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    transition={{ duration: 0.18, ease: "easeOut" }}
-                    className={cn("min-w-0", isLead && "sm:col-span-2")}
-                  >
-                    <PublicEntryCardView
-                      entry={entry}
-                      imageIndex={index}
-                      breadcrumbParent={breadcrumbParent}
-                      variant={isLead ? "lead" : "default"}
-                    />
-                  </motion.div>
-                );
-              })}
-            </AnimatePresence>
-          </motion.div>
-        </EngagementAccessProvider>
-      ) : (
-        <EmptySearchState isSearching={isSearching} search={query.search} />
-      )}
     </div>
   );
 }
 
-function ExploreSearchBar({ query }: { query: NormalizedExploreQuery }) {
+/** Live search; `hero` renders the large white field used inside the navy page hero. */
+function ExploreSearchBar({
+  query,
+  tone = "default",
+}: {
+  query: NormalizedExploreQuery;
+  tone?: "default" | "hero";
+}) {
+  const isHero = tone === "hero";
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [searchValue, setSearchValue] = useState(query.search ?? "");
@@ -146,12 +156,17 @@ function ExploreSearchBar({ query }: { query: NormalizedExploreQuery }) {
   }, [normalizedQuerySearch, query, router, searchValue]);
 
   return (
-    <div className="min-w-0 flex-1 md:max-w-[420px]">
+    <div className={cn("min-w-0 flex-1", isHero ? "w-full max-w-xl" : "md:max-w-[420px]")}>
       <label
         htmlFor={searchInputId}
         aria-busy={isPending}
         {...triggerProps}
-        className="group flex h-11.5 flex-1 items-center gap-2.5 rounded-control border-[1.5px] border-line bg-paper px-3.5 transition-[border-color,background-color,box-shadow] duration-200 focus-within:border-ring focus-within:bg-surface focus-within:shadow-focus"
+        className={cn(
+          "group flex flex-1 items-center gap-2.5 transition-[border-color,background-color,box-shadow] duration-200",
+          isHero
+            ? "h-14 rounded-full bg-surface ps-5 pe-2 shadow-lift focus-within:shadow-[0_0_0_4px_rgb(255_255_255/0.22)]"
+            : "h-11.5 rounded-control border-[1.5px] border-line bg-paper px-3.5 focus-within:border-ring focus-within:bg-surface focus-within:shadow-focus",
+        )}
       >
         <MagnifyingGlassIcon
           ref={iconRef}
@@ -167,7 +182,10 @@ function ExploreSearchBar({ query }: { query: NormalizedExploreQuery }) {
           value={searchValue}
           onChange={(event) => setSearchValue(event.target.value)}
           placeholder="جست‌وجوی مکان، مشاهیر، رسم یا موضوع..."
-          className="h-full border-0 bg-transparent px-0 shadow-none focus-visible:border-transparent focus-visible:bg-transparent focus-visible:shadow-none"
+          className={cn(
+            "h-full border-0 bg-transparent px-0 shadow-none focus-visible:border-transparent focus-visible:bg-transparent focus-visible:shadow-none",
+            isHero && "text-[15px] md:text-[15px]",
+          )}
         />
         {searchValue ? (
           <button
@@ -195,7 +213,7 @@ function ExploreToolbar({
   total: number;
 }) {
   return (
-    <div className="border-b border-line-soft px-1 pb-3">
+    <div className="sticky top-[calc(3.5rem+env(safe-area-inset-top))] z-20 -mx-1 border-b border-line-soft bg-paper/92 px-1 py-2.5 backdrop-blur-md lg:top-16.5">
       <div className="flex items-center justify-between gap-3 md:hidden">
         <p className="shrink-0 text-[14px] font-bold text-ink">
           {formatPersianNumber(total)} مطلب
@@ -211,14 +229,18 @@ function ExploreToolbar({
         <ClearFiltersLink query={query} />
       </div>
 
-      <div className="hidden min-h-9 items-center justify-between gap-3 md:flex">
-        <div className="flex flex-wrap items-center gap-2">
+      <div className="hidden min-h-11 items-center justify-between gap-4 md:flex">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <p className="shrink-0 text-[14px] text-faint">
+            <span className="text-[18px] font-bold text-ink">
+              {formatPersianNumber(total)}
+            </span>{" "}
+            مطلب
+          </p>
           <ActiveFilterChips query={query} taxonomy={taxonomy} />
           <ClearFiltersLink query={query} />
         </div>
-        <p className="shrink-0 text-[13px] text-faint">
-          <span className="font-bold text-ink">{formatPersianNumber(total)}</span> مطلب
-        </p>
+        <SortSegment query={query} />
       </div>
     </div>
   );
@@ -467,4 +489,4 @@ function findTaxonomyName(items: TaxonomyItem[], slug: string) {
   return items.find((item) => item.slug === slug)?.name;
 }
 
-export { ExploreResultsPanel };
+export { ExploreResultsPanel, ExploreSearchBar };

@@ -860,7 +860,7 @@ test("public routes provide skeleton loading and controlled error states", () =>
   assert.match(exploreLoading, /ExploreLoading/);
   assert.match(exploreLoading, /Skeleton/);
   assert.match(exploreLoading, /from-hero-navy/);
-  assert.match(exploreLoading, /lg:grid-cols-3/);
+  assert.match(exploreLoading, /lg:grid-cols-\[272px_minmax\(0,1fr\)\]/);
   assert.match(entryDetailLoading, /EntryDetailLoading/);
   assert.match(entryDetailLoading, /lg:grid-cols-\[56px_minmax\(0,1fr\)_minmax\(0,320px\)\]/);
   assert.match(entryDetailLoading, /aria-label="در حال بارگذاری مطلب"/);
