@@ -177,13 +177,13 @@ export function DetailsSection({
         </>
       ) : null}
       <div className="md:col-span-2">
-        <label htmlFor="village-or-location" className="text-small font-semibold text-foreground">
+        <label htmlFor="village-or-location" className="text-small font-semibold text-ink">
           نام محل
         </label>
         <Input
           id="village-or-location"
           placeholder="مثلاً نام قریه، محله یا مکان مشخص"
-          className="mt-2 h-11 border-border"
+          className="mt-2 h-11 border-line-soft"
           {...register("villageOrLocation", {
             onChange: onDirty,
           })}
@@ -286,19 +286,19 @@ export function ImagesSection({
         onDrop={handleDrop}
         disabled={isImageLimitReached}
         className={cn(
-          "flex min-h-44 w-full flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-border bg-background/40 px-6 py-8 text-center transition-colors hover:border-primary/40 hover:bg-primary/[0.03] focus-visible:border-primary focus-visible:ring-3 focus-visible:ring-primary/15 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60",
-          isDragging && "border-primary bg-primary/5",
+          "flex min-h-44 w-full flex-col items-center justify-center gap-3 rounded-control border-2 border-dashed border-line-soft bg-paper/40 px-6 py-8 text-center transition-colors hover:border-brand/40 hover:bg-primary/[0.03] focus-visible:border-primary focus-visible:ring-3 focus-visible:ring-brand/15 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60",
+          isDragging && "border-primary bg-brand-soft",
         )}
         aria-label="انتخاب یا رها کردن تصاویر مطلب"
       >
-        <span className="flex size-11 items-center justify-center rounded-full bg-primary/10 text-primary">
+        <span className="flex size-11 items-center justify-center rounded-full bg-brand-soft text-brand-ink">
           <PhotoIcon className="size-6" aria-hidden="true" />
         </span>
-        <span className="font-semibold text-foreground">
+        <span className="font-semibold text-ink">
           {isDragging ? "تصویرها را اینجا رها کنید" : "تصویرها را بکشید و اینجا رها کنید"}
         </span>
-        <span className="text-small text-muted-foreground">یا برای انتخاب تصویر کلیک کنید</span>
-        <span className="text-[12px] leading-6 text-muted-foreground">
+        <span className="text-small text-faint">یا برای انتخاب تصویر کلیک کنید</span>
+        <span className="text-[12px] leading-6 text-faint">
           حداکثر ۶ تصویر JPEG، PNG یا WebP، هرکدام تا {formatPersianNumber(MAX_IMAGE_SIZE_MB)}
           مگابایت؛ بارگذاری پس از ذخیره پیش‌نویس انجام می‌شود.
         </span>
@@ -350,7 +350,7 @@ export function SourcesSection({
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-small leading-7 text-muted-foreground">
+        <p className="text-small leading-7 text-faint">
           اگر منبع مکتوب، شفاهی یا تجربه شخصی دارید، آن را جداگانه ثبت کنید.
         </p>
         <Button type="button" variant="outline" onClick={appendSource}>
@@ -361,7 +361,7 @@ export function SourcesSection({
       {isMobile ? (
         <>
           {sourceFields.fields.length > 0 ? (
-            <div className="divide-y divide-border rounded-xl border border-border">
+            <div className="divide-y divide-line-soft rounded-control border border-line-soft">
               {sourceFields.fields.map((field, index) => (
                 <button
                   key={field.fieldKey}
@@ -370,15 +370,15 @@ export function SourcesSection({
                   onClick={() => setEditingSourceIndex(index)}
                 >
                   <span className="min-w-0">
-                    <span className="block truncate text-[14px] font-semibold text-foreground">
+                    <span className="block truncate text-[14px] font-semibold text-ink">
                       {sourceValues[index]?.title || `منبع ${formatPersianNumber(index + 1)}`}
                     </span>
-                    <span className="mt-1 block text-[12px] text-muted-foreground">
+                    <span className="mt-1 block text-[12px] text-faint">
                       {sourceTypeLabels[sourceValues[index]?.type ?? field.type]}
                     </span>
                   </span>
                   <PencilSquareIcon
-                    className="size-5 shrink-0 text-muted-foreground"
+                    className="size-5 shrink-0 text-faint"
                     aria-hidden="true"
                   />
                 </button>
@@ -394,7 +394,7 @@ export function SourcesSection({
             }}
             showSwipeHandle
           >
-            <DrawerContent dir="rtl" className="max-h-[90dvh] border-border">
+            <DrawerContent dir="rtl" className="max-h-[90dvh] border-line-soft">
               <DrawerHeader className="px-5 text-start">
                 <DrawerTitle>جزئیات منبع</DrawerTitle>
                 <DrawerDescription>اطلاعات منبع را وارد یا ویرایش کنید.</DrawerDescription>
@@ -519,7 +519,7 @@ export function YouTubeSection({
   return (
     <div className="grid gap-4 md:grid-cols-2">
       <div className="md:col-span-2">
-        <label htmlFor="youtube-url" className="text-small font-semibold text-foreground">
+        <label htmlFor="youtube-url" className="text-small font-semibold text-ink">
           نشانی یوتیوب
         </label>
         <Controller
@@ -544,7 +544,7 @@ export function YouTubeSection({
         <YouTubeMetadataStatus query={metadataQuery} />
       </div>
       <div>
-        <label htmlFor="youtube-title" className="text-small font-semibold text-foreground">
+        <label htmlFor="youtube-title" className="text-small font-semibold text-ink">
           عنوان ویدیو
         </label>
         <Controller
@@ -564,7 +564,7 @@ export function YouTubeSection({
         />
       </div>
       <div>
-        <label htmlFor="youtube-description" className="text-small font-semibold text-foreground">
+        <label htmlFor="youtube-description" className="text-small font-semibold text-ink">
           توضیح کوتاه
         </label>
         <Controller
@@ -590,7 +590,7 @@ export function YouTubeSection({
 function YouTubeMetadataStatus({ query }: { query: ReturnType<typeof useYouTubeMetadata> }) {
   if (query.isWaiting || query.isFetching) {
     return (
-      <p className="mt-2 text-[12px] text-muted-foreground" role="status" aria-live="polite">
+      <p className="mt-2 text-[12px] text-faint" role="status" aria-live="polite">
         در حال دریافت جزئیات ویدیو...
       </p>
     );
@@ -598,7 +598,7 @@ function YouTubeMetadataStatus({ query }: { query: ReturnType<typeof useYouTubeM
 
   if (query.isError) {
     return (
-      <p className="mt-2 text-[12px] text-destructive" role="status" aria-live="polite">
+      <p className="mt-2 text-[12px] text-brand-ink" role="status" aria-live="polite">
         {getEntryFormErrorMessage(query.error)}
       </p>
     );
@@ -606,7 +606,7 @@ function YouTubeMetadataStatus({ query }: { query: ReturnType<typeof useYouTubeM
 
   if (query.data) {
     return (
-      <p className="mt-2 text-[12px] text-primary" role="status" aria-live="polite">
+      <p className="mt-2 text-[12px] text-brand-ink" role="status" aria-live="polite">
         عنوان و توضیح ویدیو دریافت شد؛ در صورت نیاز می‌توانید آن‌ها را ویرایش کنید.
       </p>
     );
@@ -639,9 +639,9 @@ function SourceFields({
   onDirty,
 }: SourceFieldsProps) {
   return (
-    <div className="rounded-xl border border-border bg-background/50 p-4">
+    <div className="rounded-control border border-line-soft bg-paper/50 p-4">
       <div className="mb-4 flex items-center justify-between gap-3">
-        <p className="font-semibold text-foreground">منبع {formatPersianNumber(index + 1)}</p>
+        <p className="font-semibold text-ink">منبع {formatPersianNumber(index + 1)}</p>
         <div className="flex items-center gap-1">
           <Button
             type="button"
@@ -693,7 +693,7 @@ function SourceFields({
         <div>
           <label
             htmlFor={`source-title-${index}`}
-            className="text-small font-semibold text-foreground"
+            className="text-small font-semibold text-ink"
           >
             عنوان
           </label>
@@ -708,7 +708,7 @@ function SourceFields({
         <div>
           <label
             htmlFor={`source-provider-${index}`}
-            className="text-small font-semibold text-foreground"
+            className="text-small font-semibold text-ink"
           >
             نویسنده یا نهاد
           </label>
@@ -723,7 +723,7 @@ function SourceFields({
         <div>
           <label
             htmlFor={`source-url-${index}`}
-            className="text-small font-semibold text-foreground"
+            className="text-small font-semibold text-ink"
           >
             نشانی اینترنتی
           </label>
@@ -739,7 +739,7 @@ function SourceFields({
         <div>
           <label
             htmlFor={`source-date-${index}`}
-            className="text-small font-semibold text-foreground"
+            className="text-small font-semibold text-ink"
           >
             تاریخ نشر
           </label>
@@ -763,7 +763,7 @@ function SourceFields({
         <div className="md:col-span-2">
           <label
             htmlFor={`source-details-${index}`}
-            className="text-small font-semibold text-foreground"
+            className="text-small font-semibold text-ink"
           >
             توضیح یا جزئیات
           </label>
@@ -803,11 +803,11 @@ function ImageList({ images, onChange, onMove, onRemove }: ImageListProps) {
           {images.map((image, index) => (
             <div
               key={image.clientId}
-              className="min-w-0 overflow-hidden rounded-xl border border-border bg-card"
+              className="min-w-0 overflow-hidden rounded-control border border-line-soft bg-surface"
             >
               <button
                 type="button"
-                className="relative block aspect-square w-full overflow-hidden bg-muted outline-none focus-visible:ring-3 focus-visible:ring-inset focus-visible:ring-ring/40"
+                className="relative block aspect-square w-full overflow-hidden bg-line-soft outline-none focus-visible:ring-3 focus-visible:ring-inset focus-visible:ring-ring/40"
                 onClick={() => setEditingImageId(image.clientId)}
                 aria-label={`ویرایش اطلاعات تصویر ${formatPersianNumber(index + 1)}`}
               >
@@ -823,8 +823,8 @@ function ImageList({ images, onChange, onMove, onRemove }: ImageListProps) {
                   className={cn(
                     "absolute top-2 right-2 rounded-full px-2 py-1 text-[10px] font-semibold",
                     image.status === "uploaded" && "bg-primary text-primary-foreground",
-                    image.status === "uploading" && "bg-gold text-foreground",
-                    image.status === "pending" && "bg-card/90 text-muted-foreground",
+                    image.status === "uploading" && "bg-gold text-ink",
+                    image.status === "pending" && "bg-surface/90 text-faint",
                     image.status === "error" && "bg-destructive text-destructive-foreground",
                   )}
                 >
@@ -872,14 +872,14 @@ function ImageList({ images, onChange, onMove, onRemove }: ImageListProps) {
           }}
           showSwipeHandle
         >
-          <DrawerContent dir="rtl" className="max-h-[88dvh] border-border">
+          <DrawerContent dir="rtl" className="max-h-[88dvh] border-line-soft">
             <DrawerHeader className="px-5 text-start">
               <DrawerTitle>اطلاعات تصویر</DrawerTitle>
               <DrawerDescription>متن جایگزین و منبع تصویر را کامل کنید.</DrawerDescription>
             </DrawerHeader>
             {editingImage ? (
               <div className="min-h-0 space-y-4 overflow-y-auto px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
-                <div className="relative aspect-video overflow-hidden rounded-xl bg-muted">
+                <div className="relative aspect-video overflow-hidden rounded-control bg-line-soft">
                   <Image
                     src={editingImage.previewUrl}
                     alt={editingImage.altText || "پیش‌نمایش تصویر انتخاب‌شده"}
@@ -912,7 +912,7 @@ function ImageList({ images, onChange, onMove, onRemove }: ImageListProps) {
                   }
                   placeholder="عکاس یا منبع تصویر"
                 />
-                <div className="flex items-start gap-2 text-small text-muted-foreground">
+                <div className="flex items-start gap-2 text-small text-faint">
                   <Checkbox
                     id={`mobile-image-permission-${editingImage.clientId}`}
                     checked={editingImage.permissionConfirmed}
@@ -927,12 +927,12 @@ function ImageList({ images, onChange, onMove, onRemove }: ImageListProps) {
                   </label>
                 </div>
                 {editingImage.error ? (
-                  <p className="text-small text-destructive">{editingImage.error}</p>
+                  <p className="text-small text-brand-ink">{editingImage.error}</p>
                 ) : null}
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full text-destructive"
+                  className="w-full text-brand-ink"
                   onClick={() => {
                     void onRemove(editingImage);
                     setEditingImageId(null);
@@ -952,8 +952,11 @@ function ImageList({ images, onChange, onMove, onRemove }: ImageListProps) {
   return (
     <div className="grid gap-4 md:grid-cols-2">
       {images.map((image, index) => (
-        <div key={image.clientId} className="rounded-xl border border-border bg-background/50 p-3">
-          <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-muted">
+        <div
+          key={image.clientId}
+          className="rounded-card border border-line-soft bg-paper/50 p-3"
+        >
+          <div className="relative aspect-[4/3] overflow-hidden rounded-control bg-line-soft">
             <Image
               src={image.previewUrl}
               alt={image.altText || "پیش‌نمایش تصویر انتخاب‌شده"}
@@ -966,8 +969,8 @@ function ImageList({ images, onChange, onMove, onRemove }: ImageListProps) {
               className={cn(
                 "absolute right-3 top-3 rounded-full px-2 py-1 text-[11px] font-semibold",
                 image.status === "uploaded" && "bg-primary text-primary-foreground",
-                image.status === "uploading" && "bg-gold text-foreground",
-                image.status === "pending" && "bg-card text-muted-foreground",
+                image.status === "uploading" && "bg-gold text-ink",
+                image.status === "pending" && "bg-surface text-faint",
                 image.status === "error" && "bg-destructive text-destructive-foreground",
               )}
             >
@@ -995,7 +998,7 @@ function ImageList({ images, onChange, onMove, onRemove }: ImageListProps) {
               placeholder="عکاس یا منبع تصویر"
               className="h-10"
             />
-            <div className="flex items-start gap-2 text-small text-muted-foreground">
+            <div className="flex items-start gap-2 text-small text-faint">
               <Checkbox
                 id={`image-permission-${image.clientId}`}
                 checked={image.permissionConfirmed}
@@ -1007,7 +1010,7 @@ function ImageList({ images, onChange, onMove, onRemove }: ImageListProps) {
                 اجازه استفاده از این تصویر را دارم.
               </label>
             </div>
-            {image.error ? <p className="text-small text-destructive">{image.error}</p> : null}
+            {image.error ? <p className="text-small text-brand-ink">{image.error}</p> : null}
             <div className="flex flex-wrap items-center gap-1">
               <Button
                 type="button"

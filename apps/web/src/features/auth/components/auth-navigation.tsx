@@ -15,7 +15,7 @@ function AuthNavigation() {
   const logoutMutation = useLogout();
 
   if (status === "initializing") {
-    return <div className="h-10 w-32 animate-pulse rounded bg-muted" aria-hidden="true" />;
+    return <div className="h-10 w-32 animate-pulse rounded-full bg-line-soft" aria-hidden="true" />;
   }
 
   if (status !== "authenticated" || !user) {
@@ -47,7 +47,7 @@ function AuthNavigation() {
         </Link>
       ) : null}
       {!user.emailVerified ? (
-        <span className="rounded-full bg-warning/10 px-3 py-1 text-[13px] text-warning">
+        <span className="rounded-full bg-tint-sand px-3 py-1 text-[13px] font-bold text-saffron">
           ایمیل تأیید نشده
         </span>
       ) : null}

@@ -134,17 +134,17 @@ function CommentComposer({
       onSubmit={handleSubmit(submit)}
       onFocus={() => setIsExpanded(true)}
       className={cn(
-        "bg-card transition-[padding,box-shadow] duration-200 p-4",
+        "bg-surface transition-[padding,box-shadow] duration-200 p-4",
         compact
-          ? "space-y-3 rounded-xl border border-border p-3"
+          ? "space-y-3 rounded-control border border-line-soft p-3"
           : isExpanded
-            ? "rounded-xl border border-border shadow-[0_6px_22px_rgba(31,41,55,0.06)] "
-            : "rounded-xl border border-border ",
+            ? "rounded-control border border-line-soft shadow-card "
+            : "rounded-control border border-line-soft ",
       )}
     >
       <div className={cn("flex items-start gap-3", !compact && "sm:gap-4")}>
         {showAvatar ? (
-          <Avatar className={cn("bg-primary-light transition-[width,height] duration-200 size-9")}>
+          <Avatar className={cn("bg-brand-soft transition-[width,height] duration-200 size-9")}>
             {authorImageUrl ? <AvatarImage src={authorImageUrl} alt={authorName} /> : null}
             <AvatarFallback className={cn("font-bold", getUserAvatarColorClass(authorSeed))}>
               {createUserInitials(authorName)}
@@ -168,7 +168,7 @@ function CommentComposer({
             aria-invalid={Boolean(errors.body)}
             aria-describedby={errors.body ? errorId : undefined}
             className={cn(
-              "resize-y border-border bg-background leading-8 shadow-none",
+              "resize-y border-line-soft bg-paper leading-8 shadow-none",
               compact
                 ? "min-h-18"
                 : isExpanded
@@ -185,7 +185,7 @@ function CommentComposer({
             onKeyUp={(event) => rememberSelection(event.currentTarget)}
           />
           {errors.body ? (
-            <p id={errorId} role="alert" className="mt-2 text-[13px] text-destructive">
+            <p id={errorId} role="alert" className="mt-2 text-[13px] text-brand-ink">
               {errors.body.message}
             </p>
           ) : null}
@@ -200,12 +200,12 @@ function CommentComposer({
           )}
         >
           {!compact ? (
-            <p className="inline-flex items-center gap-2 text-[12px] leading-6 text-muted-foreground sm:text-[13px]">
-              <ShieldCheckIcon className="size-5 shrink-0 text-primary" aria-hidden="true" />
+            <p className="inline-flex items-center gap-2 text-[12px] leading-6 text-copy sm:text-[13px]">
+              <ShieldCheckIcon className="size-5 shrink-0 text-brand-ink" aria-hidden="true" />
               {helperText ?? "لطفاً با احترام و مرتبط با موضوع، نظر خود را بنویسید."}
             </p>
           ) : (
-            <span className="text-[12px] text-muted-foreground">
+            <span className="text-[12px] text-copy">
               {formatPersianNumber(body.length)}/۱۰۰۰
             </span>
           )}
@@ -215,7 +215,7 @@ function CommentComposer({
               onSelect={insertEmoji}
             />
             {!compact ? (
-              <span className="text-[12px] text-muted-foreground">
+              <span className="text-[12px] text-copy">
                 {formatPersianNumber(body.length)}/۱۰۰۰
               </span>
             ) : null}

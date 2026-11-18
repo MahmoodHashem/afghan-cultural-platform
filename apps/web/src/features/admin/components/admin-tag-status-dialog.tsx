@@ -28,7 +28,7 @@ function AdminTagStatusDialog({
   const enabling = tag ? !tag.isActive : false;
   return (
     <AlertDialog open={open} onOpenChange={pending ? undefined : onOpenChange}>
-      <AlertDialogContent className="max-w-md rounded-xl p-5 sm:max-w-md">
+      <AlertDialogContent className="max-w-md rounded-control p-5 sm:max-w-md">
         <AlertDialogHeader className="place-items-start text-start">
           <AlertDialogTitle>{enabling ? "فعال‌کردن برچسب" : "غیرفعال‌کردن برچسب"}</AlertDialogTitle>
           <AlertDialogDescription className="leading-7">

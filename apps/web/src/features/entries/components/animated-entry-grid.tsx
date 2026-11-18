@@ -15,7 +15,7 @@ type AnimatedEntryGridProps = {
 function AnimatedEntryGrid({ entries, breadcrumbParent }: AnimatedEntryGridProps) {
   return (
     <EngagementAccessProvider>
-      <motion.div layout className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+      <motion.div layout className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         <AnimatePresence mode="popLayout">
           {entries.map((entry, index) => (
             <motion.div

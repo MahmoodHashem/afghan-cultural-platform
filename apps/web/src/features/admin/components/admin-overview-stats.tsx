@@ -10,24 +10,24 @@ type StatCardTone = "teal" | "blue" | "orange" | "red";
 
 const toneClasses: Record<StatCardTone, { icon: string; surface: string; detail: string }> = {
   teal: {
-    icon: "text-primary",
-    surface: "bg-primary/10",
-    detail: "text-primary",
+    icon: "text-brand-ink",
+    surface: "bg-brand-soft",
+    detail: "text-brand-ink",
   },
   blue: {
-    icon: "text-blue-600",
-    surface: "bg-blue-50",
-    detail: "text-blue-600",
+    icon: "text-lapis dark:text-copy",
+    surface: "bg-tint-navy",
+    detail: "text-lapis dark:text-copy",
   },
   orange: {
-    icon: "text-amber-600",
-    surface: "bg-amber-50",
-    detail: "text-amber-600",
+    icon: "text-saffron-deep dark:text-gold",
+    surface: "bg-tint-sand",
+    detail: "text-saffron-deep dark:text-gold",
   },
   red: {
-    icon: "text-red-600",
-    surface: "bg-red-50",
-    detail: "text-red-600",
+    icon: "text-brand-ink",
+    surface: "bg-brand-soft",
+    detail: "text-brand-ink",
   },
 };
 
@@ -97,11 +97,11 @@ function AdminStatCard({
   const classes = toneClasses[tone];
 
   return (
-    <Card className="min-h-36 justify-center rounded-xl shadow-[0_2px_10px_rgba(0,0,0,.035)]">
+    <Card className="min-h-36 justify-center rounded-control shadow-card">
       <CardContent className="flex items-center justify-between gap-4 px-5">
         <div className="min-w-0 space-y-2">
-          <p className="text-[13px] font-semibold text-muted-foreground">{title}</p>
-          <p className="text-[30px] font-bold leading-none text-foreground tabular-nums">
+          <p className="text-[13px] font-semibold text-copy">{title}</p>
+          <p className="text-[30px] font-bold leading-none text-ink tabular-nums">
             {formatPersianNumber(value)}
           </p>
           <p className={cn("text-[12px] leading-5", classes.detail)}>{detail}</p>

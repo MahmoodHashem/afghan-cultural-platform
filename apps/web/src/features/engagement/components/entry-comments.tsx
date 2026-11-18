@@ -76,17 +76,17 @@ function EntryComments({ entryId, initialComments, renderedAt }: EntryCommentsPr
     >
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div className="flex items-center gap-3">
-          <span className="flex size-10 items-center justify-center rounded-full bg-primary-light text-primary">
+          <span className="flex size-10 items-center justify-center rounded-full bg-brand-soft text-brand-ink">
             <ChatBubbleLeftRightIcon className="size-5" aria-hidden="true" />
           </span>
           <div>
             <h2
               id="entry-comments-title"
-              className="text-[25px] font-bold text-foreground sm:text-[28px]"
+              className="text-[25px] font-bold text-ink sm:text-[28px]"
             >
               دیدگاه‌ها
             </h2>
-            <p className="mt-1 text-[13px] text-muted-foreground" aria-live="polite">
+            <p className="mt-1 text-[13px] text-copy" aria-live="polite">
               {formatPersianNumber(commentCount)} دیدگاه
             </p>
           </div>
@@ -97,8 +97,8 @@ function EntryComments({ entryId, initialComments, renderedAt }: EntryCommentsPr
           value={sort}
           onValueChange={(value) => value && setSort(value as EntryCommentSort)}
         >
-          <SelectTrigger size="sm" className="w-auto min-w-44 rounded-full bg-card px-3">
-            <span className="text-muted-foreground">مرتب‌سازی:</span>
+          <SelectTrigger size="sm" className="w-auto min-w-44 rounded-full bg-surface px-3">
+            <span className="text-copy">مرتب‌سازی:</span>
             <SelectValue />
           </SelectTrigger>
           <SelectContent align="end">
@@ -114,7 +114,7 @@ function EntryComments({ entryId, initialComments, renderedAt }: EntryCommentsPr
       </header>
 
       {status === "initializing" ? (
-        <Skeleton className="h-48 rounded-xl" aria-label="در حال آماده‌سازی فرم دیدگاه" />
+        <Skeleton className="h-48 rounded-control" aria-label="در حال آماده‌سازی فرم دیدگاه" />
       ) : (
         <CommentComposer
           authorName={user?.displayName ?? "مهمان"}
@@ -141,7 +141,7 @@ function EntryComments({ entryId, initialComments, renderedAt }: EntryCommentsPr
       {commentsQuery.isError ? (
         <div
           role="alert"
-          className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-[14px]"
+          className="flex flex-wrap items-center justify-between gap-3 rounded-control border border-brand/20 bg-brand-soft p-4 text-[14px]"
         >
           <span>دیدگاه‌ها بارگذاری نشد. دوباره تلاش کنید.</span>
           <Button type="button" variant="outline" size="sm" onClick={() => commentsQuery.refetch()}>
@@ -151,19 +151,19 @@ function EntryComments({ entryId, initialComments, renderedAt }: EntryCommentsPr
       ) : null}
 
       {!commentsQuery.isLoading && !commentsQuery.isError && comments.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-border bg-card px-5 py-8 text-center text-[14px] leading-7 text-muted-foreground">
+        <div className="rounded-control border border-dashed border-line-soft bg-surface px-5 py-8 text-center text-[14px] leading-7 text-copy">
           هنوز دیدگاهی نوشته نشده است. شما می‌توانید نخستین دیدگاه را بنویسید.
         </div>
       ) : null}
 
       {comments.length > 0 ? (
-        <div className="overflow-hidden rounded-xl border border-border bg-card ">
+        <div className="overflow-hidden rounded-control border border-line-soft bg-surface ">
           <AnimatePresence initial={false} mode="popLayout">
             {comments.map((comment) => (
               <motion.div
                 layout={reducedMotion ? false : "position"}
                 key={comment.id}
-                className="border-b border-border last:border-0 px-4 py-3"
+                className="border-b border-line-soft last:border-0 px-4 py-3"
               >
                 <CommentThread entryId={entryId} comment={comment} now={now} />
               </motion.div>
@@ -177,7 +177,7 @@ function EntryComments({ entryId, initialComments, renderedAt }: EntryCommentsPr
           <Button
             type="button"
             variant="outline"
-            className="min-w-64 rounded-full bg-card"
+            className="min-w-64 rounded-full bg-surface"
             disabled={commentsQuery.isFetchingNextPage}
             onClick={() => commentsQuery.fetchNextPage()}
           >

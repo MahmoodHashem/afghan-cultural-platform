@@ -41,14 +41,17 @@ function CorrectionQueue() {
       onPageChange={setPage}
     >
       {query.data?.data.map((correction) => (
-        <article key={correction.id} className="rounded-xl border border-border bg-card p-4">
+        <article
+          key={correction.id}
+          className="rounded-card border border-line-soft bg-surface p-4 shadow-card"
+        >
           <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_1fr_1fr_150px] lg:items-center">
             <div className="min-w-0 space-y-2">
               <div className="flex flex-wrap items-center gap-2">
-                <h2 className="line-clamp-1 font-bold text-foreground">{correction.entry.title}</h2>
+                <h2 className="line-clamp-1 font-bold text-ink">{correction.entry.title}</h2>
                 <Badge variant="outline">{correctionSectionLabels[correction.section]}</Badge>
               </div>
-              <p className="line-clamp-1 text-[13px] text-muted-foreground">{correction.reason}</p>
+              <p className="line-clamp-1 text-[13px] text-copy">{correction.reason}</p>
             </div>
             <Meta icon={<UserCircleIcon />} text={correction.submittedBy.displayName} />
             <Meta icon={<CalendarDaysIcon />} text={formatPersianDate(correction.submittedAt)} />
@@ -99,18 +102,21 @@ function ReportsQueue() {
       }
     >
       {query.data?.data.map((report) => (
-        <article key={report.id} className="rounded-xl border border-border bg-card p-4">
+        <article
+          key={report.id}
+          className="rounded-card border border-line-soft bg-surface p-4 shadow-card"
+        >
           <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_1fr_1fr_150px] lg:items-center">
             <div className="min-w-0 space-y-2">
               <div className="flex flex-wrap items-center gap-2">
-                <h2 className="line-clamp-1 font-bold text-foreground">{report.entry.title}</h2>
+                <h2 className="line-clamp-1 font-bold text-ink">{report.entry.title}</h2>
                 <Badge variant="outline">
                   {report.targetType === "COMMENT" ? "دیدگاه" : "مطلب"}
                 </Badge>
               </div>
-              <p className="line-clamp-1 text-[13px] text-muted-foreground">{report.explanation}</p>
+              <p className="line-clamp-1 text-[13px] text-copy">{report.explanation}</p>
             </div>
-            <span className="text-[13px] text-muted-foreground">
+            <span className="text-[13px] text-copy">
               {reportReasonLabels[report.reason]}
             </span>
             <Meta icon={<CalendarDaysIcon />} text={formatPersianDate(report.createdAt)} />
@@ -144,26 +150,26 @@ function ModerationHistory() {
       page={page}
       onPageChange={setPage}
     >
-      <ol className="relative space-y-0 border-s border-border ms-3">
+      <ol className="relative space-y-0 border-s border-line-soft ms-3">
         {query.data?.data.map((item) => (
           <li key={item.id} className="relative pb-7 ps-7">
-            <span className="absolute -start-1.5 top-1 size-3 rounded-full border-2 border-card bg-primary" />
-            <article className="rounded-xl border border-border bg-card p-4">
+            <span className="absolute -start-1.5 top-1 size-3 rounded-full border-2 border-surface bg-primary" />
+            <article className="rounded-control border border-line-soft bg-surface p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <h2 className="font-bold text-foreground">
+                  <h2 className="font-bold text-ink">
                     {historyActionLabels[item.action] ?? item.action}
                   </h2>
-                  <p className="mt-1 text-[13px] text-muted-foreground">
+                  <p className="mt-1 text-[13px] text-copy">
                     {item.entry?.title ?? "محتوای حذف‌شده یا در دسترس‌نبودنی"}
                   </p>
                 </div>
-                <time className="text-[12px] text-muted-foreground">
+                <time className="text-[12px] text-copy">
                   {formatPersianDate(item.createdAt)}
                 </time>
               </div>
               {item.actor ? (
-                <p className="mt-3 text-[13px] text-muted-foreground">
+                <p className="mt-3 text-[13px] text-copy">
                   انجام‌دهنده: {item.actor.displayName}
                 </p>
               ) : null}
@@ -207,9 +213,9 @@ function QueueShell({
       <PageBreadcrumb items={[{ label: "خانه", href: "/" }, { label: breadcrumb }]} />
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div className="space-y-2">
-          <p className="text-[13px] font-semibold text-primary">مدیریت محتوا</p>
-          <h1 className="text-[30px] font-bold text-foreground sm:text-[38px]">{title}</h1>
-          <p className="max-w-2xl text-[15px] leading-8 text-muted-foreground">{description}</p>
+          <p className="text-[13px] font-semibold text-brand-ink">مدیریت محتوا</p>
+          <h1 className="text-page-title text-ink">{title}</h1>
+          <p className="max-w-2xl text-[15px] leading-8 text-copy">{description}</p>
         </div>
         {pagination ? (
           <Badge variant="outline">{formatPersianNumber(pagination.total)} مورد</Badge>
@@ -230,7 +236,7 @@ function QueueShell({
           >
             قبلی
           </Button>
-          <span className="self-center text-[13px] text-muted-foreground">
+          <span className="self-center text-[13px] text-copy">
             صفحه {formatPersianNumber(page)}
           </span>
           <Button
@@ -255,7 +261,7 @@ function Meta({
   text: string;
 }) {
   return (
-    <span className="flex items-center gap-2 text-[13px] text-muted-foreground">
+    <span className="flex items-center gap-2 text-[13px] text-copy">
       {icon && (
         <span className="[&>svg]:size-4" aria-hidden="true">
           {icon}
@@ -271,7 +277,7 @@ function QueueSkeleton() {
     <div className="space-y-3" role="status">
       <span className="sr-only">در حال بارگذاری</span>
       {[1, 2, 3].map((item) => (
-        <Skeleton key={item} className="h-24 rounded-xl" />
+        <Skeleton key={item} className="h-24 rounded-control" />
       ))}
     </div>
   );
@@ -287,7 +293,7 @@ function State({
   onAction?: () => unknown;
 }) {
   return (
-    <div className="rounded-xl border border-dashed border-border bg-card p-10 text-center">
+    <div className="rounded-control border border-dashed border-line-soft bg-surface p-10 text-center">
       <p className="font-bold">{title}</p>
       {action ? (
         <Button className="mt-4" variant="outline" onClick={onAction}>

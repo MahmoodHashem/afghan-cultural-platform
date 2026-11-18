@@ -60,7 +60,7 @@ function CommentMenu({
               variant="ghost"
               size="icon-sm"
               aria-label="اقدام‌های دیدگاه"
-              className="text-muted-foreground"
+              className="text-copy"
             />
           }
         >

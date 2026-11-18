@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 
+import { EmptyState } from "@/components/common/empty-state";
 import { MagnifyingGlassIcon } from "@/components/icons/animated/magnifying-glass";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -29,6 +30,7 @@ import type { EntryBreadcrumbContext } from "../utils/entry-breadcrumb";
 import { createExploreHref, type NormalizedExploreQuery } from "../utils/explore-query";
 import { ExploreFilterForm } from "./explore-filter-form";
 import { ExploreFilterSheet } from "./explore-filter-sheet";
+import { ExploreFilterSidebar } from "./explore-filter-sidebar";
 import { PublicEntryCardView } from "./public-entry-card";
 
 type ExploreResultsPanelProps = {
@@ -52,49 +54,67 @@ function ExploreResultsPanel({
   breadcrumbParent,
 }: ExploreResultsPanelProps) {
   const isSearching = Boolean(query.search);
+  const hasLeadCard = query.page === 1 && entries.length >= 4;
 
   return (
-    <div className="space-y-5">
-      <ExploreSearchBar query={query} />
-      <div className="hidden md:block">
-        <div className="py-2">
-          <ExploreFilterForm taxonomy={taxonomy} query={query} variant="bar" autoApply />
-        </div>
+    <div className="grid gap-8 lg:grid-cols-[272px_minmax(0,1fr)] lg:gap-10">
+      <div className="hidden lg:block">
+        <ExploreFilterSidebar taxonomy={taxonomy} query={query} />
       </div>
 
-      <ExploreToolbar query={query} taxonomy={taxonomy} total={total} />
+      <div className="min-w-0 space-y-5">
+        <div className="hidden md:block lg:hidden">
+          <ExploreFilterForm taxonomy={taxonomy} query={query} variant="bar" autoApply />
+        </div>
 
-      {entries.length > 0 ? (
-        <EngagementAccessProvider>
-          <motion.div layout className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-            <AnimatePresence mode="popLayout">
-              {entries.map((entry, index) => (
-                <motion.div
-                  key={entry.id}
-                  layout
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.18, ease: "easeOut" }}
-                >
-                  <PublicEntryCardView
-                    entry={entry}
-                    imageIndex={index}
-                    breadcrumbParent={breadcrumbParent}
-                  />
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </motion.div>
-        </EngagementAccessProvider>
-      ) : (
-        <EmptySearchState isSearching={isSearching} />
-      )}
+        <ExploreToolbar query={query} taxonomy={taxonomy} total={total} />
+
+        {entries.length > 0 ? (
+          <EngagementAccessProvider>
+            <motion.div layout className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+              <AnimatePresence mode="popLayout">
+                {entries.map((entry, index) => {
+                  const isLead = hasLeadCard && index === 0;
+
+                  return (
+                    <motion.div
+                      key={entry.id}
+                      layout
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      transition={{ duration: 0.18, ease: "easeOut" }}
+                      className={cn("min-w-0", isLead && "sm:col-span-2 xl:col-span-3")}
+                    >
+                      <PublicEntryCardView
+                        entry={entry}
+                        imageIndex={index}
+                        breadcrumbParent={breadcrumbParent}
+                        variant={isLead ? "lead" : "default"}
+                      />
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
+            </motion.div>
+          </EngagementAccessProvider>
+        ) : (
+          <EmptySearchState isSearching={isSearching} search={query.search} />
+        )}
+      </div>
     </div>
   );
 }
 
-function ExploreSearchBar({ query }: { query: NormalizedExploreQuery }) {
+/** Live search; `hero` renders the large white field used inside the navy page hero. */
+function ExploreSearchBar({
+  query,
+  tone = "default",
+}: {
+  query: NormalizedExploreQuery;
+  tone?: "default" | "hero";
+}) {
+  const isHero = tone === "hero";
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [searchValue, setSearchValue] = useState(query.search ?? "");
@@ -136,17 +156,22 @@ function ExploreSearchBar({ query }: { query: NormalizedExploreQuery }) {
   }, [normalizedQuerySearch, query, router, searchValue]);
 
   return (
-    <div className="sticky top-[calc(3.5rem+env(safe-area-inset-top))] z-30  flex items-center px-1 py-2 rounded-full md:top-20 md:mx-0 md:px-0">
+    <div className={cn("min-w-0 flex-1", isHero ? "w-full max-w-xl" : "md:max-w-[420px]")}>
       <label
         htmlFor={searchInputId}
         aria-busy={isPending}
         {...triggerProps}
-        className="group flex  flex-1 items-center gap-3 rounded-full border border-border bg-card px-4 transition-colors focus-within:border-primary focus-within:ring-3 focus-within:ring-ring/35"
+        className={cn(
+          "group flex flex-1 items-center gap-2.5 transition-[border-color,background-color,box-shadow] duration-200",
+          isHero
+            ? "h-14 rounded-full bg-surface ps-5 pe-2 shadow-lift focus-within:shadow-[0_0_0_4px_rgb(255_255_255/0.22)]"
+            : "h-11.5 rounded-control border-[1.5px] border-line bg-paper px-3.5 focus-within:border-ring focus-within:bg-surface focus-within:shadow-focus",
+        )}
       >
         <MagnifyingGlassIcon
           ref={iconRef}
           size={20}
-          className="shrink-0 text-muted-foreground transition-colors group-focus-within:text-primary"
+          className="shrink-0 text-faint transition-colors group-focus-within:text-brand-ink"
           aria-hidden="true"
         />
         <span className="sr-only">جست‌وجو در نتایج</span>
@@ -157,13 +182,16 @@ function ExploreSearchBar({ query }: { query: NormalizedExploreQuery }) {
           value={searchValue}
           onChange={(event) => setSearchValue(event.target.value)}
           placeholder="جست‌وجوی مکان، مشاهیر، رسم یا موضوع..."
-          className=" border-0 bg-transparent px-0 text-[14px] shadow-none focus-visible:border-transparent focus-visible:ring-0"
+          className={cn(
+            "h-full border-0 bg-transparent px-0 shadow-none focus-visible:border-transparent focus-visible:bg-transparent focus-visible:shadow-none",
+            isHero && "text-[15px] md:text-[15px]",
+          )}
         />
         {searchValue ? (
           <button
             type="button"
             onClick={() => setSearchValue("")}
-            className="grid size-8 shrink-0 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/40"
+            className="grid size-8 shrink-0 place-items-center rounded-full text-faint transition-colors hover:bg-line-soft hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             aria-label="پاک کردن جست‌وجو"
           >
             <XMarkIcon className="size-4" aria-hidden="true" />
@@ -185,9 +213,9 @@ function ExploreToolbar({
   total: number;
 }) {
   return (
-    <div className="border-b border-border px-1 pt-1 pb-3">
+    <div className="sticky top-[calc(3.5rem+env(safe-area-inset-top))] z-20 -mx-1 border-b border-line-soft bg-paper/92 px-1 py-2.5 backdrop-blur-md lg:top-16.5">
       <div className="flex items-center justify-between gap-3 md:hidden">
-        <p className="shrink-0 text-[14px] font-bold text-foreground">
+        <p className="shrink-0 text-[14px] font-bold text-ink">
           {formatPersianNumber(total)} مطلب
         </p>
         <div className="flex min-w-0 items-center gap-2">
@@ -201,15 +229,61 @@ function ExploreToolbar({
         <ClearFiltersLink query={query} />
       </div>
 
-      <div className="hidden items-center justify-between gap-3 md:flex">
-        <div className="flex items-center gap-3">
-          <SortSelect query={query} />
+      <div className="hidden min-h-11 items-center justify-between gap-4 md:flex">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <p className="shrink-0 text-[14px] text-faint">
+            <span className="text-[18px] font-bold text-ink">
+              {formatPersianNumber(total)}
+            </span>{" "}
+            مطلب
+          </p>
           <ActiveFilterChips query={query} taxonomy={taxonomy} />
           <ClearFiltersLink query={query} />
         </div>
-        <p className="text-[15px] font-bold text-foreground">{formatPersianNumber(total)} مطلب</p>
+        <SortSegment query={query} />
       </div>
     </div>
+  );
+}
+
+/** Desktop sort as a segmented pill control (reference "pa-sort"); mobile keeps the select. */
+function SortSegment({ query }: { query: NormalizedExploreQuery }) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
+  return (
+    <fieldset
+      className="hidden shrink-0 items-center gap-1 rounded-full border border-line bg-paper p-1 md:inline-flex"
+      aria-busy={isPending}
+    >
+      <legend className="sr-only">مرتب‌سازی</legend>
+      {sortOptions.map((option) => {
+        const isActive = option.value === query.sort;
+
+        return (
+          <button
+            key={option.value}
+            type="button"
+            aria-pressed={isActive}
+            disabled={isPending}
+            onClick={() => {
+              if (isActive) return;
+              startTransition(() => {
+                router.push(createExploreHref(query, { page: 1, sort: option.value }), {
+                  scroll: false,
+                });
+              });
+            }}
+            className={cn(
+              "h-9 rounded-full px-3.5 text-[12.5px] font-bold transition-colors duration-200 outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-default",
+              isActive ? "bg-primary text-primary-foreground" : "text-copy hover:text-brand-ink",
+            )}
+          >
+            {option.label}
+          </button>
+        );
+      })}
+    </fieldset>
   );
 }
 
@@ -233,7 +307,7 @@ function SortSelect({ query }: { query: NormalizedExploreQuery }) {
           });
         }}
       >
-        <SelectTrigger className="h-10 min-w-0 rounded-lg px-3 text-[12px] sm:text-[13px]">
+        <SelectTrigger className="h-10 min-w-0 rounded-full px-3.5 text-[12.5px] font-bold">
           <SelectValue />
         </SelectTrigger>
         <SelectContent align="start" alignItemWithTrigger={false}>
@@ -278,28 +352,14 @@ function ActiveFilterChips({
           href={getRemoveFilterHref(query, filter.key)}
           scroll={false}
           aria-label={`حذف فیلتر ${filter.value}`}
-          className="group inline-flex rounded-full focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/40"
+          className="group inline-flex rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
         >
           <Badge
-            variant="outline"
-            className="
-              cursor-pointer gap-1.5 rounded-full border-border
-              bg-background px-2.5 py-1 text-[12px] font-medium
-              text-foreground transition-colors
-              group-hover:border-primary/30
-              group-hover:bg-primary-light/35
-              group-hover:text-primary
-            "
+            variant="chip"
+            className="cursor-pointer gap-1.5 py-1 transition-colors group-hover:bg-brand-soft/70"
           >
             <span>{filter.value}</span>
-
-            <XMarkIcon
-              className="
-                size-3.5 shrink-0 text-muted-foreground
-                transition-colors group-hover:text-primary
-              "
-              aria-hidden="true"
-            />
+            <XMarkIcon className="size-3.5 shrink-0" aria-hidden="true" />
           </Badge>
         </Link>
       ))}
@@ -354,7 +414,7 @@ function ClearFiltersLink({ query }: { query: NormalizedExploreQuery }) {
     <Link
       href="/explore"
       scroll={false}
-      className="inline-flex items-center gap-1 text-[13px] font-semibold text-primary transition-colors hover:text-primary-hover"
+      className="inline-flex items-center gap-1 rounded-full px-2 text-[12.5px] font-bold text-brand-ink transition-colors hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
     >
       <XMarkIcon className="size-4" aria-hidden="true" />
       حذف همه
@@ -362,23 +422,28 @@ function ClearFiltersLink({ query }: { query: NormalizedExploreQuery }) {
   );
 }
 
-function EmptySearchState({ isSearching }: { isSearching: boolean }) {
+function EmptySearchState({ isSearching, search }: { isSearching: boolean; search?: string }) {
   return (
-    <div className="rounded-[26px] border border-dashed border-border bg-card p-8 text-center">
-      <p className="text-[20px] font-bold text-foreground">نتیجه‌ای پیدا نشد</p>
-      <p className="mx-auto mt-3 max-w-xl text-[15px] leading-8 text-muted-foreground">
-        {isSearching
-          ? "برای این جست‌وجو مطلبی پیدا نشد. عبارت دیگری را امتحان کنید."
-          : "با این فیلترها چیزی پیدا نشد. فیلترها را تغییر دهید."}
-      </p>
-      <Link
-        href="/explore"
-        scroll={false}
-        className={cn(buttonVariants({ variant: "outline" }), "mt-5 rounded-full")}
-      >
-        نمایش همه مطالب
-      </Link>
-    </div>
+    <EmptyState
+      title="نتیجه‌ای پیدا نشد"
+      description={
+        isSearching
+          ? `مطلبی با «${search ?? ""}» پیدا نشد. واژه‌ی دیگری را بیازمایید، یا اگر درباره‌اش می‌دانید، نخستین نفری باشید که آن را می‌نویسد.`
+          : "با این فیلترها چیزی پیدا نشد. فیلترها را تغییر دهید یا همه‌ی مطالب را ببینید."
+      }
+      action={
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          <Link href="/explore" scroll={false} className={buttonVariants({ variant: "pill" })}>
+            نمایش همه‌ی مطالب
+          </Link>
+          {isSearching ? (
+            <Link href="/entries/new" className={buttonVariants({ variant: "outline" })}>
+              نوشتن درباره‌ی این موضوع
+            </Link>
+          ) : null}
+        </div>
+      }
+    />
   );
 }
 
@@ -424,4 +489,4 @@ function findTaxonomyName(items: TaxonomyItem[], slug: string) {
   return items.find((item) => item.slug === slug)?.name;
 }
 
-export { ExploreResultsPanel };
+export { ExploreResultsPanel, ExploreSearchBar };

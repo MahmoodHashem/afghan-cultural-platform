@@ -46,7 +46,7 @@ function AdminUserRecords({
   const activity = useAdminUserActivity(userId, { page, limit: 10 }, tab === "activity");
 
   return (
-    <Card className="gap-0 overflow-hidden rounded-xl py-0 shadow-none">
+    <Card className="gap-0 overflow-hidden rounded-control py-0 shadow-none">
       <Tabs
         value={tab}
         onValueChange={(value) => {
@@ -55,7 +55,7 @@ function AdminUserRecords({
           }
         }}
       >
-        <div className="overflow-x-auto border-b border-border px-4 pt-3">
+        <div className="overflow-x-auto border-b border-line-soft px-4 pt-3">
           <TabsList variant="line" className="h-10 min-w-max gap-5">
             <TabsTrigger value="entries" className="px-2">
               <DocumentTextIcon className="size-4" aria-hidden="true" />
@@ -80,7 +80,7 @@ function AdminUserRecords({
             emptyMessage="این کاربر هنوز مطلبی ثبت نکرده است."
             onRetry={() => void entries.refetch()}
           >
-            <div className="divide-y divide-border">
+            <div className="divide-y divide-line-soft">
               {entries.data?.data.map((entry) => (
                 <article
                   key={entry.id}
@@ -90,14 +90,14 @@ function AdminUserRecords({
                     {entry.status === "PUBLISHED" ? (
                       <Link
                         href={`/entries/${encodeURIComponent(entry.slug)}`}
-                        className="font-semibold text-foreground hover:text-primary"
+                        className="font-semibold text-ink hover:text-brand-ink"
                       >
                         {entry.title}
                       </Link>
                     ) : (
-                      <h3 className="font-semibold text-foreground">{entry.title}</h3>
+                      <h3 className="font-semibold text-ink">{entry.title}</h3>
                     )}
-                    <p className="mt-1 line-clamp-1 text-[12px] text-muted-foreground">
+                    <p className="mt-1 line-clamp-1 text-[12px] text-copy">
                       {entry.summary || "خلاصه‌ای ثبت نشده است."}
                     </p>
                   </div>
@@ -105,7 +105,7 @@ function AdminUserRecords({
                     <Badge variant="outline" className="rounded-full">
                       {adminEntryStatusLabels[entry.status]}
                     </Badge>
-                    <time className="text-[12px] text-muted-foreground" dateTime={entry.updatedAt}>
+                    <time className="text-[12px] text-copy" dateTime={entry.updatedAt}>
                       {formatPersianDate(entry.updatedAt)}
                     </time>
                   </div>
@@ -126,11 +126,11 @@ function AdminUserRecords({
             emptyMessage="این کاربر هنوز دیدگاهی ننوشته است."
             onRetry={() => void comments.refetch()}
           >
-            <div className="divide-y divide-border">
+            <div className="divide-y divide-line-soft">
               {comments.data?.data.map((comment) => (
                 <article key={comment.id} className="space-y-2 p-4">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <p className="text-[12px] font-semibold text-primary">
+                    <p className="text-[12px] font-semibold text-brand-ink">
                       برای {comment.entry.title}
                     </p>
                     <div className="flex items-center gap-2">
@@ -138,14 +138,14 @@ function AdminUserRecords({
                         {adminCommentStatusLabels[comment.status]}
                       </Badge>
                       <time
-                        className="text-[12px] text-muted-foreground"
+                        className="text-[12px] text-copy"
                         dateTime={comment.createdAt}
                       >
                         {formatPersianDate(comment.createdAt)}
                       </time>
                     </div>
                   </div>
-                  <p className="line-clamp-3 text-[13px] leading-7 text-foreground">
+                  <p className="line-clamp-3 text-[13px] leading-7 text-ink">
                     {comment.body}
                   </p>
                 </article>
@@ -165,7 +165,7 @@ function AdminUserRecords({
             emptyMessage="هنوز اقدام مدیریتی برای این حساب ثبت نشده است."
             onRetry={() => void activity.refetch()}
           >
-            <ol className="divide-y divide-border">
+            <ol className="divide-y divide-line-soft">
               {activity.data?.data.map((item) => (
                 <li key={item.id} className="flex gap-3 p-4">
                   <span
@@ -174,18 +174,18 @@ function AdminUserRecords({
                   />
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <p className="font-semibold text-foreground">
+                      <p className="font-semibold text-ink">
                         {adminAccountAuditLabels[item.action]}
                       </p>
-                      <time className="text-[12px] text-muted-foreground" dateTime={item.createdAt}>
+                      <time className="text-[12px] text-copy" dateTime={item.createdAt}>
                         {formatPersianDate(item.createdAt)}
                       </time>
                     </div>
-                    <p className="mt-1 text-[12px] text-muted-foreground">
+                    <p className="mt-1 text-[12px] text-copy">
                       انجام‌دهنده: {item.actor?.displayName ?? "سامانه"}
                     </p>
                     {item.reason ? (
-                      <p className="mt-2 rounded-lg bg-muted/45 px-3 py-2 text-[12px] leading-6 text-foreground">
+                      <p className="mt-2 rounded-control bg-paper px-3 py-2 text-[12px] leading-6 text-ink">
                         {item.reason}
                       </p>
                     ) : null}
@@ -225,8 +225,8 @@ function RecordsState({
         className="flex min-h-48 flex-col items-center justify-center gap-3 p-6 text-center"
         role="alert"
       >
-        <ExclamationTriangleIcon className="size-6 text-destructive" aria-hidden="true" />
-        <p className="text-[13px] text-muted-foreground">این بخش بارگذاری نشد.</p>
+        <ExclamationTriangleIcon className="size-6 text-brand-ink" aria-hidden="true" />
+        <p className="text-[13px] text-copy">این بخش بارگذاری نشد.</p>
         <Button type="button" variant="outline" size="sm" onClick={onRetry}>
           تلاش دوباره
         </Button>
@@ -235,7 +235,7 @@ function RecordsState({
   }
   if (empty) {
     return (
-      <p className="flex min-h-48 items-center justify-center p-6 text-[13px] text-muted-foreground">
+      <p className="flex min-h-48 items-center justify-center p-6 text-[13px] text-copy">
         {emptyMessage}
       </p>
     );
@@ -247,7 +247,7 @@ function RecordsSkeleton() {
   return (
     <div className="space-y-3 p-4" role="status" aria-label="در حال بارگذاری سابقه کاربر">
       {(["one", "two", "three", "four"] as const).map((item) => (
-        <Skeleton key={item} className="h-16 w-full rounded-lg" />
+        <Skeleton key={item} className="h-16 w-full rounded-control" />
       ))}
     </div>
   );
@@ -263,10 +263,10 @@ function RecordPagination({
   if (meta.totalPages <= 1) return null;
   return (
     <nav
-      className="flex items-center justify-between border-t border-border px-4 py-3"
+      className="flex items-center justify-between border-t border-line-soft px-4 py-3"
       aria-label="صفحه‌بندی سابقه کاربر"
     >
-      <span className="text-[12px] text-muted-foreground">
+      <span className="text-[12px] text-copy">
         صفحه {formatPersianNumber(meta.page)} از {formatPersianNumber(meta.totalPages)}
       </span>
       <div className="flex gap-2">

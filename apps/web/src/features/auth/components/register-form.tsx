@@ -124,7 +124,7 @@ function RegisterForm({
           </Label>
           <div className="relative">
             <UserIcon
-              className="pointer-events-none absolute top-1/2 inset-e-3 size-5 -translate-y-1/2 text-muted-foreground"
+              className="pointer-events-none absolute top-1/2 inset-e-3 size-5 -translate-y-1/2 text-faint"
               aria-hidden="true"
             />
             <Input
@@ -134,7 +134,7 @@ function RegisterForm({
               placeholder="نام و نام خانوادگی خود را وارد کنید"
               aria-invalid={Boolean(errors.displayName)}
               aria-describedby={errors.displayName ? "register-name-error" : undefined}
-              className={cn("h-11 pe-10", errors.displayName && "border-destructive")}
+              className={cn("pe-10", errors.displayName && "border-destructive")}
               {...register("displayName")}
             />
           </div>
@@ -147,7 +147,7 @@ function RegisterForm({
           </Label>
           <div className="relative">
             <EnvelopeIcon
-              className="pointer-events-none absolute top-1/2 inset-e-3 size-5 -translate-y-1/2 text-muted-foreground"
+              className="pointer-events-none absolute top-1/2 inset-e-3 size-5 -translate-y-1/2 text-faint"
               aria-hidden="true"
             />
             <Input
@@ -158,7 +158,7 @@ function RegisterForm({
               placeholder="email@example.com"
               aria-invalid={Boolean(errors.email)}
               aria-describedby={errors.email ? "register-email-error" : undefined}
-              className={cn("h-11 pr-3 pl-10 text-left", errors.email && "border-destructive")}
+              className={cn("pr-3.5 pl-10 text-left", errors.email && "border-destructive")}
               {...register("email")}
             />
           </div>
@@ -194,13 +194,19 @@ function RegisterForm({
             {...register("acceptedTerms")}
           />
           <span>
-            <Link href="/terms" className="font-medium text-primary hover:text-primary-hover">
+            <Link
+              href="/terms"
+              className="font-bold text-brand-ink underline decoration-brand/30 underline-offset-4 hover:decoration-brand"
+            >
               شرایط استفاده
             </Link>{" "}
             <label htmlFor="accepted-terms" className="cursor-pointer">
               و
             </label>{" "}
-            <Link href="/privacy" className="font-medium text-primary hover:text-primary-hover">
+            <Link
+              href="/privacy"
+              className="font-bold text-brand-ink underline decoration-brand/30 underline-offset-4 hover:decoration-brand"
+            >
               سیاست حفظ حریم خصوصی
             </Link>{" "}
             <label htmlFor="accepted-terms" className="cursor-pointer">
@@ -214,7 +220,7 @@ function RegisterForm({
       <Button
         type="submit"
         size="lg"
-        className="h-12 w-full shadow-sm"
+        className="h-12 w-full rounded-full text-[15px]"
         disabled={registerMutation.isPending}
         aria-busy={registerMutation.isPending}
       >
@@ -239,12 +245,12 @@ function RegisterForm({
         }
       />
 
-      <p className="text-center text-[15px] text-muted-foreground">
+      <p className="text-center text-[14px] text-copy">
         قبلاً حساب کاربری دارید؟{" "}
         {embedded && onSwitchToLogin ? (
           <button
             type="button"
-            className="font-semibold text-primary hover:text-primary-hover"
+            className="font-bold text-brand-ink hover:text-brand"
             onClick={onSwitchToLogin}
           >
             ورود به حساب
@@ -252,7 +258,7 @@ function RegisterForm({
         ) : (
           <Link
             href={createLoginPath(nextPath ?? searchParams.get("next") ?? "/")}
-            className="font-semibold text-primary hover:text-primary-hover"
+            className="font-bold text-brand-ink hover:text-brand"
           >
             ورود به حساب
           </Link>

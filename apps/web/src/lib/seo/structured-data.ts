@@ -43,7 +43,7 @@ function createOrganizationEntity(): JsonLdValue {
     description: SITE_DESCRIPTION,
     logo: {
       "@type": "ImageObject",
-      url: createAbsoluteUrl("/images/small-logo.png"),
+      url: createAbsoluteUrl("/images/mirasaf-logo.png"),
       width: 455,
       height: 520,
     },

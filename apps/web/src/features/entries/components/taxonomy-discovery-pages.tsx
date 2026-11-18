@@ -11,6 +11,7 @@ import {
   DocumentTextIcon,
   MapPinIcon,
   PaintBrushIcon,
+  PlusIcon,
   PuzzlePieceIcon,
   SparklesIcon,
   TagIcon,
@@ -21,9 +22,12 @@ import Image from "next/image";
 import Link from "next/link";
 import type { ComponentType, ReactNode, SVGProps } from "react";
 
+import { EmptyState } from "@/components/common/empty-state";
+import { PageHero } from "@/components/common/page-hero";
+import { SectionHead } from "@/components/common/section-head";
 import { PageBreadcrumb } from "@/components/layout/page-breadcrumb";
+import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { getProvinceImage } from "@/lib/images/province-images";
 import { cn } from "@/lib/utils";
 import { formatPersianNumber } from "@/lib/utils/formatters";
@@ -99,7 +103,8 @@ const categoryDescriptions: Record<string, string> = {
   "poetry-and-literature": "شاعران، نویسندگان، آثار ادبی و ادبیات زبان‌های مختلف افغانستان.",
   "oral-stories": "قصه‌ها، خاطره‌ها و روایت‌هایی که سینه‌به‌سینه نقل شده‌اند.",
   "festivals-and-ceremonies": "جشن‌ها، مراسم و آیین‌های جمعی در بخش‌های مختلف افغانستان.",
-  "languages-and-expressions": "زبان‌ها، گویش‌ها، اصطلاحات و تعبیرهای رایج در مناطق مختلف افغانستان.",
+  "languages-and-expressions":
+    "زبان‌ها، گویش‌ها، اصطلاحات و تعبیرهای رایج در مناطق مختلف افغانستان.",
   architecture: "سبک‌های معماری، شیوه‌های ساخت و جزئیات بناهای بومی و تاریخی.",
   "cultural-objects": "اشیا و ابزارهایی که در زندگی و فرهنگ مردم کاربرد یا معنای ویژه دارند.",
   "local-games": "بازی‌ها و سرگرمی‌های محلی در مناطق مختلف افغانستان.",
@@ -123,28 +128,32 @@ const categoryIconBySlug: Record<string, ComponentType<{ className?: string }>> 
   "traditional-occupations": WrenchScrewdriverIcon,
 };
 
-const categoryToneClasses = [
-  "bg-primary-light text-primary",
-  "bg-[#F8EEE8] text-terracotta",
-  "bg-[#FFF7E6] text-[#8A6117]",
-  "bg-[#EEF2F0] text-[#55746A]",
+/** Persian-tile colourways used to tint topic tiles in turn. */
+const tileColourways = [
+  "from-lapis to-lapis-deep",
+  "from-turquoise to-turquoise-deep",
+  "from-saffron to-saffron-deep",
+  "from-anar to-anar-deep",
 ] as const;
 
 function ProvinceIndexContent({ provinces, isUnavailable }: ProvinceIndexContentProps) {
   return (
-    <main className="min-h-screen bg-background">
-      <section className="content-container relative overflow-hidden pt-32 pb-16 sm:pt-36">
-        <DecorativeMark className="-start-10 top-24" />
-        <PageBreadcrumb
-          className="relative z-10 mb-8"
-          items={[{ label: "خانه", href: "/" }, { label: "ولایت‌ها" }]}
-        />
-        <PageIntro
-          eyebrow="ولایت‌ها"
-          title="فرهنگ افغانستان بر اساس ولایت"
-          subtitle="با فرهنگ و میراث ولایت‌های افغانستان آشنا شوید."
-        />
+    <main className="min-h-screen bg-paper">
+      <PageHero
+        breadcrumb={
+          <PageBreadcrumb
+            tone="onDark"
+            items={[{ label: "خانه", href: "/" }, { label: "ولایت‌ها" }]}
+          />
+        }
+        eyebrow="ولایت‌ها"
+        title="فرهنگ افغانستان بر اساس ولایت"
+        description="با فرهنگ و میراث ولایت‌های افغانستان آشنا شوید. هر ولایت روایت‌های خودش را دارد؛ اگر از ولایت خود چیزی می‌دانید، آن را برای دیگران ثبت کنید."
+        word="سرزمین"
+        actions={<ContributeLink label="نوشتن درباره‌ی ولایت من" />}
+      />
 
+      <section className="content-container py-10 sm:py-12">
         {isUnavailable ? <ApiNotice /> : null}
 
         {provinces.length > 0 ? (
@@ -153,8 +162,11 @@ function ProvinceIndexContent({ provinces, isUnavailable }: ProvinceIndexContent
           <EmptyState
             title="نمایش ولایت‌ها ممکن نشد"
             description="کمی بعد دوباره تلاش کنید."
-            actionHref="/"
-            actionLabel="بازگشت به خانه"
+            action={
+              <Link href="/" className={buttonVariants({ variant: "pill" })}>
+                بازگشت به خانه
+              </Link>
+            }
           />
         )}
       </section>
@@ -178,25 +190,29 @@ function ProvinceDetailContent({
   const provinceHref = taxonomyItemHref("/provinces", province);
 
   return (
-    <main className="min-h-screen bg-background">
-      <section className="content-container pt-30 pb-16 sm:pt-34">
-        <PageBreadcrumb
-          items={[
-            { label: "خانه", href: "/" },
-            { label: "ولایت‌ها", href: "/provinces" },
-            { label: province.name },
-          ]}
-        />
-
-        <div className="mt-8 grid gap-7 lg:grid-cols-[minmax(0,1fr)_minmax(360px,460px)] lg:items-center lg:gap-12">
-          <div>
-            <h1 className="mt-2 text-[38px] font-bold leading-[1.35] text-foreground sm:text-[46px]">
-              {province.name}
-            </h1>
-            <p className="mt-4 max-w-3xl whitespace-pre-line text-[15px] leading-8 text-muted-foreground sm:text-[16px] sm:leading-9">
-              {province.description || `مطالب مربوط به ${province.name} را ببینید.`}
-            </p>
-            <dl className="mt-6 flex flex-wrap gap-x-7 gap-y-3 border-t border-border pt-5">
+    <main className="min-h-screen bg-paper">
+      <PageHero
+        breadcrumb={
+          <PageBreadcrumb
+            tone="onDark"
+            items={[
+              { label: "خانه", href: "/" },
+              { label: "ولایت‌ها", href: "/provinces" },
+              { label: province.name },
+            ]}
+          />
+        }
+        eyebrow="ولایت"
+        title={province.name}
+        description={
+          <span className="whitespace-pre-line">
+            {province.description || `مطالب مربوط به ${province.name} را ببینید.`}
+          </span>
+        }
+        word={province.name}
+        actions={
+          <>
+            <dl className="flex flex-wrap gap-2">
               <ProvinceStat
                 icon={DocumentTextIcon}
                 label="مطلب منتشرشده"
@@ -204,34 +220,29 @@ function ProvinceDetailContent({
               />
               <ProvinceStat icon={BuildingOffice2Icon} label="ولسوالی" value={districts.length} />
             </dl>
-          </div>
+            <ContributeLink label={`نوشتن درباره‌ی ${province.name}`} />
+          </>
+        }
+        aside={<ProvinceHeroImage province={province} />}
+      />
 
-          <ProvinceHeroImage province={province} />
-        </div>
-
+      <section className="content-container space-y-12 py-10 sm:py-12">
         {districts.length > 0 ? (
-          <div className="mt-11 sm:mt-14">
-            <ProvinceDistrictBrowser
-              provinceName={province.name}
-              districts={districts}
-              allDistrictsHref={allDistrictsHref}
-            />
-          </div>
+          <ProvinceDistrictBrowser
+            provinceName={province.name}
+            districts={districts}
+            allDistrictsHref={allDistrictsHref}
+          />
         ) : null}
 
-        <section id="province-entries" className="mt-11 scroll-mt-28 space-y-6 sm:mt-14">
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <p className="text-[13px] font-semibold text-primary">فرهنگ و میراث</p>
-              <h2 className="mt-1 text-[24px] font-bold text-foreground sm:text-[28px]">
-                مطالب مربوط به {province.name}
-              </h2>
-            </div>
+        <section id="province-entries" className="scroll-mt-28 space-y-6">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <SectionHead title={`مطالب مربوط به ${province.name}`} word="فرهنگ و میراث" />
             {selectedDistrictName ? (
-              <div className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary-light px-3 py-1.5 text-[12px] font-semibold text-primary">
+              <Badge variant="chip" className="gap-1.5">
                 <MapPinIcon className="size-4" aria-hidden="true" />
                 {selectedDistrictName}
-              </div>
+              </Badge>
             ) : null}
           </div>
 
@@ -260,7 +271,8 @@ function ProvinceDetailContent({
               selectedDistrictName
                 ? {
                     title: `هنوز مطلبی درباره ولسوالی ${selectedDistrictName} منتشر نشده است.`,
-                    description: `اگر درباره فرهنگ و تاریخ ولسوالی ${selectedDistrictName} چیزی می‌دانید، می‌توانید آن را ثبت کنید.`,
+                    description:
+                      `اگر درباره فرهنگ و تاریخ ولسوالی ${selectedDistrictName} چیزی می‌دانید، می‌توانید آن را ثبت کنید.`,
                   }
                 : undefined
             }
@@ -278,23 +290,26 @@ function ProvinceDetailContent({
 
 function CategoriesIndexContent({ categories, isUnavailable }: CategoriesIndexContentProps) {
   return (
-    <main className="min-h-screen bg-background">
-      <section className="content-container relative overflow-hidden pt-32 pb-16 sm:pt-36">
-        <DecorativeMark className="-end-10 top-24" />
-        <PageBreadcrumb
-          className="relative z-10 mb-8"
-          items={[{ label: "خانه", href: "/" }, { label: "موضوع‌ها" }]}
-        />
-        <PageIntro
-          eyebrow="موضوع‌ها"
-          title="مطالب بر اساس موضوع"
-          subtitle="مطالب فرهنگی افغانستان را بر اساس موضوع ببینید."
-        />
+    <main className="min-h-screen bg-paper">
+      <PageHero
+        breadcrumb={
+          <PageBreadcrumb
+            tone="onDark"
+            items={[{ label: "خانه", href: "/" }, { label: "موضوع‌ها" }]}
+          />
+        }
+        eyebrow="موضوع‌ها"
+        title="مطالب بر اساس موضوع"
+        description="مطالب فرهنگی افغانستان را بر اساس موضوع ببینید؛ از بناهای تاریخی و موسیقی تا قصه‌های شفاهی، بازی‌های محلی و پیشه‌های سنتی."
+        word="موضوع"
+        actions={<ContributeLink label="افزودن مطلب تازه" />}
+      />
 
+      <section className="content-container py-10 sm:py-12">
         {isUnavailable ? <ApiNotice /> : null}
 
         {categories.length > 0 ? (
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {categories.map((category, index) => (
               <CategoryCard key={category.id} category={category} toneIndex={index} />
             ))}
@@ -303,8 +318,11 @@ function CategoriesIndexContent({ categories, isUnavailable }: CategoriesIndexCo
           <EmptyState
             title="هنوز موضوعی برای نمایش در دسترس نیست."
             description="کمی بعد دوباره تلاش کنید."
-            actionHref="/explore"
-            actionLabel="دیدن مطالب"
+            action={
+              <Link href="/explore" className={buttonVariants({ variant: "pill" })}>
+                دیدن مطالب
+              </Link>
+            }
           />
         )}
       </section>
@@ -328,113 +346,93 @@ function CategoryDetailContent({
   const categoryHref = taxonomyItemHref("/categories", category);
 
   return (
-    <main className="min-h-screen bg-background">
-      <section className="content-container pt-30 pb-16 sm:pt-34">
-        <PageBreadcrumb
-          items={[
-            { label: "خانه", href: "/" },
-            { label: "موضوع‌ها", href: "/categories" },
-            { label: category.name },
-          ]}
-        />
-
-        <div className="mt-7 grid gap-7 rounded-[28px] border border-border bg-card p-5 shadow-[0_2px_10px_rgba(0,0,0,.04)] sm:p-7 lg:grid-cols-[1fr_320px] lg:items-center">
-          <div className="space-y-4">
-            <div className="space-y-3">
-              <h1 className="text-[36px] font-bold leading-[1.35] text-foreground sm:text-[42px]">
-                {category.name}
-              </h1>
-              <p className="max-w-2xl text-[16px] leading-8 text-muted-foreground">
-                {getCategoryDescription(category)}
-              </p>
-            </div>
-            <p className="text-[14px] font-semibold text-primary">
-              {formatPersianNumber(category.entryCount)} مطلب
-            </p>
-          </div>
-
-          <div className="relative overflow-hidden rounded-[24px] border border-border bg-muted p-6">
-            <DecorativeMark className="-end-8 -top-8 opacity-[0.08]" />
-            <CategoryIcon category={category} toneIndex={0} className="size-7" />
-            <p className="mt-5 text-[15px] leading-8 text-muted-foreground">
-              مطالب این موضوع از سراسر افغانستان
-            </p>
-          </div>
-        </div>
-
-        <section className="mt-10 space-y-6">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <div className="space-y-2">
-              <h2 className="text-[22px] font-bold text-foreground">بر اساس ولایت</h2>
-              <p className="text-[14px] leading-7 text-muted-foreground">
-                «سراسری» شامل مطالبی است که به ولایت خاصی وابسته نیستند.
-              </p>
-            </div>
-            <SortLinks options={sortOptions} />
-          </div>
-
-          {isUnavailable ? <ApiNotice /> : null}
-
-          <EntryResults
-            tabsAriaLabel="فیلتر ولایت‌های موضوع"
-            tabs={[
-              {
-                value: "all",
-                href: allAfghanistanHref,
-                isActive: isAllAfghanistanActive,
-                label: "همه افغانستان",
-              },
-              {
-                value: "national",
-                href: nationalHref,
-                isActive: isNationalActive,
-                label: "سراسری",
-                count: nationalCount,
-              },
-              ...provinceFilters.map((province) => ({
-                value: province.slug,
-                href: province.href,
-                isActive: province.isActive,
-                label: province.name,
-                count: province.entryCount,
-              })),
-            ]}
-            entries={entries}
-            emptyKind="category"
-            createPageHref={createPageHref}
-            breadcrumbParent={[
+    <main className="min-h-screen bg-paper">
+      <PageHero
+        breadcrumb={
+          <PageBreadcrumb
+            tone="onDark"
+            items={[
+              { label: "خانه", href: "/" },
               { label: "موضوع‌ها", href: "/categories" },
-              { label: category.name, href: categoryHref },
+              { label: category.name },
             ]}
           />
-        </section>
+        }
+        eyebrow="موضوع"
+        title={category.name}
+        description={getCategoryDescription(category)}
+        word={category.name}
+        actions={
+          <>
+            <Badge variant="glass" className="h-9 px-4 text-[13px]">
+              {formatPersianNumber(category.entryCount)} مطلب از سراسر افغانستان
+            </Badge>
+            <ContributeLink label="افزودن مطلب در این موضوع" />
+          </>
+        }
+        aside={<CategoryEmblem category={category} />}
+      />
+
+      <section className="content-container space-y-6 py-10 sm:py-12">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div className="space-y-2">
+            <SectionHead title="بر اساس ولایت" word="سرزمین" />
+            <p className="text-[13px] leading-7 text-faint">
+              «سراسری» شامل مطالبی است که به ولایت خاصی وابسته نیستند.
+            </p>
+          </div>
+          <SortLinks options={sortOptions} />
+        </div>
+
+        {isUnavailable ? <ApiNotice /> : null}
+
+        <EntryResults
+          tabsAriaLabel="فیلتر ولایت‌های موضوع"
+          tabs={[
+            {
+              value: "all",
+              href: allAfghanistanHref,
+              isActive: isAllAfghanistanActive,
+              label: "همه افغانستان",
+            },
+            {
+              value: "national",
+              href: nationalHref,
+              isActive: isNationalActive,
+              label: "سراسری",
+              count: nationalCount,
+            },
+            ...provinceFilters.map((province) => ({
+              value: province.slug,
+              href: province.href,
+              isActive: province.isActive,
+              label: province.name,
+              count: province.entryCount,
+            })),
+          ]}
+          entries={entries}
+          emptyKind="category"
+          createPageHref={createPageHref}
+          breadcrumbParent={[
+            { label: "موضوع‌ها", href: "/categories" },
+            { label: category.name, href: categoryHref },
+          ]}
+        />
       </section>
     </main>
   );
 }
 
-function PageIntro({
-  eyebrow,
-  title,
-  subtitle,
-}: {
-  eyebrow: string;
-  title: string;
-  subtitle: string;
-}) {
+function ContributeLink({ label }: { label: string }) {
   return (
-    <div className="relative z-10 mx-auto max-w-3xl text-center">
-      <p className="text-[14px] font-bold text-primary">{eyebrow}</p>
-      <h1 className="mt-3 text-[34px] font-bold leading-[1.35] text-foreground sm:text-[42px]">
-        {title}
-      </h1>
-      <p className="mx-auto mt-3 max-w-2xl text-[16px] leading-8 text-muted-foreground">
-        {subtitle}
-      </p>
-    </div>
+    <Link href="/entries/new" className={buttonVariants({ variant: "pill", size: "lg" })}>
+      <PlusIcon data-icon="inline-start" aria-hidden="true" />
+      {label}
+    </Link>
   );
 }
 
+/** Topic tile in one of the four Persian-tile colourways (reference "tile"). */
 function CategoryCard({
   category,
   toneIndex,
@@ -442,60 +440,81 @@ function CategoryCard({
   category: CountedTaxonomyItem;
   toneIndex: number;
 }) {
-  return (
-    <Card className="group rounded-2xl border-border bg-card shadow-[0_2px_10px_rgba(0,0,0,.04)] transition-all duration-200 hover:-translate-y-1 hover:border-primary/25 hover:shadow-[0_14px_34px_rgba(31,41,55,0.08)]">
-      <Link
-        href={taxonomyItemHref("/categories", category)}
-        className="block h-full outline-none focus-visible:ring-3 focus-visible:ring-ring/40"
-      >
-        <CardContent className="flex h-full flex-col p-5">
-          <CategoryIcon category={category} toneIndex={toneIndex} />
-          <h2 className="mt-5 text-[20px] font-bold text-foreground">{category.name}</h2>
-          <p className="mt-2 line-clamp-3 text-[14px] leading-7 text-muted-foreground">
-            {getCategoryDescription(category)}
-          </p>
-          <p className="mt-auto pt-5 text-[13px] font-semibold text-primary">
-            {formatPersianNumber(category.entryCount)} مطلب
-          </p>
-        </CardContent>
-      </Link>
-    </Card>
-  );
-}
-
-function CategoryIcon({
-  category,
-  toneIndex,
-  className,
-}: {
-  category: TaxonomyItem;
-  toneIndex: number;
-  className?: string;
-}) {
   const Icon = categoryIconBySlug[category.slug] ?? TagIcon;
-  const toneClass = categoryToneClasses[toneIndex % categoryToneClasses.length];
+  const colourway = tileColourways[toneIndex % tileColourways.length];
 
   return (
-    <span className={cn("inline-flex size-12 items-center justify-center rounded-2xl", toneClass)}>
-      <Icon className={cn("size-6", className)} aria-hidden="true" />
-    </span>
+    <Link
+      href={taxonomyItemHref("/categories", category)}
+      className={cn(
+        "group relative isolate flex min-h-52 flex-col gap-3 overflow-hidden rounded-bubble bg-linear-150 p-6 pb-5 text-white shadow-card outline-none transition-[translate,box-shadow] duration-300 ease-expo hover:-translate-y-1 hover:shadow-lift focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-ring",
+        colourway,
+      )}
+    >
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-[7px] rounded-[16px_16px_16px_3px] border border-white/16"
+      />
+      <DecorativeMark className="-end-8 -top-8 size-32 opacity-[0.12] brightness-0 invert transition-transform duration-500 ease-expo group-hover:-translate-x-1.5 group-hover:translate-y-1" />
+      <span className="absolute top-5 end-6 font-hand text-[20px] text-white/60">
+        {formatPersianNumber(toneIndex + 1, { minimumIntegerDigits: 2, useGrouping: false })}
+      </span>
+      <span className="relative grid size-11.5 place-items-center rounded-[14px_14px_14px_4px] border border-white/20 bg-white/14">
+        <Icon className="size-5.5" aria-hidden="true" />
+      </span>
+      <h2 className="relative text-[16px] leading-[1.8] font-bold">{category.name}</h2>
+      <p className="relative line-clamp-3 max-w-[30ch] text-[12.5px] leading-[1.9] text-white/78">
+        {getCategoryDescription(category)}
+      </p>
+      <div className="relative mt-auto flex items-center justify-between pt-2">
+        <span className="text-[12px] font-bold text-white/85">
+          {formatPersianNumber(category.entryCount)} مطلب
+        </span>
+        <span className="grid size-7.5 place-items-center rounded-[10px_10px_10px_3px] bg-white/13 opacity-70 transition-[opacity,translate,background-color] duration-250 ease-expo group-hover:-translate-x-1 group-hover:bg-white/22 group-hover:opacity-100">
+          <ArrowLeftIcon className="size-4" aria-hidden="true" />
+        </span>
+      </div>
+    </Link>
   );
 }
 
+/** Large icon tile shown beside a topic's page title. */
+function CategoryEmblem({ category }: { category: TaxonomyItem }) {
+  const Icon = categoryIconBySlug[category.slug] ?? TagIcon;
+
+  return (
+    <div className="relative grid size-40 place-items-center rounded-bubble border border-white/14 bg-white/8 sm:size-48">
+      <span
+        aria-hidden="true"
+        className="absolute inset-2 rounded-[16px_16px_16px_3px] border border-white/12"
+      />
+      <DecorativeMark className="inset-0 m-auto size-36 opacity-[0.1] brightness-0 invert" />
+      <Icon className="relative size-14 text-gold" aria-hidden="true" />
+    </div>
+  );
+}
+
+/** Province photo in a white mat with a red bookmark ribbon, as the reference article figure. */
 function ProvinceHeroImage({ province }: { province: TaxonomyItem }) {
   const image = getProvinceImage(province);
 
   return (
-    <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-muted sm:aspect-[16/10] lg:aspect-[4/3]">
-      <Image
-        src={image.src}
-        alt={image.alt}
-        fill
-        sizes="(min-width: 1024px) 420px, 100vw"
-        className="object-cover"
-        priority
+    <figure className="relative w-full max-w-md rounded-[26px_26px_26px_10px] bg-surface p-2.5 pb-8 shadow-figure lg:w-[420px]">
+      <span
+        aria-hidden="true"
+        className="absolute -top-2 end-8 z-10 h-14 w-3 bg-primary [clip-path:polygon(0_0,100%_0,100%_100%,50%_calc(100%-7px),0_100%)]"
       />
-    </div>
+      <div className="relative aspect-[4/3] overflow-hidden rounded-[16px_16px_16px_4px] border border-line bg-media-ph">
+        <Image
+          src={image.src}
+          alt={image.alt}
+          fill
+          sizes="(min-width: 1024px) 420px, 100vw"
+          className="object-cover"
+          priority
+        />
+      </div>
+    </figure>
   );
 }
 
@@ -509,12 +528,10 @@ function ProvinceStat({
   value: number;
 }) {
   return (
-    <div className="flex items-center gap-2.5">
-      <Icon className="size-5 text-primary" aria-hidden="true" />
-      <div className="flex items-baseline gap-1.5">
-        <dt className="text-[12px] text-muted-foreground">{label}</dt>
-        <dd className="text-[17px] font-bold text-foreground">{formatPersianNumber(value)}</dd>
-      </div>
+    <div className="inline-flex h-9 items-center gap-2 rounded-full border border-white/26 bg-white/12 px-3.5 text-white backdrop-blur-sm">
+      <Icon className="size-4 text-gold" aria-hidden="true" />
+      <dt className="text-[12px] text-white/75">{label}</dt>
+      <dd className="text-[14px] font-bold">{formatPersianNumber(value)}</dd>
     </div>
   );
 }
@@ -566,7 +583,10 @@ function EntryResults({
 
 function SortLinks({ options }: { options: SortOption[] }) {
   return (
-    <nav className="flex flex-wrap gap-2" aria-label="مرتب‌سازی">
+    <nav
+      className="inline-flex w-fit flex-wrap gap-1 rounded-full border border-line bg-paper p-1"
+      aria-label="مرتب‌سازی"
+    >
       {options.map((option) => (
         <Link
           key={option.value}
@@ -574,10 +594,10 @@ function SortLinks({ options }: { options: SortOption[] }) {
           scroll={false}
           aria-current={option.isActive ? "page" : undefined}
           className={cn(
-            "rounded-full border px-3 py-2 text-[12px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/40",
+            "inline-flex h-9 items-center rounded-full px-3.5 text-[12.5px] font-bold transition-colors duration-200 outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
             option.isActive
-              ? "border-primary bg-primary-light text-primary"
-              : "border-border bg-card text-muted-foreground hover:text-foreground",
+              ? "bg-primary text-primary-foreground"
+              : "text-copy hover:text-brand-ink",
           )}
         >
           {option.label}
@@ -600,13 +620,13 @@ function Pagination({
 
   return (
     <nav
-      className="flex flex-col gap-3 border-t border-border pt-6 sm:flex-row sm:items-center sm:justify-between"
+      className="flex flex-col gap-3 pt-4 sm:flex-row-reverse sm:items-center sm:justify-between"
       aria-label="صفحه‌بندی"
     >
-      <p className="text-[14px] text-muted-foreground">
+      <p className="text-[12px] text-faint">
         صفحه {formatPersianNumber(meta.page)} از {formatPersianNumber(meta.totalPages)}
       </p>
-      <div className="flex gap-3">
+      <div className="flex gap-2">
         <PageRelativeLink
           href={createPageHref(Math.max(1, meta.page - 1))}
           disabled={meta.page <= 1}
@@ -642,8 +662,7 @@ function PageRelativeLink({
       aria-disabled={disabled}
       className={cn(
         buttonVariants({ variant: "outline" }),
-        "rounded-full",
-        disabled && "pointer-events-none opacity-50",
+        disabled && "pointer-events-none opacity-40",
       )}
     >
       {children}
@@ -651,36 +670,9 @@ function PageRelativeLink({
   );
 }
 
-function EmptyState({
-  title,
-  description,
-  actionHref,
-  actionLabel,
-}: {
-  title: string;
-  description: string;
-  actionHref: string;
-  actionLabel: string;
-}) {
-  return (
-    <div className="mt-8 rounded-[28px] border border-dashed border-border bg-card p-8 text-center">
-      <p className="text-[20px] font-bold text-foreground">{title}</p>
-      <p className="mx-auto mt-3 max-w-xl text-[15px] leading-8 text-muted-foreground">
-        {description}
-      </p>
-      <Link
-        href={actionHref}
-        className={cn(buttonVariants({ variant: "default" }), "mt-5 rounded-full")}
-      >
-        {actionLabel}
-      </Link>
-    </div>
-  );
-}
-
 function ApiNotice() {
   return (
-    <div className="mt-8 rounded-2xl border border-warning/30 bg-warning/10 px-4 py-3 text-[14px] leading-7 text-warning">
+    <div className="mb-8 rounded-bubble-sm border border-saffron/30 bg-tint-sand px-4 py-3 text-[13.5px] leading-7 text-saffron-deep dark:text-gold">
       فعلاً بخشی از مطالب در دسترس نیست. کمی بعد دوباره تلاش کنید.
     </div>
   );

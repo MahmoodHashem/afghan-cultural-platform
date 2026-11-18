@@ -42,13 +42,13 @@ function AdminHeader() {
   const prefersReducedMotion = useReducedMotion();
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 w-full shrink-0 items-center border-b border-border bg-card/95 px-4 backdrop-blur-sm md:px-6">
+    <header className="sticky top-0 z-30 flex h-16 w-full shrink-0 items-center border-b border-line-soft bg-surface/95 px-4 backdrop-blur-sm md:px-6">
       <div className="flex min-w-0 flex-1 items-center gap-3">
-        <SidebarTrigger className="size-9 rounded-lg border border-border md:border-transparent" />
+        <SidebarTrigger className="size-9 rounded-control border border-line-soft md:border-transparent" />
         <Breadcrumb className="hidden min-w-0 sm:block">
           <BreadcrumbList>
             <BreadcrumbItem>
-              <span className="text-muted-foreground">پنل مدیریت</span>
+              <span className="text-copy">پنل مدیریت</span>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
@@ -78,7 +78,7 @@ function AdminHeader() {
       <div className="mx-4 hidden w-full max-w-md lg:block">
         <div className="relative">
           <MagnifyingGlassIcon
-            className="absolute inset-s-3 top-1/2 size-5 -translate-y-1/2 text-muted-foreground"
+            className="absolute inset-s-3 top-1/2 size-5 -translate-y-1/2 text-copy"
             aria-hidden="true"
           />
           <Input
@@ -86,7 +86,7 @@ function AdminHeader() {
             readOnly
             aria-label="جست‌وجو در پنل مدیریت؛ در مرحله بعد فعال می‌شود"
             placeholder="جست‌وجو در کاربران، مطالب و برچسب‌ها..."
-            className="h-10 rounded-lg ps-10 pe-14 text-[13px]"
+            className="h-10 rounded-control ps-10 pe-14 text-[13px]"
           />
         </div>
       </div>
@@ -101,7 +101,7 @@ function AdminHeader() {
               render={
                 <Button
                   variant="ghost"
-                  className="ms-1 h-11 gap-2 rounded-lg px-2"
+                  className="ms-1 h-11 gap-2 rounded-control px-2"
                   aria-label="منوی حساب مدیر"
                 />
               }
@@ -116,14 +116,14 @@ function AdminHeader() {
                 {user.displayName}
               </span>
               <ChevronDownIcon
-                className="hidden size-3.5 text-muted-foreground xl:block"
+                className="hidden size-3.5 text-copy xl:block"
                 aria-hidden="true"
               />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" sideOffset={8} className="min-w-56">
               <DropdownMenuGroup>
                 <DropdownMenuLabel>
-                  <span className="block text-foreground">{user.displayName}</span>
+                  <span className="block text-ink">{user.displayName}</span>
                   <span className="block font-normal" dir="ltr">
                     {user.email}
                   </span>

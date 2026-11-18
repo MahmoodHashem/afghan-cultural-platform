@@ -61,7 +61,7 @@ function AdminTopicsTable({
         topicColumnHelper.accessor("slug", {
           header: "نشانی",
           cell: ({ row }) => (
-            <span dir="ltr" className="truncate text-[12px] text-muted-foreground">
+            <span dir="ltr" className="truncate text-[12px] text-copy">
               {row.original.slug}
             </span>
           ),
@@ -86,7 +86,7 @@ function AdminTopicsTable({
         topicColumnHelper.accessor("updatedAt", {
           header: "آخرین ویرایش",
           cell: ({ row }) => (
-            <span className="text-[12px] text-muted-foreground">
+            <span className="text-[12px] text-copy">
               {formatPersianDate(row.original.updatedAt)}
             </span>
           ),
@@ -131,7 +131,7 @@ function AdminTopicsTable({
             <div className="flex min-h-64 items-center justify-center px-6 text-center">
               <div className="space-y-2">
                 <h2 className="text-[16px] font-semibold">موردی پیدا نشد</h2>
-                <p className="text-[13px] text-muted-foreground">
+                <p className="text-[13px] text-copy">
                   عبارت جست‌وجو یا فیلترها را تغییر دهید.
                 </p>
               </div>
@@ -146,18 +146,18 @@ function AdminTopicsTable({
                   aria-label={`فهرست ${config.plural}`}
                   aria-rowcount={meta.total + 1}
                 >
-                  <thead className="grid bg-muted/35">
+                  <thead className="grid bg-paper">
                     {table.getHeaderGroups().map((group) => (
                       <tr
                         key={group.id}
-                        className="grid h-11 border-b border-border"
+                        className="grid h-11 border-b border-line-soft"
                         style={{ gridTemplateColumns: TOPIC_GRID_COLUMNS }}
                       >
                         {group.headers.map((header) => (
                           <th
                             key={header.id}
                             scope="col"
-                            className="flex min-w-0 items-center overflow-hidden px-4 text-[12px] font-medium whitespace-nowrap text-muted-foreground"
+                            className="flex min-w-0 items-center overflow-hidden px-4 text-[12px] font-medium whitespace-nowrap text-copy"
                           >
                             {header.isPlaceholder ? null : <table.FlexRender header={header} />}
                           </th>
@@ -175,7 +175,7 @@ function AdminTopicsTable({
                           animate={{ opacity: 1, y: 0 }}
                           exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -4 }}
                           transition={{ duration: prefersReducedMotion ? 0 : 0.18 }}
-                          className="grid min-h-20 border-b border-border transition-colors hover:bg-muted/45"
+                          className="grid min-h-20 border-b border-line-soft transition-colors hover:bg-paper"
                           style={{ gridTemplateColumns: TOPIC_GRID_COLUMNS }}
                         >
                           {row.getAllCells().map((cell) => (
@@ -193,7 +193,7 @@ function AdminTopicsTable({
                 </table>
               </div>
 
-              <div className="divide-y divide-border lg:hidden">
+              <div className="divide-y divide-line-soft lg:hidden">
                 <AnimatePresence initial={false} mode="popLayout">
                   {topics.map((topic, index) => (
                     <motion.article
@@ -222,11 +222,11 @@ function AdminTopicsTable({
                           />
                         )}
                       </div>
-                      <div className="flex flex-wrap items-center gap-2 text-[12px] text-muted-foreground">
+                      <div className="flex flex-wrap items-center gap-2 text-[12px] text-copy">
                         <TopicStatusBadge active={topic.isActive} />
                         <Link
                           href={`/admin/entries?${config.entryFilter}=${topic.id}`}
-                          className="text-primary hover:underline"
+                          className="text-brand-ink hover:underline"
                         >
                           {formatPersianNumber(topic.entryCount)} مطلب
                         </Link>
@@ -248,8 +248,8 @@ function AdminTopicsTable({
 function TopicIdentity({ topic }: { topic: AdminTopic }) {
   return (
     <div className="min-w-0 space-y-1">
-      <p className="truncate text-[14px] font-semibold text-foreground">{topic.name}</p>
-      <p className="line-clamp-2 text-[12px] leading-5 text-muted-foreground">
+      <p className="truncate text-[14px] font-semibold text-ink">{topic.name}</p>
+      <p className="line-clamp-2 text-[12px] leading-5 text-copy">
         {topic.description || "بدون توضیح"}
       </p>
     </div>
@@ -261,7 +261,7 @@ function TopicStatusBadge({ active }: { active: boolean }) {
     <Badge
       variant="outline"
       className={
-        active ? "border-primary/20 bg-primary/8 text-primary" : "bg-muted text-muted-foreground"
+        active ? "border-brand/20 bg-brand-soft text-brand-ink" : "bg-line-soft text-copy"
       }
     >
       {active ? "فعال" : "غیرفعال"}
@@ -304,9 +304,9 @@ function TopicRowActions({
         aria-label={`${topic.isActive ? "غیرفعال‌کردن" : "فعال‌کردن"} ${topic.name}`}
       >
         {topic.isActive ? (
-          <NoSymbolIcon className="size-4 text-destructive" aria-hidden="true" />
+          <NoSymbolIcon className="size-4 text-brand-ink" aria-hidden="true" />
         ) : (
-          <CheckCircleIcon className="size-4 text-primary" aria-hidden="true" />
+          <CheckCircleIcon className="size-4 text-brand-ink" aria-hidden="true" />
         )}
       </Button>
     </div>
@@ -359,8 +359,8 @@ function TopicsPagination({
 }) {
   if (meta.totalPages <= 1) return null;
   return (
-    <div className="flex items-center justify-between gap-3 border-t border-border p-4">
-      <p className="text-[12px] text-muted-foreground">
+    <div className="flex items-center justify-between gap-3 border-t border-line-soft p-4">
+      <p className="text-[12px] text-copy">
         صفحه {formatPersianNumber(meta.page)} از {formatPersianNumber(meta.totalPages)}
       </p>
       <div className="flex gap-2">
@@ -391,7 +391,7 @@ function TopicsSkeleton() {
       {TOPIC_SKELETON_KEYS.map((key) => (
         <div
           key={key}
-          className="flex min-h-20 items-center gap-5 border-b border-border px-4 py-3"
+          className="flex min-h-20 items-center gap-5 border-b border-line-soft px-4 py-3"
         >
           <div className="flex-1 space-y-2">
             <Skeleton className="h-4 w-32" />

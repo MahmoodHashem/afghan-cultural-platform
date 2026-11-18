@@ -1,9 +1,12 @@
 "use client";
 
+import { ArrowLeftIcon, MapPinIcon, PencilSquareIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { PublicHeader } from "@/components/layout/public-header";
+import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 type HeroSlide = {
@@ -50,6 +53,20 @@ const heroSlides: HeroSlide[] = [
   },
 ];
 
+/** Everyday knowledge people carry without thinking of it as "heritage". Each opens the form. */
+const contributionPrompts = [
+  "قصه یا متلی که از بزرگان خانواده شنیده‌اید",
+  "رسم عروسی، نوروز یا جشنی که در محل‌تان زنده است",
+  "بنا، قلعه یا زیارتگاه قدیمی نزدیک خانه‌تان",
+  "هنر یا پیشه‌ای دستی که کم‌کم فراموش می‌شود",
+] as const;
+
+const reassurances = ["به زبان ساده و خودتان", "بدون نیاز به تخصص", "بازبینی پیش از انتشار"];
+
+/**
+ * Home hero: a slow photo carousel of Afghan landmarks under a navy wash, with a message that
+ * invites visitors to add what they know, not only to read.
+ */
 function HomeHero() {
   const [activeSlide, setActiveSlide] = useState(0);
 
@@ -68,16 +85,78 @@ function HomeHero() {
   }, []);
 
   return (
-    <section className="relative min-h-[70svh] overflow-hidden bg-foreground text-white sm:min-h-[82svh] lg:min-h-[90svh]">
+    <section
+      aria-labelledby="home-hero-title"
+      className="relative isolate overflow-hidden bg-hero-navy-deep text-white"
+    >
       <HeroCarousel activeSlide={activeSlide} />
-      <div className="absolute inset-0 bg-linear-to-b from-black/45 via-black/20 to-black/65" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_42%,rgba(214,168,75,0.22),transparent_34%),linear-gradient(90deg,rgba(0,0,0,0.56),transparent_62%)]" />
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 -z-10 bg-linear-to-l from-hero-navy-deep/92 via-hero-navy-deep/70 to-hero-navy-deep/25"
+      />
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 -z-10 bg-linear-to-t from-hero-navy-deep/85 via-transparent to-hero-navy-deep/40"
+      />
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute -bottom-[0.3em] -start-[0.05em] -z-10 font-calli text-[220px] leading-none whitespace-nowrap text-white opacity-[0.07] select-none max-lg:text-[140px]"
+      >
+        میراث
+      </span>
 
       <PublicHeader variant="hero" />
 
-      <div className="relative z-10 flex min-h-[62svh] items-end sm:min-h-[72svh] lg:min-h-[76svh]">
-        <div className="mx-auto w-full max-w-7xl px-5 pt-24 pb-12 sm:px-8 sm:pt-32 sm:pb-16 lg:px-10 lg:pb-20">
-          <fieldset className="mt-8 flex items-center gap-2 sm:mt-10">
+      <div className="content-container relative grid min-h-[78svh] content-end gap-10 pt-24 pb-28 sm:min-h-[84svh] sm:pt-32 md:pb-32 lg:min-h-[88svh] lg:grid-cols-[minmax(0,1.25fr)_minmax(0,0.75fr)] lg:items-end lg:pb-36">
+        <div className="max-w-2xl space-y-5">
+          <p className="font-hand text-[20px] text-gold sm:text-[22px]">
+            حافظه‌ی مشترک ما، به دست همه‌ی ما
+          </p>
+          <h1
+            id="home-hero-title"
+            className="text-[32px] leading-[1.45] font-bold text-white sm:text-[44px] lg:text-[50px]"
+          >
+            میراث افغانستان را با هم ثبت کنیم و زنده نگه داریم
+          </h1>
+          <p className="max-w-[56ch] text-[15px] leading-[2.1] text-white/82 sm:text-[16.5px]">
+            هر قصه‌ای که از بزرگان شنیده‌اید، هر رسمی که در محل‌تان زنده است و هر جایی که
+            می‌شناسید، تکه‌ای از حافظه‌ی مردم ماست. آن را بنویسید تا برای نسل‌های بعد بماند.
+          </p>
+
+          <div className="flex flex-wrap items-center gap-3 pt-1">
+            <Link
+              href="/entries/new"
+              className={cn(buttonVariants({ variant: "pill" }), "h-12 px-6 text-[14.5px]")}
+            >
+              <PencilSquareIcon className="size-5" aria-hidden="true" />
+              دانسته‌ی خود را ثبت کنید
+            </Link>
+            <Link href="/explore" className={cn(buttonVariants({ variant: "glass" }), "h-12")}>
+              گشتی در بایگانی
+              <ArrowLeftIcon className="size-4" aria-hidden="true" />
+            </Link>
+          </div>
+
+          <ul className="flex flex-wrap gap-x-5 gap-y-2 pt-1 text-[12.5px] text-white/70">
+            {reassurances.map((item) => (
+              <li key={item} className="flex items-center gap-2">
+                <span aria-hidden="true" className="size-1.5 rounded-full bg-gold" />
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <PromptCard />
+      </div>
+
+      <div className="absolute inset-x-0 bottom-0">
+        <div className="content-container flex items-center justify-between gap-4 pb-12 md:pb-16">
+          <p className="flex min-w-0 items-center gap-1.5 truncate text-[12px] text-white/70">
+            <MapPinIcon className="size-4 shrink-0 text-gold" aria-hidden="true" />
+            {heroSlides[activeSlide]?.eyebrow}
+          </p>
+          <fieldset className="flex shrink-0 items-center gap-2">
             <legend className="sr-only">تصاویر شاخص</legend>
             {heroSlides.map((slide, index) => (
               <button
@@ -85,8 +164,8 @@ function HomeHero() {
                 type="button"
                 onClick={() => setActiveSlide(index)}
                 className={cn(
-                  "h-1.5 rounded-full bg-white/40 transition-all duration-300 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-white/35",
-                  activeSlide === index ? "w-10 bg-white" : "w-5 hover:bg-white/70",
+                  "h-1.5 rounded-full bg-white/35 transition-[width,background-color] duration-300 ease-expo outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
+                  activeSlide === index ? "w-9 bg-gold" : "w-4 hover:bg-white/70",
                 )}
                 aria-label={`نمایش تصویر ${index + 1}`}
                 aria-current={activeSlide === index}
@@ -99,9 +178,37 @@ function HomeHero() {
   );
 }
 
+/** Glass card of concrete prompts, so visitors see that what they already know counts. */
+function PromptCard() {
+  return (
+    <div className="hidden rounded-bubble border border-white/16 bg-white/10 p-5 backdrop-blur-md lg:block">
+      <p className="text-[15px] font-bold text-white">امروز چه چیزی را ثبت می‌کنید؟</p>
+      <p className="mt-1 text-[12.5px] leading-[1.9] text-white/65">
+        لازم نیست کتاب بنویسید؛ همین‌ها هم میراث‌اند:
+      </p>
+      <ul className="mt-4 space-y-2">
+        {contributionPrompts.map((prompt) => (
+          <li key={prompt}>
+            <Link
+              href="/entries/new"
+              className="group flex items-center justify-between gap-3 rounded-[12px_12px_12px_4px] bg-white/8 px-3.5 py-2.5 text-[13px] leading-[1.8] text-white/88 outline-none transition-colors duration-200 hover:bg-white/16 hover:text-white focus-visible:outline-2 focus-visible:outline-white"
+            >
+              {prompt}
+              <ArrowLeftIcon
+                className="size-4 shrink-0 text-gold transition-transform duration-200 group-hover:-translate-x-1"
+                aria-hidden="true"
+              />
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 function HeroCarousel({ activeSlide }: { activeSlide: number }) {
   return (
-    <div className="absolute inset-0">
+    <div className="absolute inset-0 -z-20">
       {heroSlides.map((slide, index) => (
         <Image
           key={slide.src}

@@ -58,15 +58,13 @@ function ModerationQueue({ taxonomy }: { taxonomy: ContributionTaxonomyData }) {
 
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="space-y-2">
-          <p className="text-[13px] font-semibold text-primary">مدیریت محتوا</p>
-          <h1 className="text-[30px] font-bold leading-10 text-foreground sm:text-[38px]">
-            صف بررسی مطالب
-          </h1>
-          <p className="max-w-2xl text-[15px] leading-8 text-muted-foreground">
+          <p className="text-[13px] font-bold text-brand-ink">مدیریت محتوا</p>
+          <h1 className="text-page-title text-ink">صف بررسی مطالب</h1>
+          <p className="max-w-2xl text-[15px] leading-8 text-copy">
             نسخه فرستاده‌شده هر مطلب را بخوانید و نتیجه بررسی را ثبت کنید.
           </p>
         </div>
-        <div className="rounded-full border border-border bg-card px-4 py-2 text-[13px] font-semibold text-muted-foreground">
+        <div className="rounded-full border border-line-soft bg-surface px-4 py-2 text-[13px] font-semibold text-copy">
           {submissions.isLoading
             ? "در حال شمارش..."
             : `${formatPersianNumber(submissions.data?.meta.total ?? 0)} مطلب در صف`}
@@ -111,8 +109,8 @@ function ModerationFilters({
   onChange: (updates: Partial<ModerationQueueQuery>) => void;
 }) {
   return (
-    <div className="grid gap-2 rounded-xl border border-border bg-card p-2 shadow-[0_2px_10px_rgba(0,0,0,.035)] sm:grid-cols-2 xl:grid-cols-[auto_1fr_1fr_1fr_1fr] xl:items-center">
-      <div className="hidden items-center gap-2 px-3 text-[13px] font-semibold text-muted-foreground xl:flex">
+    <div className="grid gap-2 rounded-control border border-line-soft bg-surface p-2 shadow-card sm:grid-cols-2 xl:grid-cols-[auto_1fr_1fr_1fr_1fr] xl:items-center">
+      <div className="hidden items-center gap-2 px-3 text-[13px] font-semibold text-copy xl:flex">
         <FunnelIcon className="size-4" aria-hidden="true" />
         فیلترها
       </div>
@@ -153,7 +151,7 @@ function ModerationFilters({
         }}
       >
         <SelectTrigger
-          className="h-11 w-full border-0 bg-muted/45 px-3 shadow-none"
+          className="h-11 w-full border-0 bg-paper px-3 shadow-none"
           disabled={isPending}
         >
           <SelectValue />
@@ -199,7 +197,7 @@ function FilterSelect({
     >
       <SelectTrigger
         aria-label={label}
-        className="h-11 w-full border-0 bg-muted/45 px-3 shadow-none"
+        className="h-11 w-full border-0 bg-paper px-3 shadow-none"
         disabled={disabled}
       >
         <SelectValue />
@@ -219,26 +217,26 @@ function FilterSelect({
 
 function ModerationQueueRow({ submission }: { submission: ModerationSubmission }) {
   return (
-    <article className="rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/25">
+    <article className="rounded-control border border-line-soft bg-surface p-4 transition-colors hover:border-brand/25">
       <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_1fr_1fr_150px] lg:items-center">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <h2 className="line-clamp-1 text-[17px] font-bold text-foreground">
+            <h2 className="line-clamp-1 text-[17px] font-bold text-ink">
               {submission.title}
             </h2>
-            <Badge className="rounded-full border border-gold/30 bg-gold/10 text-[#805E1B]">
+            <Badge className="rounded-full border border-saffron/30 bg-tint-sand text-saffron">
               در انتظار بررسی
             </Badge>
           </div>
-          <p className="mt-2 line-clamp-1 text-[13px] text-muted-foreground">
+          <p className="mt-2 line-clamp-1 text-[13px] text-copy">
             {submission.category.name} · {submission.contentType.name}
           </p>
         </div>
-        <div className="flex items-center gap-2 text-[13px] text-muted-foreground">
+        <div className="flex items-center gap-2 text-[13px] text-copy">
           <UserCircleIcon className="size-4 shrink-0" aria-hidden="true" />
           <span className="truncate">{submission.author.displayName}</span>
         </div>
-        <div className="flex items-center gap-2 text-[13px] text-muted-foreground">
+        <div className="flex items-center gap-2 text-[13px] text-copy">
           <CalendarDaysIcon className="size-4 shrink-0" aria-hidden="true" />
           {submission.submittedAt ? formatPersianDate(submission.submittedAt) : "تاریخ نامشخص"}
         </div>
@@ -279,7 +277,7 @@ function ModerationPagination({
       >
         قبلی
       </Link>
-      <span className="text-[13px] text-muted-foreground">
+      <span className="text-[13px] text-copy">
         صفحه {formatPersianNumber(meta.page)} از {formatPersianNumber(meta.totalPages)}
       </span>
       <Link
@@ -302,18 +300,18 @@ function ModerationPagination({
 
 function ModerationQueueEmpty() {
   return (
-    <div className="rounded-xl border border-dashed border-border bg-card px-5 py-14 text-center">
-      <h2 className="text-[20px] font-bold text-foreground">صف بررسی خالی است</h2>
-      <p className="mt-2 text-[14px] text-muted-foreground">در حال حاضر مطلبی منتظر بررسی نیست.</p>
+    <div className="rounded-control border border-dashed border-line-soft bg-surface px-5 py-14 text-center">
+      <h2 className="text-[20px] font-bold text-ink">صف بررسی خالی است</h2>
+      <p className="mt-2 text-[14px] text-copy">در حال حاضر مطلبی منتظر بررسی نیست.</p>
     </div>
   );
 }
 
 function ModerationQueueError({ onRetry }: { onRetry: () => void }) {
   return (
-    <div className="rounded-xl border border-destructive/20 bg-destructive/5 px-5 py-10 text-center">
-      <h2 className="font-bold text-foreground">صف بررسی باز نشد</h2>
-      <p className="mt-2 text-[14px] text-muted-foreground">کمی بعد دوباره تلاش کنید.</p>
+    <div className="rounded-control border border-brand/20 bg-brand-soft px-5 py-10 text-center">
+      <h2 className="font-bold text-ink">صف بررسی باز نشد</h2>
+      <p className="mt-2 text-[14px] text-copy">کمی بعد دوباره تلاش کنید.</p>
       <button
         type="button"
         onClick={onRetry}

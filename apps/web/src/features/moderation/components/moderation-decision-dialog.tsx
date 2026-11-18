@@ -78,7 +78,7 @@ function ModerationDecisionDialog({
 
   return (
     <AlertDialog open={Boolean(decision)} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="max-w-lg rounded-xl border border-border bg-card p-5 text-foreground shadow-[0_24px_70px_rgba(31,41,55,0.16)] sm:max-w-lg">
+      <AlertDialogContent className="max-w-lg rounded-control border border-line-soft bg-surface p-5 text-ink shadow-lift sm:max-w-lg">
         <form
           onSubmit={
             needsReason
@@ -90,11 +90,11 @@ function ModerationDecisionDialog({
           }
         >
           <AlertDialogHeader className="place-items-start text-start">
-            <AlertDialogTitle className="text-[19px] font-bold text-foreground">
+            <AlertDialogTitle className="text-[19px] font-bold text-ink">
               {copy.title}
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-[14px] leading-7 text-muted-foreground">
-              <span className="font-semibold text-foreground">{entryTitle}</span>
+            <AlertDialogDescription className="text-[14px] leading-7 text-copy">
+              <span className="font-semibold text-ink">{entryTitle}</span>
               <br />
               {copy.description}
             </AlertDialogDescription>
@@ -120,14 +120,14 @@ function ModerationDecisionDialog({
                 {...form.register("reason")}
               />
               {form.formState.errors.reason ? (
-                <p id="moderation-reason-error" className="text-[13px] text-destructive">
+                <p id="moderation-reason-error" className="text-[13px] text-brand-ink">
                   {form.formState.errors.reason.message}
                 </p>
               ) : null}
             </div>
           ) : null}
 
-          <AlertDialogFooter className="mt-5 -mx-5 -mb-5 border-border bg-muted/40 px-5 py-4 sm:justify-start">
+          <AlertDialogFooter className="mt-5 -mx-5 -mb-5 border-line-soft bg-paper px-5 py-4 sm:justify-start">
             <AlertDialogCancel className="rounded-full" disabled={isPending}>
               انصراف
             </AlertDialogCancel>

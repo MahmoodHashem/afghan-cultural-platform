@@ -60,7 +60,7 @@ function AdminEntriesToolbar({
   useEffect(() => setSearch(query.search ?? ""), [query.search]);
 
   return (
-    <div className="space-y-4 border-b border-border p-4 md:p-5">
+    <div className="space-y-4 border-b border-line-soft p-4 md:p-5">
       <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
         <search className="min-w-0 flex-1">
           <form
@@ -72,10 +72,10 @@ function AdminEntriesToolbar({
           >
             <label
               htmlFor="admin-entry-search"
-              className="flex h-10 min-w-0 flex-1 items-center gap-2 rounded-lg border border-input bg-card px-3 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/35"
+              className="flex h-10 min-w-0 flex-1 items-center gap-2 rounded-control border border-line bg-surface px-3 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/35"
             >
               <MagnifyingGlassIcon
-                className="size-4 shrink-0 text-muted-foreground"
+                className="size-4 shrink-0 text-copy"
                 aria-hidden="true"
               />
               <span className="sr-only">جست‌وجوی مطلب</span>
@@ -95,8 +95,8 @@ function AdminEntriesToolbar({
           </form>
         </search>
         <div className="flex items-center justify-between gap-3">
-          <p className="text-[13px] text-muted-foreground" aria-live="polite">
-            <strong className="text-foreground">{formatPersianNumber(total)}</strong> مطلب
+          <p className="text-[13px] text-copy" aria-live="polite">
+            <strong className="text-ink">{formatPersianNumber(total)}</strong> مطلب
           </p>
           <AnimatePresence initial={false}>
             {hasFilters ? (
@@ -123,7 +123,7 @@ function AdminEntriesToolbar({
       </div>
 
       <div className="flex items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:thin]">
-        <span className="flex shrink-0 items-center gap-1.5 text-[12px] font-semibold text-muted-foreground">
+        <span className="flex shrink-0 items-center gap-1.5 text-[12px] font-semibold text-copy">
           <FunnelIcon className="size-4" aria-hidden="true" /> فیلترها
         </span>
         <EntrySelect
@@ -222,8 +222,8 @@ function EntrySelect({
         size="sm"
         disabled={disabled}
         className={cn(
-          "h-9 w-auto min-w-36 shrink-0 bg-card text-[12px]",
-          value && "border-primary/40 bg-primary/5 text-primary",
+          "h-9 w-auto min-w-36 shrink-0 bg-surface text-[12px]",
+          value && "border-brand/40 bg-brand-soft text-brand-ink",
         )}
       >
         <SelectValue />

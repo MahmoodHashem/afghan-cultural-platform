@@ -36,7 +36,7 @@ function AdminEntryLifecycleDialog({
   }, [open]);
   return (
     <AlertDialog open={open} onOpenChange={pending ? undefined : onOpenChange}>
-      <AlertDialogContent className="max-w-lg rounded-xl p-5 sm:max-w-lg">
+      <AlertDialogContent className="max-w-lg rounded-control p-5 sm:max-w-lg">
         <AlertDialogHeader className="place-items-start text-start">
           <AlertDialogTitle>{restoring ? "بازگردانی مطلب" : "بایگانی مطلب"}</AlertDialogTitle>
           <AlertDialogDescription className="leading-7">
@@ -56,7 +56,7 @@ function AdminEntryLifecycleDialog({
             className="min-h-28 resize-none"
             placeholder="دلیل این تصمیم را کوتاه و روشن بنویسید..."
           />
-          <p className="text-[12px] text-muted-foreground">
+          <p className="text-[12px] text-copy">
             این توضیح در تاریخچه بررسی مطلب ثبت می‌شود.
           </p>
         </div>

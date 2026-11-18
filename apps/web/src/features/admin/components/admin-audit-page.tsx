@@ -45,7 +45,7 @@ function AdminAuditPage() {
         title="تاریخچه فعالیت‌ها"
         description="ردیابی رویدادهای مهم محتوا، نظارت و مدیریت حساب‌ها"
       />
-      <Card className="gap-0 overflow-hidden rounded-xl py-0">
+      <Card className="gap-0 overflow-hidden rounded-control py-0">
         <AdminAuditToolbar
           query={query}
           total={auditQuery.data?.meta.total ?? 0}
@@ -61,12 +61,12 @@ function AdminAuditPage() {
             className="flex min-h-72 flex-col items-center justify-center gap-4 px-6 text-center"
             role="alert"
           >
-            <span className="flex size-11 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+            <span className="flex size-11 items-center justify-center rounded-full bg-brand-soft text-brand-ink">
               <ExclamationTriangleIcon className="size-5" aria-hidden />
             </span>
             <div className="space-y-1">
               <h2 className="text-[16px] font-semibold">تاریخچه بارگذاری نشد</h2>
-              <p className="text-[13px] text-muted-foreground">
+              <p className="text-[13px] text-copy">
                 {getAdminAuditErrorMessage(auditQuery.error)}
               </p>
             </div>

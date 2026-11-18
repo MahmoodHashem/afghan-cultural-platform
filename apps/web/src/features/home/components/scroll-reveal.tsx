@@ -19,6 +19,7 @@ type ScrollRevealProps = {
   delay?: number;
   amount?: number;
   as?: RevealElement;
+  "aria-labelledby"?: string;
 };
 
 function ScrollReveal({
@@ -27,6 +28,7 @@ function ScrollReveal({
   delay = 0,
   amount = 0.18,
   as = "div",
+  "aria-labelledby": ariaLabelledBy,
 }: ScrollRevealProps) {
   const prefersReducedMotion = useReducedMotion();
   const [animationReady, setAnimationReady] = useState(false);
@@ -37,12 +39,17 @@ function ScrollReveal({
   }, []);
 
   if (!animationReady || prefersReducedMotion) {
-    return <MotionElement className={className}>{children}</MotionElement>;
+    return (
+      <MotionElement className={className} aria-labelledby={ariaLabelledBy}>
+        {children}
+      </MotionElement>
+    );
   }
 
   return (
     <MotionElement
       className={cn("will-change-transform", className)}
+      aria-labelledby={ariaLabelledBy}
       initial={{ opacity: 0, y: 22 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount }}

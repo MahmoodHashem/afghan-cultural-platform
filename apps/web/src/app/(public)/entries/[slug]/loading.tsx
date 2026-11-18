@@ -1,91 +1,46 @@
-import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
+const lineKeys = ["a", "b", "c", "d", "e", "f", "g"] as const;
+const railKeys = ["like", "comment", "save", "share"] as const;
+
+/** Mirrors the reading page: navy hero, matted figure, then rail, prose and side column. */
 function EntryDetailLoading() {
   return (
-    <main className="min-h-screen bg-background" aria-busy="true" aria-label="در حال بارگذاری مطلب">
+    <main className="min-h-screen bg-paper" aria-busy="true" aria-label="در حال بارگذاری مطلب">
       <article>
-        <section className="border-b border-border bg-card pt-24 pb-10 sm:pt-28">
-          <div className="content-container">
-            <Skeleton className="h-5 w-40 rounded-full" />
-
-            <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_420px] lg:items-end">
-              <div className="space-y-5">
-                <div className="flex flex-wrap gap-2">
-                  <Skeleton className="h-7 w-24 rounded-full" />
-                  <Skeleton className="h-7 w-28 rounded-full" />
-                  <Skeleton className="h-7 w-20 rounded-full" />
-                </div>
-                <div className="space-y-4">
-                  <Skeleton className="h-14 w-full max-w-3xl rounded-2xl" />
-                  <Skeleton className="h-14 w-4/5 max-w-2xl rounded-2xl" />
-                  <div className="space-y-2">
-                    <Skeleton className="h-4 w-full max-w-2xl rounded-full" />
-                    <Skeleton className="h-4 w-3/4 max-w-xl rounded-full" />
-                  </div>
-                </div>
-                <div className="flex flex-wrap gap-4">
-                  <Skeleton className="h-5 w-32 rounded-full" />
-                  <Skeleton className="h-5 w-28 rounded-full" />
-                  <Skeleton className="h-5 w-24 rounded-full" />
-                </div>
-              </div>
-
-              <Card className="overflow-hidden rounded-[28px] border-border bg-background">
-                <Skeleton className="aspect-4/3 rounded-none" />
-                <div className="p-4">
-                  <Skeleton className="h-4 w-3/4 rounded-full" />
-                </div>
-              </Card>
+        <section className="bg-linear-155 from-hero-navy to-hero-navy-deep pt-[calc(4.125rem+2.5rem)] pb-60 sm:pt-[calc(4.125rem+3rem)] sm:pb-64">
+          <div className="content-container space-y-4">
+            <Skeleton className="h-3 w-44 rounded-full bg-white/10" />
+            <Skeleton className="h-10 w-full max-w-2xl rounded-full bg-white/12" />
+            <Skeleton className="h-4 w-full max-w-xl rounded-full bg-white/10" />
+            <div className="flex gap-2">
+              <Skeleton className="h-6 w-20 rounded-full bg-white/10" />
+              <Skeleton className="h-6 w-24 rounded-full bg-white/10" />
             </div>
           </div>
         </section>
+        <div className="relative z-10 mx-auto -mt-56 w-[min(100%-2rem,var(--container-article))] rounded-[26px_26px_26px_10px] bg-surface p-3 pb-11 shadow-figure sm:-mt-60">
+          <Skeleton className="aspect-[15/8] rounded-[16px_16px_16px_4px]" />
+        </div>
 
-        <section className="content-container grid gap-8 py-10 lg:grid-cols-[56px_minmax(0,760px)_320px] lg:items-start lg:justify-between">
-          <aside className="hidden self-start lg:block">
-            <div className="flex flex-col items-center gap-4">
-              {[1, 2, 3, 4].map((item) => (
-                <Skeleton key={item} className="size-12 rounded-2xl" />
-              ))}
-              <Skeleton className="h-36 w-2 rounded-full" />
-              <Skeleton className="size-12 rounded-2xl" />
-            </div>
-          </aside>
-
-          <div className="min-w-0 space-y-10">
-            <div className="space-y-5">
-              {[1, 2, 3, 4, 5].map((item) => (
-                <div key={item} className="space-y-3">
-                  {item === 2 || item === 4 ? <Skeleton className="h-9 w-2/3 rounded-xl" /> : null}
-                  <Skeleton className="h-5 w-full rounded-full" />
-                  <Skeleton className="h-5 w-11/12 rounded-full" />
-                  <Skeleton className="h-5 w-4/5 rounded-full" />
-                </div>
-              ))}
-            </div>
-
-            <Card className="rounded-[24px] border-border bg-card">
-              <CardContent className="space-y-5 p-5">
-                <Skeleton className="h-7 w-36 rounded-full" />
-                <Skeleton className="h-24 rounded-2xl" />
-                <Skeleton className="h-32 rounded-2xl" />
-                <Skeleton className="h-10 w-28 rounded-full" />
-              </CardContent>
-            </Card>
-          </div>
-
-          <aside className="space-y-5">
-            {[1, 2, 3].map((item) => (
-              <Card key={item} className="rounded-2xl border-border bg-card">
-                <CardContent className="space-y-3 p-4">
-                  <Skeleton className="h-6 w-32 rounded-full" />
-                  <Skeleton className="h-4 w-full rounded-full" />
-                  <Skeleton className="h-4 w-4/5 rounded-full" />
-                  <Skeleton className="h-4 w-3/5 rounded-full" />
-                </CardContent>
-              </Card>
+        <section className="content-container grid gap-8 py-8 sm:py-10 lg:grid-cols-[56px_minmax(0,1fr)_minmax(0,320px)] lg:gap-10">
+          <div className="hidden flex-col items-center gap-3 lg:flex">
+            {railKeys.map((key) => (
+              <Skeleton key={key} className="size-12 rounded-bubble-sm" />
             ))}
-          </aside>
+          </div>
+          <div className="space-y-4">
+            {lineKeys.map((key, index) => (
+              <Skeleton
+                key={key}
+                className={index % 3 === 2 ? "h-4 w-3/4 rounded-full" : "h-4 w-full rounded-full"}
+              />
+            ))}
+          </div>
+          <div className="hidden space-y-4 lg:block">
+            <Skeleton className="h-56 rounded-card" />
+            <Skeleton className="h-40 rounded-card" />
+          </div>
         </section>
       </article>
     </main>

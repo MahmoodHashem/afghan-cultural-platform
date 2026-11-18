@@ -6,14 +6,17 @@ import {
   Bars3Icon,
   ChevronDownIcon,
   ClipboardDocumentCheckIcon,
+  MoonIcon,
   Squares2X2Icon,
   PlusIcon as StaticPlusIcon,
+  SunIcon,
 } from "@heroicons/react/24/outline";
-import Image from "next/image";
+import { useTheme } from "next-themes";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { type SubmitEvent, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { Logo } from "@/components/brand/mirasaf-logo";
 import { ArrowRightStartOnRectangleIcon as AnimatedLogoutIcon } from "@/components/icons/animated/arrow-right-start-on-rectangle";
 import { ClipboardDocumentCheckIcon as AnimatedClipboardDocumentCheckIcon } from "@/components/icons/animated/clipboard-document-check";
 import { MagnifyingGlassIcon } from "@/components/icons/animated/magnifying-glass";
@@ -77,24 +80,27 @@ const navigationItems = [
 function PublicHeader({ variant = "solid" }: PublicHeaderProps) {
   const pathname = usePathname();
   const [isHeaderCompact, setIsHeaderCompact] = useState(variant === "solid");
+  const [isScrolled, setIsScrolled] = useState(false);
   const [headerContext, setHeaderContext] = useState<HeaderContext | null>(null);
   const isCompact = variant === "solid" || isHeaderCompact;
   const shouldShowHeaderContext = variant === "solid" && Boolean(headerContext?.visible);
 
   useEffect(() => {
-    if (variant === "solid") {
-      setIsHeaderCompact(true);
-      return;
-    }
-
     let animationFrameId = 0;
 
     const updateHeaderState = () => {
       window.cancelAnimationFrame(animationFrameId);
       animationFrameId = window.requestAnimationFrame(() => {
-        setIsHeaderCompact(window.scrollY > 120);
+        setIsScrolled(window.scrollY > 8);
+        if (variant !== "solid") {
+          setIsHeaderCompact(window.scrollY > 120);
+        }
       });
     };
+
+    if (variant === "solid") {
+      setIsHeaderCompact(true);
+    }
 
     updateHeaderState();
     window.addEventListener("scroll", updateHeaderState, { passive: true });
@@ -122,117 +128,93 @@ function PublicHeader({ variant = "solid" }: PublicHeaderProps) {
   return (
     <header
       data-public-header
-      className="pointer-events-none fixed inset-x-0 top-4 z-30 flex justify-center px-4 sm:top-5"
+      data-scrolled={isScrolled ? "" : undefined}
+      className={cn(
+        "fixed inset-x-0 top-0 z-30 border-b transition-[background-color,border-color,box-shadow,color] duration-300 ease-expo",
+        isCompact
+          ? "border-line bg-header text-ink backdrop-blur-md supports-backdrop-filter:bg-header"
+          : "border-transparent bg-transparent text-white",
+        isCompact && isScrolled ? "border-transparent shadow-header" : null,
+      )}
     >
       <nav
-        className={cn(
-          "pointer-events-auto flex items-center rounded-full transition-all duration-500 ease-out",
-          isCompact
-            ? "w-full max-w-260 gap-2 border border-border bg-card px-3 py-1.5 text-foreground shadow-[0_12px_32px_rgba(31,41,55,0.1)]"
-            : "w-full max-w-310 gap-3 border border-transparent bg-transparent px-0 py-0 text-white drop-shadow-[0_3px_18px_rgba(0,0,0,0.34)]",
-        )}
+        className="content-container relative grid h-16.5 items-center"
         aria-label="ناوبری اصلی"
       >
-        <div className="relative grid min-w-0 flex-1">
-          <div
-            className={cn(
-              "col-start-1 row-start-1 flex min-w-0 items-center gap-2 transition-all duration-300 ease-out",
-              shouldShowHeaderContext
-                ? "pointer-events-none -translate-y-1 opacity-0"
-                : "translate-y-0 opacity-100",
-            )}
-            aria-hidden={shouldShowHeaderContext}
-            inert={shouldShowHeaderContext}
+        <div
+          className={cn(
+            "col-start-1 row-start-1 flex min-w-0 items-center gap-6 transition-all duration-300 ease-out",
+            shouldShowHeaderContext
+              ? "pointer-events-none -translate-y-1 opacity-0"
+              : "translate-y-0 opacity-100",
+          )}
+          aria-hidden={shouldShowHeaderContext}
+          inert={shouldShowHeaderContext}
+        >
+          <Link
+            href="/"
+            aria-label="میراث افغانستان، رفتن به خانه"
+            className="flex shrink-0 items-center gap-2.5 rounded-bubble-xs outline-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
           >
-            <Link
-              href="/"
-              className={cn(
-                "flex shrink-0 items-center rounded-full font-bold tracking-normal outline-none transition-all duration-500 focus-visible:ring-3",
-                isCompact
-                  ? "gap-2 px-2 py-1.5 text-[16px] text-foreground hover:text-primary focus-visible:ring-ring/40"
-                  : "gap-3 px-2 py-2 text-[18px] text-white hover:text-white/88 focus-visible:ring-white/35",
-              )}
-            >
-              <Image
-                src="/images/small-logo.png"
-                alt=""
-                width={42}
-                height={48}
-                sizes="42px"
-                className={cn("w-auto", isCompact ? "h-8" : "h-10 brightness-0 invert")}
-              />
-              <span className="hidden sm:inline">میراث افغانستان</span>
-            </Link>
+            <Logo tone={isCompact ? "color" : "onDark"} wordmarkClassName="hidden sm:flex" />
+          </Link>
 
-            <Menubar
-              className={cn(
-                "hidden h-auto border-0 bg-transparent p-0 shadow-none transition-all duration-500 lg:flex",
-                isCompact ? "gap-0" : "gap-4 xl:gap-6",
-              )}
-            >
-              {navigationItems.map((item) => {
-                const isActive =
-                  item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+          <Menubar className="hidden h-auto gap-0.5 border-0 bg-transparent p-0 shadow-none lg:flex">
+            {navigationItems.map((item) => {
+              const isActive =
+                item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
 
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    aria-current={isActive ? "page" : undefined}
-                    className={cn(
-                      "relative h-auto rounded-full font-semibold transition-colors focus-visible:outline-none focus-visible:ring-3",
-                      isCompact
-                        ? "px-3 py-1.5 text-[13px] text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-ring/40"
-                        : "px-3 py-2 text-[14px] text-white/84 hover:bg-transparent hover:text-white focus-visible:ring-white/35",
-                      isActive && isCompact ? "bg-muted text-foreground" : null,
-                    )}
-                  >
-                    {item.label}
-                    {isActive && !isCompact ? (
-                      <span className="absolute inset-x-5 -bottom-1 h-0.5 rounded-full bg-white/72" />
-                    ) : null}
-                  </Link>
-                );
-              })}
-            </Menubar>
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  aria-current={isActive ? "page" : undefined}
+                  className={cn(
+                    "relative rounded-bubble-xs px-2.5 py-1.5 text-[14px] leading-[2] transition-colors duration-200 outline-none focus-visible:outline-2 focus-visible:outline-offset-2",
+                    isCompact
+                      ? "text-copy hover:bg-line-soft hover:text-ink focus-visible:outline-ring"
+                      : "text-white/85 hover:bg-white/10 hover:text-white focus-visible:outline-white",
+                    isActive ? "font-bold" : "font-medium",
+                    isActive && isCompact ? "text-ink" : null,
+                    isActive && !isCompact ? "text-white" : null,
+                  )}
+                >
+                  {item.label}
+                  {isActive ? (
+                    <span
+                      aria-hidden="true"
+                      className="absolute bottom-0.5 left-1/2 h-0.5 w-4.5 -translate-x-1/2 rounded-full bg-gold"
+                    />
+                  ) : null}
+                </Link>
+              );
+            })}
+          </Menubar>
 
-            <HeaderSearch
-              isCompact={isCompact}
-              className="hidden lg:flex"
-              inputClassName={cn(
-                isCompact
-                  ? "text-[13px] text-foreground placeholder:text-foreground"
-                  : "text-[14px] text-background placeholder:text-background",
-              )}
-            />
-
-            <HeaderSearch
-              isCompact
-              placeholder="جست‌وجو..."
-              className="flex min-w-0 flex-1 lg:hidden"
-              inputClassName="text-[13px] text-foreground placeholder:text-muted-foreground"
-            />
-
-            <div className="ms-auto hidden lg:block">
+          <div className="ms-auto flex min-w-0 items-center gap-2.5">
+            <HeaderSearch isCompact={isCompact} className="hidden w-60 xl:w-72 lg:flex" />
+            <HeaderThemeToggle isCompact={isCompact} />
+            <div className="hidden lg:block">
               <HeaderAuthControls isCompact={isCompact} />
             </div>
             <MobileNavigation isCompact={isCompact} />
           </div>
+        </div>
 
-          <div
-            className={cn(
-              "col-start-1 row-start-1 flex min-w-0 items-center transition-all duration-300 ease-out",
-              shouldShowHeaderContext
-                ? "translate-y-0 opacity-100"
-                : "pointer-events-none translate-y-1 opacity-0",
-            )}
-            aria-hidden={!shouldShowHeaderContext}
-            inert={!shouldShowHeaderContext}
-          >
-            {headerContext ? <HeaderContextContent context={headerContext} /> : null}
-          </div>
+        <div
+          className={cn(
+            "col-start-1 row-start-1 flex min-w-0 items-center transition-all duration-300 ease-out",
+            shouldShowHeaderContext
+              ? "translate-y-0 opacity-100"
+              : "pointer-events-none translate-y-1 opacity-0",
+          )}
+          aria-hidden={!shouldShowHeaderContext}
+          inert={!shouldShowHeaderContext}
+        >
+          {headerContext ? <HeaderContextContent context={headerContext} /> : null}
         </div>
       </nav>
+      {isCompact ? <span aria-hidden="true" className="read-progress" /> : null}
     </header>
   );
 }
@@ -242,15 +224,46 @@ function HeaderContextContent({ context }: { context: HeaderContext }) {
     <div className="flex min-w-0 flex-1 items-center gap-3 text-center">
       <Link
         href={context.backHref}
-        className="inline-flex size-8 shrink-0 items-center justify-center rounded-full text-primary transition-colors hover:bg-primary-light focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/40"
+        className={cn(buttonVariants({ variant: "outline", size: "icon" }), "shrink-0")}
         aria-label={context.backLabel}
       >
         <ArrowRightIcon className="size-4" aria-hidden="true" />
       </Link>
-      <p className="w-full truncate text-[14px] font-bold text-foreground sm:text-[15px] text-center">
+      <p className="w-full truncate text-center text-[14px] font-bold text-ink sm:text-[15px]">
         {context.title}
       </p>
     </div>
+  );
+}
+
+function HeaderThemeToggle({ isCompact }: { isCompact: boolean }) {
+  const { resolvedTheme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isDark = mounted && resolvedTheme === "dark";
+
+  return (
+    <button
+      type="button"
+      onClick={() => setTheme(isDark ? "light" : "dark")}
+      aria-label={isDark ? "تغییر به حالت روشن" : "تغییر به حالت تاریک"}
+      className={cn(
+        "hidden size-9.5 shrink-0 place-items-center rounded-bubble-sm border transition-colors duration-200 outline-none focus-visible:outline-2 focus-visible:outline-offset-2 lg:grid",
+        isCompact
+          ? "border-line bg-surface text-copy hover:border-brand hover:bg-brand-soft hover:text-brand-ink focus-visible:outline-ring"
+          : "border-white/35 bg-white/10 text-white hover:bg-white/20 focus-visible:outline-white",
+      )}
+    >
+      {isDark ? (
+        <SunIcon className="size-4.5" aria-hidden="true" />
+      ) : (
+        <MoonIcon className="size-4.5" aria-hidden="true" />
+      )}
+    </button>
   );
 }
 
@@ -258,12 +271,10 @@ function HeaderSearch({
   isCompact,
   placeholder = "جست‌وجو در فرهنگ افغانستان...",
   className,
-  inputClassName,
 }: {
   isCompact: boolean;
   placeholder?: string;
   className?: string;
-  inputClassName?: string;
 }) {
   const router = useRouter();
   const [searchValue, setSearchValue] = useState("");
@@ -278,29 +289,36 @@ function HeaderSearch({
 
   return (
     <form
+      role="search"
       onSubmit={submitSearch}
       {...triggerProps}
       className={cn(
-        "relative items-center gap-2.5 rounded-full border text-foreground shadow-[0_8px_24px_rgba(31,41,55,0.12)] transition-all duration-500 focus-within:border-primary focus-within:ring-3 focus-within:ring-ring/35",
+        "relative h-9.5 min-w-0 items-center rounded-full border-[1.5px] transition-[border-color,background-color,box-shadow] duration-200 focus-within:border-ring focus-within:shadow-focus",
         isCompact
-          ? "h-9 min-w-0 border-border bg-card"
-          : "h-11 min-w-65 flex-1 max-w-95 border-white/70",
+          ? "border-line bg-paper text-ink focus-within:bg-surface"
+          : "border-white/45 bg-white/10 text-white focus-within:bg-white/15",
         className,
       )}
     >
       <MagnifyingGlassIcon
         ref={iconRef}
-        size={20}
-        className={cn("absolute right-2", isCompact ? "text-muted-foreground" : "text-background")}
+        size={18}
+        className={cn(
+          "pointer-events-none absolute start-3",
+          isCompact ? "text-faint" : "text-white/80",
+        )}
         aria-hidden="true"
       />
-      <span className="sr-only">جست‌وجو</span>
+      <label className="sr-only" htmlFor={isCompact ? "header-search-solid" : "header-search-hero"}>
+        جست‌وجو
+      </label>
       <input
+        id={isCompact ? "header-search-solid" : "header-search-hero"}
         type="search"
         placeholder={placeholder}
         className={cn(
-          "h-full min-w-0 flex-1 rounded-full bg-transparent ps-10 outline-none",
-          inputClassName,
+          "h-full w-full min-w-0 rounded-full bg-transparent ps-9.5 pe-3 text-[13px] outline-none",
+          isCompact ? "placeholder:text-faint" : "placeholder:text-white/75",
         )}
         value={searchValue}
         onChange={(e) => setSearchValue(e.target.value)}
@@ -336,8 +354,10 @@ function MobileNavigation({ isCompact }: { isCompact: boolean }) {
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetTrigger
           className={cn(
-            "inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-background text-foreground shadow-[0_8px_24px_rgba(31,41,55,0.14)] outline-none transition-colors hover:bg-background/90 focus-visible:ring-3 lg:hidden",
-            isCompact ? "focus-visible:ring-ring/40" : "focus-visible:ring-white/35",
+            "inline-flex size-9.5 shrink-0 items-center justify-center rounded-bubble-sm border outline-none transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 lg:hidden",
+            isCompact
+              ? "border-line bg-surface text-copy hover:border-brand hover:bg-brand-soft hover:text-brand-ink focus-visible:outline-ring"
+              : "border-white/35 bg-white/10 text-white hover:bg-white/20 focus-visible:outline-white",
           )}
           aria-label="باز کردن منوی ناوبری"
         >
@@ -345,18 +365,11 @@ function MobileNavigation({ isCompact }: { isCompact: boolean }) {
         </SheetTrigger>
         <SheetContent
           side="right"
-          className="w-[min(86vw,22rem)] gap-0 border-border bg-background p-0 text-foreground"
+          className="w-[min(86vw,22rem)] gap-0 border-line bg-surface p-0 text-ink"
         >
-          <SheetHeader className="border-b border-border px-5 py-5 text-start">
-            <SheetTitle className="flex items-center gap-3 text-[18px] font-bold text-primary">
-              <Image
-                src="/images/small-logo.png"
-                alt=""
-                width={34}
-                height={39}
-                className="h-9 w-auto"
-              />
-              میراث افغانستان
+          <SheetHeader className="border-b border-line-soft px-5 py-5 text-start">
+            <SheetTitle className="flex items-center gap-3 text-[17px] font-bold text-ink">
+              <Logo size="sm" withTagline={false} />
             </SheetTitle>
           </SheetHeader>
 
@@ -373,8 +386,8 @@ function MobileNavigation({ isCompact }: { isCompact: boolean }) {
                     onClick={closeMenu}
                     aria-current={isActive ? "page" : undefined}
                     className={cn(
-                      "flex min-h-11 items-center rounded-xl border px-3 text-[15px] font-semibold text-foreground transition-colors hover:bg-card hover:text-primary focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/35",
-                      isActive ? "border-primary/30 bg-primary-light text-primary" : null,
+                      "flex min-h-11 items-center rounded-bubble-sm px-3 text-[14px] font-medium text-copy transition-colors duration-200 hover:bg-line-soft hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+                      isActive ? "bg-brand-soft font-bold text-brand-ink" : null,
                     )}
                   >
                     {item.label}
@@ -383,13 +396,13 @@ function MobileNavigation({ isCompact }: { isCompact: boolean }) {
               })}
             </nav>
 
-            <div className="mt-auto border-t border-border pt-5">
+            <div className="mt-auto border-t border-line-soft pt-5">
               {status === "initializing" ? (
-                <div className="h-10 animate-pulse rounded-full bg-muted" aria-hidden="true" />
+                <div className="h-10 animate-pulse rounded-full bg-line-soft" aria-hidden="true" />
               ) : isAuthenticated && user ? (
                 <div className="space-y-3">
-                  <div className="flex items-center gap-3 rounded-2xl bg-card p-3">
-                    <Avatar size="default" className="size-9 bg-primary-light">
+                  <div className="flex items-center gap-3 rounded-bubble-sm bg-paper p-3">
+                    <Avatar size="default" className="size-9 bg-brand-soft">
                       {user.profileImageUrl ? (
                         <AvatarImage src={user.profileImageUrl} alt="" />
                       ) : null}
@@ -400,10 +413,10 @@ function MobileNavigation({ isCompact }: { isCompact: boolean }) {
                       </AvatarFallback>
                     </Avatar>
                     <div className="min-w-0">
-                      <p className="truncate text-[14px] font-bold text-foreground">
+                      <p className="truncate text-[14px] font-bold text-ink">
                         {user.displayName}
                       </p>
-                      <p className="truncate text-[12px] text-muted-foreground" dir="ltr">
+                      <p className="truncate text-[12px] text-faint" dir="ltr">
                         {user.email}
                       </p>
                     </div>
@@ -412,8 +425,8 @@ function MobileNavigation({ isCompact }: { isCompact: boolean }) {
                     href="/entries/new"
                     onClick={closeMenu}
                     className={cn(
-                      buttonVariants({ variant: "default" }),
-                      "h-11 w-full rounded-full",
+                      buttonVariants({ variant: "pill" }),
+                      "h-11 w-full",
                     )}
                   >
                     <StaticPlusIcon className="size-4" aria-hidden="true" />
@@ -461,7 +474,7 @@ function MobileNavigation({ isCompact }: { isCompact: boolean }) {
                     variant="ghost"
                     disabled={logoutMutation.isPending}
                     onClick={() => setIsLogoutDialogOpen(true)}
-                    className="h-11 w-full rounded-full text-destructive hover:bg-destructive/10 hover:text-destructive"
+                    className="h-11 w-full rounded-full text-brand-ink hover:bg-brand-soft hover:text-brand-ink"
                   >
                     <ArrowRightStartOnRectangleIcon className="size-4" aria-hidden="true" />
                     {logoutMutation.isPending ? "در حال خروج..." : "خروج"}
@@ -474,7 +487,7 @@ function MobileNavigation({ isCompact }: { isCompact: boolean }) {
                     onClick={closeMenu}
                     className={cn(
                       buttonVariants({ variant: "outline" }),
-                      "h-11 w-full rounded-full text-foreground",
+                      "h-11 w-full rounded-full",
                     )}
                   >
                     ورود
@@ -483,8 +496,8 @@ function MobileNavigation({ isCompact }: { isCompact: boolean }) {
                     href="/register"
                     onClick={closeMenu}
                     className={cn(
-                      buttonVariants({ variant: "default" }),
-                      "h-11 w-full rounded-full",
+                      buttonVariants({ variant: "pill" }),
+                      "h-11 w-full",
                     )}
                   >
                     ثبت‌نام
@@ -515,8 +528,8 @@ function HeaderAuthControls({ isCompact }: { isCompact: boolean }) {
     return (
       <div
         className={cn(
-          "ms-auto flex shrink-0 items-center gap-3 rounded-full text-[15px] font-semibold",
-          isCompact ? "h-9 w-24 bg-muted" : "h-11 w-32 bg-white/75",
+          "flex h-9.5 w-36 shrink-0 animate-pulse items-center rounded-bubble-sm",
+          isCompact ? "bg-line-soft" : "bg-white/20",
         )}
         aria-hidden="true"
       />
@@ -525,35 +538,34 @@ function HeaderAuthControls({ isCompact }: { isCompact: boolean }) {
 
   if (status !== "authenticated" || !user) {
     return (
-      <div className="ms-auto flex shrink-0 items-center gap-3 text-[15px] font-semibold">
-        <div className="flex items-center gap-2">
-          <Link
-            href="/login"
-            className={cn(buttonVariants({ variant: "outline" }), "rounded-full text-foreground")}
-          >
-            ورود
-          </Link>
-          <Link
-            href="/register"
-            className={cn(buttonVariants({ variant: "default" }), "rounded-full")}
-          >
-            ثبت‌نام
-          </Link>
-        </div>
+      <div className="flex shrink-0 items-center gap-2">
+        <Link
+          href="/login"
+          className={cn(
+            buttonVariants({ variant: isCompact ? "outline" : "glass" }),
+            "h-9.5",
+            isCompact ? null : "rounded-bubble-sm",
+          )}
+        >
+          <UserCircleIcon size={16} aria-hidden="true" />
+          ورود
+        </Link>
+        <Link href="/register" className={cn(buttonVariants({ variant: "default" }), "h-9.5")}>
+          ثبت‌نام
+        </Link>
       </div>
     );
   }
 
   return (
-    <div className="ms-auto flex shrink-0 items-center gap-2">
+    <div className="flex shrink-0 items-center gap-2">
       <Link
         href="/entries/new"
         {...triggerProps}
         className={cn(
-          "hidden items-center gap-1.5 rounded-full bg-primary font-semibold text-background shadow-[0_12px_30px_rgba(15,118,110,0.22)] transition-colors hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-3 md:inline-flex",
-          isCompact
-            ? "h-9 px-3 text-[13px] focus-visible:ring-ring/40"
-            : "h-11 px-4 text-[14px] focus-visible:ring-white/35",
+          buttonVariants({ variant: "pill" }),
+          "hidden h-9.5 px-4 md:inline-flex",
+          isCompact ? null : "focus-visible:outline-white",
         )}
       >
         <PlusIcon ref={iconRef} size={16} aria-hidden="true" />
@@ -589,16 +601,16 @@ function ProfileMenu({ user, mobile = false }: { user: SafeUser; mobile?: boolea
     <DropdownMenu open={isDropdownOpen} onOpenChange={() => setIsDropdownOpen(!isDropdownOpen)}>
       <DropdownMenuTrigger
         className={cn(
-          "flex items-center rounded-full bg-background text-foreground outline-none transition-colors hover:bg-background/90 focus-visible:ring-3",
+          "flex items-center outline-none transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
           mobile
-            ? "ms-auto  justify-center bg-transparent shadow-none focus-visible:ring-ring/40"
-            : "h-11 gap-1.5 ps-2 pe-3 shadow-[0_8px_24px_rgba(31,41,55,0.14)] focus-visible:ring-white/35",
+            ? "ms-auto justify-center rounded-full bg-transparent"
+            : "h-9.5 gap-1.5 rounded-bubble-sm border border-line bg-surface ps-1 pe-2 text-ink hover:border-brand hover:bg-brand-soft aria-expanded:border-brand aria-expanded:bg-brand-soft",
         )}
         aria-label="باز کردن منوی حساب"
         {...triggerProps}
         aria-expanded={isDropdownOpen}
       >
-        <Avatar size="default" className={cn("bg-primary-light", mobile ? "size-8" : "size-8")}>
+        <Avatar size="default" className={cn("bg-brand-soft", mobile ? "size-8" : "size-7")}>
           {user.profileImageUrl ? <AvatarImage src={user.profileImageUrl} alt="" /> : null}
           <AvatarFallback className={cn("text-[12px] font-bold", getUserAvatarColorClass(user.id))}>
             {createUserInitials(user.displayName)}
@@ -607,7 +619,7 @@ function ProfileMenu({ user, mobile = false }: { user: SafeUser; mobile?: boolea
         {!mobile ? (
           <ChevronDownIcon
             className={cn(
-              "hidden size-4 text-foreground transition-transform aria-expanded:rotate-180 sm:block",
+              "hidden size-4 text-faint transition-transform aria-expanded:rotate-180 sm:block",
             )}
             aria-hidden="true"
             aria-expanded={isDropdownOpen}
@@ -617,12 +629,12 @@ function ProfileMenu({ user, mobile = false }: { user: SafeUser; mobile?: boolea
       <DropdownMenuContent
         align="end"
         sideOffset={12}
-        className="w-64 rounded-[24px] border-border bg-card p-2 text-foreground shadow-[0_24px_70px_rgba(31,41,55,0.14)]"
+        className="w-64 p-2"
       >
         <DropdownMenuGroup>
           <DropdownMenuLabel className="px-3 py-3">
-            <p className="truncate text-[15px] font-bold text-foreground">{user.displayName}</p>
-            <p className="mt-1 truncate text-[13px] font-normal text-muted-foreground" dir="ltr">
+            <p className="truncate text-[14px] font-bold text-ink">{user.displayName}</p>
+            <p className="mt-1 truncate text-[12px] font-normal text-faint" dir="ltr">
               {user.email}
             </p>
           </DropdownMenuLabel>
@@ -631,7 +643,7 @@ function ProfileMenu({ user, mobile = false }: { user: SafeUser; mobile?: boolea
         {!mobile ? (
           <DropdownMenuItem
             render={<Link href="/profile" {...profileAnimation.triggerProps} />}
-            className="rounded-2xl px-3 py-2 text-[14px] text-muted-foreground hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground"
+            className="px-3 py-2 text-copy"
           >
             <AnimatedUserCircleIcon ref={profileAnimation.iconRef} size={16} aria-hidden="true" />
             حساب کاربری
@@ -640,7 +652,7 @@ function ProfileMenu({ user, mobile = false }: { user: SafeUser; mobile?: boolea
         {user.role === "MODERATOR" || user.role === "ADMIN" ? (
           <DropdownMenuItem
             render={<Link href="/moderator" {...moderationAnimation.triggerProps} />}
-            className="rounded-2xl px-3 py-2 text-[14px] text-muted-foreground hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground"
+            className="px-3 py-2 text-copy"
           >
             <AnimatedClipboardDocumentCheckIcon
               ref={moderationAnimation.iconRef}
@@ -653,7 +665,7 @@ function ProfileMenu({ user, mobile = false }: { user: SafeUser; mobile?: boolea
         {user.role === "ADMIN" ? (
           <DropdownMenuItem
             render={<Link href="/admin" {...adminAnimation.triggerProps} />}
-            className="rounded-2xl px-3 py-2 text-[14px] text-muted-foreground hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground"
+            className="px-3 py-2 text-copy"
           >
             <AnimatedSquares2X2Icon ref={adminAnimation.iconRef} size={16} aria-hidden="true" />
             پنل مدیریت
@@ -665,7 +677,7 @@ function ProfileMenu({ user, mobile = false }: { user: SafeUser; mobile?: boolea
           disabled={logoutMutation.isPending}
           onClick={() => setIsLogoutDialogOpen(true)}
           {...logoutAnimation.triggerProps}
-          className="rounded-2xl px-3 py-2 text-[14px] focus:bg-destructive/10"
+          className="px-3 py-2"
         >
           <AnimatedLogoutIcon ref={logoutAnimation.iconRef} size={16} aria-hidden="true" />
           {logoutMutation.isPending ? "در حال خروج..." : "خروج"}
@@ -694,22 +706,22 @@ function LogoutConfirmationDialog({
 }) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="rounded-[24px] border border-border bg-card p-5 text-foreground shadow-[0_24px_70px_rgba(31,41,55,0.16)]">
+      <AlertDialogContent>
         <AlertDialogHeader className="place-items-start text-start">
-          <AlertDialogTitle className="text-[18px] font-bold text-foreground">
+          <AlertDialogTitle>
             از حساب خارج می‌شوید؟
           </AlertDialogTitle>
-          <AlertDialogDescription className="text-[14px] leading-7 text-muted-foreground">
+          <AlertDialogDescription>
             هر وقت خواستید می‌توانید دوباره وارد شوید.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter className="-mx-5 -mb-5 border-border bg-muted/40 px-5 py-4 sm:justify-start">
-          <AlertDialogCancel className="rounded-full">انصراف</AlertDialogCancel>
+        <AlertDialogFooter className="sm:justify-start">
+          <AlertDialogCancel>انصراف</AlertDialogCancel>
           <AlertDialogAction
             type="button"
             disabled={isPending}
             onClick={onConfirm}
-            className="rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            variant="destructive"
           >
             {isPending ? "در حال خروج..." : "خروج"}
           </AlertDialogAction>

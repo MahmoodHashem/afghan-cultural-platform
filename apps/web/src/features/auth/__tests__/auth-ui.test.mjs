@@ -338,9 +338,9 @@ test("form controls include keyboard-accessible controls and associated errors",
   assert.match(passwordField, /type="button"/);
 });
 
-test("login and register use the same approved login logo asset", () => {
-  assert.match(authAssets, /AUTH_LOGO_SRC = "\/images\/large-logo\.png"/);
-  assert.doesNotMatch(authAssets, /AUTH_LOGO_SRC = "\/images\/small-logo\.png"/);
+test("login and register use the shared brand logo", () => {
+  assert.match(read("src/features/auth/components/auth-logo.tsx"), /<Logo size="lg" \/>/);
+  assert.doesNotMatch(authAssets, /AUTH_LOGO_SRC/);
 });
 
 test("OAuth buttons are connected through click handlers", () => {
@@ -383,7 +383,7 @@ test("OAuth errors use controlled Persian messages", () => {
 });
 
 test("profile email verification uses the confirmed backend contracts", () => {
-  assert.match(ownerProfilePage, /EmailVerificationButton email=\{user\.email\} compact/);
+  assert.match(ownerProfilePage, /<EmailVerificationButton\s+email=\{user\.email\}\s+compact/);
   assert.doesNotMatch(ownerProfilePage, /VerifiedEmailBanner email=\{profileUser\.email\}/);
   assert.match(emailVerificationButton, /useResendEmailVerification/);
   assert.match(emailVerificationButton, /RESEND_COOLDOWN_SECONDS = 60/);
@@ -489,7 +489,7 @@ test("owner profile uses safe authenticated user data", () => {
 });
 
 test("owner profile exposes confirmed logout directly in the account page", () => {
-  assert.match(ownerProfilePage, /<ProfileLogoutButton \/>/);
+  assert.match(ownerProfilePage, /<ProfileLogoutButton\b/);
   assert.match(profileLogoutButton, /useLogout/);
   assert.match(profileLogoutButton, /از حساب خارج می‌شوید؟/);
   assert.match(profileLogoutButton, /<AlertDialog/);
@@ -555,7 +555,8 @@ test("mobile authentication surfaces use dynamic viewport and safe-area behavior
   assert.match(authLayout, /min-h-dvh/);
   assert.match(authLayout, /safe-area-inset-top/);
   assert.match(authLayout, /safe-area-inset-bottom/);
-  assert.match(authCard, /sm:rounded-xl/);
+  assert.match(authCard, /data-slot="auth-card"/);
+  assert.match(authLayout, /overscroll-contain/);
   assert.match(mobileShellAuthDrawer, /max-h-\[92dvh\]/);
   assert.match(mobileShellAuthDrawer, /overscroll-contain/);
   assert.match(mobileShellAuthDrawer, /safe-area-inset-bottom/);
@@ -778,6 +779,14 @@ test("homepage hero uses the approved Afghan heritage carousel images", () => {
   assert.match(homeHero, /setInterval/);
 });
 
+test("homepage invites visitors to contribute, not only to read", () => {
+  assert.match(homeHero, /href="\/entries\/new"/);
+  assert.match(homeContent, /KnowledgeMattersSection/);
+  assert.match(homeContent, /HowItWorksSection/);
+  assert.match(homeContent, /ContributionCallout/);
+  assert.match(homeContent, /ImpactStrip/);
+});
+
 test("homepage uses Motion scroll reveals with reduced-motion support", () => {
   assert.match(homeContent, /ScrollReveal/);
   assert.match(homeScrollReveal, /"use client"/);
@@ -788,11 +797,13 @@ test("homepage uses Motion scroll reveals with reduced-motion support", () => {
   assert.match(homeScrollReveal, /prefersReducedMotion/);
 });
 
-test("homepage floating header uses solid controls instead of a glass nav pill", () => {
+test("public header is a full-width bar that is transparent over the home hero", () => {
   assert.match(homeHero, /<PublicHeader variant="hero" \/>/);
+  assert.match(publicHeader, /fixed inset-x-0 top-0/);
   assert.match(publicHeader, /bg-transparent/);
-  assert.match(publicHeader, /bg-background/);
-  assert.match(publicHeader, /bg-primary/);
+  assert.match(publicHeader, /bg-header/);
+  assert.match(publicHeader, /data-scrolled/);
+  assert.match(publicHeader, /className="read-progress"/);
   assert.match(publicHeader, /میراث افغانستان/);
   assert.match(publicHeader, /مطالب/);
   assert.match(publicHeader, /جست‌وجو در فرهنگ افغانستان/);
@@ -803,8 +814,9 @@ test("homepage floating header uses solid controls instead of a glass nav pill",
 test("homepage header compacts on scroll while preserving logo, search, and actions", () => {
   assert.match(publicHeader, /isHeaderCompact/);
   assert.match(publicHeader, /window\.scrollY > 120/);
-  assert.match(publicHeader, /max-w-260 gap-2 border border-border bg-card/);
-  assert.match(publicHeader, /h-9 min-w-0 border-border bg-card/);
+  assert.match(publicHeader, /role="search"/);
+  assert.match(publicHeader, /\/explore\?search=/);
+  assert.match(publicHeader, /HeaderThemeToggle/);
   assert.match(publicHeader, /<HeaderAuthControls isCompact=\{isCompact\} \/>/);
 });
 
@@ -814,7 +826,7 @@ test("homepage mobile navigation uses a shadcn Sheet sidebar", () => {
   assert.match(publicHeader, /side="right"/);
   assert.match(publicHeader, /باز کردن منوی ناوبری/);
   assert.match(publicHeader, /ناوبری موبایل/);
-  assert.match(publicHeader, /focus-within:ring-3/);
+  assert.match(publicHeader, /focus-within:shadow-focus/);
   assert.match(sheet, /Dialog as SheetPrimitive/);
   assert.match(sheet, /XMarkIcon/);
 });
@@ -833,7 +845,7 @@ test("public content pages use the shared shadcn breadcrumb pattern", () => {
   assert.match(shadcnBreadcrumb, /function BreadcrumbPage/);
   assert.match(pageBreadcrumb, /BreadcrumbList/);
   assert.match(pageBreadcrumb, /aria-label="مسیر صفحه"/);
-  assert.match(exploreContent, /<PageBreadcrumb items=\{\[/);
+  assert.match(exploreContent, /<PageBreadcrumb[\s\S]*?items=\{\[/);
   assert.match(entryDetailContent, /<EntryDetailBreadcrumb/);
   assert.match(entryDetailBreadcrumb, /<PageBreadcrumb/);
   assert.match(taxonomyDiscoveryPages, /<PageBreadcrumb/);
@@ -847,9 +859,10 @@ test("public routes provide skeleton loading and controlled error states", () =>
   assert.match(publicError, /بازگشت به خانه/);
   assert.match(exploreLoading, /ExploreLoading/);
   assert.match(exploreLoading, /Skeleton/);
-  assert.match(exploreLoading, /lg:grid-cols-\[320px_1fr\]/);
+  assert.match(exploreLoading, /from-hero-navy/);
+  assert.match(exploreLoading, /lg:grid-cols-\[272px_minmax\(0,1fr\)\]/);
   assert.match(entryDetailLoading, /EntryDetailLoading/);
-  assert.match(entryDetailLoading, /lg:grid-cols-\[56px_minmax\(0,760px\)_320px\]/);
+  assert.match(entryDetailLoading, /lg:grid-cols-\[56px_minmax\(0,1fr\)_minmax\(0,320px\)\]/);
   assert.match(entryDetailLoading, /aria-label="در حال بارگذاری مطلب"/);
   assert.match(provincesLoading, /Skeleton/);
   assert.match(categoriesLoading, /Skeleton/);
@@ -857,18 +870,15 @@ test("public routes provide skeleton loading and controlled error states", () =>
   assert.match(categoryDetailLoading, /CategoryDetailLoading/);
 });
 
-test("homepage footer matches the attached full-width footer design", () => {
-  assert.match(homeFooter, /w-full border-t border-border bg-background/);
+test("site footer keeps brand, link groups, and a legal bar", () => {
+  assert.match(homeFooter, /<footer className="[^"]*bg-footer/);
   assert.match(homeFooter, /میراث افغانستان/);
-  assert.match(homeFooter, /فرهنگ، تاریخ، هویت ما/);
+  assert.match(homeFooter, /<Logo tone="onDark"/);
   assert.match(homeFooter, /دسترسی سریع/);
   assert.match(homeFooter, /منابع/);
-  assert.match(homeFooter, /تازه‌های میراث افغانستان/);
-  assert.match(homeFooter, /ایمیل شما/);
-  assert.match(homeFooter, /siInstagram/);
-  assert.match(homeFooter, /siFacebook/);
-  assert.match(homeFooter, /siX/);
-  assert.match(homeFooter, /siYoutube/);
+  assert.match(homeFooter, /aria-label="پیوندهای حقوقی"/);
+  assert.match(homeFooter, /href: "\/terms"/);
+  assert.match(homeFooter, /href: "\/privacy"/);
 });
 
 test("explore page uses public entries and taxonomy APIs with URL filters", () => {
@@ -1026,7 +1036,7 @@ test("entry detail includes reading navigation and sticky article tools", () => 
   assert.match(entryTableOfContents, /max-h-80/);
   assert.match(entryTableOfContents, /overflow-y-auto/);
   assert.match(entryTableOfContents, /aria-current=\{isActive \? "location" : undefined\}/);
-  assert.match(entryTableOfContents, /border border-primary\/20/);
+  assert.match(entryTableOfContents, /border-s-brand bg-brand-soft/);
   assert.match(entryTableOfContents, /event\.preventDefault\(\)/);
   assert.match(entryTableOfContents, /heading\.scrollIntoView/);
   assert.match(entryTableOfContents, /behavior: window\.matchMedia/);

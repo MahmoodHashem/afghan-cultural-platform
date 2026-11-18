@@ -45,9 +45,9 @@ function PaginationLink({ className, isActive, ...props }: PaginationLinkProps) 
       data-slot="pagination-link"
       data-active={isActive}
       className={cn(
-        buttonVariants({ variant: isActive ? "outline" : "ghost", size: "icon" }),
-        "rounded-lg",
-        isActive && "border-primary/30 bg-primary-light/35 text-primary",
+        buttonVariants({ variant: isActive ? "default" : "outline", size: "icon" }),
+        "min-w-10 size-auto h-10 px-1.5 text-[13px] text-copy",
+        isActive && "text-primary-foreground",
         className,
       )}
       {...props}
@@ -86,7 +86,7 @@ function PaginationEllipsis({ className, ...props }: React.ComponentProps<"span"
     <span
       aria-hidden="true"
       data-slot="pagination-ellipsis"
-      className={cn("flex size-9 items-center justify-center", className)}
+      className={cn("flex size-10 items-center justify-center text-faint", className)}
       {...props}
     >
       <EllipsisHorizontalIcon className="size-4" />

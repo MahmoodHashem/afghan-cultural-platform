@@ -62,8 +62,8 @@ function CommunityModerationActions({ entryId }: { entryId: string }) {
   }
 
   return (
-    <section className="flex flex-wrap items-center gap-2 border-y border-border py-5">
-      <span className="me-2 text-[13px] text-muted-foreground">
+    <section className="flex flex-wrap items-center gap-2 border-y border-line-soft py-5">
+      <span className="me-2 text-[13px] text-copy">
         در بهترشدن این مطلب سهم بگیرید:
       </span>
       <Button
@@ -127,7 +127,7 @@ function RevisionRequestSheet({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full sm:max-w-md" dir="rtl">
-        <SheetHeader className="border-b border-border p-5 pe-14">
+        <SheetHeader className="border-b border-line-soft p-5 pe-14">
           <SheetTitle>پیشنهاد اصلاح به نویسنده</SheetTitle>
           <SheetDescription className="leading-7">
             مطلب فعلی منتشر می‌ماند تا نویسنده تغییرات را آماده کند و ویرایش تأیید شود.
@@ -143,7 +143,7 @@ function RevisionRequestSheet({
             aria-label="دلیل پیشنهاد اصلاح"
           />
         </div>
-        <SheetFooter className="border-t border-border p-5">
+        <SheetFooter className="border-t border-line-soft p-5">
           <Button
             type="button"
             disabled={reason.trim().length < 3 || mutation.isPending}
@@ -199,7 +199,7 @@ function CorrectionSheet({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-lg" dir="rtl">
-        <SheetHeader className="border-b border-border p-5 pe-14">
+        <SheetHeader className="border-b border-line-soft p-5 pe-14">
           <SheetTitle className="text-[20px] font-bold">پیشنهاد اصلاح</SheetTitle>
           <SheetDescription className="leading-7">
             بخش موردنظر و متن درست را بنویسید. پیشنهاد شما پیش از اعمال بررسی می‌شود.
@@ -251,7 +251,7 @@ function CorrectionSheet({
             />
           </FieldLabel>
         </div>
-        <SheetFooter className="border-t border-border bg-muted/30 p-5">
+        <SheetFooter className="border-t border-line-soft bg-paper p-5">
           <Button type="button" disabled={!isValid || mutation.isPending} onClick={submit}>
             {mutation.isPending ? "در حال فرستادن..." : "فرستادن پیشنهاد"}
           </Button>
@@ -291,7 +291,7 @@ function ReportSheet({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-md" dir="rtl">
-        <SheetHeader className="border-b border-border p-5 pe-14">
+        <SheetHeader className="border-b border-line-soft p-5 pe-14">
           <SheetTitle className="text-[20px] font-bold">
             {commentId ? "گزارش دیدگاه" : "گزارش مطلب"}
           </SheetTitle>
@@ -329,7 +329,7 @@ function ReportSheet({
             />
           </FieldLabel>
         </div>
-        <SheetFooter className="border-t border-border bg-muted/30 p-5">
+        <SheetFooter className="border-t border-line-soft bg-paper p-5">
           <Button type="button" disabled={!isValid || mutation.isPending} onClick={submit}>
             {mutation.isPending ? "در حال فرستادن..." : "فرستادن گزارش"}
           </Button>
@@ -342,7 +342,7 @@ function ReportSheet({
 function FieldLabel({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="space-y-2">
-      <span className="text-[13px] font-semibold text-foreground">{label}</span>
+      <span className="text-[13px] font-semibold text-ink">{label}</span>
       {children}
     </div>
   );

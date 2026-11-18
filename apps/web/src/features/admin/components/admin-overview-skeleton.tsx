@@ -10,7 +10,7 @@ function AdminOverviewSkeleton() {
     <div className="space-y-5" role="status" aria-label="در حال بارگذاری نمای کلی" aria-busy="true">
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {STAT_PLACEHOLDERS.map((placeholder) => (
-          <Card key={placeholder} className="min-h-36 justify-center rounded-xl">
+          <Card key={placeholder} className="min-h-36 justify-center rounded-control">
             <CardContent className="flex items-center justify-between gap-4 px-5">
               <div className="space-y-3">
                 <Skeleton className="h-4 w-24" />
@@ -23,23 +23,23 @@ function AdminOverviewSkeleton() {
         ))}
       </div>
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1.65fr)_minmax(300px,0.85fr)]">
-        <Card className="min-h-[380px] rounded-xl">
+        <Card className="min-h-[380px] rounded-control">
           <CardHeader className="flex-row justify-between px-5">
             <Skeleton className="h-5 w-28" />
-            <Skeleton className="h-8 w-32 rounded-lg" />
+            <Skeleton className="h-8 w-32 rounded-control" />
           </CardHeader>
           <CardContent className="px-5">
-            <Skeleton className="h-[280px] w-full rounded-lg" />
+            <Skeleton className="h-[280px] w-full rounded-control" />
           </CardContent>
         </Card>
-        <Card className="min-h-[380px] rounded-xl">
+        <Card className="min-h-[380px] rounded-control">
           <CardHeader className="px-5">
             <Skeleton className="h-5 w-28" />
           </CardHeader>
           <CardContent className="space-y-4 px-5">
             {ATTENTION_PLACEHOLDERS.map((placeholder) => (
               <div key={placeholder} className="flex items-center gap-3">
-                <Skeleton className="size-8 rounded-lg" />
+                <Skeleton className="size-8 rounded-control" />
                 <div className="flex-1 space-y-2">
                   <Skeleton className="h-3.5 w-2/3" />
                   <Skeleton className="h-3 w-1/2" />
@@ -49,7 +49,7 @@ function AdminOverviewSkeleton() {
           </CardContent>
         </Card>
       </div>
-      <Card className="rounded-xl">
+      <Card className="rounded-control">
         <CardHeader className="px-5">
           <Skeleton className="h-5 w-28" />
         </CardHeader>

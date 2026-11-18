@@ -56,7 +56,7 @@ function EmailVerificationButton({
       type="button"
       variant={compact ? "ghost" : "outline"}
       size={compact ? "sm" : "default"}
-      className={cn(compact && "text-primary hover:bg-primary-light hover:text-primary", className)}
+      className={cn(compact && "text-brand-ink hover:bg-brand-soft hover:text-brand-ink", className)}
       disabled={resendVerification.isPending || cooldownSeconds > 0}
       aria-live="polite"
       onClick={resend}

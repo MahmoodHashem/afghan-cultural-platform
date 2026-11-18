@@ -64,7 +64,7 @@ function AdminAuditTable({
         helper.accessor("createdAt", {
           header: "زمان",
           cell: ({ row }) => (
-            <span className="text-[12px] text-muted-foreground">
+            <span className="text-[12px] text-copy">
               {formatPersianDate(row.original.createdAt)}
             </span>
           ),
@@ -104,7 +104,7 @@ function AdminAuditTable({
             <>
               <div className="hidden lg:block">
                 <table className="grid w-full" aria-label="تاریخچه فعالیت‌های مدیریتی">
-                  <thead className="grid bg-muted/35">
+                  <thead className="grid bg-paper">
                     {table.getHeaderGroups().map((group) => (
                       <tr
                         key={group.id}
@@ -114,7 +114,7 @@ function AdminAuditTable({
                         {group.headers.map((header) => (
                           <th
                             key={header.id}
-                            className="flex min-w-0 items-center overflow-hidden px-4 text-start text-[12px] font-medium whitespace-nowrap text-muted-foreground"
+                            className="flex min-w-0 items-center overflow-hidden px-4 text-start text-[12px] font-medium whitespace-nowrap text-copy"
                           >
                             {header.isPlaceholder ? null : <table.FlexRender header={header} />}
                           </th>
@@ -136,7 +136,7 @@ function AdminAuditTable({
                           animate={{ opacity: 1, x: 0, y: 0 }}
                           exit={{ opacity: 0, x: reducedMotion ? 0 : pageDirection * -8 }}
                           transition={{ duration: reducedMotion ? 0 : 0.18 }}
-                          className="grid min-h-20 border-b transition-colors hover:bg-muted/40"
+                          className="grid min-h-20 border-b transition-colors hover:bg-paper"
                           style={{ gridTemplateColumns: COLUMNS }}
                         >
                           {row.getAllCells().map((cell) => (
@@ -170,7 +170,7 @@ function AdminAuditTable({
                         <EyeIcon className="size-4" aria-hidden />
                       </Button>
                     </div>
-                    <div className="flex items-center justify-between gap-3 text-[12px] text-muted-foreground">
+                    <div className="flex items-center justify-between gap-3 text-[12px] text-copy">
                       <Person person={item.actor} />
                       <time dateTime={item.createdAt}>{formatPersianDate(item.createdAt)}</time>
                     </div>
@@ -192,11 +192,11 @@ function AdminAuditTable({
 function ActionBadge({ action }: { action: AdminAuditItem["action"] }) {
   const meta = getAdminAuditActionMeta(action);
   const tones = {
-    blue: "text-blue-700",
-    green: "text-primary",
-    orange: "text-amber-700",
-    red: "text-destructive",
-    neutral: "text-muted-foreground",
+    blue: "text-lapis dark:text-copy",
+    green: "text-ok",
+    orange: "text-saffron-deep dark:text-gold",
+    red: "text-brand-ink",
+    neutral: "text-copy",
   };
   return (
     <Badge variant="outline" className={tones[meta.tone]}>
@@ -206,11 +206,11 @@ function ActionBadge({ action }: { action: AdminAuditItem["action"] }) {
 }
 
 function Person({ person }: { person: AdminAuditPerson | null }) {
-  if (!person) return <span className="text-[12px] text-muted-foreground">سیستم</span>;
+  if (!person) return <span className="text-[12px] text-copy">سیستم</span>;
   return (
     <Link
       href={`/admin/users/${person.id}`}
-      className="flex min-w-0 items-center gap-2 hover:text-primary"
+      className="flex min-w-0 items-center gap-2 hover:text-brand-ink"
     >
       <Avatar className="size-7">
         {person.profileImageUrl ? <AvatarImage src={person.profileImageUrl} alt="" /> : null}
@@ -227,7 +227,7 @@ function TargetUser({ person }: { person: AdminAuditPerson | null }) {
   return person ? (
     <Person person={person} />
   ) : (
-    <span className="text-[12px] text-muted-foreground">-</span>
+    <span className="text-[12px] text-copy">-</span>
   );
 }
 
@@ -236,7 +236,7 @@ function AuditContext({ item }: { item: AdminAuditItem }) {
     return (
       <Link
         href={`/admin/entries/${item.entry.id}`}
-        className="line-clamp-2 text-[12px] hover:text-primary"
+        className="line-clamp-2 text-[12px] hover:text-brand-ink"
       >
         {item.entry.title}
       </Link>
@@ -245,11 +245,11 @@ function AuditContext({ item }: { item: AdminAuditItem }) {
     return <span className="line-clamp-1 text-[12px]">{item.targetUser.displayName}</span>;
   if (item.report)
     return (
-      <span className="font-mono text-[11px] text-muted-foreground" dir="ltr">
+      <span className="font-mono text-[11px] text-copy" dir="ltr">
         {item.report.id}
       </span>
     );
-  return <span className="text-[12px] text-muted-foreground">رویداد سیستمی</span>;
+  return <span className="text-[12px] text-copy">رویداد سیستمی</span>;
 }
 
 function AuditPagination({
@@ -273,7 +273,7 @@ function AuditPagination({
       >
         قبلی
       </Button>
-      <span className="text-[12px] text-muted-foreground">
+      <span className="text-[12px] text-copy">
         صفحه {formatPersianNumber(meta.page)} از {formatPersianNumber(meta.totalPages)}
       </span>
       <Button
@@ -293,7 +293,7 @@ function AuditEmpty() {
     <div className="flex min-h-64 items-center justify-center p-6 text-center">
       <div className="space-y-2">
         <h2 className="text-[16px] font-semibold">فعالیتی پیدا نشد</h2>
-        <p className="text-[13px] text-muted-foreground">فیلترها را تغییر دهید.</p>
+        <p className="text-[13px] text-copy">فیلترها را تغییر دهید.</p>
       </div>
     </div>
   );

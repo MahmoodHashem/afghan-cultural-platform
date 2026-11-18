@@ -54,7 +54,7 @@ function AdminReportsTable({
         helper.accessor("reason", {
           header: "دلیل",
           cell: ({ row }) => (
-            <span className="line-clamp-2 text-[12px] text-muted-foreground">
+            <span className="line-clamp-2 text-[12px] text-copy">
               {reportReasonLabels[row.original.reason]}
             </span>
           ),
@@ -66,7 +66,7 @@ function AdminReportsTable({
         helper.accessor("createdAt", {
           header: "زمان گزارش",
           cell: ({ row }) => (
-            <span className="text-[12px] text-muted-foreground">
+            <span className="text-[12px] text-copy">
               {formatPersianDate(row.original.createdAt)}
             </span>
           ),
@@ -75,7 +75,7 @@ function AdminReportsTable({
           id: "reviewer",
           header: "بررسی‌کننده",
           cell: ({ row }) => (
-            <span className="truncate text-[12px] text-muted-foreground">
+            <span className="truncate text-[12px] text-copy">
               {row.original.reviewedBy?.displayName ?? "هنوز بررسی نشده"}
             </span>
           ),
@@ -115,7 +115,7 @@ function AdminReportsTable({
             <>
               <div className="hidden lg:block">
                 <table className="grid w-full" aria-label="فهرست گزارش‌ها">
-                  <thead className="grid bg-muted/35">
+                  <thead className="grid bg-paper">
                     {table.getHeaderGroups().map((group) => (
                       <tr
                         key={group.id}
@@ -125,7 +125,7 @@ function AdminReportsTable({
                         {group.headers.map((header) => (
                           <th
                             key={header.id}
-                            className="flex min-w-0 items-center overflow-hidden px-4 text-start text-[12px] font-medium whitespace-nowrap text-muted-foreground"
+                            className="flex min-w-0 items-center overflow-hidden px-4 text-start text-[12px] font-medium whitespace-nowrap text-copy"
                           >
                             {header.isPlaceholder ? null : <table.FlexRender header={header} />}
                           </th>
@@ -147,7 +147,7 @@ function AdminReportsTable({
                           animate={{ opacity: 1, x: 0, y: 0 }}
                           exit={{ opacity: 0, x: reducedMotion ? 0 : pageDirection * -8 }}
                           transition={{ duration: reducedMotion ? 0 : 0.18 }}
-                          className="grid min-h-20 border-b transition-colors hover:bg-muted/40"
+                          className="grid min-h-20 border-b transition-colors hover:bg-paper"
                           style={{ gridTemplateColumns: COLUMNS }}
                         >
                           {row.getAllCells().map((cell) => (
@@ -181,7 +181,7 @@ function AdminReportsTable({
                     <div className="flex flex-wrap items-center gap-2">
                       <AdminReportStatusBadge status={report.status} />
                       <Badge variant="outline">{adminReportTargetLabels[report.targetType]}</Badge>
-                      <span className="text-[12px] text-muted-foreground">
+                      <span className="text-[12px] text-copy">
                         {reportReasonLabels[report.reason]}
                       </span>
                     </div>
@@ -204,10 +204,10 @@ function ReportIdentity({ report }: { report: ContentReport }) {
   return (
     <Link
       href={`/admin/reports/${report.id}`}
-      className="min-w-0 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="min-w-0 rounded-control focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <span className="block truncate text-[13px] font-semibold">{report.entry.title}</span>
-      <span className="line-clamp-1 text-[11px] text-muted-foreground">
+      <span className="line-clamp-1 text-[11px] text-copy">
         {report.targetType === "COMMENT" && report.entryComment
           ? report.entryComment.body
           : report.explanation}
@@ -237,7 +237,7 @@ function ReportsPagination({
       >
         قبلی
       </Button>
-      <span className="text-[12px] text-muted-foreground">
+      <span className="text-[12px] text-copy">
         صفحه {formatPersianNumber(meta.page)} از {formatPersianNumber(meta.totalPages)}
       </span>
       <Button
@@ -257,7 +257,7 @@ function ReportsEmpty() {
     <div className="flex min-h-64 items-center justify-center p-6 text-center">
       <div className="space-y-2">
         <h2 className="text-[16px] font-semibold">گزارشی پیدا نشد</h2>
-        <p className="text-[13px] text-muted-foreground">
+        <p className="text-[13px] text-copy">
           فیلترها را تغییر دهید یا بعداً دوباره بررسی کنید.
         </p>
       </div>

@@ -1,9 +1,17 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "@fontsource-variable/estedad";
 
 @custom-variant dark (&:is(.dark *));
+
+/*
+ * Design language: "3danet Reference" (see docs/design-system.md, to be rewritten in the final phase).
+ * Layer 1 (:root / .dark)  raw reference palette, shadows and fonts, per theme.
+ * Layer 2 (:root)          shadcn semantic variables mapped onto layer 1, so every primitive follows.
+ * Layer 3 (@theme inline)  Tailwind utilities: bg-surface, text-ink, rounded-bubble, shadow-card, font-calli …
+ * Font files are loaded with next/font/local in src/app/layout.tsx, which sets
+ * --font-kalameh (UI), --font-reyhan (calligraphy) and --font-leila (hand-drawn accents) on <html>.
+ */
 
 @keyframes skeleton-shimmer {
   100% {
@@ -24,10 +32,10 @@
   background: linear-gradient(
     90deg,
     transparent,
-    color-mix(in srgb, var(--background) 55%, transparent),
+    color-mix(in srgb, var(--surface) 55%, transparent),
     transparent
   );
-  animation: skeleton-shimmer 1.8s ease-in-out infinite;
+  animation: skeleton-shimmer 1.4s ease infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -37,11 +45,9 @@
 }
 
 @theme inline {
+  /* shadcn semantic colours */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: "Estedad Variable", "Vazirmatn", Tahoma, sans-serif;
-  --font-mono: "Estedad Variable", "Vazirmatn", Tahoma, sans-serif;
-  --font-heading: var(--font-sans);
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
@@ -74,6 +80,50 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
+  /* reference palette as utilities (bg-paper, text-ink, text-copy, text-faint, bg-brand-soft …) */
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-line: var(--line);
+  --color-line-soft: var(--line-soft);
+  --color-ink: var(--ink);
+  --color-copy: var(--copy);
+  --color-faint: var(--faint);
+  --color-brand: var(--brand);
+  --color-brand-ink: var(--brand-ink);
+  --color-brand-soft: var(--brand-soft);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-tint-rose: var(--tint-rose);
+  --color-tint-navy: var(--tint-navy);
+  --color-tint-sand: var(--tint-sand);
+  --color-header: var(--header-bg);
+  --color-footer: var(--footer-bg);
+  --color-footer-sky: var(--footer-sky);
+  --color-footer-text: #b6bdc7;
+  --color-hero-navy: #1e3854;
+  --color-hero-navy-deep: #101c2b;
+  --color-band-red-deep: #b41b2f;
+  --color-media-ph: #22303f;
+  --color-scrim: #0d141d;
+  --color-lapis: #27477e;
+  --color-lapis-deep: #16294b;
+  --color-turquoise: #0f6f66;
+  --color-turquoise-deep: #0a4540;
+  --color-saffron: #9a6a17; /* reference #bd851c darkened so white text passes AA (4.7:1) */
+  --color-saffron-deep: #855410;
+  --color-anar: #a82940;
+  --color-anar-deep: #6e1a2c;
+  --color-leaf: #fffaef;
+
+  /* fonts */
+  --font-sans: var(--font-kalameh), "Vazirmatn", Tahoma, sans-serif;
+  --font-heading: var(--font-sans);
+  --font-calli: var(--font-reyhan), var(--font-kalameh), serif;
+  --font-hand: var(--font-leila), var(--font-kalameh), serif;
+  --font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, var(--font-kalameh), monospace;
+
+  /* radii: --radius is 12px, so rounded-lg = 12, rounded-2xl ≈ 22 */
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -81,86 +131,134 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  --radius-control: 12px;
+  --radius-card: 18px;
+  --radius-media: 22px;
+
+  /* elevation (values differ per theme, see :root / .dark) */
+  --shadow-card: var(--elev-card);
+  --shadow-lift: var(--elev-lift);
+  --shadow-header: var(--elev-header);
+  --shadow-menu: var(--elev-menu);
+  --shadow-figure: var(--elev-figure);
+  --shadow-float: var(--elev-float);
+  --shadow-focus: var(--elev-focus);
+
+  /* motion */
+  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-write: cubic-bezier(0.45, 0, 0.3, 1);
 }
 
 :root {
-  --background: #faf8f3;
-  --foreground: #1f2937;
-  --card: #ffffff;
-  --card-foreground: #1f2937;
-  --popover: #ffffff;
-  --popover-foreground: #1f2937;
-  --primary: #0f766e;
+  /* ---- layer 1: reference palette (light) ---- */
+  --paper: #f6f7f9;
+  --surface: #ffffff;
+  --line: #e7e9ee;
+  --line-soft: #eef0f4;
+  --ink: #182c41;
+  --copy: #43515f;
+  --faint: #67707b;
+  --brand: #e0253c;
+  --brand-ink: #c11e33;
+  --brand-soft: #fdecee;
+  --brand-btn: #e0253c;
+  --brand-btn-hover: #c11e33;
+  --danger: #b3261e;
+  --ok: #157a4b;
+  --ok-soft: #e8f6ee;
+  --tint-rose: #fdecee;
+  --tint-navy: #eaeff6;
+  --tint-sand: #faf3e2;
+  --header-bg: #ffffffd1;
+  --footer-bg: #131f2e;
+  --footer-sky: #0d1622;
+
+  --elev-card: 0 1px 2px #182c410a, 0 12px 32px #182c4112;
+  --elev-lift: 0 18px 44px #182c4121;
+  --elev-header: 0 1px 0 #eef0f4, 0 10px 30px -12px #182c4129;
+  --elev-menu: 0 14px 36px rgba(24, 44, 65, 0.16);
+  --elev-figure: 0 30px 64px -34px rgba(16, 28, 43, 0.62);
+  --elev-float: 0 24px 64px rgba(20, 10, 12, 0.3);
+  --elev-focus: 0 0 0 3.5px color-mix(in srgb, var(--brand) 14%, transparent);
+
+  /* ---- layer 2: shadcn semantic mapping ---- */
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --card: var(--surface);
+  --card-foreground: var(--ink);
+  --popover: var(--surface);
+  --popover-foreground: var(--ink);
+  --primary: var(--brand-btn);
   --primary-foreground: #ffffff;
-  --secondary: #c65d3a;
-  --secondary-foreground: #ffffff;
-  --accent: #d6a84b;
-  --accent-foreground: #1f2937;
-  --muted: #f1ede4;
-  --muted-foreground: #6b7280;
-  --border: #e5e1d8;
-  --input: #e5e1d8;
-  --ring: #0f766e;
-  --destructive: #b42318;
+  --primary-hover: var(--brand-btn-hover);
+  --primary-light: var(--brand-soft);
+  --secondary: var(--ink);
+  --secondary-foreground: var(--surface);
+  --accent: var(--line-soft);
+  --accent-foreground: var(--ink);
+  --muted: var(--line-soft);
+  --muted-foreground: var(--faint);
+  --border: var(--line);
+  --input: var(--line);
+  --ring: var(--brand);
+  --destructive: var(--danger);
   --destructive-foreground: #ffffff;
-  --primary-hover: #115e59;
-  --primary-light: #ccfbf1;
-  --terracotta: #c65d3a;
-  --gold: #d6a84b;
-  --success: #2e7d32;
+  --terracotta: var(--brand-ink);
+  --gold: #dfa63e;
+  --success: var(--ok);
   --warning: #b7791f;
-  --info: #2563eb;
-  --radius: 0.5rem;
-  --radius-card: 0.75rem;
-  --radius-dialog: 1rem;
-  --container-page: 1280px;
+  --info: #2f5fa8;
+
+  --radius: 0.75rem;
+  --container-page: 1200px;
   --container-content: 1200px;
-  --container-article: 760px;
-  --sidebar: #ffffff;
-  --sidebar-foreground: #1f2937;
-  --sidebar-primary: #0f766e;
+  --container-article: 780px;
+
+  /* Admin sidebar is a night panel in both themes, like the footer. */
+  --sidebar: var(--footer-bg);
+  --sidebar-foreground: #d3dbe6;
+  --sidebar-primary: var(--brand-btn);
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #eef9f7;
-  --sidebar-accent-foreground: #0f766e;
-  --sidebar-border: #e5e1d8;
-  --sidebar-ring: #0f766e;
+  --sidebar-accent: rgb(255 255 255 / 0.08);
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgb(255 255 255 / 0.08);
+  --sidebar-ring: var(--gold);
 }
 
 .dark {
-  --background: #111827;
-  --foreground: #f9fafb;
-  --card: #1f2937;
-  --card-foreground: #f9fafb;
-  --popover: #1f2937;
-  --popover-foreground: #f9fafb;
-  --primary: #5eead4;
-  --primary-foreground: #0f172a;
-  --secondary: #c65d3a;
-  --secondary-foreground: #ffffff;
-  --accent: #d6a84b;
-  --accent-foreground: #111827;
-  --muted: #263244;
-  --muted-foreground: #cbd5e1;
-  --border: #334155;
-  --input: #475569;
-  --ring: #5eead4;
-  --destructive: #f87171;
-  --destructive-foreground: #111827;
-  --primary-hover: #99f6e4;
-  --primary-light: #134e4a;
-  --terracotta: #d97855;
-  --gold: #e6bd66;
-  --success: #86efac;
+  /* ---- layer 1: reference palette (dark) ---- */
+  --paper: #0f1622;
+  --surface: #16202e;
+  --line: #233043;
+  --line-soft: #1d2837;
+  --ink: #e9edf3;
+  --copy: #b3bdc9;
+  --faint: #8b96a4;
+  --brand: #ef4257;
+  --brand-ink: #f27182;
+  --brand-soft: #33202a;
+  --brand-btn: #e0253c;
+  --brand-btn-hover: #ef4257;
+  --danger: #ff8a80;
+  --ok: #4fd394;
+  --ok-soft: #122a1e;
+  --tint-rose: #2c1e26;
+  --tint-navy: #1b2636;
+  --tint-sand: #2a2418;
+  --header-bg: #101723c7;
+  --footer-bg: #0b111b;
+  --footer-sky: #070b12;
+
+  --elev-card: 0 1px 2px #00000033, 0 12px 32px #00000047;
+  --elev-lift: 0 18px 44px #0000006b;
+  --elev-header: 0 1px 0 #1d2837, 0 10px 30px -12px #00000080;
+  --elev-menu: 0 14px 36px rgba(0, 0, 0, 0.42);
+
+  /* ---- layer 2 overrides that are not plain aliases ---- */
+  --destructive-foreground: #0f1622;
   --warning: #facc15;
   --info: #93c5fd;
-  --sidebar: #1f2937;
-  --sidebar-foreground: #f9fafb;
-  --sidebar-primary: #5eead4;
-  --sidebar-primary-foreground: #0f172a;
-  --sidebar-accent: #263244;
-  --sidebar-accent-foreground: #f9fafb;
-  --sidebar-border: rgba(51, 65, 85, 0.123);
-  --sidebar-ring: #5eead4;
 }
 
 @layer base {
@@ -183,15 +281,24 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: "Estedad Variable", "Vazirmatn", Tahoma, sans-serif;
-    font-size: 16px;
+    font-family: var(--font-sans);
+    font-size: 15px;
     font-weight: 400;
-    line-height: 1.8;
+    line-height: 2;
     text-rendering: optimizeLegibility;
+    transition:
+      background-color 0.35s,
+      color 0.35s;
+  }
+
+  ::selection {
+    background: var(--brand-soft);
+    color: var(--brand-ink);
   }
 
   :focus-visible {
-    @apply outline-none ring-3 ring-ring/40;
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
   }
 
   .ProseMirror {
@@ -208,15 +315,15 @@
   }
 
   .ProseMirror h2 {
-    font-size: 28px;
+    font-size: 19px;
     font-weight: 700;
-    line-height: 1.45;
+    line-height: 2;
   }
 
   .ProseMirror h3 {
-    font-size: 20px;
-    font-weight: 600;
-    line-height: 1.5;
+    font-size: 16.5px;
+    font-weight: 700;
+    line-height: 2;
   }
 
   .ProseMirror ul,
@@ -225,13 +332,16 @@
   }
 
   .ProseMirror blockquote {
-    border-inline-start: 3px solid var(--primary);
-    color: var(--muted-foreground);
-    padding-inline-start: 1rem;
+    border: 1px solid var(--line);
+    border-inline-start: 3px solid var(--brand);
+    border-radius: 14px;
+    background: var(--surface);
+    color: var(--ink);
+    padding: 1rem 1.375rem;
   }
 
   .ProseMirror a {
-    color: var(--primary);
+    color: var(--brand-ink);
     text-decoration: underline;
     text-underline-offset: 4px;
   }
@@ -242,79 +352,226 @@
   [data-sonner-toast] [data-description],
   [data-sonner-toast] [data-button],
   [data-sonner-toast] [data-cancel] {
-    font-family: "Estedad Variable", "Vazirmatn", Tahoma, sans-serif;
+    font-family: var(--font-sans);
   }
+}
+
+/* "Ink" reveals: calligraphy wipes in from the inline-start and section bars grow as they scroll
+   into view. CSS scroll-driven animations only; browsers without support show the final state. */
+@keyframes calli-write {
+  from {
+    -webkit-clip-path: inset(0 0 0 100%);
+    clip-path: inset(0 0 0 100%);
+  }
+  to {
+    -webkit-clip-path: inset(0 0 0 0);
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes bar-grow {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .calli-reveal {
+      animation: calli-write linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 100%;
+    }
+
+    .bar-reveal::before {
+      animation: bar-grow cubic-bezier(0.34, 1.56, 0.64, 1) both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 25%;
+    }
+  }
+}
+
+/* Reading progress along the bottom edge of the sticky header (scroll-driven, no JavaScript).
+   It grows from the inline-start edge; browsers without scroll timelines simply hide it. */
+@keyframes read-progress-fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.read-progress {
+  position: absolute;
+  inset-inline: 0;
+  bottom: -1px;
+  height: 2px;
+  background: var(--brand);
+  transform: scaleX(0);
+  transform-origin: right center;
+  pointer-events: none;
+}
+
+[dir="ltr"] .read-progress {
+  transform-origin: left center;
+}
+
+@supports (animation-timeline: scroll()) {
+  .read-progress {
+    animation: read-progress-fill linear both;
+    animation-timeline: scroll(root);
+  }
+}
+
+/* Signature speech-bubble corners: three round corners, a tight bottom-left "tail".
+   The tail stays physically bottom-left in RTL, exactly as in the reference. */
+@utility rounded-bubble {
+  border-radius: 22px 22px 22px 6px;
+}
+
+@utility rounded-bubble-md {
+  border-radius: 18px 18px 18px 6px;
+}
+
+@utility rounded-bubble-sm {
+  border-radius: 12px 12px 12px 4px;
+}
+
+@utility rounded-bubble-xs {
+  border-radius: 10px 10px 10px 4px;
+}
+
+@utility rounded-arch {
+  border-radius: 999px 999px 12px 6px;
 }
 
 @layer utilities {
   .page-container {
     max-width: var(--container-page);
     margin-inline: auto;
-    padding-inline: 1rem;
+    padding-inline: 1.5rem;
   }
 
   .content-container {
     max-width: var(--container-content);
     margin-inline: auto;
-    padding-inline: 1rem;
+    padding-inline: 1.5rem;
   }
 
   .article-container {
     max-width: var(--container-article);
     margin-inline: auto;
-    padding-inline: 1rem;
+    padding-inline: 1.5rem;
   }
 
+  @media (max-width: 639px) {
+    .page-container,
+    .content-container,
+    .article-container {
+      padding-inline: 1rem;
+    }
+  }
+
+  /* Type scale (reference). Display sizes step down at 1024px and 640px. */
   .text-display {
     font-size: 40px;
     font-weight: 700;
-    line-height: 1.35;
-  }
-
-  .text-page-title {
-    font-size: 36px;
-    font-weight: 700;
-    line-height: 1.4;
-  }
-
-  .text-section-title {
-    font-size: 28px;
-    font-weight: 700;
-    line-height: 1.45;
-  }
-
-  .text-card-title {
-    font-size: 20px;
-    font-weight: 600;
     line-height: 1.5;
   }
 
-  .text-body {
-    font-size: 16px;
-    font-weight: 400;
+  .text-page-title {
+    font-size: 31px;
+    font-weight: 700;
     line-height: 1.8;
   }
 
-  .text-article {
-    font-size: 18px;
+  .text-section-title {
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 2;
+  }
+
+  .text-card-title {
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.8;
+  }
+
+  .text-card-title-sm {
+    font-size: 14.5px;
+    font-weight: 700;
+    line-height: 1.85;
+  }
+
+  .text-body {
+    font-size: 15px;
     font-weight: 400;
+    line-height: 2;
+  }
+
+  .text-article {
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 2.25;
+  }
+
+  .text-lead {
+    font-size: 12.75px;
     line-height: 1.9;
   }
 
   .text-small {
-    font-size: 14px;
-    line-height: 1.7;
+    font-size: 13px;
+    line-height: 1.9;
+  }
+
+  .text-meta {
+    font-size: 12px;
+    line-height: 2;
+  }
+
+  .text-micro {
+    font-size: 11.5px;
+    line-height: 1.8;
   }
 
   .text-form-label {
-    font-size: 15px;
-    font-weight: 500;
+    font-size: 12.5px;
+    font-weight: 700;
     line-height: 1.6;
   }
 
   .text-button {
-    font-size: 15px;
-    font-weight: 600;
+    font-size: 13.5px;
+    font-weight: 700;
     line-height: 1.5;
+  }
+
+  @media (max-width: 1023px) {
+    .text-display {
+      font-size: 30px;
+    }
+
+    .text-page-title {
+      font-size: 26px;
+    }
+  }
+
+  @media (max-width: 639px) {
+    .text-display {
+      font-size: 26px;
+    }
+
+    .text-page-title {
+      font-size: 24px;
+    }
+
+    .text-section-title {
+      font-size: 21px;
+    }
   }
 }

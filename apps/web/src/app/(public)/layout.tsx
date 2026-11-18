@@ -4,7 +4,7 @@ import { HomeFooter } from "@/features/home/components/home-footer";
 
 function PublicShellLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-paper">
       <EntryBreadcrumbTracker />
       <PublicHeader />
       {children}

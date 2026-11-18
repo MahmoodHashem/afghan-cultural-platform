@@ -32,11 +32,11 @@ function ProvinceSearchGrid({ provinces }: { provinces: CountedProvince[] }) {
   }, [provinces, normalizedSearch]);
 
   return (
-    <div className="mt-10 space-y-6">
-      <label htmlFor="province-search" className="relative mx-auto block max-w-xl">
+    <div className="space-y-6">
+      <label htmlFor="province-search" className="relative block max-w-[420px]">
         <span className="sr-only">جست‌وجوی ولایت</span>
         <MagnifyingGlassIcon
-          className="pointer-events-none absolute top-1/2 right-4 size-5 -translate-y-1/2 text-muted-foreground"
+          className="pointer-events-none absolute top-1/2 right-3.5 size-5 -translate-y-1/2 text-faint"
           aria-hidden="true"
         />
         <Input
@@ -45,7 +45,7 @@ function ProvinceSearchGrid({ provinces }: { provinces: CountedProvince[] }) {
           value={search}
           onChange={(event) => setSearch(event.target.value)}
           placeholder="جست‌وجوی ولایت..."
-          className="h-12 rounded-full border-border bg-card pr-12 pl-4 text-center shadow-[0_2px_10px_rgba(0,0,0,.04)] transition-colors focus-visible:border-primary"
+          className="pr-11"
         />
       </label>
 
@@ -61,10 +61,10 @@ function ProvinceSearchGrid({ provinces }: { provinces: CountedProvince[] }) {
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-[28px] border border-dashed border-border bg-card p-8 text-center"
+          className="rounded-card border-[1.5px] border-dashed border-line p-8 text-center"
         >
-          <p className="text-[20px] font-bold text-foreground">ولایتی پیدا نشد</p>
-          <p className="mt-3 text-[15px] leading-8 text-muted-foreground">
+          <p className="text-card-title text-ink">ولایتی پیدا نشد</p>
+          <p className="mt-2 text-[14px] leading-8 text-copy">
             نام ولایت را کوتاه‌تر یا متفاوت‌تر جست‌وجو کنید.
           </p>
         </motion.div>
@@ -84,31 +84,35 @@ function ProvinceCard({ province }: { province: CountedProvince }) {
       exit={{ opacity: 0, scale: 0.96 }}
       transition={{ duration: 0.22, ease: "easeOut" }}
     >
-      <Card className="group overflow-hidden rounded-2xl border-border bg-card p-0 shadow-[0_2px_10px_rgba(0,0,0,.04)] transition-all duration-200 hover:-translate-y-1 hover:border-primary/25 hover:shadow-[0_18px_42px_rgba(31,41,55,0.16)]">
+      <Card className="group gap-0 overflow-hidden rounded-arch border-0 bg-media-ph p-0 py-0 shadow-card transition-[translate,box-shadow] duration-300 ease-expo hover:-translate-y-1.5 hover:shadow-lift">
         <Link
           href={`/provinces/${encodeURIComponent(createPersianPathSegment(province.name))}`}
-          className="block outline-none focus-visible:ring-3 focus-visible:ring-ring/40"
+          className="block rounded-[inherit] outline-none focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-white"
         >
-          <div className="relative aspect-[4/5] overflow-hidden bg-muted sm:aspect-[5/6] lg:aspect-[4/5]">
+          <div className="relative aspect-[4/5] overflow-hidden sm:aspect-[5/6] lg:aspect-[4/5]">
             <Image
               src={image.src}
               alt={image.alt}
               fill
               sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
-              className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+              className="object-cover opacity-95 transition-transform duration-500 ease-expo group-hover:scale-105"
             />
             <div className="absolute inset-0 bg-linear-to-t from-black/78 via-black/20 to-black/10 transition-colors group-hover:from-black/82" />
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-1.5 rounded-[999px_999px_8px_3px] border border-white/22 transition-colors duration-300 group-hover:border-white/45"
+            />
             <div className="absolute inset-x-0 bottom-0 space-y-4 p-4 text-white sm:p-5">
               <div className="flex items-center justify-between gap-3">
-                <span className="inline-flex size-9 items-center justify-center rounded-full border border-white/20 bg-white/16 text-white shadow-sm backdrop-blur-md">
+                <span className="inline-flex size-9 items-center justify-center rounded-bubble-xs border border-white/20 bg-white/16 text-white backdrop-blur-md">
                   <MapPinIcon className="size-4" aria-hidden="true" />
                 </span>
-                <Badge className="rounded-full border border-white/20 bg-white/16 text-white shadow-sm backdrop-blur-md">
+                <Badge variant="glass" className="bg-white/16">
                   {formatPersianNumber(province.entryCount)} مطلب
                 </Badge>
               </div>
               <div className="space-y-2">
-                <h2 className="text-[24px] font-bold leading-8 text-white">{province.name}</h2>
+                <h2 className="text-[22px] leading-[1.6] font-bold text-white">{province.name}</h2>
                 <p className="inline-flex items-center gap-1 text-[13px] font-semibold text-white/78 transition-colors group-hover:text-white">
                   دیدن مطالب
                   <ArrowLeftIcon

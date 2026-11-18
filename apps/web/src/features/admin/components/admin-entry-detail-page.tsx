@@ -56,7 +56,7 @@ function AdminEntryDetailPage({ entryId }: { entryId: string }) {
       <section className="flex min-h-96 items-center justify-center">
         <div className="space-y-4 text-center">
           <h1 className="text-xl font-semibold">مطلب بارگذاری نشد</h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-copy">
             ممکن است مطلب حذف شده باشد یا فعلاً دسترسی به آن ممکن نباشد.
           </p>
           <Button variant="outline" onClick={() => void entryQuery.refetch()}>
@@ -73,10 +73,10 @@ function AdminEntryDetailPage({ entryId }: { entryId: string }) {
         title={entry.title}
         description="مشاهده محتوا، پیوندها و تاریخچه چرخه انتشار"
       />
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card p-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-control border bg-surface p-4">
         <div className="flex flex-wrap items-center gap-2">
           <AdminEntryStatusBadge status={entry.status} />
-          <span className="text-[12px] text-muted-foreground">
+          <span className="text-[12px] text-copy">
             آخرین ویرایش: {formatPersianDate(entry.updatedAt)}
           </span>
         </div>
@@ -116,17 +116,17 @@ function AdminEntryDetailPage({ entryId }: { entryId: string }) {
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_20rem]">
         <main className="min-w-0 space-y-6">
-          <article className="rounded-xl border bg-card px-5 py-8 sm:px-9 lg:px-12">
+          <article className="rounded-control border bg-surface px-5 py-8 sm:px-9 lg:px-12">
             <header className="space-y-4 border-b pb-7">
               <div className="flex flex-wrap gap-2">
                 <Badge variant="secondary">{entry.category.name}</Badge>
                 <Badge variant="outline">{entry.contentType.name}</Badge>
               </div>
               <h1 className="text-3xl leading-[1.5] font-bold sm:text-4xl">{entry.title}</h1>
-              <p className="text-[15px] leading-8 text-muted-foreground">{entry.summary}</p>
+              <p className="text-[15px] leading-8 text-copy">{entry.summary}</p>
             </header>
             {entry.images[0] ? (
-              <figure className="relative mt-8 aspect-[16/9] overflow-hidden rounded-xl bg-muted">
+              <figure className="relative mt-8 aspect-[16/9] overflow-hidden rounded-control bg-line-soft">
                 <Image
                   src={entry.images[0].secureUrl}
                   alt={entry.images[0].altText}
@@ -146,7 +146,7 @@ function AdminEntryDetailPage({ entryId }: { entryId: string }) {
               <div className="grid gap-3 sm:grid-cols-2">
                 {entry.images.map((image) => (
                   <figure key={image.id} className="space-y-2">
-                    <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-muted">
+                    <div className="relative aspect-[4/3] overflow-hidden rounded-control bg-line-soft">
                       <Image
                         src={image.secureUrl}
                         alt={image.altText}
@@ -156,7 +156,7 @@ function AdminEntryDetailPage({ entryId }: { entryId: string }) {
                       />
                     </div>
                     {image.caption ? (
-                      <figcaption className="text-[12px] text-muted-foreground">
+                      <figcaption className="text-[12px] text-copy">
                         {image.caption}
                       </figcaption>
                     ) : null}
@@ -169,13 +169,13 @@ function AdminEntryDetailPage({ entryId }: { entryId: string }) {
             <Panel title="منابع">
               <ol className="space-y-3">
                 {entry.sources.map((source, index) => (
-                  <li key={source.id} className="rounded-lg border p-3 text-[13px] leading-7">
+                  <li key={source.id} className="rounded-control border p-3 text-[13px] leading-7">
                     <strong>
                       {formatPersianNumber(index + 1)}.{" "}
                       {source.title ?? source.authorOrProvider ?? "منبع بدون عنوان"}
                     </strong>
                     {source.authorOrProvider ? (
-                      <span className="block text-muted-foreground">{source.authorOrProvider}</span>
+                      <span className="block text-copy">{source.authorOrProvider}</span>
                     ) : null}
                     {source.websiteUrl ? (
                       <a
@@ -183,7 +183,7 @@ function AdminEntryDetailPage({ entryId }: { entryId: string }) {
                         target="_blank"
                         rel="noreferrer"
                         dir="ltr"
-                        className="block truncate text-primary hover:underline"
+                        className="block truncate text-brand-ink hover:underline"
                       >
                         {source.websiteUrl}
                       </a>
@@ -199,12 +199,12 @@ function AdminEntryDetailPage({ entryId }: { entryId: string }) {
                 href={entry.youtubeVideo.url}
                 target="_blank"
                 rel="noreferrer"
-                className="font-medium text-primary hover:underline"
+                className="font-medium text-brand-ink hover:underline"
               >
                 {entry.youtubeVideo.title ?? `YouTube: ${entry.youtubeVideo.videoId}`}
               </a>
               {entry.youtubeVideo.description ? (
-                <p className="mt-2 text-sm leading-7 text-muted-foreground">
+                <p className="mt-2 text-sm leading-7 text-copy">
                   {entry.youtubeVideo.description}
                 </p>
               ) : null}
@@ -272,7 +272,7 @@ function AdminEntryDetailPage({ entryId }: { entryId: string }) {
 
 function Panel({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <Card className="rounded-xl">
+    <Card className="rounded-control">
       <CardHeader>
         <CardTitle className="text-[16px]">{title}</CardTitle>
       </CardHeader>
@@ -302,7 +302,7 @@ function MetadataPanel({ entry }: { entry: AdminEntryDetail }) {
       <dl className="space-y-3">
         {rows.map(([label, value]) => (
           <div key={label} className="flex justify-between gap-3 text-[12px]">
-            <dt className="text-muted-foreground">{label}</dt>
+            <dt className="text-copy">{label}</dt>
             <dd className="text-end font-medium">{value}</dd>
           </div>
         ))}
@@ -318,7 +318,7 @@ function MetadataPanel({ entry }: { entry: AdminEntryDetail }) {
       ) : null}
       <Link
         href={`/admin/users/${entry.author.id}`}
-        className="mt-4 block text-[12px] text-primary hover:underline"
+        className="mt-4 block text-[12px] text-brand-ink hover:underline"
       >
         مشاهده حساب نویسنده
       </Link>
@@ -337,10 +337,10 @@ function CountsPanel({ entry }: { entry: AdminEntryDetail }) {
     <Panel title="بازخورد">
       <div className="grid grid-cols-2 gap-3">
         {items.map(([Icon, label, value]) => (
-          <div key={label} className="rounded-lg bg-muted/50 p-3">
-            <Icon className="mb-2 size-4 text-muted-foreground" />
+          <div key={label} className="rounded-control bg-paper p-3">
+            <Icon className="mb-2 size-4 text-copy" />
             <strong className="block">{formatPersianNumber(value)}</strong>
-            <span className="text-[11px] text-muted-foreground">{label}</span>
+            <span className="text-[11px] text-copy">{label}</span>
           </div>
         ))}
       </div>
@@ -354,19 +354,19 @@ function HistoryPanel({ entry }: { entry: AdminEntryDetail }) {
       <div className="space-y-4">
         {entry.moderationHistory.length ? (
           entry.moderationHistory.map((item) => (
-            <div key={item.id} className="border-s-2 border-primary/25 ps-3 text-[12px]">
+            <div key={item.id} className="border-s-2 border-brand/25 ps-3 text-[12px]">
               <strong>{item.moderator.displayName}</strong>
-              <span className="mt-1 block text-muted-foreground">
+              <span className="mt-1 block text-copy">
                 {item.previousStatus} ← {item.nextStatus}
               </span>
               {item.comments ? <p className="mt-1 leading-6">{item.comments}</p> : null}
-              <time className="mt-1 block text-[11px] text-muted-foreground">
+              <time className="mt-1 block text-[11px] text-copy">
                 {formatPersianDate(item.createdAt)}
               </time>
             </div>
           ))
         ) : (
-          <p className="text-[12px] text-muted-foreground">هنوز سابقه‌ای ثبت نشده است.</p>
+          <p className="text-[12px] text-copy">هنوز سابقه‌ای ثبت نشده است.</p>
         )}
       </div>
       {entry.contentVersions.length ? (
@@ -376,7 +376,7 @@ function HistoryPanel({ entry }: { entry: AdminEntryDetail }) {
             {entry.contentVersions.map((version) => (
               <li
                 key={version.id}
-                className="flex justify-between text-[11px] text-muted-foreground"
+                className="flex justify-between text-[11px] text-copy"
               >
                 <span>نسخه {formatPersianNumber(version.versionNumber)}</span>
                 <time>{formatPersianDate(version.createdAt)}</time>
@@ -390,21 +390,21 @@ function HistoryPanel({ entry }: { entry: AdminEntryDetail }) {
           <p className="mb-3 text-[12px] font-semibold">ویرایش‌های مطلب منتشرشده</p>
           <ul className="space-y-3">
             {entry.revisions.map((revision) => (
-              <li key={revision.id} className="border-s-2 border-gold/40 ps-3 text-[11px]">
+              <li key={revision.id} className="border-s-2 border-saffron/30 ps-3 text-[11px]">
                 <div className="flex justify-between gap-2">
                   <strong>{getAdminRevisionLabel(revision.status)}</strong>
                   {revision.versionNumber ? (
-                    <span className="text-muted-foreground">
+                    <span className="text-copy">
                       نسخه {formatPersianNumber(revision.versionNumber)}
                     </span>
                   ) : null}
                 </div>
                 {revision.requestFeedback ? (
-                  <p className="mt-1 line-clamp-3 leading-5 text-muted-foreground">
+                  <p className="mt-1 line-clamp-3 leading-5 text-copy">
                     {revision.requestFeedback}
                   </p>
                 ) : null}
-                <time className="mt-1 block text-muted-foreground">
+                <time className="mt-1 block text-copy">
                   {formatPersianDate(revision.updatedAt)}
                 </time>
               </li>
@@ -475,7 +475,7 @@ function ReferenceList({
             <li key={item.id}>
               <Link
                 href={`/admin/entries/${item.entry?.id}`}
-                className="text-[12px] text-primary hover:underline"
+                className="text-[12px] text-brand-ink hover:underline"
               >
                 {item.entry?.title ?? item.label}
               </Link>
@@ -483,7 +483,7 @@ function ReferenceList({
           ))}
         </ul>
       ) : (
-        <p className="text-[12px] text-muted-foreground">موردی ثبت نشده است.</p>
+        <p className="text-[12px] text-copy">موردی ثبت نشده است.</p>
       )}
     </div>
   );
@@ -492,12 +492,12 @@ function ReferenceList({
 function AdminEntryDetailSkeleton() {
   return (
     <div className="space-y-6">
-      <Skeleton className="h-16 w-full rounded-xl" />
+      <Skeleton className="h-16 w-full rounded-control" />
       <div className="grid gap-6 xl:grid-cols-[1fr_20rem]">
-        <Skeleton className="h-[44rem] rounded-xl" />
+        <Skeleton className="h-[44rem] rounded-control" />
         <div className="space-y-5">
-          <Skeleton className="h-64 rounded-xl" />
-          <Skeleton className="h-48 rounded-xl" />
+          <Skeleton className="h-64 rounded-control" />
+          <Skeleton className="h-48 rounded-control" />
         </div>
       </div>
     </div>

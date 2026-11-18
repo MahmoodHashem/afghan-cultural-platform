@@ -18,13 +18,17 @@ type PageBreadcrumbItem = {
 
 type PageBreadcrumbProps = {
   items: PageBreadcrumbItem[];
+  /** `onDark` is used inside the navy page hero. */
+  tone?: "default" | "onDark";
   className?: string;
 };
 
-function PageBreadcrumb({ items, className }: PageBreadcrumbProps) {
+function PageBreadcrumb({ items, tone = "default", className }: PageBreadcrumbProps) {
+  const onDark = tone === "onDark";
+
   return (
-    <Breadcrumb className={cn("text-[13px] font-medium", className)} aria-label="مسیر صفحه">
-      <BreadcrumbList className="gap-2 text-[13px] text-muted-foreground">
+    <Breadcrumb className={cn("text-[12px] font-medium", className)} aria-label="مسیر صفحه">
+      <BreadcrumbList className={cn("gap-2 text-[12px]", onDark ? "text-white/60" : "text-faint")}>
         {items.map((item, index) => {
           const isCurrent = index === items.length - 1 || !item.href;
           const itemKey = item.href ?? item.label;
@@ -33,13 +37,23 @@ function PageBreadcrumb({ items, className }: PageBreadcrumbProps) {
             <Fragment key={itemKey}>
               <BreadcrumbItem className="gap-2">
                 {isCurrent ? (
-                  <BreadcrumbPage className="line-clamp-1 max-w-[220px] font-semibold text-foreground sm:max-w-none">
+                  <BreadcrumbPage
+                    className={cn(
+                      "line-clamp-1 max-w-[220px] font-semibold sm:max-w-none",
+                      onDark ? "text-white/85" : "text-ink",
+                    )}
+                  >
                     {item.label}
                   </BreadcrumbPage>
                 ) : (
                   <BreadcrumbLink
                     render={<Link href={item.href ?? "/"} />}
-                    className="transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/40"
+                    className={cn(
+                      "rounded-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2",
+                      onDark
+                        ? "hover:text-white focus-visible:outline-white"
+                        : "hover:text-brand-ink focus-visible:outline-ring",
+                    )}
                   >
                     {item.label}
                   </BreadcrumbLink>

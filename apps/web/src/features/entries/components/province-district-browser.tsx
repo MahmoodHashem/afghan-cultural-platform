@@ -61,21 +61,21 @@ function ProvinceDistrictBrowser({
 
   return (
     <section
-      className="border-y border-border bg-card/55 py-7 px-4 sm:py-9"
+      className="rounded-card border border-line-soft bg-surface px-5 py-6 shadow-card sm:px-7 sm:py-7"
       aria-labelledby="districts-title"
     >
       <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <MapPinIcon className="size-5 text-primary" aria-hidden="true" />
+            <MapPinIcon className="size-5 text-brand" aria-hidden="true" />
             <h2
               id="districts-title"
-              className="text-[21px] font-bold text-foreground sm:text-[24px]"
+              className="text-[19px] leading-[2] font-bold text-ink"
             >
               ولسوالی‌های {provinceName}
             </h2>
           </div>
-          <p className="mt-2 text-[13px] leading-6 text-muted-foreground">
+          <p className="mt-1 text-[12.5px] leading-6 text-faint">
             {formatPersianNumber(districts.length)} ولسوالی ثبت شده است.
           </p>
         </div>
@@ -84,7 +84,7 @@ function ProvinceDistrictBrowser({
           <label htmlFor="district-search" className="relative block w-full sm:w-72">
             <span className="sr-only">جست‌وجوی ولسوالی</span>
             <MagnifyingGlassIcon
-              className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted-foreground"
+              className="pointer-events-none absolute top-1/2 right-3.5 size-4 -translate-y-1/2 text-faint"
               aria-hidden="true"
             />
             <Input
@@ -93,7 +93,7 @@ function ProvinceDistrictBrowser({
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="نام ولسوالی..."
-              className="h-10 rounded-lg border-border bg-background pr-10 text-[13px]"
+              className="h-10 pr-10 md:text-[13px]"
             />
           </label>
         ) : null}
@@ -144,7 +144,7 @@ function ProvinceDistrictBrowser({
             animate={{ opacity: 1, y: 0 }}
             exit={reducedMotion ? undefined : { opacity: 0, y: -4 }}
             transition={{ duration: reducedMotion ? 0 : 0.18, ease: "easeOut" }}
-            className="mt-5 rounded-lg border border-dashed border-border px-4 py-5 text-center text-[13px] text-muted-foreground"
+            className="mt-5 rounded-bubble-sm border-[1.5px] border-dashed border-line px-4 py-5 text-center text-[13px] text-copy"
           >
             ولسوالی‌ای با این نام پیدا نشد.
           </motion.p>
@@ -155,7 +155,7 @@ function ProvinceDistrictBrowser({
         <button
           type="button"
           onClick={() => setExpanded((current) => !current)}
-          className="mt-4 inline-flex min-h-10 items-center gap-1.5 text-[13px] font-semibold text-primary outline-none focus-visible:ring-3 focus-visible:ring-ring/40 sm:hidden"
+          className="mt-4 inline-flex min-h-10 items-center gap-1.5 rounded-full text-[13px] font-bold text-brand-ink outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sm:hidden"
           aria-expanded={expanded}
         >
           {expanded ? "نمایش کمتر" : "نمایش همه ولسوالی‌ها"}
@@ -199,10 +199,10 @@ function DistrictLink({
         onClick={(event) => onNavigate(event, href)}
         aria-current={isActive ? "page" : undefined}
         className={cn(
-          "flex min-h-11 w-full items-center rounded-lg border px-3 py-2 text-[13px] font-medium transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/40",
+          "flex min-h-11 w-full items-center rounded-bubble-sm border px-3 py-2 text-[13px] font-medium transition-colors duration-200 outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
           isActive
-            ? "border-primary/35 bg-primary-light text-primary"
-            : "border-border/80 bg-background text-foreground hover:border-primary/25 hover:bg-primary-light/35",
+            ? "border-brand bg-brand-soft font-bold text-brand-ink"
+            : "border-line bg-paper text-copy hover:border-brand hover:bg-brand-soft hover:text-brand-ink",
         )}
       >
         <span className="truncate">{children}</span>

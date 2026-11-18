@@ -104,7 +104,7 @@ function EngagementAccessDialog({
   if (isMobile) {
     return (
       <Drawer open={open} onOpenChange={onOpenChange} showSwipeHandle>
-        <DrawerContent dir="rtl" className="max-h-[92svh] overflow-hidden border-border p-0">
+        <DrawerContent dir="rtl" className="max-h-[92svh] overflow-hidden border-line-soft p-0">
           <DrawerHeader className="sr-only">
             <DrawerTitle>{content.title}</DrawerTitle>
             <DrawerDescription>{content.guest}</DrawerDescription>
@@ -150,9 +150,9 @@ function AccessPanel({
   const transition = getAuthTransition(reducedMotion);
 
   return (
-    <div className="bg-card">
+    <div className="bg-surface">
       <header className="px-5 pt-6 pb-4 text-start sm:px-6">
-        <p className="mt-1 text-[13px] leading-6 text-muted-foreground ">
+        <p className="mt-1 text-[13px] leading-6 text-copy ">
           {suspended
             ? "در حال حاضر امکان انجام این کار وجود ندارد."
             : reason === "unauthenticated"
@@ -162,15 +162,15 @@ function AccessPanel({
       </header>
 
       {reason === "unauthenticated" ? (
-        <div className="border-t border-border px-5 pt-4 pb-6 sm:px-6">
+        <div className="border-t border-line-soft px-5 pt-4 pb-6 sm:px-6">
           <div
             role="tablist"
-            className="relative mb-5 grid grid-cols-2 rounded-lg bg-muted p-1"
+            className="relative mb-5 grid grid-cols-2 rounded-control bg-line-soft p-1"
             aria-label="ورود یا ثبت‌نام"
           >
             <motion.span
               aria-hidden="true"
-              className="absolute top-1 right-1 bottom-1 w-[calc(50%-4px)] rounded-md bg-card shadow-sm"
+              className="absolute top-1 right-1 bottom-1 w-[calc(50%-4px)] rounded-control bg-surface shadow-sm"
               animate={{ x: authMode === "register" ? "-100%" : "0" }}
               transition={transition}
             />
@@ -192,12 +192,12 @@ function AccessPanel({
       ) : null}
 
       {reason === "unverified" && user ? (
-        <div className="space-y-4 border-t border-border px-5 py-5 sm:px-6">
-          <p dir="ltr" className="truncate text-start text-[13px] text-muted-foreground">
+        <div className="space-y-4 border-t border-line-soft px-5 py-5 sm:px-6">
+          <p dir="ltr" className="truncate text-start text-[13px] text-copy">
             {user.email}
           </p>
           <EmailVerificationButton email={user.email} className="w-full" />
-          <p className="flex items-center gap-2 text-[12px] leading-6 text-muted-foreground">
+          <p className="flex items-center gap-2 text-[12px] leading-6 text-copy">
             <EnvelopeIcon className="size-4 shrink-0" aria-hidden="true" />
             پس از تأیید ایمیل به همین صفحه برگردید.
           </p>
@@ -205,7 +205,7 @@ function AccessPanel({
       ) : null}
 
       {suspended ? (
-        <div className="border-t border-border px-5 py-4 sm:px-6">
+        <div className="border-t border-line-soft px-5 py-4 sm:px-6">
           <Button type="button" variant="outline" className="w-full" onClick={onClose}>
             بستن
           </Button>
@@ -229,10 +229,10 @@ function AuthTab({
       type="button"
       role="tab"
       aria-selected={active}
-      className="relative z-10 flex h-9 items-center justify-center rounded-md px-3 text-[13px] font-medium outline-none transition-colors focus-visible:ring-3 focus-visible:ring-ring/40"
+      className="relative z-10 flex h-9 items-center justify-center rounded-control px-3 text-[13px] font-medium outline-none transition-colors focus-visible:ring-3 focus-visible:ring-ring/40"
       onClick={onClick}
     >
-      <span className={cn(active ? "text-foreground" : "text-muted-foreground")}>{children}</span>
+      <span className={cn(active ? "text-ink" : "text-copy")}>{children}</span>
     </button>
   );
 }

@@ -21,11 +21,11 @@ type GrowthMetric = "publishedEntries" | "users";
 const chartConfig = {
   publishedEntries: {
     label: "مطالب",
-    color: "#0F766E",
+    color: "var(--primary)",
   },
   users: {
     label: "کاربران",
-    color: "#2563EB",
+    color: "var(--ink)",
   },
 } satisfies ChartConfig;
 
@@ -33,14 +33,14 @@ function AdminOverviewGrowthChart({ data }: { data: AdminOverviewGrowthPoint[] }
   const [metric, setMetric] = useState<GrowthMetric>("publishedEntries");
 
   return (
-    <Card className="rounded-xl shadow-[0_2px_10px_rgba(0,0,0,.035)]">
+    <Card className="rounded-control shadow-card">
       <CardHeader className="flex-row items-start justify-between gap-4 px-5">
         <div className="space-y-1">
           <CardTitle className="flex items-center gap-2 text-[16px]">
-            <ArrowTrendingUpIcon className="size-5 text-muted-foreground" aria-hidden="true" />
+            <ArrowTrendingUpIcon className="size-5 text-copy" aria-hidden="true" />
             رشد پلتفرم
           </CardTitle>
-          <p className="text-[12px] text-muted-foreground">روند تجمعی ۳۰ روز اخیر</p>
+          <p className="text-[12px] text-copy">روند تجمعی ۳۰ روز اخیر</p>
         </div>
         <Tabs
           value={metric}
@@ -91,7 +91,7 @@ function AdminOverviewGrowthChart({ data }: { data: AdminOverviewGrowthPoint[] }
                     typeof label === "string" ? formatAdminChartDate(label) : label
                   }
                   formatter={(value) => (
-                    <span className="font-semibold tabular-nums text-foreground">
+                    <span className="font-semibold tabular-nums text-ink">
                       {formatPersianNumber(Number(value))}
                     </span>
                   )}

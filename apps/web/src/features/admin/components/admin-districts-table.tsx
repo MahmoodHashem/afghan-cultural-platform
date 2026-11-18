@@ -54,7 +54,7 @@ function AdminDistrictsTable({
         columnHelper.accessor("slug", {
           header: "نشانی",
           cell: ({ row }) => (
-            <span dir="ltr" className="truncate text-[12px] text-muted-foreground">
+            <span dir="ltr" className="truncate text-[12px] text-copy">
               {row.original.slug}
             </span>
           ),
@@ -70,7 +70,7 @@ function AdminDistrictsTable({
         columnHelper.accessor("updatedAt", {
           header: "آخرین ویرایش",
           cell: ({ row }) => (
-            <span className="text-[12px] text-muted-foreground">
+            <span className="text-[12px] text-copy">
               {formatPersianDate(row.original.updatedAt)}
             </span>
           ),
@@ -114,7 +114,7 @@ function AdminDistrictsTable({
             <div className="flex min-h-56 items-center justify-center p-6 text-center">
               <div>
                 <h3 className="font-semibold">ولسوالی‌ای پیدا نشد</h3>
-                <p className="mt-1 text-[13px] text-muted-foreground">
+                <p className="mt-1 text-[13px] text-copy">
                   فیلترها را تغییر دهید یا نخستین ولسوالی را اضافه کنید.
                 </p>
               </div>
@@ -124,7 +124,7 @@ function AdminDistrictsTable({
             <>
               <div className="hidden lg:block">
                 <table className="grid w-full" aria-label="فهرست ولسوالی‌ها">
-                  <thead className="grid bg-muted/35">
+                  <thead className="grid bg-paper">
                     {table.getHeaderGroups().map((group) => (
                       <tr
                         key={group.id}
@@ -134,7 +134,7 @@ function AdminDistrictsTable({
                         {group.headers.map((header) => (
                           <th
                             key={header.id}
-                            className="flex items-center px-4 text-[12px] font-medium text-muted-foreground"
+                            className="flex items-center px-4 text-[12px] font-medium text-copy"
                           >
                             {header.isPlaceholder ? null : <table.FlexRender header={header} />}
                           </th>
@@ -148,7 +148,7 @@ function AdminDistrictsTable({
                         <motion.tr
                           layout="position"
                           key={row.original.id}
-                          className="grid min-h-16 border-b hover:bg-muted/40"
+                          className="grid min-h-16 border-b hover:bg-paper"
                           style={{ gridTemplateColumns: GRID_COLUMNS }}
                         >
                           {row.getAllCells().map((cell) => (
@@ -174,7 +174,7 @@ function AdminDistrictsTable({
                   >
                     <div className="min-w-0">
                       <p className="font-semibold">{district.name}</p>
-                      <div className="mt-2 flex gap-2 text-[12px] text-muted-foreground">
+                      <div className="mt-2 flex gap-2 text-[12px] text-copy">
                         <DistrictStatus active={district.isActive} />
                         <span>{formatPersianNumber(district.entryCount)} مطلب</span>
                       </div>
@@ -210,7 +210,7 @@ function DistrictStatus({ active }: { active: boolean }) {
   return (
     <Badge
       variant="outline"
-      className={active ? "border-primary/20 bg-primary/8 text-primary" : "text-muted-foreground"}
+      className={active ? "border-brand/20 bg-brand-soft text-brand-ink" : "text-copy"}
     >
       {active ? "فعال" : "غیرفعال"}
     </Badge>
@@ -247,9 +247,9 @@ function DistrictActions({
         aria-label={`${district.isActive ? "غیرفعال‌کردن" : "فعال‌کردن"} ${district.name}`}
       >
         {district.isActive ? (
-          <NoSymbolIcon className="size-4 text-destructive" />
+          <NoSymbolIcon className="size-4 text-brand-ink" />
         ) : (
-          <CheckCircleIcon className="size-4 text-primary" />
+          <CheckCircleIcon className="size-4 text-brand-ink" />
         )}
       </Button>
     </div>
@@ -301,7 +301,7 @@ function Pagination({
   if (meta.totalPages <= 1) return null;
   return (
     <div className="flex items-center justify-between border-t p-4">
-      <p className="text-[12px] text-muted-foreground">
+      <p className="text-[12px] text-copy">
         صفحه {formatPersianNumber(meta.page)} از {formatPersianNumber(meta.totalPages)}
       </p>
       <div className="flex gap-2">

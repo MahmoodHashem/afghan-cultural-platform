@@ -27,7 +27,7 @@ export default async function Home() {
   const homeData = await getHomeData();
 
   return (
-    <main className="min-h-screen bg-background">
+    <main className="min-h-screen bg-paper">
       <JsonLd data={createHomeStructuredData()} />
       <HomeHero />
       <MobileHomeDiscovery />

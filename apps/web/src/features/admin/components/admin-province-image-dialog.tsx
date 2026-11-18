@@ -80,7 +80,7 @@ function AdminProvinceImageDialog({
         </DialogHeader>
         <form id="admin-province-image-form" onSubmit={submit} className="space-y-4">
           {shownImage ? (
-            <div className="relative aspect-[3/2] overflow-hidden rounded-xl bg-muted">
+            <div className="relative aspect-[3/2] overflow-hidden rounded-control bg-line-soft">
               <Image
                 src={shownImage}
                 alt="پیش‌نمایش تصویر ولایت"
@@ -112,9 +112,9 @@ function AdminProvinceImageDialog({
                 setFileError(null);
               }}
             />
-            {fileError ? <p className="text-[12px] text-destructive">{fileError}</p> : null}
+            {fileError ? <p className="text-[12px] text-brand-ink">{fileError}</p> : null}
             {image ? (
-              <p className="text-[12px] text-muted-foreground">
+              <p className="text-[12px] text-copy">
                 اگر فایل تازه‌ای انتخاب نکنید، تنها متن جایگزین تغییر می‌کند.
               </p>
             ) : null}
@@ -129,7 +129,7 @@ function AdminProvinceImageDialog({
               placeholder="مثلاً نمایی از ولایت هرات"
             />
             {form.formState.errors.altText ? (
-              <p className="text-[12px] text-destructive">
+              <p className="text-[12px] text-brand-ink">
                 {form.formState.errors.altText.message}
               </p>
             ) : null}

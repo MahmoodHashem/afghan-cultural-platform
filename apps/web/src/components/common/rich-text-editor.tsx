@@ -117,8 +117,8 @@ function RichTextEditor({
     editorProps: {
       attributes: {
         class: cn(
-          "min-h-48 bg-card px-4 py-3 text-body outline-none focus-visible:ring-3 focus-visible:ring-ring/40 ",
-          toolbarMode === "always" ? "rounded-b-xl" : "rounded-xl",
+          "min-h-48 bg-surface px-4 py-3 text-body outline-none focus-visible:ring-3 focus-visible:ring-ring/40 ",
+          toolbarMode === "always" ? "rounded-b-xl" : "rounded-control",
           editorClassName,
         ),
         dir: "rtl",
@@ -152,7 +152,7 @@ function RichTextEditor({
 
   if (!editor) {
     return (
-      <div className={cn("rounded-xl border border-border bg-card p-4 text-small", className)}>
+      <div className={cn("rounded-card border border-line-soft bg-surface p-4 text-small", className)}>
         ویرایشگر در حال آماده‌سازی است...
       </div>
     );
@@ -182,7 +182,7 @@ function RichTextEditor({
   const shouldShowToolbar = toolbarMode === "always" || (toolbarMode === "toggle" && isToolbarOpen);
 
   return (
-    <div className={cn("overflow-hidden rounded-xl border border-border bg-card", className)}>
+    <div className={cn("overflow-hidden rounded-card border border-line-soft bg-surface", className)}>
       {toolbarMode === "toggle" ? (
         <div className="flex flex-wrap items-center gap-2   p-2">
           <Button
@@ -198,7 +198,7 @@ function RichTextEditor({
         </div>
       ) : null}
       {toolbarMode === "always" ? (
-        <div className="flex flex-wrap items-center gap-2 border-b border-border bg-muted/50 p-2">
+        <div className="flex flex-wrap items-center gap-2 border-b border-line-soft bg-paper p-2">
           <EditorToolbar editor={editor} onSetLink={setLink} />
         </div>
       ) : null}
@@ -212,7 +212,7 @@ function RichTextEditor({
         <MobileEditorToolbar editor={editor} onSetLink={setLink} />
       ) : null}
       {showCharacterCount ? (
-        <div className="border-t border-border px-4 py-2 text-small text-muted-foreground placeholder:text-muted-foreground/25 ">
+        <div className="border-t border-line-soft px-4 py-2 text-small text-faint">
           {formatPersianNumber(characters)} / {formatPersianNumber(characterLimit)} کاراکتر
         </div>
       ) : null}
@@ -235,7 +235,7 @@ function MobileEditorToolbar({ editor, onSetLink }: EditorToolbarProps) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 12 }}
       transition={{ duration: 0.16, ease: "easeOut" }}
-      className="fixed inset-x-2 z-70 flex h-12 items-center gap-1 overflow-x-auto rounded-xl border border-border bg-card/96 px-2  backdrop-blur-xl scrollbar-none md:hidden [&::-webkit-scrollbar]:hidden"
+      className="fixed inset-x-2 z-70 flex h-12 items-center gap-1 overflow-x-auto rounded-full border border-line-soft bg-header px-2 shadow-lift backdrop-blur-xl scrollbar-none md:hidden [&::-webkit-scrollbar]:hidden"
       style={{ bottom: `max(${inset + 70}px, env(safe-area-inset-bottom))` }}
       onPointerDown={(event) => event.preventDefault()}
     >
@@ -290,7 +290,7 @@ function MobileEditorToolbar({ editor, onSetLink }: EditorToolbarProps) {
           render={
             <button
               type="button"
-              className="flex size-9 shrink-0 items-center justify-center rounded-lg text-lg font-bold text-muted-foreground outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/40"
+              className="flex size-9 shrink-0 items-center justify-center rounded-full text-lg font-bold text-faint outline-none hover:bg-paper focus-visible:outline-2 focus-visible:outline-ring"
               aria-label="ابزارهای بیشتر"
             />
           }
@@ -344,7 +344,7 @@ function MobileToolbarButton({
       aria-label={label}
       aria-pressed={active}
       className={cn(
-        "flex h-9 min-w-9 shrink-0 items-center justify-center rounded-lg px-2 text-[13px] font-semibold text-muted-foreground outline-none transition-colors focus-visible:ring-3 focus-visible:ring-ring/40",
+        "flex h-9 min-w-9 shrink-0 items-center justify-center rounded-full px-2 text-[13px] font-bold text-copy outline-none transition-colors focus-visible:outline-2 focus-visible:outline-ring",
         active && "bg-primary text-primary-foreground",
       )}
       onClick={onClick}
@@ -399,7 +399,7 @@ function EditorBubbleToolbar({ editor }: Pick<EditorToolbarProps, "editor">) {
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 8, scale: 0.96 }}
         transition={{ duration: 0.16, ease: "easeOut" }}
-        className="overflow-hidden rounded-xl border border-border bg-primary text-foreground shadow-[0_16px_40px_rgba(0,0,0,.22)] backdrop-blur-md"
+        className="overflow-hidden rounded-[14px_14px_14px_4px] border border-white/10 bg-hero-navy-deep text-white shadow-float"
         dir="rtl"
       >
         {isEditingLink ? (
@@ -575,8 +575,8 @@ function BubbleToolbarButton({
       aria-pressed={active}
       disabled={disabled}
       className={cn(
-        "inline-flex h-8 min-w-8 items-center justify-center rounded-lg px-2 text-[13px] font-semibold text-white/82 transition-colors duration-150 hover:bg-white/12 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/35 disabled:pointer-events-none disabled:opacity-35",
-        active && "bg-white text-zinc-950 hover:bg-white hover:text-zinc-950",
+        "inline-flex h-8 min-w-8 items-center justify-center rounded-[9px] px-2 text-[13px] font-bold text-white/82 transition-colors duration-150 hover:bg-white/12 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/35 disabled:pointer-events-none disabled:opacity-35",
+        active && "bg-white text-hero-navy-deep hover:bg-white hover:text-hero-navy-deep",
       )}
       onClick={onClick}
     >

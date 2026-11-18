@@ -9,9 +9,9 @@ export const metadata: Metadata = {
 
 function ProfileShellLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-paper">
       <PublicHeader />
-      <main id="main-content" className="pt-[calc(4.75rem+env(safe-area-inset-top))] lg:pt-32">
+      <main id="main-content">
         {children}
       </main>
       <HomeFooter />

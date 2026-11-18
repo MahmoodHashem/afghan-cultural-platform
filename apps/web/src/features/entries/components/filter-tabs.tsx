@@ -31,7 +31,7 @@ function FilterTabs({ ariaLabel, items, className }: FilterTabsProps) {
     >
       <TabsList
         variant="default"
-        className="relative h-auto min-h-11 w-max justify-start gap-1 rounded-full border border-border bg-card p-1 shadow-[0_2px_10px_rgba(0,0,0,.04)]"
+        className="relative h-auto min-h-11 w-max justify-start gap-1 rounded-full border border-line bg-paper p-1"
         aria-label={ariaLabel}
       >
         {items.map((item) => (
@@ -43,10 +43,10 @@ function FilterTabs({ ariaLabel, items, className }: FilterTabsProps) {
             aria-selected={item.isActive}
             aria-current={item.isActive ? "page" : undefined}
             className={cn(
-              "relative inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-full  px-4 text-[13px] font-semibold outline-none transition-all focus-visible:ring-3 focus-visible:ring-ring/40",
+              "relative inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-full px-4 text-[13px] font-bold outline-none transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
               item.isActive
-                ? "border border-primary/40 text-primary-foreground shadow-[0_6px_16px_rgba(15,118,110,0.12)]"
-                : " text-muted-foreground  hover:bg-muted hover:text-foreground",
+                ? "text-primary-foreground"
+                : "text-copy hover:text-brand-ink",
             )}
           >
             {item.isActive ? (
@@ -61,8 +61,8 @@ function FilterTabs({ ariaLabel, items, className }: FilterTabsProps) {
             {typeof item.count === "number" ? (
               <span
                 className={cn(
-                  "relative z-10 rounded-full px-2 py-0.5 text-[11px]",
-                  item.isActive ? "bg-white/18 text-white" : "bg-muted text-muted-foreground",
+                  "relative z-10 rounded-full px-2 text-[11px] leading-[1.9] font-bold",
+                  item.isActive ? "bg-black/18 text-white" : "bg-line-soft text-faint",
                 )}
               >
                 {formatPersianNumber(item.count)}

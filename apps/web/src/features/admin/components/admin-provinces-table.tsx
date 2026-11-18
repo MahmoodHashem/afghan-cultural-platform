@@ -55,7 +55,7 @@ function AdminProvincesTable({
         columnHelper.accessor("slug", {
           header: "نشانی",
           cell: ({ row }) => (
-            <span dir="ltr" className="truncate text-[12px] text-muted-foreground">
+            <span dir="ltr" className="truncate text-[12px] text-copy">
               {row.original.slug}
             </span>
           ),
@@ -75,7 +75,7 @@ function AdminProvincesTable({
         columnHelper.accessor("updatedAt", {
           header: "آخرین ویرایش",
           cell: ({ row }) => (
-            <span className="text-[12px] text-muted-foreground">
+            <span className="text-[12px] text-copy">
               {formatPersianDate(row.original.updatedAt)}
             </span>
           ),
@@ -119,7 +119,7 @@ function AdminProvincesTable({
             <div className="flex min-h-64 items-center justify-center px-6 text-center">
               <div className="space-y-2">
                 <h2 className="text-[16px] font-semibold">ولایتی پیدا نشد</h2>
-                <p className="text-[13px] text-muted-foreground">
+                <p className="text-[13px] text-copy">
                   عبارت جست‌وجو یا فیلترها را تغییر دهید.
                 </p>
               </div>
@@ -130,17 +130,17 @@ function AdminProvincesTable({
             <>
               <div className="hidden xl:block">
                 <table className="grid w-full" aria-label="فهرست ولایت‌ها">
-                  <thead className="grid bg-muted/35">
+                  <thead className="grid bg-paper">
                     {table.getHeaderGroups().map((group) => (
                       <tr
                         key={group.id}
-                        className="grid h-11 border-b border-border"
+                        className="grid h-11 border-b border-line-soft"
                         style={{ gridTemplateColumns: GRID_COLUMNS }}
                       >
                         {group.headers.map((header) => (
                           <th
                             key={header.id}
-                            className="flex min-w-0 items-center overflow-hidden px-4 text-[12px] font-medium whitespace-nowrap text-muted-foreground"
+                            className="flex min-w-0 items-center overflow-hidden px-4 text-[12px] font-medium whitespace-nowrap text-copy"
                           >
                             {header.isPlaceholder ? null : <table.FlexRender header={header} />}
                           </th>
@@ -157,7 +157,7 @@ function AdminProvincesTable({
                           initial={reducedMotion ? false : { opacity: 0, y: 5 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0 }}
-                          className="grid min-h-20 border-b border-border transition-colors hover:bg-muted/45"
+                          className="grid min-h-20 border-b border-line-soft transition-colors hover:bg-paper"
                           style={{ gridTemplateColumns: GRID_COLUMNS }}
                         >
                           {row.getAllCells().map((cell) => (
@@ -175,7 +175,7 @@ function AdminProvincesTable({
                 </table>
               </div>
 
-              <div className="divide-y divide-border xl:hidden">
+              <div className="divide-y divide-line-soft xl:hidden">
                 {provinces.map((province, index) => (
                   <motion.article layout="position" key={province.id} className="space-y-3 p-4">
                     <div className="flex items-start justify-between gap-3">
@@ -195,7 +195,7 @@ function AdminProvincesTable({
                         />
                       )}
                     </div>
-                    <div className="flex flex-wrap gap-2 text-[12px] text-muted-foreground">
+                    <div className="flex flex-wrap gap-2 text-[12px] text-copy">
                       <StatusBadge active={province.isActive} />
                       <span>{formatPersianNumber(province.entryCount)} مطلب</span>
                       <span>{formatPersianNumber(province.districtCount)} ولسوالی</span>
@@ -217,11 +217,11 @@ function ProvinceIdentity({ province }: { province: AdminProvince }) {
     <div className="min-w-0 space-y-1">
       <Link
         href={`/admin/provinces/${province.id}`}
-        className="truncate text-[14px] font-semibold text-foreground hover:text-primary"
+        className="truncate text-[14px] font-semibold text-ink hover:text-brand-ink"
       >
         {province.name}
       </Link>
-      <p className="line-clamp-2 text-[12px] leading-5 text-muted-foreground">
+      <p className="line-clamp-2 text-[12px] leading-5 text-copy">
         {province.description || "هنوز توضیحی برای این ولایت ثبت نشده است."}
       </p>
     </div>
@@ -232,7 +232,7 @@ function StatusBadge({ active }: { active: boolean }) {
   return (
     <Badge
       variant="outline"
-      className={active ? "border-primary/20 bg-primary/8 text-primary" : "text-muted-foreground"}
+      className={active ? "border-brand/20 bg-brand-soft text-brand-ink" : "text-copy"}
     >
       {active ? "فعال" : "غیرفعال"}
     </Badge>
@@ -267,9 +267,9 @@ function RowActions({
         aria-label={`${province.isActive ? "غیرفعال‌کردن" : "فعال‌کردن"} ${province.name}`}
       >
         {province.isActive ? (
-          <NoSymbolIcon className="size-4 text-destructive" aria-hidden="true" />
+          <NoSymbolIcon className="size-4 text-brand-ink" aria-hidden="true" />
         ) : (
-          <CheckCircleIcon className="size-4 text-primary" aria-hidden="true" />
+          <CheckCircleIcon className="size-4 text-brand-ink" aria-hidden="true" />
         )}
       </Button>
     </div>
@@ -321,7 +321,7 @@ function Pagination({
   if (meta.totalPages <= 1) return null;
   return (
     <div className="flex items-center justify-between border-t p-4">
-      <p className="text-[12px] text-muted-foreground">
+      <p className="text-[12px] text-copy">
         صفحه {formatPersianNumber(meta.page)} از {formatPersianNumber(meta.totalPages)}
       </p>
       <div className="flex gap-2">

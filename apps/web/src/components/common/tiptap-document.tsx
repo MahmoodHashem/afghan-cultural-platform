@@ -28,14 +28,14 @@ function TiptapDocument({ content }: { content: unknown }) {
 
   if (children.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-border bg-card p-6 text-muted-foreground">
+      <div className="rounded-card border-[1.5px] border-dashed border-line p-6 text-copy">
         متن این مطلب در دسترس نیست.
       </div>
     );
   }
 
   return (
-    <div className="article-container mx-0 max-w-none space-y-5 text-[18px] leading-9 text-foreground">
+    <div className="article-container mx-0 max-w-none space-y-4 px-0 text-[16px] leading-[2.15] text-copy">
       {children.map((node, index) => renderNode(node, index))}
     </div>
   );
@@ -72,7 +72,7 @@ function renderNode(node: TiptapNode, key: number | string): ReactNode {
   switch (node.type) {
     case "paragraph":
       return (
-        <p key={key} dir={getDirection(node.attrs)} className={cn("leading-9", textAlign)}>
+        <p key={key} dir={getDirection(node.attrs)} className={cn("leading-[2.15]", textAlign)}>
           {children.length > 0 ? children : "\u00A0"}
         </p>
       );
@@ -81,8 +81,10 @@ function renderNode(node: TiptapNode, key: number | string): ReactNode {
       const headingText = getNodeText(node);
       const headingId = createHeadingId(headingText, key);
       const className = cn(
-        "scroll-mt-32 pt-4 font-bold leading-[1.45] text-foreground",
-        level === 3 ? "text-[24px]" : "text-[30px]",
+        "scroll-mt-32 pt-5 font-bold leading-[1.9] text-ink",
+        level === 3
+          ? "text-[17px]"
+          : "relative flex items-center gap-2.5 text-[20px] before:h-5 before:w-[5px] before:shrink-0 before:rounded-[3px] before:bg-brand",
         textAlign,
       );
 
@@ -98,7 +100,7 @@ function renderNode(node: TiptapNode, key: number | string): ReactNode {
     }
     case "bulletList":
       return (
-        <ul key={key} className="list-disc space-y-2 pe-5 ps-0 marker:text-primary">
+        <ul key={key} className="list-disc space-y-2 pe-5 ps-0 marker:text-brand">
           {children}
         </ul>
       );
@@ -107,14 +109,14 @@ function renderNode(node: TiptapNode, key: number | string): ReactNode {
         <ol
           key={key}
           start={getOrderedListStart(node.attrs)}
-          className="list-decimal space-y-2 pe-5 ps-0 marker:text-primary"
+          className="list-decimal space-y-2 pe-5 ps-0 marker:text-brand"
         >
           {children}
         </ol>
       );
     case "listItem":
       return (
-        <li key={key} className="leading-9">
+        <li key={key} className="leading-[2.15]">
           {children}
         </li>
       );
@@ -122,13 +124,13 @@ function renderNode(node: TiptapNode, key: number | string): ReactNode {
       return (
         <blockquote
           key={key}
-          className="border-s-4 border-primary bg-primary-light/50 py-4 ps-5 pe-4 text-foreground"
+          className="rounded-[14px] border border-s-[3px] border-line border-s-brand bg-surface py-4 ps-5 pe-5 text-ink"
         >
           {children}
         </blockquote>
       );
     case "horizontalRule":
-      return <hr key={key} className="border-border" />;
+      return <hr key={key} className="my-7 border-t-[1.5px] border-dashed border-line" />;
     case "hardBreak":
       return <br key={key} />;
     case "codeBlock":
@@ -136,7 +138,7 @@ function renderNode(node: TiptapNode, key: number | string): ReactNode {
         <pre
           key={key}
           dir="ltr"
-          className="overflow-x-auto rounded-lg border border-border bg-muted px-4 py-3 text-left text-[15px] leading-7"
+          className="overflow-x-auto rounded-bubble-sm border border-line bg-paper px-4 py-3 text-left text-[14px] leading-7"
         >
           <code>{children}</code>
         </pre>
@@ -163,7 +165,11 @@ function applyMarks(text: string, marks: TiptapMark[] | undefined, key: number |
         return <s key={`${key}-strike`}>{current}</s>;
       case "code":
         return (
-          <code key={`${key}-code`} dir="ltr" className="rounded bg-muted px-1 py-0.5 text-[0.9em]">
+          <code
+            key={`${key}-code`}
+            dir="ltr"
+            className="rounded bg-line-soft px-1 py-0.5 text-[0.9em]"
+          >
             {current}
           </code>
         );
@@ -184,7 +190,7 @@ function applyMarks(text: string, marks: TiptapMark[] | undefined, key: number |
           <a
             key={`${key}-link`}
             href={href}
-            className="font-semibold text-primary underline underline-offset-4"
+            className="font-semibold text-brand-ink underline decoration-1 underline-offset-4"
             rel="noreferrer"
           >
             {current}
@@ -203,7 +209,7 @@ function applyMarks(text: string, marks: TiptapMark[] | undefined, key: number |
           <Link
             key={`${key}-internal`}
             href={`/entries/${encodeURIComponent(targetSlug)}`}
-            className="font-semibold text-primary underline underline-offset-4"
+            className="font-semibold text-brand-ink underline decoration-1 underline-offset-4"
           >
             {current}
           </Link>

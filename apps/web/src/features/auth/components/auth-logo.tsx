@@ -1,24 +1,25 @@
-import Image from "next/image";
 import Link from "next/link";
-import { AUTH_LOGO_SRC } from "@/features/auth/constants/auth-assets";
+
+import { Logo } from "@/components/brand/mirasaf-logo";
 import { cn } from "@/lib/utils";
 
 type AuthLogoProps = {
   className?: string;
+  /** Kept for API compatibility; the logo is an inline SVG and needs no preloading. */
   priority?: boolean;
 };
 
-function AuthLogo({ className, priority = false }: AuthLogoProps) {
+function AuthLogo({ className }: AuthLogoProps) {
   return (
-    <Link href={"/"}>
-      <Image
-        src={AUTH_LOGO_SRC}
-        alt="میراث افغانستان"
-        width={300}
-        height={30}
-        priority={priority}
-        className={cn("object-contain h-14 sm:w-64 lg:w-96", className)}
-      />
+    <Link
+      href="/"
+      aria-label="میراث افغانستان، رفتن به خانه"
+      className={cn(
+        "rounded-control outline-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring",
+        className,
+      )}
+    >
+      <Logo size="lg" />
     </Link>
   );
 }

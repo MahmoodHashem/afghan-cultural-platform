@@ -121,7 +121,7 @@ function CommentThread({ entryId, comment, depth = 0, now }: CommentThreadProps)
     >
       {activeAuthor && activeBody ? (
         <div className="flex items-start gap-3 sm:gap-4">
-          <Avatar className={cn("bg-primary-light", depth === 0 ? "size-11" : "size-9")}>
+          <Avatar className={cn("bg-brand-soft", depth === 0 ? "size-11" : "size-9")}>
             {activeAuthor.profileImageUrl ? (
               <AvatarImage src={activeAuthor.profileImageUrl} alt="" />
             ) : null}
@@ -134,9 +134,9 @@ function CommentThread({ entryId, comment, depth = 0, now }: CommentThreadProps)
             <header className="flex flex-wrap items-start justify-between gap-2">
               <div className="min-w-0  ">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="font-bold text-foreground">{activeAuthor.displayName}</h3>
+                  <h3 className="font-bold text-ink">{activeAuthor.displayName}</h3>
                   {activeAuthor.isEntryAuthor ? (
-                    <Badge className="rounded-full bg-primary-light px-2.5 text-[11px] text-primary shadow-none">
+                    <Badge className="rounded-full bg-brand-soft px-2.5 text-[11px] text-brand-ink shadow-none">
                       نویسنده مطلب
                     </Badge>
                   ) : null}
@@ -144,7 +144,7 @@ function CommentThread({ entryId, comment, depth = 0, now }: CommentThreadProps)
                 <time
                   dateTime={comment.createdAt}
                   title={formatPersianDate(comment.createdAt)}
-                  className="block text-[12px] text-muted-foreground"
+                  className="block text-[12px] text-copy"
                 >
                   {formatCommentRelativeTime(comment.createdAt, now)}
                   {comment.updatedAt !== comment.createdAt ? " · ویرایش‌شده" : null}
@@ -178,7 +178,7 @@ function CommentThread({ entryId, comment, depth = 0, now }: CommentThreadProps)
                   key="body"
                   initial={reducedMotion ? false : { opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="mt-3 whitespace-pre-wrap text-[15px] leading-8 text-foreground sm:text-[16px]"
+                  className="mt-3 whitespace-pre-wrap text-[15px] leading-8 text-ink sm:text-[16px]"
                 >
                   {activeBody}
                 </motion.p>
@@ -186,7 +186,7 @@ function CommentThread({ entryId, comment, depth = 0, now }: CommentThreadProps)
             </AnimatePresence>
 
             {!editing ? (
-              <div className="mt-3 flex flex-wrap items-center gap-1 text-muted-foreground">
+              <div className="mt-3 flex flex-wrap items-center gap-1 text-copy">
                 <Button
                   type="button"
                   variant="ghost"
@@ -215,7 +215,7 @@ function CommentThread({ entryId, comment, depth = 0, now }: CommentThreadProps)
                         : "پسندیدن دیدگاه"
                   }
                   disabled={isSelfLike || commentLike.isPending || commentLike.isLoading}
-                  className={cn(commentLike.isLiked && "text-primary hover:text-primary")}
+                  className={cn(commentLike.isLiked && "text-brand-ink hover:text-brand-ink")}
                   onClick={toggleLike}
                   {...likeAnimation.triggerProps}
                 >
@@ -243,7 +243,7 @@ function CommentThread({ entryId, comment, depth = 0, now }: CommentThreadProps)
           </div>
         </div>
       ) : (
-        <div className="rounded-lg border border-dashed border-border bg-muted/30 px-4 py-3 text-[13px] text-muted-foreground">
+        <div className="rounded-control border border-dashed border-line-soft bg-paper px-4 py-3 text-[13px] text-copy">
           {comment.status === "DELETED"
             ? "این دیدگاه به‌دست نویسنده حذف شده است."
             : "این دیدگاه پس از بررسی نمایش داده نمی‌شود."}
@@ -255,7 +255,7 @@ function CommentThread({ entryId, comment, depth = 0, now }: CommentThreadProps)
           type="button"
           variant="ghost"
           size="sm"
-          className="my-3 ms-12 text-primary hover:text-primary sm:ms-14"
+          className="my-3 ms-12 text-brand-ink hover:text-brand-ink sm:ms-14"
           onClick={() => setRepliesOpen(true)}
           {...revealRepliesAnimation.triggerProps}
         >
@@ -297,7 +297,7 @@ function CommentThread({ entryId, comment, depth = 0, now }: CommentThreadProps)
             animate={{ opacity: 1, height: "auto" }}
             exit={reducedMotion ? undefined : { opacity: 0, height: 0 }}
             className={cn(
-              "relative my-5 overflow-hidden border-s border-border",
+              "relative my-5 overflow-hidden border-s border-line-soft",
               depth === 0
                 ? "ms-4 ps-3 sm:ms-12"
                 : "ms-0 border-s-0 ps-0 sm:ms-4 sm:border-s sm:ps-3",
@@ -308,7 +308,7 @@ function CommentThread({ entryId, comment, depth = 0, now }: CommentThreadProps)
             {repliesQuery.isError ? (
               <div
                 role="alert"
-                className="flex flex-wrap items-center gap-2 py-3 text-[13px] text-muted-foreground"
+                className="flex flex-wrap items-center gap-2 py-3 text-[13px] text-copy"
               >
                 پاسخ‌ها بارگذاری نشد.
                 <Button
@@ -334,7 +334,7 @@ function CommentThread({ entryId, comment, depth = 0, now }: CommentThreadProps)
               <Button
                 type="button"
                 variant="ghost"
-                className="my-2 w-full bg-primary-light/45 text-primary hover:bg-primary-light hover:text-primary"
+                className="my-2 w-full bg-brand-soft text-brand-ink hover:bg-brand-soft hover:text-brand-ink"
                 disabled={repliesQuery.isFetchingNextPage}
                 onClick={() => repliesQuery.fetchNextPage()}
                 {...revealRepliesAnimation.triggerProps}

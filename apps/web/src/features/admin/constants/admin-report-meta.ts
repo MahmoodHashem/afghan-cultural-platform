@@ -17,9 +17,9 @@ const adminReportTargetLabels: Record<ReportTargetType, string> = {
 };
 
 const adminReportStatusClasses: Record<ReportStatus, string> = {
-  OPEN: "border-terracotta/25 bg-terracotta/10 text-terracotta",
-  UNDER_REVIEW: "border-amber-500/25 bg-amber-500/10 text-amber-700",
-  RESOLVED: "border-primary/20 bg-primary/10 text-primary",
+  OPEN: "border-brand/25 bg-brand-soft text-brand-ink",
+  UNDER_REVIEW: "border-saffron/30 bg-tint-sand text-saffron-deep dark:text-gold",
+  RESOLVED: "border-ok/25 bg-ok-soft text-ok",
 };
 
 const adminReportReasons = [

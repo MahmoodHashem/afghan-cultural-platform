@@ -98,7 +98,7 @@ function AdminProvincesPage() {
         }
       />
 
-      <Card className="gap-0 overflow-hidden rounded-xl py-0">
+      <Card className="gap-0 overflow-hidden rounded-control py-0">
         {!reorderMode ? (
           <AdminGeographyToolbar
             id="admin-province-search"
@@ -110,7 +110,7 @@ function AdminProvincesPage() {
             onClear={() => startTransition(() => router.replace(ROUTE, { scroll: false }))}
           />
         ) : (
-          <div className="border-b border-primary/20 bg-primary/5 px-4 py-3 text-[13px] text-primary">
+          <div className="border-b border-brand/20 bg-brand-soft px-4 py-3 text-[13px] text-brand-ink">
             با دکمه‌های بالا و پایین، ترتیب ولایت‌ها را تغییر دهید.
           </div>
         )}
@@ -119,12 +119,12 @@ function AdminProvincesPage() {
             className="flex min-h-72 flex-col items-center justify-center gap-4 p-6 text-center"
             role="alert"
           >
-            <span className="flex size-11 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+            <span className="flex size-11 items-center justify-center rounded-full bg-brand-soft text-brand-ink">
               <ExclamationTriangleIcon className="size-5" />
             </span>
             <div>
               <h2 className="font-semibold">فهرست ولایت‌ها بارگذاری نشد</h2>
-              <p className="mt-1 text-[13px] text-muted-foreground">
+              <p className="mt-1 text-[13px] text-copy">
                 ارتباط با سرور برقرار نشد. دوباره تلاش کنید.
               </p>
             </div>

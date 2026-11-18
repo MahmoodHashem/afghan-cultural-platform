@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 
-import { Card } from "@/components/ui/card";
 import { AuthLogo } from "@/features/auth/components/auth-logo";
 import { cn } from "@/lib/utils";
 
@@ -11,27 +10,25 @@ type AuthCardProps = {
   className?: string;
 };
 
+/** Form column of the auth card: logo, heading and the form itself. */
 function AuthCard({ title, description, children, className }: AuthCardProps) {
   return (
-    <Card
+    <div
+      data-slot="auth-card"
       className={cn(
-        "w-full max-w-160 gap-0 border-0 bg-card px-2 py-5 shadow-none ring-0 sm:rounded-xl sm:px-10 sm:py-10 sm:shadow-[0_2px_10px_rgba(0,0,0,.05)] sm:ring-1 sm:ring-border lg:px-14 lg:py-14",
+        "w-full max-w-120 rounded-[24px_24px_24px_8px] bg-surface px-5 py-7 shadow-card sm:bg-transparent sm:p-0 sm:shadow-none",
         className,
       )}
     >
-      <div className="mb-5 flex justify-center sm:mb-8">
-        <AuthLogo priority className="" />
+      <div className="mb-6 flex justify-center sm:mb-8 lg:justify-start">
+        <AuthLogo priority />
       </div>
-      <header className="mb-6 space-y-2 text-center sm:mb-8 sm:space-y-3">
-        <h1 className="text-[28px] font-bold leading-[1.45] text-foreground sm:text-[40px]">
-          {title}
-        </h1>
-        <p className="text-[14px] leading-7 text-muted-foreground sm:text-base sm:leading-8">
-          {description}
-        </p>
+      <header className="mb-7 space-y-2 text-center lg:text-start">
+        <h1 className="text-page-title text-ink">{title}</h1>
+        <p className="text-[14.5px] leading-[2] text-copy">{description}</p>
       </header>
       {children}
-    </Card>
+    </div>
   );
 }
 

@@ -1,74 +1,59 @@
 import { Skeleton } from "@/components/ui/skeleton";
 
 const profileEntryLoadingKeys = ["first", "second", "third", "fourth"] as const;
+const profileStatKeys = ["entries", "comments", "bookmarks"] as const;
 
+/** Mirrors the profile dashboard: navy header with avatar and stats, pill tabs, entry cards. */
 function ProfilePageSkeleton() {
   return (
-    <section
-      className="content-container mb-0 max-w-none space-y-4 rounded-none bg-background px-0 pb-8 lg:mb-10 lg:max-w-(--container-content) lg:space-y-7 lg:rounded-xl lg:bg-card lg:p-6"
-      aria-label="در حال بارگذاری پروفایل"
-    >
-      <div className="overflow-hidden bg-card lg:bg-transparent">
-        <div className="relative px-4 py-4 lg:min-h-36 lg:px-8 lg:py-6">
-          <div className="flex flex-col items-center justify-center gap-3 lg:gap-4">
-            <div className="relative">
-              <Skeleton className="size-20 rounded-full lg:size-28" />
-              <Skeleton className="absolute right-1 bottom-0 size-9 rounded-full" />
-            </div>
-            <div className="flex min-w-0 flex-col items-center space-y-2">
-              <Skeleton className="h-8 w-44 lg:h-10 lg:w-56" />
-              <Skeleton className="h-4 w-56" />
-              <div className="flex gap-2">
-                <Skeleton className="h-9 w-32 rounded-lg" />
-                <Skeleton className="h-9 w-24 rounded-lg" />
+    <section className="pb-16 lg:pb-20" aria-label="در حال بارگذاری پروفایل" aria-busy="true">
+      <section className="bg-linear-155 from-hero-navy to-hero-navy-deep pt-[calc(3.5rem+env(safe-area-inset-top)+1.75rem)] pb-16 lg:pt-[calc(4.125rem+3rem)] lg:pb-20">
+        <div className="content-container grid gap-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+          <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-end">
+            <Skeleton className="size-27 rounded-full bg-white/12 lg:size-31" />
+            <div className="flex flex-col items-center gap-2.5 sm:items-start">
+              <Skeleton className="h-4 w-24 rounded-full bg-white/10" />
+              <Skeleton className="h-9 w-56 rounded-full bg-white/12" />
+              <Skeleton className="h-4 w-44 rounded-full bg-white/10" />
+              <div className="flex gap-2 pt-2">
+                <Skeleton className="h-9 w-32 rounded-full bg-white/12" />
+                <Skeleton className="h-9 w-28 rounded-full bg-white/12" />
               </div>
-              <Skeleton className="h-4 w-36" />
-              <Skeleton className="h-4 w-72 max-w-full" />
             </div>
           </div>
+          <div className="grid grid-cols-3 gap-2 sm:gap-3">
+            {profileStatKeys.map((key) => (
+              <Skeleton
+                key={key}
+                className="h-19 min-w-24 rounded-[18px_18px_18px_6px] bg-white/10"
+              />
+            ))}
+          </div>
         </div>
-        <div className="flex w-full justify-center border-y border-border/70 py-2 lg:gap-6 lg:border-0 lg:py-0">
-          {[1, 2, 3].map((item) => (
-            <div key={item} className="flex flex-1 items-center justify-center gap-0 lg:flex-none">
-              <div className="flex min-w-20 flex-col items-center px-2 lg:px-3">
-                <Skeleton className="h-8 w-14" />
-                <Skeleton className="mt-1 h-4 w-12" />
-              </div>
-              {item < 3 ? <div className="h-7 w-px bg-border lg:bg-slate-300" /> : null}
-            </div>
-          ))}
-        </div>
-      </div>
+      </section>
 
-      <div className="flex w-full justify-center py-2">
-        <Skeleton className="h-11 w-72 max-w-full rounded-full" />
-      </div>
-
-      <div className="space-y-4 px-3 pb-4 lg:p-4">
-        <div className="flex items-center justify-between gap-3">
-          <Skeleton className="h-5 w-24 rounded-full" />
-          <Skeleton className="h-10 w-24 rounded-lg" />
-        </div>
+      <section className="content-container relative z-10 -mt-7 space-y-5 max-lg:px-4">
+        <Skeleton className="mx-auto h-12 w-72 max-w-full rounded-full bg-surface shadow-lift lg:mx-0" />
+        <Skeleton className="h-11 rounded-full" />
         {profileEntryLoadingKeys.map((key) => (
           <div
             key={`profile-entry-loading-${key}`}
-            className="border-b border-border bg-card px-4 py-4 lg:rounded-xl lg:border-0"
+            className="rounded-card border border-line-soft bg-surface p-4 shadow-card sm:p-5"
           >
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div className="min-w-0 flex-1 space-y-3">
+                <Skeleton className="h-6 w-2/3 rounded-full" />
+                <Skeleton className="h-4 w-full rounded-full" />
                 <div className="flex gap-2">
                   <Skeleton className="h-6 w-20 rounded-full" />
                   <Skeleton className="h-6 w-24 rounded-full" />
                 </div>
-                <Skeleton className="h-7 w-2/3" />
-                <Skeleton className="h-5 w-full" />
-                <Skeleton className="h-5 w-1/2" />
               </div>
               <Skeleton className="h-8 w-28 rounded-full" />
             </div>
           </div>
         ))}
-      </div>
+      </section>
     </section>
   );
 }

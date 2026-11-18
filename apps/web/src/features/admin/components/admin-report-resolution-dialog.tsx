@@ -116,7 +116,7 @@ function AdminReportResolutionDialog({
               {...form.register("notes")}
             />
             {form.formState.errors.notes ? (
-              <p className="text-[12px] text-destructive" role="alert">
+              <p className="text-[12px] text-brand-ink" role="alert">
                 {form.formState.errors.notes.message}
               </p>
             ) : null}

@@ -1,4 +1,9 @@
+import { PlusIcon } from "@heroicons/react/24/outline";
+import Link from "next/link";
+
+import { PageHero } from "@/components/common/page-hero";
 import { PageBreadcrumb } from "@/components/layout/page-breadcrumb";
+import { buttonVariants } from "@/components/ui/button";
 import {
   Pagination,
   PaginationContent,
@@ -8,11 +13,12 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { cn } from "@/lib/utils";
 import { formatPersianNumber } from "@/lib/utils/formatters";
 import type { PublicEntryListQuery } from "../api/public-entries-api";
 import type { EntryListResponse, TaxonomyItem } from "../types/public-entry";
 import { createExploreHref } from "../utils/explore-query";
-import { ExploreResultsPanel } from "./explore-results-panel";
+import { ExploreResultsPanel, ExploreSearchBar } from "./explore-results-panel";
 
 type ExploreContentProps = {
   entries: EntryListResponse;
@@ -34,17 +40,90 @@ function ExploreContent({ entries, taxonomy, query, isEntriesUnavailable }: Expl
     href: createExploreHref(query, {}),
   };
 
-  return (
-    <main className="min-h-screen bg-background ">
-      <section className="border-b border-border bg-card pt-22 pb-7 sm:pt-26 sm:pb-8">
-        <div className="content-container">
-          <div className="max-w-3xl space-y-4">
-            <PageBreadcrumb items={[{ label: "خانه", href: "/" }, { label: "مطالب" }]} />
-          </div>
-        </div>
-      </section>
+  const rangeStart = entries.meta.total === 0 ? 0 : (entries.meta.page - 1) * query.limit + 1;
+  const rangeEnd = Math.min(entries.meta.page * query.limit, entries.meta.total);
 
-      <section className="content-container  gap-6 py-6 sm:py-7">
+  return (
+    <main className="min-h-screen bg-paper">
+      <PageHero
+        breadcrumb={
+          <PageBreadcrumb
+            tone="onDark"
+            items={[{ label: "خانه", href: "/" }, { label: "مطالب" }]}
+          />
+        }
+        eyebrow="بایگانی میراث"
+        title="مطالب فرهنگی افغانستان"
+        description="نوشته‌هایی درباره‌ی ولایت‌ها، مشاهیر، بناهای تاریخی، آیین‌ها و دانش محلی؛ جست‌وجو کنید، از یک موضوع شروع کنید، یا روایت خودتان را بیفزایید."
+        word="مطالب"
+        actions={<ExploreSearchBar query={query} tone="hero" />}
+        aside={
+          <div className="hidden w-80 space-y-3 lg:block">
+            <dl className="grid grid-cols-3 gap-2">
+              {[
+                { label: "مطلب", value: entries.meta.total },
+                { label: "ولایت", value: taxonomy.provinces.length },
+                { label: "موضوع", value: taxonomy.categories.length },
+              ].map((stat) => (
+                <div
+                  key={stat.label}
+                  className="flex flex-col-reverse items-center gap-1 rounded-[16px_16px_16px_5px] border border-white/14 bg-white/8 py-3 backdrop-blur-sm"
+                >
+                  <dt className="text-[12px] text-white/65">{stat.label}</dt>
+                  <dd className="text-[24px] leading-none font-bold text-white">
+                    {formatPersianNumber(stat.value)}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+            <Link
+              href="/entries/new"
+              className={cn(buttonVariants({ variant: "pill", size: "lg" }), "w-full")}
+            >
+              <PlusIcon data-icon="inline-start" aria-hidden="true" />
+              افزودن مطلب تازه
+            </Link>
+          </div>
+        }
+      >
+        {taxonomy.categories.length > 0 ? (
+          <nav aria-label="شروع از یک موضوع" className="mt-6 flex flex-wrap items-center gap-2">
+            <span className="text-[12.5px] text-white/60">شروع از:</span>
+            {taxonomy.categories.slice(0, 7).map((category) => {
+              const isActive = query.categorySlug === category.slug;
+
+              return (
+                <Link
+                  key={category.id}
+                  href={createExploreHref(query, {
+                    page: 1,
+                    categorySlug: isActive ? undefined : category.slug,
+                  })}
+                  scroll={false}
+                  aria-current={isActive ? "true" : undefined}
+                  className={cn(
+                    "rounded-full border px-3.5 py-1.5 text-[12.5px] font-bold transition-colors outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
+                    isActive
+                      ? "border-white bg-white text-hero-navy-deep"
+                      : "border-white/22 bg-white/8 text-white/88 hover:border-white/45 hover:bg-white/14",
+                  )}
+                >
+                  {category.name}
+                </Link>
+              );
+            })}
+            <Link
+              href="/entries/new"
+              className="ms-1 inline-flex items-center gap-1 text-[12.5px] font-bold text-gold hover:underline lg:hidden"
+            >
+              <PlusIcon className="size-4" aria-hidden="true" />
+              افزودن مطلب
+            </Link>
+          </nav>
+        ) : null}
+      </PageHero>
+
+      <section className="content-container py-8 sm:py-10">
         <div className="space-y-6">
           {isEntriesUnavailable || taxonomy.isUnavailable ? <ApiNotice /> : null}
           <ExploreResultsPanel
@@ -55,7 +134,12 @@ function ExploreContent({ entries, taxonomy, query, isEntriesUnavailable }: Expl
             breadcrumbParent={breadcrumbParent}
           />
 
-          <ExplorePagination meta={entries.meta} query={query} />
+          <ExplorePagination
+            meta={entries.meta}
+            query={query}
+            rangeStart={rangeStart}
+            rangeEnd={rangeEnd}
+          />
         </div>
       </section>
     </main>
@@ -65,9 +149,13 @@ function ExploreContent({ entries, taxonomy, query, isEntriesUnavailable }: Expl
 function ExplorePagination({
   meta,
   query,
+  rangeStart,
+  rangeEnd,
 }: {
   meta: EntryListResponse["meta"];
   query: ExploreContentProps["query"];
+  rangeStart: number;
+  rangeEnd: number;
 }) {
   if (meta.totalPages <= 1) {
     return null;
@@ -76,12 +164,13 @@ function ExplorePagination({
   const paginationItems = createPaginationItems(meta.page, meta.totalPages);
 
   return (
-    <div className="flex flex-col gap-4 border-t border-border pt-6 sm:flex-row sm:items-center sm:justify-between">
-      <p className="text-center text-[14px] text-muted-foreground sm:text-start">
-        صفحه {formatPersianNumber(meta.page)} از {formatPersianNumber(meta.totalPages)}
+    <div className="flex flex-col gap-4 pt-4 sm:flex-row-reverse sm:items-center sm:justify-between">
+      <p className="text-center text-[12px] text-faint sm:text-start">
+        نمایش {formatPersianNumber(rangeStart)}–{formatPersianNumber(rangeEnd)} از{" "}
+        {formatPersianNumber(meta.total)} مطلب
       </p>
 
-      <Pagination className="mx-0 w-auto sm:justify-end">
+      <Pagination className="mx-0 w-auto justify-start">
         <PaginationContent>
           <PaginationItem>
             <PaginationPrevious
@@ -154,7 +243,7 @@ function createPaginationItems(currentPage: number, totalPages: number) {
 
 function ApiNotice() {
   return (
-    <div className="rounded-2xl border border-warning/30 bg-warning/10 px-4 py-3 text-[14px] leading-7 text-warning">
+    <div className="rounded-bubble-sm border border-saffron/30 bg-tint-sand px-4 py-3 text-[13.5px] leading-7 text-saffron-deep dark:text-gold">
       فعلاً بخشی از مطالب در دسترس نیست. کمی بعد دوباره تلاش کنید.
     </div>
   );

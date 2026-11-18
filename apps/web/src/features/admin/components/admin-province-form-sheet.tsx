@@ -117,7 +117,7 @@ function AdminProvinceFormSheet({
           </Field>
           <label
             htmlFor="admin-province-active"
-            className="flex cursor-pointer items-start gap-3 rounded-lg border p-3.5"
+            className="flex cursor-pointer items-start gap-3 rounded-control border p-3.5"
           >
             <Checkbox
               id="admin-province-active"
@@ -127,13 +127,13 @@ function AdminProvinceFormSheet({
             />
             <span>
               <span className="block text-[13px] font-semibold">ولایت فعال باشد</span>
-              <span className="text-[12px] leading-6 text-muted-foreground">
+              <span className="text-[12px] leading-6 text-copy">
                 ولایت فعال در انتخاب‌ها و صفحه‌های عمومی دیده می‌شود.
               </span>
             </span>
           </label>
         </form>
-        <SheetFooter className="border-t bg-muted/25 p-4 sm:flex-row sm:justify-start">
+        <SheetFooter className="border-t bg-paper p-4 sm:flex-row sm:justify-start">
           <Button type="submit" form="admin-province-form" disabled={pending}>
             {pending ? "در حال ذخیره..." : "ذخیره تغییرات"}
           </Button>
@@ -164,7 +164,7 @@ function Field({
     <div className="space-y-2">
       <Label>{label}</Label>
       {children}
-      {error ? <p className="text-[12px] text-destructive">{error}</p> : null}
+      {error ? <p className="text-[12px] text-brand-ink">{error}</p> : null}
     </div>
   );
 }

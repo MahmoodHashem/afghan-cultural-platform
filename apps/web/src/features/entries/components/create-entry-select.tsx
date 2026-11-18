@@ -116,7 +116,7 @@ function CreateEntrySelect({
         <SelectTrigger
           id={id}
           aria-invalid={Boolean(error)}
-          className={cn("h-11 border-border bg-card", error && "border-destructive")}
+          className={cn("h-11 border-line-soft bg-surface", error && "border-destructive")}
         >
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
@@ -126,7 +126,7 @@ function CreateEntrySelect({
               <SelectItem
                 key={option.value}
                 value={option.value}
-                className={cn(value === option.value && "bg-primary/10 text-primary")}
+                className={cn(value === option.value && "bg-brand-soft text-brand-ink")}
               >
                 <span className="flex flex-col text-right">
                   <span>{option.label}</span>
@@ -173,8 +173,8 @@ function MobileCreateEntrySelect({
           aria-invalid={Boolean(error)}
           aria-haspopup="dialog"
           className={cn(
-            "flex h-11 w-full items-center justify-between rounded-lg border border-input bg-card px-3 text-start text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/40 disabled:opacity-50",
-            !selectedOption && "text-muted-foreground",
+            "flex h-11 w-full items-center justify-between rounded-control border border-line bg-surface px-3 text-start text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/40 disabled:opacity-50",
+            !selectedOption && "text-faint",
             error && "border-destructive",
           )}
           onClick={() => setOpen(true)}
@@ -182,7 +182,7 @@ function MobileCreateEntrySelect({
           <span className="truncate">{selectedOption?.label ?? placeholder}</span>
           <span aria-hidden="true">⌄</span>
         </button>
-        <DrawerContent dir="rtl" className="max-h-[82dvh] border-border">
+        <DrawerContent dir="rtl" className="max-h-[82dvh] border-line-soft">
           <DrawerHeader className="px-5 text-start">
             <DrawerTitle>{label}</DrawerTitle>
             <DrawerDescription>{placeholder}</DrawerDescription>
@@ -191,7 +191,7 @@ function MobileCreateEntrySelect({
             <div className="relative">
               <MagnifyingGlassIcon
                 aria-hidden="true"
-                className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+                className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-faint"
               />
               <Input
                 value={searchValue}
@@ -205,7 +205,7 @@ function MobileCreateEntrySelect({
           </div>
           <div className="min-h-0 overflow-y-auto overscroll-contain px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
             {filteredOptions.length > 0 ? (
-              <div className="divide-y divide-border rounded-xl border border-border">
+              <div className="divide-y divide-line-soft rounded-control border border-line-soft">
                 {filteredOptions.map((option) => {
                   const selected = option.value === value;
 
@@ -215,7 +215,7 @@ function MobileCreateEntrySelect({
                       type="button"
                       className={cn(
                         "flex min-h-12 w-full items-center justify-between gap-3 px-4 py-3 text-start text-[14px] outline-none focus-visible:ring-3 focus-visible:ring-inset focus-visible:ring-ring/40",
-                        selected && "bg-primary/8 font-semibold text-primary",
+                        selected && "bg-brand-soft font-semibold text-brand-ink",
                       )}
                       aria-pressed={selected}
                       onClick={() => {
@@ -230,7 +230,7 @@ function MobileCreateEntrySelect({
                 })}
               </div>
             ) : (
-              <p className="py-10 text-center text-small text-muted-foreground">
+              <p className="py-10 text-center text-small text-faint">
                 نتیجه‌ای پیدا نشد.
               </p>
             )}
@@ -284,18 +284,18 @@ function SearchableCreateEntrySelect({
         <ComboboxTrigger
           id={id}
           aria-invalid={Boolean(error)}
-          className={cn("h-11 border-border bg-card", error && "border-destructive")}
+          className={cn("h-11 border-line-soft bg-surface", error && "border-destructive")}
         >
           <span className="flex min-w-0 flex-1 text-start">
             <ComboboxValue placeholder={placeholder} />
           </span>
         </ComboboxTrigger>
         <ComboboxContent aria-label={label} align="end" className="max-h-80 min-w-64">
-          <div className="border-b border-border bg-popover p-2">
+          <div className="border-b border-line-soft bg-popover p-2">
             <div className="relative">
               <MagnifyingGlassIcon
                 aria-hidden="true"
-                className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+                className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-faint"
               />
               <ComboboxInput
                 placeholder={`جست‌وجوی ${label}...`}
@@ -332,11 +332,11 @@ function CreateEntrySelectField({
 }) {
   return (
     <div className="space-y-2">
-      <label htmlFor={id} className="text-small font-semibold text-foreground">
+      <label htmlFor={id} className="text-small font-semibold text-ink">
         {label}
       </label>
       {children}
-      {error ? <p className="text-small text-destructive">{error}</p> : null}
+      {error ? <p className="text-small text-brand-ink">{error}</p> : null}
     </div>
   );
 }
@@ -384,8 +384,8 @@ function TagMultiSelect({ label, selectedValues, options, onChange, error }: Tag
     return (
       <div className="space-y-3">
         <div className="flex items-center justify-between gap-3">
-          <span className="text-small font-semibold text-foreground">{label}</span>
-          <span className="text-[12px] text-muted-foreground">
+          <span className="text-small font-semibold text-ink">{label}</span>
+          <span className="text-[12px] text-faint">
             {formatPersianNumber(selectedValues.length)} انتخاب
           </span>
         </div>
@@ -395,7 +395,7 @@ function TagMultiSelect({ label, selectedValues, options, onChange, error }: Tag
               <button
                 key={option.value}
                 type="button"
-                className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-small font-medium text-primary"
+                className="inline-flex items-center gap-1 rounded-full bg-brand-soft px-3 py-1 text-small font-medium text-brand-ink"
                 onClick={() => toggleTag(option.value)}
               >
                 {option.label}
@@ -407,7 +407,7 @@ function TagMultiSelect({ label, selectedValues, options, onChange, error }: Tag
         <button
           type="button"
           className={cn(
-            "flex h-11 w-full items-center justify-between rounded-lg border border-input bg-card px-3 text-small text-muted-foreground outline-none focus-visible:ring-3 focus-visible:ring-ring/40",
+            "flex h-11 w-full items-center justify-between rounded-control border border-line bg-surface px-3 text-small text-faint outline-none focus-visible:ring-3 focus-visible:ring-ring/40",
             error && "border-destructive",
           )}
           onClick={() => setMobileOpen(true)}
@@ -415,7 +415,7 @@ function TagMultiSelect({ label, selectedValues, options, onChange, error }: Tag
           انتخاب برچسب‌ها
           <span>{formatPersianNumber(selectedValues.length)}</span>
         </button>
-        {error ? <p className="text-small text-destructive">{error}</p> : null}
+        {error ? <p className="text-small text-brand-ink">{error}</p> : null}
         <Drawer
           open={mobileOpen}
           onOpenChange={(open) => {
@@ -424,7 +424,7 @@ function TagMultiSelect({ label, selectedValues, options, onChange, error }: Tag
           }}
           showSwipeHandle
         >
-          <DrawerContent dir="rtl" className="max-h-[84dvh] border-border">
+          <DrawerContent dir="rtl" className="max-h-[84dvh] border-line-soft">
             <DrawerHeader className="px-5 text-start">
               <DrawerTitle>برچسب‌ها</DrawerTitle>
               <DrawerDescription>یک یا چند برچسب مرتبط را انتخاب کنید.</DrawerDescription>
@@ -432,7 +432,7 @@ function TagMultiSelect({ label, selectedValues, options, onChange, error }: Tag
             {isSearchable ? (
               <div className="px-5 pt-3">
                 <div className="relative">
-                  <MagnifyingGlassIcon className="absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                  <MagnifyingGlassIcon className="absolute right-3 top-1/2 size-4 -translate-y-1/2 text-faint" />
                   <Input
                     value={searchValue}
                     onChange={(event) => setSearchValue(event.target.value)}
@@ -455,8 +455,8 @@ function TagMultiSelect({ label, selectedValues, options, onChange, error }: Tag
                       className={cn(
                         "rounded-full border px-3 py-2 text-small",
                         selected
-                          ? "border-primary/20 bg-primary/10 font-semibold text-primary"
-                          : "border-border bg-card text-muted-foreground",
+                          ? "border-brand/20 bg-brand-soft font-semibold text-brand-ink"
+                          : "border-line-soft bg-surface text-faint",
                       )}
                       onClick={() => toggleTag(option.value)}
                     >
@@ -475,8 +475,8 @@ function TagMultiSelect({ label, selectedValues, options, onChange, error }: Tag
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-3">
-        <span className="text-small font-semibold text-foreground">{label}</span>
-        <span className="text-[12px] text-muted-foreground">
+        <span className="text-small font-semibold text-ink">{label}</span>
+        <span className="text-[12px] text-faint">
           {formatPersianNumber(selectedValues.length)} انتخاب
         </span>
       </div>
@@ -486,7 +486,7 @@ function TagMultiSelect({ label, selectedValues, options, onChange, error }: Tag
             <button
               key={option.value}
               type="button"
-              className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-small font-medium text-primary transition-colors hover:bg-primary/15"
+              className="inline-flex items-center gap-1 rounded-full bg-brand-soft px-3 py-1 text-small font-medium text-brand-ink transition-colors hover:bg-brand-soft"
               onClick={() => toggleTag(option.value)}
             >
               {option.label}
@@ -499,7 +499,7 @@ function TagMultiSelect({ label, selectedValues, options, onChange, error }: Tag
         <div className="relative">
           <MagnifyingGlassIcon
             aria-hidden="true"
-            className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+            className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-faint"
           />
           <Input
             value={searchValue}
@@ -512,7 +512,7 @@ function TagMultiSelect({ label, selectedValues, options, onChange, error }: Tag
       ) : null}
       <div
         className={cn(
-          "flex max-h-48 flex-wrap gap-2 overflow-y-auto rounded-xl border border-border bg-background/70 p-3",
+          "flex max-h-48 flex-wrap gap-2 overflow-y-auto rounded-control border border-line-soft bg-paper/70 p-3",
           error && "border-destructive",
         )}
       >
@@ -527,8 +527,8 @@ function TagMultiSelect({ label, selectedValues, options, onChange, error }: Tag
                 className={cn(
                   "rounded-full border px-3 py-1.5 text-small transition-colors",
                   selected
-                    ? "border-primary/20 bg-primary/10 font-semibold text-primary"
-                    : "border-border bg-card text-muted-foreground hover:border-primary/30 hover:text-primary",
+                    ? "border-brand/20 bg-brand-soft font-semibold text-brand-ink"
+                    : "border-line-soft bg-surface text-faint hover:border-brand/30 hover:text-brand-ink",
                 )}
                 aria-pressed={selected}
                 onClick={() => toggleTag(option.value)}
@@ -538,12 +538,12 @@ function TagMultiSelect({ label, selectedValues, options, onChange, error }: Tag
             );
           })
         ) : (
-          <p className="w-full py-4 text-center text-small text-muted-foreground">
+          <p className="w-full py-4 text-center text-small text-faint">
             برچسبی پیدا نشد.
           </p>
         )}
       </div>
-      {error ? <p className="text-small text-destructive">{error}</p> : null}
+      {error ? <p className="text-small text-brand-ink">{error}</p> : null}
     </div>
   );
 }

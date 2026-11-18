@@ -35,7 +35,7 @@ function ExampleFormPreview() {
       <div className="space-y-2">
         <Label htmlFor="example-name">نام</Label>
         <Input id="example-name" placeholder="نام شما" {...register("name")} />
-        {errors.name ? <p className="text-small text-destructive">{errors.name.message}</p> : null}
+        {errors.name ? <p className="text-small text-brand-ink">{errors.name.message}</p> : null}
       </div>
 
       <div className="space-y-2">
@@ -48,7 +48,7 @@ function ExampleFormPreview() {
           {...register("email")}
         />
         {errors.email ? (
-          <p className="text-small text-destructive">{errors.email.message}</p>
+          <p className="text-small text-brand-ink">{errors.email.message}</p>
         ) : null}
       </div>
 

@@ -47,7 +47,7 @@ function AdminUsersPage() {
         description="جست‌وجوی حساب‌ها، بررسی فعالیت و مدیریت وضعیت دسترسی کاربران"
       />
 
-      <Card className="gap-0 overflow-hidden rounded-xl py-0">
+      <Card className="gap-0 overflow-hidden rounded-control py-0">
         <AdminUsersToolbar
           query={query}
           total={usersQuery.data?.meta.total ?? 0}
@@ -64,12 +64,12 @@ function AdminUsersPage() {
             className="flex min-h-72 flex-col items-center justify-center gap-4 px-6 text-center"
             role="alert"
           >
-            <span className="flex size-11 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+            <span className="flex size-11 items-center justify-center rounded-full bg-brand-soft text-brand-ink">
               <ExclamationTriangleIcon className="size-5" aria-hidden="true" />
             </span>
             <div className="space-y-1">
               <h2 className="text-[16px] font-semibold">فهرست کاربران بارگذاری نشد</h2>
-              <p className="text-[13px] text-muted-foreground">
+              <p className="text-[13px] text-copy">
                 ارتباط با سرور برقرار نشد. دوباره تلاش کنید.
               </p>
             </div>

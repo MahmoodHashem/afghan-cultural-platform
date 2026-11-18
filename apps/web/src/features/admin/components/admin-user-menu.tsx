@@ -49,7 +49,7 @@ function AdminUserMenu() {
             render={
               <SidebarMenuButton
                 size="lg"
-                className="h-14 rounded-lg data-open:bg-sidebar-accent group-data-[collapsible=icon]:size-10!"
+                className="h-14 rounded-control data-open:bg-sidebar-accent group-data-[collapsible=icon]:size-10!"
               />
             }
           >
@@ -84,8 +84,8 @@ function AdminUserMenu() {
           >
             <DropdownMenuGroup>
               <DropdownMenuLabel className="px-2 py-2">
-                <span className="block font-semibold text-foreground">{user.displayName}</span>
-                <span className="block font-normal text-muted-foreground" dir="ltr">
+                <span className="block font-semibold text-ink">{user.displayName}</span>
+                <span className="block font-normal text-copy" dir="ltr">
                   {user.email}
                 </span>
               </DropdownMenuLabel>
