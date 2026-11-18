@@ -244,9 +244,9 @@ function BookmarkImageBadge({
   //     aria-label={bookmarked ? "برداشتن از ذخیره‌ها" : "ذخیره مطلب"}
   //     aria-pressed={bookmarked}
   // className={cn(
-  //   "absolute top-3 right-3 inline-flex items-center gap-1 rounded-full bg-white/90 px-2.5 py-1.5 text-foreground backdrop-blur-sm transition-colors hover:bg-white",
+  //   "absolute top-3 right-3 inline-flex items-center gap-1 rounded-full bg-white/90 px-2.5 py-1.5 text-ink backdrop-blur-sm transition-colors hover:bg-white",
   //   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-2",
-  //   bookmarked && "text-primary  ",
+  //   bookmarked && "text-brand-ink  ",
   //   isLoading && "opacity-70",
   // )}
   //   >

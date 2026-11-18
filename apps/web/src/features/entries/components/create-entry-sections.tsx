@@ -286,7 +286,7 @@ export function ImagesSection({
         onDrop={handleDrop}
         disabled={isImageLimitReached}
         className={cn(
-          "flex min-h-44 w-full flex-col items-center justify-center gap-3 rounded-control border-2 border-dashed border-line-soft bg-paper/40 px-6 py-8 text-center transition-colors hover:border-primary/40 hover:bg-primary/[0.03] focus-visible:border-primary focus-visible:ring-3 focus-visible:ring-brand/15 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60",
+          "flex min-h-44 w-full flex-col items-center justify-center gap-3 rounded-control border-2 border-dashed border-line-soft bg-paper/40 px-6 py-8 text-center transition-colors hover:border-brand/40 hover:bg-primary/[0.03] focus-visible:border-primary focus-visible:ring-3 focus-visible:ring-brand/15 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60",
           isDragging && "border-primary bg-brand-soft",
         )}
         aria-label="انتخاب یا رها کردن تصاویر مطلب"

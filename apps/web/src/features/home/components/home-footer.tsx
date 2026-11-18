@@ -28,7 +28,7 @@ const quickLinks: FooterLinkGroup = {
 const resourceLinks: FooterLinkGroup = {
   title: "منابع",
   links: [
-    { label: "راهنما", href: "/help" },
+    { label: "راهنمای نوشتن", href: "/faq#faq-contribution" },
     { label: "سؤالات متداول", href: "/faq" },
     { label: "شرایط استفاده", href: "/terms" },
     { label: "حریم خصوصی", href: "/privacy" },

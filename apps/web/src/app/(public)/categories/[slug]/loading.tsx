@@ -6,7 +6,7 @@ const tabKeys = ["a", "b", "c", "d", "e"] as const;
 function CategoryDetailLoading() {
   return (
     <main
-      className="min-h-screen bg-background"
+      className="min-h-screen bg-paper"
       aria-busy="true"
       aria-label="در حال بارگذاری صفحه موضوع"
     >

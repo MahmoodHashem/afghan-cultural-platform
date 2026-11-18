@@ -6,7 +6,7 @@ const provinceKeys = ["a", "b", "c", "d", "e", "f", "g", "h"] as const;
 function ProvincesLoading() {
   return (
     <main
-      className="min-h-screen bg-background"
+      className="min-h-screen bg-paper"
       aria-busy="true"
       aria-label="در حال بارگذاری ولایت‌ها"
     >

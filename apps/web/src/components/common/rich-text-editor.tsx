@@ -117,8 +117,8 @@ function RichTextEditor({
     editorProps: {
       attributes: {
         class: cn(
-          "min-h-48 bg-card px-4 py-3 text-body outline-none focus-visible:ring-3 focus-visible:ring-ring/40 ",
-          toolbarMode === "always" ? "rounded-b-xl" : "rounded-xl",
+          "min-h-48 bg-surface px-4 py-3 text-body outline-none focus-visible:ring-3 focus-visible:ring-ring/40 ",
+          toolbarMode === "always" ? "rounded-b-xl" : "rounded-control",
           editorClassName,
         ),
         dir: "rtl",

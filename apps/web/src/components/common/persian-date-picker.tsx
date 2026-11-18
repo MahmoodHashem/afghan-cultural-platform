@@ -47,8 +47,8 @@ function PersianDatePicker({
             variant="outline"
             disabled={disabled}
             className={cn(
-              "h-11 w-full justify-start border-border bg-card px-3 font-normal",
-              !value && "text-muted-foreground",
+              "h-11 w-full justify-start border-line-soft bg-surface px-3 font-normal",
+              !value && "text-copy",
               className,
             )}
             onBlur={onBlur}
@@ -85,7 +85,7 @@ function PersianDatePicker({
         />
 
         {value ? (
-          <div className="border-t border-border p-2">
+          <div className="border-t border-line-soft p-2">
             <Button
               type="button"
               variant="ghost"

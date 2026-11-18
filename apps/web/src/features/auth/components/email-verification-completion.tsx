@@ -57,7 +57,7 @@ function EmailVerificationCompletion() {
   }, [router, searchParams, verifyMutation]);
 
   return (
-    <main className="flex min-h-dvh items-center justify-center bg-background px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-5 sm:py-10">
+    <main className="flex min-h-dvh items-center justify-center bg-paper px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-5 sm:py-10">
       <Card className="w-full max-w-lg rounded-none border-0 bg-surface shadow-none sm:rounded-[28px_28px_28px_8px] sm:border sm:border-line-soft sm:shadow-lift">
         <CardContent className="space-y-6 p-4 text-center sm:space-y-7 sm:p-10">
           <AuthLogo priority />

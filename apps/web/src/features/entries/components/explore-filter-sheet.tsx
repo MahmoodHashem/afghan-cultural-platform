@@ -49,7 +49,7 @@ function ExploreFilterSheet({ taxonomy, query, showTrigger = true }: ExploreFilt
     <Drawer open={isOpen} onOpenChange={setIsOpen} showSwipeHandle>
       {showTrigger ? (
         <DrawerTrigger
-          className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-border bg-card px-3 text-[13px] font-semibold text-foreground shadow-[0_2px_10px_rgba(0,0,0,.04)] transition-colors hover:bg-muted focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/40 focus-visible:outline-none"
+          className="inline-flex h-10 items-center justify-center gap-2 rounded-control border border-line-soft bg-surface px-3 text-[13px] font-semibold text-ink shadow-card transition-colors hover:bg-line-soft focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/40 focus-visible:outline-none"
           aria-label="باز کردن فیلترها"
         >
           <AdjustmentsHorizontalIcon className="size-4" aria-hidden="true" />
@@ -63,9 +63,9 @@ function ExploreFilterSheet({ taxonomy, query, showTrigger = true }: ExploreFilt
       ) : null}
       <DrawerContent
         dir="rtl"
-        className="max-h-[88svh] overflow-hidden border-border bg-background p-0"
+        className="max-h-[88svh] overflow-hidden border-line-soft bg-paper p-0"
       >
-        <DrawerHeader className="border-b border-border px-5 pt-3 pb-4 text-right">
+        <DrawerHeader className="border-b border-line-soft px-5 pt-3 pb-4 text-right">
           <DrawerTitle className="text-[18px] font-bold">فیلتر مطالب</DrawerTitle>
           <DrawerDescription className="leading-6">
             نتایج را بر اساس موضوع، ولایت و نوع محتوا دقیق‌تر کنید.

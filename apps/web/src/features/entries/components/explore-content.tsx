@@ -43,7 +43,7 @@ function ExploreContent({ entries, taxonomy, query, isEntriesUnavailable }: Expl
   const rangeEnd = Math.min(entries.meta.page * query.limit, entries.meta.total);
 
   return (
-    <main className="min-h-screen bg-background">
+    <main className="min-h-screen bg-paper">
       <PageHero
         breadcrumb={
           <PageBreadcrumb
@@ -188,7 +188,7 @@ function createPaginationItems(currentPage: number, totalPages: number) {
 
 function ApiNotice() {
   return (
-    <div className="rounded-bubble-sm border border-gold/40 bg-tint-sand px-4 py-3 text-[13.5px] leading-7 text-saffron-deep dark:text-gold">
+    <div className="rounded-bubble-sm border border-saffron/30 bg-tint-sand px-4 py-3 text-[13.5px] leading-7 text-saffron-deep dark:text-gold">
       فعلاً بخشی از مطالب در دسترس نیست. کمی بعد دوباره تلاش کنید.
     </div>
   );

@@ -167,7 +167,7 @@ function ExploreFilterForm({
     <form
       onSubmit={handleSubmit}
       className={cn(
-        "bg-card",
+        "bg-surface",
         variant === "bar"
           ? "grid w-full grid-cols-2 gap-1 rounded-card border border-line-soft p-1.5 shadow-card lg:grid-cols-4"
           : "flex min-h-0 flex-1 flex-col overflow-hidden",
@@ -295,7 +295,7 @@ function SelectField({
           >
             <div className="relative">
               <MagnifyingGlassIcon
-                className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+                className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-copy"
                 aria-hidden="true"
               />
 
@@ -320,7 +320,7 @@ function SelectField({
               </SelectItem>
             ))
           ) : (
-            <div className="px-3 py-6 text-center text-[13px] text-muted-foreground">
+            <div className="px-3 py-6 text-center text-[13px] text-copy">
               نتیجه‌ای پیدا نشد
             </div>
           )}

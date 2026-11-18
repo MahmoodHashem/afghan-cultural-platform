@@ -6,7 +6,7 @@ const cardKeys = ["first", "second", "third", "fourth", "fifth", "sixth"] as con
 function ExploreLoading() {
   return (
     <main
-      className="min-h-screen bg-background"
+      className="min-h-screen bg-paper"
       aria-busy="true"
       aria-label="در حال بارگذاری محتوا"
     >

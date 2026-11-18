@@ -21,7 +21,7 @@ const ENTRY_STATUS_META = {
   PENDING_REVIEW: {
     label: "در انتظار بررسی",
     description: "مطلب برای بررسی فرستاده شده است.",
-    badgeClassName: "border-gold/40 bg-tint-sand text-saffron-deep dark:text-gold",
+    badgeClassName: "border-saffron/30 bg-tint-sand text-saffron-deep dark:text-gold",
   },
   CHANGES_REQUESTED: {
     label: "نیازمند اصلاح",

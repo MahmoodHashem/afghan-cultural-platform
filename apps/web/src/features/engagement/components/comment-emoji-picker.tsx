@@ -47,7 +47,7 @@ function CommentEmojiPicker({ disabled, onSelect }: CommentEmojiPickerProps) {
           <Suspense
             fallback={
               <div
-                className="grid h-[320px] w-[min(320px,calc(100vw-2rem))] place-items-center text-[13px] text-muted-foreground"
+                className="grid h-[320px] w-[min(320px,calc(100vw-2rem))] place-items-center text-[13px] text-copy"
                 role="status"
               >
                 در حال آماده‌سازی شکلک‌ها...

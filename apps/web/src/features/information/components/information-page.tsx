@@ -43,7 +43,7 @@ function InformationPage({
 }: InformationPageProps) {
   return (
     <PageTransition>
-      <main className="min-h-screen bg-background">
+      <main className="min-h-screen bg-paper">
         <PageHero
           breadcrumb={
             <PageBreadcrumb

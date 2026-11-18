@@ -54,7 +54,7 @@ function OAuthCallbackCompletion() {
   }, [refreshMutation, router, searchParams]);
 
   return (
-    <main className="flex min-h-svh items-center justify-center bg-background px-6 py-10">
+    <main className="flex min-h-svh items-center justify-center bg-paper px-6 py-10">
       <section
         className="flex w-full max-w-sm flex-col items-center rounded-card border border-line-soft bg-surface px-6 py-8 text-center shadow-card"
         aria-live="polite"

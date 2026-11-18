@@ -87,7 +87,7 @@ function EntryPreviewDialog({
       </header>
 
       {images[0] ? (
-        <figure className="-mx-5 overflow-hidden border-y border-line-soft sm:mx-0 sm:rounded-xl sm:border">
+        <figure className="-mx-5 overflow-hidden border-y border-line-soft sm:mx-0 sm:rounded-control sm:border">
           <div className="relative aspect-4/3 bg-line-soft">
             <Image
               src={images[0].previewUrl}

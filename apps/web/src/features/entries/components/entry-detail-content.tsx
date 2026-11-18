@@ -38,7 +38,7 @@ function EntryDetailContent({
   const commentsRenderedAt = new Date().toISOString();
 
   return (
-    <main data-entry-detail className="min-h-screen bg-background pb-24 lg:pb-0">
+    <main data-entry-detail className="min-h-screen bg-paper pb-24 lg:pb-0">
       <EntryDetailHeaderContext
         title={entry.title}
         backHref="/explore"

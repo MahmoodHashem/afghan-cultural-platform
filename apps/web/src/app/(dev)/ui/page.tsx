@@ -144,7 +144,7 @@ export default function UiReferencePage() {
   }
 
   return (
-    <main className="min-h-screen bg-background pb-24">
+    <main className="min-h-screen bg-paper pb-24">
       <section className="relative overflow-hidden bg-linear-150 from-hero-navy to-hero-navy-deep py-14 text-white">
         <span
           aria-hidden="true"

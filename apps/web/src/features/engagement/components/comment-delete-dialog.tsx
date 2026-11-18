@@ -26,7 +26,7 @@ function CommentDeleteDialog({
 }: CommentDeleteDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="rounded-xl border-border bg-card">
+      <AlertDialogContent className="rounded-control border-line-soft bg-surface">
         <AlertDialogHeader className="place-items-start text-start">
           <AlertDialogTitle>دیدگاه حذف شود؟</AlertDialogTitle>
           <AlertDialogDescription className="leading-7">

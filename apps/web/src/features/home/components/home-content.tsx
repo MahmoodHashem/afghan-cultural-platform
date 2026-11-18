@@ -96,7 +96,7 @@ function HomeContent({ data }: { data: HomeData }) {
   const secondaryEntries = data.latestEntries.slice(1, 5);
 
   return (
-    <section className="relative z-10 bg-background pb-20 sm:pb-24">
+    <section className="relative z-10 bg-paper pb-20 sm:pb-24">
       <ImpactStrip data={data} />
 
       <div className="space-y-20 pt-14 sm:space-y-24 sm:pt-16">

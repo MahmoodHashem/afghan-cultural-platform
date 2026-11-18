@@ -528,7 +528,7 @@ function TagMultiSelect({ label, selectedValues, options, onChange, error }: Tag
                   "rounded-full border px-3 py-1.5 text-small transition-colors",
                   selected
                     ? "border-brand/20 bg-brand-soft font-semibold text-brand-ink"
-                    : "border-line-soft bg-surface text-faint hover:border-primary/30 hover:text-brand-ink",
+                    : "border-line-soft bg-surface text-faint hover:border-brand/30 hover:text-brand-ink",
                 )}
                 aria-pressed={selected}
                 onClick={() => toggleTag(option.value)}

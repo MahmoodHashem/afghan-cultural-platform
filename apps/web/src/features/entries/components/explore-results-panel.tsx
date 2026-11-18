@@ -57,7 +57,7 @@ function ExploreResultsPanel({
 
   return (
     <div className="space-y-5">
-      <div className="sticky top-[calc(3.5rem+env(safe-area-inset-top))] z-20 -mx-1 flex items-center gap-3 bg-background/92 px-1 py-2 backdrop-blur-md lg:top-16.5">
+      <div className="sticky top-[calc(3.5rem+env(safe-area-inset-top))] z-20 -mx-1 flex items-center gap-3 bg-paper/92 px-1 py-2 backdrop-blur-md lg:top-16.5">
         <ExploreSearchBar query={query} />
         <SortSegment query={query} />
       </div>

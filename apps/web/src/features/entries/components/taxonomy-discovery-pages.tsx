@@ -138,7 +138,7 @@ const tileColourways = [
 
 function ProvinceIndexContent({ provinces, isUnavailable }: ProvinceIndexContentProps) {
   return (
-    <main className="min-h-screen bg-background">
+    <main className="min-h-screen bg-paper">
       <PageHero
         breadcrumb={
           <PageBreadcrumb
@@ -190,7 +190,7 @@ function ProvinceDetailContent({
   const provinceHref = taxonomyItemHref("/provinces", province);
 
   return (
-    <main className="min-h-screen bg-background">
+    <main className="min-h-screen bg-paper">
       <PageHero
         breadcrumb={
           <PageBreadcrumb
@@ -290,7 +290,7 @@ function ProvinceDetailContent({
 
 function CategoriesIndexContent({ categories, isUnavailable }: CategoriesIndexContentProps) {
   return (
-    <main className="min-h-screen bg-background">
+    <main className="min-h-screen bg-paper">
       <PageHero
         breadcrumb={
           <PageBreadcrumb
@@ -346,7 +346,7 @@ function CategoryDetailContent({
   const categoryHref = taxonomyItemHref("/categories", category);
 
   return (
-    <main className="min-h-screen bg-background">
+    <main className="min-h-screen bg-paper">
       <PageHero
         breadcrumb={
           <PageBreadcrumb
@@ -672,7 +672,7 @@ function PageRelativeLink({
 
 function ApiNotice() {
   return (
-    <div className="mb-8 rounded-bubble-sm border border-gold/40 bg-tint-sand px-4 py-3 text-[13.5px] leading-7 text-saffron-deep dark:text-gold">
+    <div className="mb-8 rounded-bubble-sm border border-saffron/30 bg-tint-sand px-4 py-3 text-[13.5px] leading-7 text-saffron-deep dark:text-gold">
       فعلاً بخشی از مطالب در دسترس نیست. کمی بعد دوباره تلاش کنید.
     </div>
   );

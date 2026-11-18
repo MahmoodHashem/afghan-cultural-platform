@@ -6,7 +6,7 @@ const railKeys = ["like", "comment", "save", "share"] as const;
 /** Mirrors the reading page: navy hero, matted figure, then rail, prose and side column. */
 function EntryDetailLoading() {
   return (
-    <main className="min-h-screen bg-background" aria-busy="true" aria-label="در حال بارگذاری مطلب">
+    <main className="min-h-screen bg-paper" aria-busy="true" aria-label="در حال بارگذاری مطلب">
       <article>
         <section className="bg-linear-155 from-hero-navy to-hero-navy-deep pt-[calc(4.125rem+2.5rem)] pb-60 sm:pt-[calc(4.125rem+3rem)] sm:pb-64">
           <div className="content-container space-y-4">

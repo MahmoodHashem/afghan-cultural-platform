@@ -25,7 +25,7 @@ const activityToneClasses: Record<AdminActivityTone, string> = {
   green: "bg-ok",
   orange: "bg-gold",
   red: "bg-brand",
-  neutral: "bg-muted-foreground",
+  neutral: "bg-faint",
 };
 
 function AdminOverviewActivity({ activities }: { activities: AdminActivityViewModel[] }) {

@@ -40,8 +40,8 @@ const destinationIcons: Record<
   whatsapp: { icon: siWhatsapp, className: "bg-[#25D366]/12 text-[#128C4A]" },
   telegram: { icon: siTelegram, className: "bg-[#26A5E4]/12 text-[#168AC0]" },
   facebook: { icon: siFacebook, className: "bg-[#1877F2]/12 text-[#1877F2]" },
-  x: { icon: siX, className: "bg-foreground/8 text-foreground" },
-  email: { className: "bg-terracotta/10 text-terracotta" },
+  x: { icon: siX, className: "bg-ink/8 text-ink" },
+  email: { className: "bg-tint-sand text-saffron" },
 };
 
 function EntryShareDialog({
@@ -117,8 +117,8 @@ function EntryShareDialog({
   if (isMobile) {
     return (
       <Drawer open={open} onOpenChange={onOpenChange} showSwipeHandle>
-        <DrawerContent dir="rtl" className="max-h-[86dvh] border-border">
-          <DrawerHeader className="border-b border-border px-5 pb-4 text-start">
+        <DrawerContent dir="rtl" className="max-h-[86dvh] border-line-soft">
+          <DrawerHeader className="border-b border-line-soft px-5 pb-4 text-start">
             <DrawerTitle>اشتراک‌گذاری مطلب</DrawerTitle>
             <DrawerDescription>پیوند این مطلب را با دیگران شریک کنید.</DrawerDescription>
           </DrawerHeader>
@@ -133,7 +133,7 @@ function EntryShareDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent dir="rtl" className="gap-0 p-0 sm:max-w-lg">
-        <DialogHeader className="border-b border-border px-6 py-5">
+        <DialogHeader className="border-b border-line-soft px-6 py-5">
           <DialogTitle>اشتراک‌گذاری مطلب</DialogTitle>
           <DialogDescription>پیوند این مطلب را با دیگران شریک کنید.</DialogDescription>
         </DialogHeader>
@@ -175,10 +175,10 @@ function SharePanel({
           <button
             type="button"
             {...shareAnimation.triggerProps}
-            className="group flex min-w-16 shrink-0 flex-col items-center gap-2 text-[12px] text-muted-foreground outline-none focus-visible:text-primary"
+            className="group flex min-w-16 shrink-0 flex-col items-center gap-2 text-[12px] text-copy outline-none focus-visible:text-brand-ink"
             onClick={onShareMore}
           >
-            <span className="flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary transition-transform group-hover:scale-105">
+            <span className="flex size-12 items-center justify-center rounded-full bg-brand-soft text-brand-ink transition-transform group-hover:scale-105">
               <ShareIcon ref={shareAnimation.iconRef} size={20} aria-hidden="true" />
             </span>
             بیشتر
@@ -186,7 +186,7 @@ function SharePanel({
         ) : null}
       </div>
 
-      <div className="flex items-center gap-2 rounded-xl border border-border bg-muted/35 p-2">
+      <div className="flex items-center gap-2 rounded-control border border-line-soft bg-paper p-2">
         <Input
           value={canonicalUrl}
           readOnly
@@ -222,7 +222,7 @@ function ShareDestination({ destination }: { destination: EntryShareDestination 
       href={destination.href}
       target={external ? "_blank" : undefined}
       rel={external ? "noreferrer noopener" : undefined}
-      className="group flex min-w-16 shrink-0 flex-col items-center gap-2 text-[12px] text-muted-foreground outline-none focus-visible:text-primary"
+      className="group flex min-w-16 shrink-0 flex-col items-center gap-2 text-[12px] text-copy outline-none focus-visible:text-brand-ink"
       aria-label={`اشتراک‌گذاری در ${destination.label}`}
     >
       <span
