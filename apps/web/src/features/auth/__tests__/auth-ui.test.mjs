@@ -383,7 +383,7 @@ test("OAuth errors use controlled Persian messages", () => {
 });
 
 test("profile email verification uses the confirmed backend contracts", () => {
-  assert.match(ownerProfilePage, /EmailVerificationButton email=\{user\.email\} compact/);
+  assert.match(ownerProfilePage, /<EmailVerificationButton\s+email=\{user\.email\}\s+compact/);
   assert.doesNotMatch(ownerProfilePage, /VerifiedEmailBanner email=\{profileUser\.email\}/);
   assert.match(emailVerificationButton, /useResendEmailVerification/);
   assert.match(emailVerificationButton, /RESEND_COOLDOWN_SECONDS = 60/);
@@ -489,7 +489,7 @@ test("owner profile uses safe authenticated user data", () => {
 });
 
 test("owner profile exposes confirmed logout directly in the account page", () => {
-  assert.match(ownerProfilePage, /<ProfileLogoutButton \/>/);
+  assert.match(ownerProfilePage, /<ProfileLogoutButton\b/);
   assert.match(profileLogoutButton, /useLogout/);
   assert.match(profileLogoutButton, /از حساب خارج می‌شوید؟/);
   assert.match(profileLogoutButton, /<AlertDialog/);

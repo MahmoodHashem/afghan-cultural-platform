@@ -41,12 +41,12 @@ const ENTRY_STATUS_META = {
   HIDDEN: {
     label: "پنهان",
     description: "این مطلب فعلاً در سایت نمایش داده نمی‌شود.",
-    badgeClassName: "border-muted bg-muted text-muted-foreground",
+    badgeClassName: "border-line bg-line-soft text-faint",
   },
   ARCHIVED: {
     label: "بایگانی‌شده",
     description: "این مطلب در آرشیو نگهداری می‌شود.",
-    badgeClassName: "border-muted bg-muted text-muted-foreground",
+    badgeClassName: "border-line bg-line-soft text-faint",
   },
 } satisfies Record<EntryStatus, EntryStatusMeta>;
 

@@ -16,8 +16,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { useLogout } from "@/features/auth/hooks/use-auth-mutations";
 import { useAnimatedIcon } from "@/hooks/use-animated-icon";
+import { cn } from "@/lib/utils";
 
-function ProfileLogoutButton() {
+function ProfileLogoutButton({ className }: { className?: string }) {
   const [confirmationOpen, setConfirmationOpen] = useState(false);
   const logoutMutation = useLogout();
   const { iconRef, triggerProps } = useAnimatedIcon();
@@ -38,14 +39,17 @@ function ProfileLogoutButton() {
         disabled={logoutMutation.isPending}
         onClick={() => setConfirmationOpen(true)}
         {...triggerProps}
-        className="mt-1 rounded-full text-muted-foreground hover:bg-destructive/8 hover:text-destructive"
+        className={cn(
+          "mt-1 rounded-full text-copy hover:bg-brand-soft hover:text-brand-ink",
+          className,
+        )}
       >
         <ArrowRightStartOnRectangleIcon ref={iconRef} size={16} aria-hidden="true" />
         {logoutMutation.isPending ? "در حال خروج..." : "خروج از حساب"}
       </Button>
 
       <AlertDialog open={confirmationOpen} onOpenChange={setConfirmationOpen}>
-        <AlertDialogContent className="rounded-2xl border border-border bg-card p-5 text-foreground">
+        <AlertDialogContent className="p-5">
           <AlertDialogHeader className="place-items-start text-start">
             <AlertDialogTitle>از حساب خارج می‌شوید؟</AlertDialogTitle>
             <AlertDialogDescription className="leading-7">
@@ -58,7 +62,8 @@ function ProfileLogoutButton() {
               type="button"
               disabled={logoutMutation.isPending}
               onClick={confirmLogout}
-              className="rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              variant="destructive"
+              className="rounded-full"
             >
               {logoutMutation.isPending ? "در حال خروج..." : "خروج"}
             </AlertDialogAction>

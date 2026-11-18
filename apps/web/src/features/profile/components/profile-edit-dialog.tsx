@@ -124,7 +124,7 @@ function ProfileEditDialog({
 
           <form id="profile-edit-form" onSubmit={submit} className="space-y-5">
             <div className="flex flex-col items-center gap-3">
-              <Avatar className="size-24 border-4 border-card bg-primary-light shadow-sm">
+              <Avatar className="size-24 border-4 border-surface bg-brand-soft shadow-card">
                 {shownImage ? <AvatarImage src={shownImage} alt="" /> : null}
                 <AvatarFallback
                   className={cn("text-[22px] font-bold", getUserAvatarColorClass(user.id))}
@@ -203,16 +203,16 @@ function ProfileEditDialog({
                   </Button>
                 ) : null}
               </div>
-              <p className="text-center text-[12px] text-muted-foreground">
+              <p className="text-center text-[12px] text-faint">
                 JPEG، PNG یا WebP تا {formatPersianNumber(MAX_IMAGE_SIZE_MB)} مگابایت؛ تصویر پیش از
                 بارگذاری به اندازه مناسب تبدیل می‌شود.
               </p>
               {isNormalizingImage ? (
-                <p className="text-[12px] text-primary" role="status">
+                <p className="text-[12px] text-ok" role="status">
                   در حال آماده‌سازی تصویر...
                 </p>
               ) : null}
-              {fileError ? <p className="text-[12px] text-destructive">{fileError}</p> : null}
+              {fileError ? <p className="text-[12px] text-brand-ink">{fileError}</p> : null}
             </div>
 
             <div className="space-y-2">
@@ -228,7 +228,7 @@ function ProfileEditDialog({
                 {...form.register("displayName")}
               />
               {form.formState.errors.displayName ? (
-                <p id="profile-display-name-error" className="text-[12px] text-destructive">
+                <p id="profile-display-name-error" className="text-[12px] text-brand-ink">
                   {form.formState.errors.displayName.message}
                 </p>
               ) : null}
