@@ -68,6 +68,7 @@ import {
   SourcesSection,
   YouTubeSection,
 } from "./create-entry-sections";
+import { ContributionGuide } from "./contribution-guide";
 import { CreateEntryWritingSurface } from "./create-entry-writing-surface";
 
 type CreateEntryFormProps = {
@@ -462,7 +463,7 @@ function CreateEntryForm({ initialDraftId, revisionMode = false, taxonomy }: Cre
 
   return (
     <LazyMotion features={domAnimation}>
-      <div className="min-h-screen bg-background text-foreground">
+      <div className="min-h-screen bg-paper text-ink">
         <CreateEntryEditorHeader
           title={
             revisionMode ? "ویرایش مطلب منتشرشده" : initialDraftId ? "ویرایش مطلب" : "مطلب جدید"
@@ -486,12 +487,15 @@ function CreateEntryForm({ initialDraftId, revisionMode = false, taxonomy }: Cre
           onSubmit={handleRequestSubmit}
         />
 
-        <main className="mx-auto max-w-5xl px-4 pt-5 pb-28 sm:px-6 sm:py-10 lg:px-8">
+        <main className="content-container grid gap-8 pt-5 pb-28 max-sm:px-3 sm:pt-10 lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-10">
           {isDraftLoading ? <DraftEditorLoadingState /> : null}
           {isDraftUnavailable ? <DraftEditorErrorState /> : null}
           {isDraftLocked ? <DraftEditorLockedState /> : null}
           {!isDraftLoading && !isDraftUnavailable && !isDraftLocked ? (
-            <form className="bg-background px-0 py-6 sm:px-8 lg:px-14" noValidate>
+            <form
+              className="min-w-0 rounded-[28px_28px_28px_8px] border-line-soft bg-surface px-4 py-6 sm:border sm:px-10 sm:py-10 sm:shadow-card lg:px-14"
+              noValidate
+            >
               {((revisionMode &&
                 (initialDraft?.revisionStatus === "CHANGES_REQUESTED" ||
                   initialDraft?.revisionStatus === "REJECTED")) ||
@@ -499,9 +503,9 @@ function CreateEntryForm({ initialDraftId, revisionMode = false, taxonomy }: Cre
                   (initialDraft?.status === "CHANGES_REQUESTED" ||
                     initialDraft?.status === "REJECTED"))) &&
               (initialDraft.requestFeedback || initialDraft.latestModerationReview?.comments) ? (
-                <div className="mb-8 rounded-xl border border-terracotta/20 bg-terracotta/5 px-4 py-4 text-[14px] leading-7">
-                  <p className="font-semibold text-foreground">نظر بررسی‌کننده</p>
-                  <p className="mt-1 text-muted-foreground">
+                <div className="mb-8 rounded-[16px_16px_16px_5px] border border-saffron/25 bg-tint-sand px-4 py-4 text-[14px] leading-[1.95]">
+                  <p className="font-bold text-ink">نظر بررسی‌کننده</p>
+                  <p className="mt-1 text-copy">
                     {initialDraft.requestFeedback ?? initialDraft.latestModerationReview?.comments}
                   </p>
                 </div>
@@ -513,7 +517,7 @@ function CreateEntryForm({ initialDraftId, revisionMode = false, taxonomy }: Cre
                 onDirty={markUnsaved}
               />
 
-              <section className="mt-8 divide-y divide-border border-y border-border">
+              <section className="mt-10 divide-y divide-line-soft border-y border-line-soft">
                 <CreateEntryEditorSection
                   title="جزئیات مطلب"
                   summary={detailsSummary}
@@ -591,6 +595,7 @@ function CreateEntryForm({ initialDraftId, revisionMode = false, taxonomy }: Cre
               </section>
             </form>
           ) : null}
+          <ContributionGuide />
         </main>
 
         {!isDraftLoading && !isDraftUnavailable && !isDraftLocked ? (
@@ -682,7 +687,7 @@ function getEntryFieldId(field: keyof CreateEntryFormValues) {
 
 function DraftEditorLoadingState() {
   return (
-    <div className="rounded-xl border border-border bg-card px-5 py-4 text-small text-muted-foreground">
+    <div className="rounded-control border border-line-soft bg-surface px-5 py-4 text-small text-faint">
       پیش‌نویس در حال آماده‌سازی است...
     </div>
   );
@@ -690,7 +695,7 @@ function DraftEditorLoadingState() {
 
 function DraftEditorErrorState() {
   return (
-    <div className="rounded-xl border border-destructive/25 bg-destructive/10 px-5 py-4 text-small text-destructive">
+    <div className="rounded-control border border-brand/25 bg-brand-soft px-5 py-4 text-small text-brand-ink">
       پیش‌نویس پیدا نشد یا امکان ویرایش آن وجود ندارد.
     </div>
   );
@@ -698,7 +703,7 @@ function DraftEditorErrorState() {
 
 function DraftEditorLockedState() {
   return (
-    <div className="rounded-xl border border-gold/35 bg-gold/10 px-5 py-4 text-small text-[#8A641C]">
+    <div className="rounded-control border border-saffron/30 bg-tint-sand px-5 py-4 text-small text-saffron">
       این مطلب در وضعیت قابل ویرایش نیست.
     </div>
   );

@@ -47,8 +47,8 @@ export function CreateEntryEditorHeader({
   const submitAnimation = useAnimatedIcon();
 
   return (
-    <header className="sticky top-2 rounded-full mx-2 z-40 border-b border-border bg-card/96 pt-[env(safe-area-inset-top)] backdrop-blur-xl md:top-5 md:mx-auto md:max-w-5xl md:rounded-full md:pt-0">
-      <div className="mx-auto flex h-14 items-center justify-between gap-3 px-3 md:h-auto md:flex-col md:px-6 md:py-3 lg:flex-row lg:px-8">
+    <header className="sticky top-[max(0.5rem,env(safe-area-inset-top))] z-40 mx-2 rounded-full border border-line-soft bg-header shadow-header backdrop-blur-xl md:top-5 md:mx-6 lg:mx-auto lg:max-w-288">
+      <div className="flex h-14 items-center justify-between gap-3 px-2 md:h-16 md:ps-3 md:pe-2.5">
         <div className="flex items-center gap-3">
           <Button type="button" variant="ghost" size="icon" className="md:hidden" onClick={onBack}>
             <ArrowRightIcon aria-hidden="true" />
@@ -65,13 +65,15 @@ export function CreateEntryEditorHeader({
             <span className="sr-only">بازگشت</span>
           </Button>
           <div>
-            <h1 className="text-[14px] font-bold text-foreground md:text-base">{title}</h1>
+            <p className="hidden text-[11.5px] text-faint md:block">میراث افغانستان · نوشتن</p>
+            <h1 className="text-[14px] font-bold text-ink md:text-[15px]">{title}</h1>
           </div>
         </div>
-        <div className="hidden items-center gap-2 md:flex lg:justify-end">
+        <div className="hidden items-center gap-2 md:flex">
           <Button
             type="button"
             variant="ghost"
+            className="rounded-full"
             disabled={isBusy}
             onClick={onPreview}
             {...previewAnimation.triggerProps}
@@ -92,7 +94,8 @@ export function CreateEntryEditorHeader({
           </Button>
           <Button
             type="button"
-            className="rounded-full"
+            variant="pill"
+            className="px-5"
             disabled={isBusy}
             onClick={onSubmit}
             {...submitAnimation.triggerProps}
@@ -150,17 +153,17 @@ export function MobileEditorSaveAction({
   return createPortal(
     <div
       className={cn(
-        "fixed inset-x-2 bottom-2 z-40  pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] transition-[transform,opacity] duration-200 md:hidden",
+        "fixed inset-x-2 bottom-2 z-40 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] transition-[transform,opacity] duration-200 md:hidden",
         isKeyboardOpen && "pointer-events-none translate-y-full opacity-0",
       )}
       aria-hidden={isKeyboardOpen}
       inert={isKeyboardOpen}
     >
-      <div className="mx-auto grid max-w-xl grid-cols-2 gap-2">
+      <div className="mx-auto grid max-w-xl grid-cols-2 gap-2 rounded-full border border-line-soft bg-header p-1.5 shadow-lift backdrop-blur-xl">
         <Button
           type="button"
           variant="outline"
-          className="h-11 min-w-0 rounded-full shadow border"
+          className="h-11 min-w-0 rounded-full"
           disabled={isBusy}
           onClick={onSaveDraft}
         >
@@ -169,7 +172,8 @@ export function MobileEditorSaveAction({
         </Button>
         <Button
           type="button"
-          className="h-11 min-w-0 rounded-full shadow border"
+          variant="pill"
+          className="h-11 min-w-0"
           disabled={isBusy}
           onClick={() => {
             submitAnimation.playStateChange();
@@ -217,20 +221,23 @@ export function CreateEntryEditorSection({
     <div>
       <button
         type="button"
-        className="flex w-full items-center justify-between gap-4 py-5 text-right"
+        className="flex w-full items-center justify-between gap-4 py-5 text-start outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
         aria-expanded={open}
         aria-controls={contentId}
         onClick={() => setOpen(!open)}
       >
         <span>
-          <span className="block font-semibold text-foreground">{title}</span>
+          <span className="block text-[15.5px] font-bold text-ink">{title}</span>
           {summary ? (
-            <span className="mt-1 block text-small text-muted-foreground">{summary}</span>
+            <span className="mt-1 block text-small text-faint">{summary}</span>
           ) : null}
         </span>
         <ChevronDownIcon
           aria-hidden="true"
-          className={cn("size-5 text-muted-foreground transition-transform", open && "rotate-180")}
+          className={cn(
+            "size-8 rounded-full bg-paper p-1.5 text-faint transition-transform duration-200",
+            open && "rotate-180 text-brand-ink",
+          )}
         />
       </button>
       <AnimatePresence initial={false}>
@@ -256,12 +263,12 @@ export function FieldError({ message }: { message?: string }) {
     return null;
   }
 
-  return <p className="text-small text-destructive">{message}</p>;
+  return <p className="text-small text-brand-ink">{message}</p>;
 }
 
 export function EmptyRow({ text }: { text: string }) {
   return (
-    <div className="rounded-xl border border-dashed border-border bg-background/50 px-4 py-8 text-center text-small text-muted-foreground">
+    <div className="rounded-control border-[1.5px] border-dashed border-line bg-paper/50 px-4 py-8 text-center text-small text-faint">
       {text}
     </div>
   );

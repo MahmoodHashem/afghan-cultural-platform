@@ -21,7 +21,7 @@ const LazyRichTextEditor = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="space-y-4 rounded-xl border border-border bg-background p-4">
+      <div className="space-y-4 rounded-control border border-line-soft bg-paper p-4">
         <Skeleton className="h-8 w-24" />
         <Skeleton className="h-[52vh] w-full" />
       </div>
@@ -47,8 +47,8 @@ export function CreateEntryWritingSurface({
 
   return (
     <section className="space-y-9 md:space-y-12">
-      <div className="space-y-2 border-b border-border pb-3">
-        <label htmlFor="entry-title" className="text-small text-foreground">
+      <div className="space-y-2 border-b-2 border-line-soft pb-3 transition-colors focus-within:border-brand">
+        <label htmlFor="entry-title" className="text-[12.5px] font-bold text-faint">
           عنوان مطلب
         </label>
         <Input
@@ -56,19 +56,19 @@ export function CreateEntryWritingSurface({
           maxLength={TITLE_MAX_LENGTH}
           placeholder="عنوان خود را بنویسید..."
           aria-invalid={Boolean(errors.title)}
-          className="h-auto rounded-none border-0 bg-transparent px-0 py-2 text-right text-[29px] leading-[1.45] shadow-none outline-none placeholder:text-muted-foreground/25 focus-visible:ring-0 aria-invalid:border-none aria-invalid:ring-0 md:text-4xl"
+          className="h-auto rounded-none border-0 bg-transparent px-0 py-2 text-start text-[29px] leading-[1.45] font-bold text-ink shadow-none focus-visible:shadow-none outline-none placeholder:text-faint/45 focus-visible:ring-0 aria-invalid:border-none aria-invalid:ring-0 md:text-4xl"
           {...register("title", {
             onChange: onDirty,
           })}
         />
-        <div className="text-left text-xs text-muted-foreground" dir="rtl" aria-live="polite">
+        <div className="text-end text-[11.5px] text-faint" aria-live="polite">
           {formatPersianNumber(title.length)} از {formatPersianNumber(TITLE_MAX_LENGTH)} حرف
         </div>
         <FieldError message={errors.title?.message} />
       </div>
 
-      <div className="space-y-2 border-b border-border">
-        <label htmlFor="entry-summary" className="text-small text-foreground">
+      <div className="space-y-2 border-b-2 border-line-soft transition-colors focus-within:border-brand">
+        <label htmlFor="entry-summary" className="text-[12.5px] font-bold text-faint">
           خلاصه
         </label>
         <Textarea
@@ -76,12 +76,12 @@ export function CreateEntryWritingSurface({
           maxLength={SUMMARY_MAX_LENGTH}
           placeholder="در چند جمله بگویید این مطلب درباره چیست..."
           aria-invalid={Boolean(errors.summary)}
-          className="min-h-20 resize-none rounded-none border-0 bg-transparent px-0 text-[17px] leading-8 shadow-none placeholder:text-muted-foreground/25 focus-visible:ring-0 aria-invalid:border-none aria-invalid:ring-0 md:min-h-8 md:text-xl md:leading-9"
+          className="min-h-20 resize-none rounded-none border-0 bg-transparent px-0 text-[17px] leading-8 text-copy shadow-none focus-visible:shadow-none placeholder:text-faint/45 focus-visible:ring-0 aria-invalid:border-none aria-invalid:ring-0 md:min-h-8 md:text-xl md:leading-9"
           {...register("summary", {
             onChange: onDirty,
           })}
         />
-        <div className="text-left text-xs text-muted-foreground" dir="rtl" aria-live="polite">
+        <div className="text-end text-[11.5px] text-faint" aria-live="polite">
           {formatPersianNumber(summary.length)} از {formatPersianNumber(SUMMARY_MAX_LENGTH)} حرف
         </div>
         <FieldError message={errors.summary?.message} />
@@ -103,7 +103,7 @@ export function CreateEntryWritingSurface({
               toolbarMode="responsive"
               showCharacterCount={false}
               className="rounded-none border-0 bg-transparent"
-              editorClassName="min-h-[62dvh] rounded-none bg-background px-0 py-0 text-[17px] leading-9 focus-visible:ring-0 placeholder:text-white md:min-h-[45vh] md:text-[18px]"
+              editorClassName="min-h-[62dvh] rounded-none bg-transparent px-0 py-0 text-[17px] leading-9 focus-visible:ring-0 placeholder:text-white md:min-h-[45vh] md:text-[18px]"
             />
           )}
         />

@@ -72,23 +72,23 @@ function EntryPreviewDialog({
   const previewContent = (
     <article className="mx-auto max-w-2xl space-y-8 px-5 py-8 sm:px-8">
       <header className="space-y-4">
-        <div className="flex flex-wrap gap-2 text-[12px] text-muted-foreground">
+        <div className="flex flex-wrap gap-2 text-[12px] text-faint">
           {contentType ? <span>{contentType}</span> : null}
           {category ? <span>· {category}</span> : null}
           <span>· {geographicScopeLabels[values.geographicScope]}</span>
           {province ? <span>· {province}</span> : null}
         </div>
-        <h1 className="text-[30px] font-bold leading-[1.5] text-foreground sm:text-[42px]">
+        <h1 className="text-[30px] font-bold leading-[1.5] text-ink sm:text-[42px]">
           {values.title.trim() || "عنوان مطلب"}
         </h1>
-        <p className="text-[16px] leading-8 text-muted-foreground">
+        <p className="text-[16px] leading-8 text-faint">
           {values.summary.trim() || "خلاصه مطلب در اینجا دیده می‌شود."}
         </p>
       </header>
 
       {images[0] ? (
-        <figure className="-mx-5 overflow-hidden border-y border-border sm:mx-0 sm:rounded-xl sm:border">
-          <div className="relative aspect-4/3 bg-muted">
+        <figure className="-mx-5 overflow-hidden border-y border-line-soft sm:mx-0 sm:rounded-xl sm:border">
+          <div className="relative aspect-4/3 bg-line-soft">
             <Image
               src={images[0].previewUrl}
               alt={images[0].altText || "پیش‌نمایش تصویر مطلب"}
@@ -99,7 +99,7 @@ function EntryPreviewDialog({
             />
           </div>
           {images[0].caption ? (
-            <figcaption className="px-4 py-3 text-[12px] text-muted-foreground">
+            <figcaption className="px-4 py-3 text-[12px] text-faint">
               {images[0].caption}
             </figcaption>
           ) : null}
@@ -109,11 +109,11 @@ function EntryPreviewDialog({
       <TiptapDocument content={values.contentJson} />
 
       {tags.length > 0 ? (
-        <div className="flex flex-wrap gap-2 border-t border-border pt-5">
+        <div className="flex flex-wrap gap-2 border-t border-line-soft pt-5">
           {tags.map((tag) => (
             <span
               key={tag.id}
-              className="rounded-full bg-primary/8 px-3 py-1 text-[12px] text-primary"
+              className="rounded-full bg-brand-soft px-3 py-1 text-[12px] text-brand-ink"
             >
               {tag.name}
             </span>
@@ -122,12 +122,12 @@ function EntryPreviewDialog({
       ) : null}
 
       {values.sources.length > 0 ? (
-        <section className="space-y-3 border-t border-border pt-6">
+        <section className="space-y-3 border-t border-line-soft pt-6">
           <h2 className="text-xl font-bold">منابع</h2>
           {values.sources.map((source, index) => (
             <div key={source.id ?? `${source.type}-${index}`} className="text-[14px] leading-7">
               <p className="font-semibold">{source.title || `منبع ${index + 1}`}</p>
-              <p className="text-muted-foreground">{sourceTypeLabels[source.type]}</p>
+              <p className="text-faint">{sourceTypeLabels[source.type]}</p>
             </div>
           ))}
         </section>
@@ -138,8 +138,8 @@ function EntryPreviewDialog({
   if (isMobile) {
     return (
       <Drawer open={open} onOpenChange={onOpenChange} showSwipeHandle>
-        <DrawerContent dir="rtl" className="max-h-[96dvh] border-border">
-          <DrawerHeader className="border-b border-border px-5 pb-4 text-start">
+        <DrawerContent dir="rtl" className="max-h-[96dvh] border-line-soft">
+          <DrawerHeader className="border-b border-line-soft px-5 pb-4 text-start">
             <DrawerTitle>پیش‌نمایش مطلب</DrawerTitle>
             <DrawerDescription>این پیش‌نمایش ذخیره یا منتشر نمی‌شود.</DrawerDescription>
           </DrawerHeader>
@@ -154,7 +154,7 @@ function EntryPreviewDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent dir="rtl" className="block h-[90dvh] min-w-xl max-w-3xl overflow-y-auto p-0">
-        <DialogHeader className="sticky top-0 z-10 border-b border-border bg-card/95 px-5 py-4 backdrop-blur-xl">
+        <DialogHeader className="sticky top-0 z-10 border-b border-line-soft bg-surface/95 px-5 py-4 backdrop-blur-xl">
           <DialogTitle>پیش‌نمایش مطلب</DialogTitle>
           <DialogDescription>این پیش‌نمایش ذخیره یا منتشر نمی‌شود.</DialogDescription>
         </DialogHeader>
@@ -185,7 +185,7 @@ function SubmissionReadinessDrawer({
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange} showSwipeHandle>
-      <DrawerContent dir="rtl" className="max-h-[86dvh] border-border">
+      <DrawerContent dir="rtl" className="max-h-[86dvh] border-line-soft">
         <DrawerHeader className="px-5 text-start">
           <DrawerTitle>{ready ? "مطلب آماده ارسال است" : "چند مورد باقی مانده است"}</DrawerTitle>
           <DrawerDescription>
@@ -196,27 +196,27 @@ function SubmissionReadinessDrawer({
         </DrawerHeader>
         <div className="min-h-0 overflow-y-auto px-5 py-4">
           {ready ? (
-            <div className="flex items-center gap-3 rounded-xl bg-primary/8 p-4 text-[14px] text-primary">
+            <div className="flex items-center gap-3 rounded-control bg-brand-soft p-4 text-[14px] text-brand-ink">
               <CheckCircleIcon className="size-6 shrink-0" aria-hidden="true" />
               عنوان، خلاصه، متن و جزئیات اصلی کامل شده‌اند.
             </div>
           ) : (
-            <div className="divide-y divide-border rounded-xl border border-border">
+            <div className="divide-y divide-line-soft rounded-control border border-line-soft">
               {issues.map((issue) => (
                 <button
                   key={issue.field}
                   type="button"
-                  className="flex w-full items-center justify-between gap-3 px-4 py-3 text-start text-[14px] outline-none hover:bg-muted/60 focus-visible:ring-3 focus-visible:ring-inset focus-visible:ring-ring/40"
+                  className="flex w-full items-center justify-between gap-3 px-4 py-3 text-start text-[14px] outline-none hover:bg-paper focus-visible:ring-3 focus-visible:ring-inset focus-visible:ring-ring/40"
                   onClick={() => onSelectIssue(issue)}
                 >
                   <span className="flex items-center gap-2">
                     <ExclamationTriangleIcon
-                      className="size-5 text-terracotta"
+                      className="size-5 text-saffron"
                       aria-hidden="true"
                     />
                     {issue.label}
                   </span>
-                  <ChevronLeftIcon className="size-4 text-muted-foreground" aria-hidden="true" />
+                  <ChevronLeftIcon className="size-4 text-faint" aria-hidden="true" />
                 </button>
               ))}
             </div>
