@@ -1,7 +1,7 @@
 function UnverifiedEmailNotice() {
   return (
     <div
-      className="rounded-lg border border-gold/40 bg-gold/10 px-4 py-3 text-[14px] leading-7 text-foreground"
+      className="rounded-[14px_14px_14px_4px] border border-saffron/30 bg-tint-sand px-4 py-3 text-[14px] leading-[1.9] text-ink"
       role="status"
       aria-live="polite"
     >

@@ -10,14 +10,17 @@ type AuthLogoProps = {
 
 function AuthLogo({ className, priority = false }: AuthLogoProps) {
   return (
-    <Link href={"/"}>
+    <Link
+      href="/"
+      className="rounded-control outline-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
+    >
       <Image
         src={AUTH_LOGO_SRC}
         alt="میراث افغانستان"
         width={300}
-        height={30}
+        height={98}
         priority={priority}
-        className={cn("object-contain h-14 sm:w-64 lg:w-96", className)}
+        className={cn("h-12 w-auto object-contain sm:h-14 dark:brightness-0 dark:invert", className)}
       />
     </Link>
   );

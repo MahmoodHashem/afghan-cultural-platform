@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 import { type FaqItem, FaqList } from "@/features/information/components/faq-list";
 import {
@@ -116,22 +117,57 @@ export const metadata: Metadata = {
   }),
 };
 
+const faqGroups = [
+  { id: "faq-platform", title: "درباره پلتفرم", items: platformQuestions },
+  { id: "faq-contribution", title: "ثبت و بررسی مطالب", items: contributionQuestions },
+  { id: "faq-community", title: "مشارکت و گفتگو", items: communityQuestions },
+  { id: "faq-account", title: "حساب و مشارکت بیشتر", items: accountQuestions },
+];
+
 export default function FaqPage() {
   return (
-    <InformationPage title="پرسش‌های رایج" description={FAQ_DESCRIPTION} className="max-w-4xl">
-      <div className="space-y-10">
-        <InformationSection title="درباره پلتفرم">
-          <FaqList items={platformQuestions} />
-        </InformationSection>
-        <InformationSection title="ثبت و بررسی مطالب">
-          <FaqList items={contributionQuestions} />
-        </InformationSection>
-        <InformationSection title="مشارکت و گفتگو">
-          <FaqList items={communityQuestions} />
-        </InformationSection>
-        <InformationSection title="حساب و مشارکت بیشتر">
-          <FaqList items={accountQuestions} />
-        </InformationSection>
+    <InformationPage
+      eyebrow="راهنمای همراهان"
+      title="پرسش‌های رایج"
+      description={FAQ_DESCRIPTION}
+      word="پرسش"
+      withContributeBand
+    >
+      <div className="grid gap-10 lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-14">
+        <nav aria-label="بخش‌های پرسش‌ها" className="lg:sticky lg:top-28 lg:self-start">
+          <ul className="flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible">
+            {faqGroups.map((group) => (
+              <li key={group.id} className="shrink-0">
+                <a
+                  href={`#${group.id}`}
+                  className="block rounded-[12px_12px_12px_4px] border border-line-soft bg-surface px-4 py-2.5 text-[13.5px] font-bold text-ink transition-colors hover:border-brand/40 hover:bg-brand-soft hover:text-brand-ink lg:border-transparent lg:bg-transparent"
+                >
+                  {group.title}
+                </a>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-6 hidden rounded-[18px_18px_18px_6px] bg-tint-navy p-5 lg:block">
+            <p className="text-[14px] font-bold text-ink">پاسخ خود را پیدا نکردید؟</p>
+            <p className="mt-1 text-[13px] leading-[1.9] text-copy">
+              پرسش خود را برای ما بفرستید.
+            </p>
+            <Link
+              href="/contact"
+              className="mt-3 inline-block text-[13px] font-bold text-brand-ink underline decoration-brand/30 underline-offset-4 hover:decoration-brand"
+            >
+              تماس با ما
+            </Link>
+          </div>
+        </nav>
+
+        <div className="max-w-(--container-article) space-y-12">
+          {faqGroups.map((group) => (
+            <InformationSection key={group.id} id={group.id} title={group.title}>
+              <FaqList items={group.items} />
+            </InformationSection>
+          ))}
+        </div>
       </div>
     </InformationPage>
   );

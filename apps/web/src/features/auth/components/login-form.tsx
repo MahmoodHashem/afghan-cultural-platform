@@ -104,7 +104,7 @@ function LoginForm({
           </Label>
           <div className="relative">
             <EnvelopeIcon
-              className="pointer-events-none absolute top-1/2 inset-e-3 size-5 -translate-y-1/2 text-muted-foreground"
+              className="pointer-events-none absolute top-1/2 inset-e-3 size-5 -translate-y-1/2 text-faint"
               aria-hidden="true"
             />
             <Input
@@ -115,7 +115,7 @@ function LoginForm({
               placeholder="email@example.com"
               aria-invalid={Boolean(errors.email)}
               aria-describedby={errors.email ? "login-email-error" : undefined}
-              className={cn("h-11 pr-3 pl-10 text-left", errors.email && "border-destructive")}
+              className={cn("pr-3.5 pl-10 text-left", errors.email && "border-destructive")}
               {...register("email")}
             />
           </div>
@@ -133,7 +133,10 @@ function LoginForm({
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3 text-[14px]">
-        <Link href="/forgot-password" className="font-medium text-primary hover:text-primary-hover">
+        <Link
+          href="/forgot-password"
+          className="font-bold text-brand-ink underline decoration-brand/30 underline-offset-4 hover:decoration-brand"
+        >
           رمز عبور را فراموش کرده‌اید؟
         </Link>
       </div>
@@ -141,7 +144,7 @@ function LoginForm({
       <Button
         type="submit"
         size="lg"
-        className="h-12 w-full shadow-sm"
+        className="h-12 w-full rounded-full text-[15px]"
         disabled={loginMutation.isPending}
         aria-busy={loginMutation.isPending}
       >
@@ -162,12 +165,12 @@ function LoginForm({
         }
       />
 
-      <p className="text-center text-[15px] text-muted-foreground">
+      <p className="text-center text-[14px] text-copy">
         حساب کاربری ندارید؟{" "}
         {embedded && onSwitchToRegister ? (
           <button
             type="button"
-            className="font-semibold text-primary hover:text-primary-hover"
+            className="font-bold text-brand-ink hover:text-brand"
             onClick={onSwitchToRegister}
           >
             ثبت‌نام کنید
@@ -175,7 +178,7 @@ function LoginForm({
         ) : (
           <Link
             href={createRegisterPath(nextPath ?? searchParams.get("next") ?? "/")}
-            className="font-semibold text-primary hover:text-primary-hover"
+            className="font-bold text-brand-ink hover:text-brand"
           >
             ثبت‌نام کنید
           </Link>

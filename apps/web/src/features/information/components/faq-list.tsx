@@ -23,15 +23,15 @@ function FaqList({ items }: { items: FaqItem[] }) {
     <Accordion
       multiple={false}
       defaultValue={items[0] ? ["faq-0"] : []}
-      className="overflow-hidden rounded-[24px] border border-border bg-card px-5 shadow-[0_2px_10px_rgba(0,0,0,.04)] sm:px-7"
+      className="overflow-hidden rounded-card border border-line-soft bg-surface px-5 shadow-card sm:px-6"
     >
       {items.map((item, index) => (
         <AccordionItem
           key={item.question}
           value={`faq-${index}`}
-          className={cn(index > 0 && "border-t border-border")}
+          className={cn(index > 0 && "border-t border-line-soft")}
         >
-          <AccordionTrigger className="py-5 text-[16px] font-semibold hover:no-underline">
+          <AccordionTrigger className="py-4.5 text-[15px] leading-[1.9] font-bold text-ink hover:no-underline aria-expanded:text-brand-ink">
             {item.question}
           </AccordionTrigger>
           <AccordionContent>
@@ -39,11 +39,11 @@ function FaqList({ items }: { items: FaqItem[] }) {
               initial={reducedMotion ? false : { opacity: 0, y: -6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: reducedMotion ? 0 : 0.2, ease: "easeOut" }}
-              className=" space-y-4 pb-4 ps-8 text-[15px] leading-8 text-muted-foreground text-end w-full"
+              className="w-full space-y-3 pb-5 text-[14.5px] leading-[2.05] text-copy"
             >
               <p>{item.answer}</p>
               {item.details ? (
-                <ul className="space-y-2 ps-5 marker:text-primary">
+                <ul className="space-y-2 ps-5 marker:text-brand">
                   {item.details.map((detail) => (
                     <li key={detail} className="ps-2">
                       {detail}

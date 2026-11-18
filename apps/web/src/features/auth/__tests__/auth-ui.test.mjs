@@ -555,7 +555,8 @@ test("mobile authentication surfaces use dynamic viewport and safe-area behavior
   assert.match(authLayout, /min-h-dvh/);
   assert.match(authLayout, /safe-area-inset-top/);
   assert.match(authLayout, /safe-area-inset-bottom/);
-  assert.match(authCard, /sm:rounded-xl/);
+  assert.match(authCard, /data-slot="auth-card"/);
+  assert.match(authLayout, /overscroll-contain/);
   assert.match(mobileShellAuthDrawer, /max-h-\[92dvh\]/);
   assert.match(mobileShellAuthDrawer, /overscroll-contain/);
   assert.match(mobileShellAuthDrawer, /safe-area-inset-bottom/);

@@ -22,7 +22,7 @@ function OAuthButtons({
         type="button"
         variant="outline"
         onClick={onGoogleClick}
-        className="h-11 justify-center gap-3 border-border bg-card text-foreground hover:border-primary/30 hover:bg-primary-light/30"
+        className="h-11.5 justify-center gap-3 rounded-control border-line bg-surface text-ink hover:border-brand/30 hover:bg-paper"
         aria-label={googleLabel}
       >
         <BrandIcon icon={siGoogle} />
@@ -32,7 +32,7 @@ function OAuthButtons({
         type="button"
         variant="outline"
         onClick={onFacebookClick}
-        className="h-11 justify-center gap-3 border-border bg-card text-foreground hover:border-primary/30 hover:bg-primary-light/30"
+        className="h-11.5 justify-center gap-3 rounded-control border-line bg-surface text-ink hover:border-brand/30 hover:bg-paper"
         aria-label={facebookLabel}
       >
         <BrandIcon icon={siFacebook} />

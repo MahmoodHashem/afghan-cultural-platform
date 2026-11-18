@@ -56,12 +56,12 @@ function OAuthCallbackCompletion() {
   return (
     <main className="flex min-h-svh items-center justify-center bg-background px-6 py-10">
       <section
-        className="flex w-full max-w-sm flex-col items-center rounded-card border bg-card px-6 py-8 text-center shadow-sm"
+        className="flex w-full max-w-sm flex-col items-center rounded-card border border-line-soft bg-surface px-6 py-8 text-center shadow-card"
         aria-live="polite"
       >
-        <ArrowPathIcon className="mb-4 size-8 animate-spin text-primary" aria-hidden="true" />
-        <h1 className="text-card-title text-foreground">در حال تکمیل ورود</h1>
-        <p className="mt-2 text-[15px] leading-7 text-muted-foreground">
+        <ArrowPathIcon className="mb-4 size-8 animate-spin text-brand" aria-hidden="true" />
+        <h1 className="text-card-title text-ink">در حال تکمیل ورود</h1>
+        <p className="mt-2 text-[14.5px] leading-[2] text-copy">
           لطفاً چند لحظه صبر کنید تا حساب شما آماده شود.
         </p>
       </section>

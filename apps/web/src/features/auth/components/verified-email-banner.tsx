@@ -14,18 +14,18 @@ function VerifiedEmailBanner({ email }: VerifiedEmailBannerProps) {
   const emailAddress = email ?? currentUser?.email;
 
   return (
-    <aside className="rounded-xl border border-warning/30 bg-warning/10 px-4 py-4 text-[14px] leading-7 text-foreground sm:flex sm:items-center sm:justify-between sm:gap-5">
+    <aside className="rounded-card border border-saffron/30 bg-tint-sand px-4 py-4 text-[14px] leading-[1.9] text-ink sm:flex sm:items-center sm:justify-between sm:gap-5">
       <div className="flex items-start gap-3">
-        <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-full bg-card text-warning">
+        <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-[12px_12px_12px_4px] bg-surface text-saffron">
           <EnvelopeIcon className="size-5" aria-hidden="true" />
         </span>
         <div>
-          <p className="font-semibold text-foreground">ایمیل شما هنوز تأیید نشده است.</p>
-          <p className="mt-0.5 text-muted-foreground">
+          <p className="font-bold text-ink">ایمیل شما هنوز تأیید نشده است.</p>
+          <p className="mt-0.5 text-copy">
             برای افزودن مطلب، نوشتن دیدگاه و فرستادن گزارش، ایمیل خود را تأیید کنید.
           </p>
           {emailAddress ? (
-            <p className="mt-1 text-[12px] text-muted-foreground" dir="ltr">
+            <p className="mt-1 text-[12px] text-faint" dir="ltr">
               {emailAddress}
             </p>
           ) : null}
