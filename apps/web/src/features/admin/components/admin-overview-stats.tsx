@@ -15,19 +15,19 @@ const toneClasses: Record<StatCardTone, { icon: string; surface: string; detail:
     detail: "text-primary",
   },
   blue: {
-    icon: "text-blue-600",
-    surface: "bg-blue-50",
-    detail: "text-blue-600",
+    icon: "text-lapis dark:text-copy",
+    surface: "bg-tint-navy",
+    detail: "text-lapis dark:text-copy",
   },
   orange: {
-    icon: "text-amber-600",
-    surface: "bg-amber-50",
-    detail: "text-amber-600",
+    icon: "text-saffron-deep dark:text-gold",
+    surface: "bg-tint-sand",
+    detail: "text-saffron-deep dark:text-gold",
   },
   red: {
-    icon: "text-red-600",
-    surface: "bg-red-50",
-    detail: "text-red-600",
+    icon: "text-brand-ink",
+    surface: "bg-brand-soft",
+    detail: "text-brand-ink",
   },
 };
 

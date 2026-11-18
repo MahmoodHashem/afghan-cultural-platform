@@ -75,11 +75,8 @@ function EntryTableOfContents({
   if (variant === "drawer") {
     return (
       <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen} showSwipeHandle>
-        <DrawerContent
-          dir="rtl"
-          className="max-h-[78svh] overflow-hidden border-border bg-background"
-        >
-          <DrawerHeader className="border-b border-border px-5 pt-3 pb-4 text-right">
+        <DrawerContent dir="rtl" className="max-h-[78svh] overflow-hidden border-line bg-surface">
+          <DrawerHeader className="border-b border-line-soft px-5 pt-3 pb-4 text-right">
             <DrawerTitle>فهرست مطالب</DrawerTitle>
             <DrawerDescription>برای رفتن به هر بخش، عنوان آن را انتخاب کنید.</DrawerDescription>
           </DrawerHeader>
@@ -110,7 +107,7 @@ function EntryTableOfContents({
             className="rounded-full w-full flex items-center justify-between"
             {...triggerProps}
           >
-            <h2 className="text-[18px] font-bold text-foreground">فهرست مطالب</h2>
+            <h2 className="text-[15px] font-bold text-ink">فهرست مطالب</h2>
 
             <ChevronDownIcon
               ref={iconRef}
@@ -171,11 +168,11 @@ function TableOfContentsList({
                 onSelect(item);
               }}
               className={cn(
-                "block rounded-xl py-2 text-[14px] leading-7 transition-colors focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/35",
-                item.level === 3 ? "ps-5 pe-3" : "px-3 font-semibold",
+                "block rounded-[10px] border-s-2 py-1.5 text-[12.5px] leading-[1.9] transition-colors duration-150 outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring",
+                item.level === 3 ? "ps-5 pe-2.5" : "px-2.5 font-medium",
                 isActive
-                  ? "border border-primary/20 bg-primary-light/35 text-primary"
-                  : "text-muted-foreground hover:bg-muted hover:text-primary",
+                  ? "border-s-brand bg-brand-soft font-bold text-brand-ink"
+                  : "border-s-transparent text-copy hover:bg-paper hover:text-ink",
               )}
             >
               {item.title}

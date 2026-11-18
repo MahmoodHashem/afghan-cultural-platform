@@ -1,4 +1,9 @@
+import { PlusIcon } from "@heroicons/react/24/outline";
+import Link from "next/link";
+
+import { PageHero } from "@/components/common/page-hero";
 import { PageBreadcrumb } from "@/components/layout/page-breadcrumb";
+import { buttonVariants } from "@/components/ui/button";
 import {
   Pagination,
   PaginationContent,
@@ -34,17 +39,36 @@ function ExploreContent({ entries, taxonomy, query, isEntriesUnavailable }: Expl
     href: createExploreHref(query, {}),
   };
 
-  return (
-    <main className="min-h-screen bg-background ">
-      <section className="border-b border-border bg-card pt-22 pb-7 sm:pt-26 sm:pb-8">
-        <div className="content-container">
-          <div className="max-w-3xl space-y-4">
-            <PageBreadcrumb items={[{ label: "خانه", href: "/" }, { label: "مطالب" }]} />
-          </div>
-        </div>
-      </section>
+  const rangeStart = entries.meta.total === 0 ? 0 : (entries.meta.page - 1) * query.limit + 1;
+  const rangeEnd = Math.min(entries.meta.page * query.limit, entries.meta.total);
 
-      <section className="content-container  gap-6 py-6 sm:py-7">
+  return (
+    <main className="min-h-screen bg-background">
+      <PageHero
+        breadcrumb={
+          <PageBreadcrumb
+            tone="onDark"
+            items={[{ label: "خانه", href: "/" }, { label: "مطالب" }]}
+          />
+        }
+        eyebrow="بایگانی میراث"
+        title="مطالب فرهنگی افغانستان"
+        description="نوشته‌هایی درباره‌ی ولایت‌ها، مشاهیر، بناهای تاریخی، آیین‌ها و دانش محلی؛ با جست‌وجو و فیلترها آنچه را می‌خواهید پیدا کنید، یا روایت خودتان را بیفزایید."
+        word="مطالب"
+        actions={
+          <>
+            <Link href="/entries/new" className={buttonVariants({ variant: "pill", size: "lg" })}>
+              <PlusIcon data-icon="inline-start" aria-hidden="true" />
+              افزودن مطلب تازه
+            </Link>
+            <span className="text-[13px] text-white/70">
+              {formatPersianNumber(entries.meta.total)} مطلب در بایگانی
+            </span>
+          </>
+        }
+      />
+
+      <section className="content-container py-8 sm:py-10">
         <div className="space-y-6">
           {isEntriesUnavailable || taxonomy.isUnavailable ? <ApiNotice /> : null}
           <ExploreResultsPanel
@@ -55,7 +79,12 @@ function ExploreContent({ entries, taxonomy, query, isEntriesUnavailable }: Expl
             breadcrumbParent={breadcrumbParent}
           />
 
-          <ExplorePagination meta={entries.meta} query={query} />
+          <ExplorePagination
+            meta={entries.meta}
+            query={query}
+            rangeStart={rangeStart}
+            rangeEnd={rangeEnd}
+          />
         </div>
       </section>
     </main>
@@ -65,9 +94,13 @@ function ExploreContent({ entries, taxonomy, query, isEntriesUnavailable }: Expl
 function ExplorePagination({
   meta,
   query,
+  rangeStart,
+  rangeEnd,
 }: {
   meta: EntryListResponse["meta"];
   query: ExploreContentProps["query"];
+  rangeStart: number;
+  rangeEnd: number;
 }) {
   if (meta.totalPages <= 1) {
     return null;
@@ -76,12 +109,13 @@ function ExplorePagination({
   const paginationItems = createPaginationItems(meta.page, meta.totalPages);
 
   return (
-    <div className="flex flex-col gap-4 border-t border-border pt-6 sm:flex-row sm:items-center sm:justify-between">
-      <p className="text-center text-[14px] text-muted-foreground sm:text-start">
-        صفحه {formatPersianNumber(meta.page)} از {formatPersianNumber(meta.totalPages)}
+    <div className="flex flex-col gap-4 pt-4 sm:flex-row-reverse sm:items-center sm:justify-between">
+      <p className="text-center text-[12px] text-faint sm:text-start">
+        نمایش {formatPersianNumber(rangeStart)}–{formatPersianNumber(rangeEnd)} از{" "}
+        {formatPersianNumber(meta.total)} مطلب
       </p>
 
-      <Pagination className="mx-0 w-auto sm:justify-end">
+      <Pagination className="mx-0 w-auto justify-start">
         <PaginationContent>
           <PaginationItem>
             <PaginationPrevious
@@ -154,7 +188,7 @@ function createPaginationItems(currentPage: number, totalPages: number) {
 
 function ApiNotice() {
   return (
-    <div className="rounded-2xl border border-warning/30 bg-warning/10 px-4 py-3 text-[14px] leading-7 text-warning">
+    <div className="rounded-bubble-sm border border-gold/40 bg-tint-sand px-4 py-3 text-[13.5px] leading-7 text-saffron-deep dark:text-gold">
       فعلاً بخشی از مطالب در دسترس نیست. کمی بعد دوباره تلاش کنید.
     </div>
   );

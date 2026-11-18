@@ -13,7 +13,7 @@ function ComboboxTrigger({ className, children, ...props }: ComboboxPrimitive.Tr
     <ComboboxPrimitive.Trigger
       data-slot="combobox-trigger"
       className={cn(
-        "flex h-10 w-full items-center justify-between gap-1.5 rounded-lg border border-input bg-card py-2 pe-2 ps-3 text-sm whitespace-nowrap transition-colors outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/40 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 data-placeholder:text-muted-foreground",
+        "flex h-10 w-full items-center justify-between gap-1.5 rounded-control border-[1.5px] border-input bg-paper py-2 pe-2.5 ps-3.5 text-[13.5px] whitespace-nowrap transition-colors outline-none select-none focus-visible:border-ring focus-visible:bg-surface focus-visible:shadow-focus disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 data-placeholder:text-muted-foreground",
         className,
       )}
       {...props}
@@ -48,7 +48,7 @@ function ComboboxContent({
         <ComboboxPrimitive.Popup
           data-slot="combobox-content"
           className={cn(
-            "relative isolate z-50 max-h-(--available-height) w-(--anchor-width) min-w-64 origin-(--transform-origin) overflow-hidden rounded-lg bg-popover text-popover-foreground shadow-md ring-1 ring-border duration-100 data-starting-style:scale-95 data-starting-style:opacity-0 data-ending-style:scale-95 data-ending-style:opacity-0",
+            "relative isolate z-50 max-h-(--available-height) w-(--anchor-width) min-w-64 origin-(--transform-origin) overflow-hidden rounded-[14px] bg-popover text-popover-foreground border border-line shadow-menu duration-100 data-starting-style:scale-95 data-starting-style:opacity-0 data-ending-style:scale-95 data-ending-style:opacity-0",
             className,
           )}
           {...props}
@@ -65,7 +65,7 @@ function ComboboxInput({ className, ...props }: ComboboxPrimitive.Input.Props) {
     <ComboboxPrimitive.Input
       data-slot="combobox-input"
       className={cn(
-        "h-9 w-full rounded-lg border border-input bg-card px-3 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/40",
+        "h-10 w-full rounded-control border-[1.5px] border-input bg-paper px-3 text-[13.5px] text-ink outline-none placeholder:text-faint/70 focus:border-ring focus:bg-surface focus:shadow-focus",
         className,
       )}
       {...props}
@@ -91,7 +91,7 @@ function ComboboxItem({ className, children, ...props }: ComboboxPrimitive.Item.
     <ComboboxPrimitive.Item
       data-slot="combobox-item"
       className={cn(
-        "relative flex w-full cursor-default items-center gap-1.5 rounded-md py-2 pe-8 ps-2 text-sm outline-hidden select-none data-highlighted:bg-muted data-highlighted:text-foreground data-selected:bg-primary/10 data-selected:text-primary data-disabled:pointer-events-none data-disabled:opacity-50",
+        "relative flex w-full cursor-default items-center gap-1.5 rounded-[9px] py-2 pe-8 ps-2 text-[13.5px] outline-hidden select-none data-highlighted:bg-muted data-highlighted:text-foreground data-selected:bg-primary/10 data-selected:text-brand-ink data-disabled:pointer-events-none data-disabled:opacity-50",
         className,
       )}
       {...props}

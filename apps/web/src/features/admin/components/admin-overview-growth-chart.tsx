@@ -21,11 +21,11 @@ type GrowthMetric = "publishedEntries" | "users";
 const chartConfig = {
   publishedEntries: {
     label: "مطالب",
-    color: "#0F766E",
+    color: "var(--primary)",
   },
   users: {
     label: "کاربران",
-    color: "#2563EB",
+    color: "var(--ink)",
   },
 } satisfies ChartConfig;
 

@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 function AdminEntryStatusBadge({ status }: { status: AdminEntryStatus }) {
   const meta = adminEntryStatusMeta[status];
   return (
-    <Badge variant="outline" className={cn("rounded-full border-0 ring-1", meta.className)}>
+    <Badge variant="outline" className={cn("rounded-full", meta.className)}>
       {meta.label}
     </Badge>
   );

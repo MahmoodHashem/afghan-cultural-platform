@@ -92,7 +92,7 @@ const ownerFeedbackSkeletonKeys = ["first", "second", "third"] as const;
 const ENTRY_COMMENT_STATUS_META = {
   ACTIVE: {
     label: "منتشرشده",
-    className: "border-emerald-200 bg-emerald-50 text-emerald-700",
+    className: "border-ok/25 bg-ok-soft text-ok",
   },
   HIDDEN: {
     label: "پنهان‌شده",
@@ -238,7 +238,7 @@ function ProfileStats({ stats }: { stats: ReturnType<typeof useOwnerEntryStats> 
 
             <dt className="text-[12px] text-muted-foreground lg:text-sm">{item.label}</dt>
           </div>
-          {index < items.length - 1 ? <div className="h-7 w-px bg-border lg:bg-slate-300" /> : null}
+          {index < items.length - 1 ? <div className="h-7 w-px bg-border lg:bg-line" /> : null}
         </div>
       ))}
     </dl>

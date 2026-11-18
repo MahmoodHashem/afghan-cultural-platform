@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarDaysIcon, MapPinIcon } from "@heroicons/react/24/outline";
+import { ArrowLeftIcon, CalendarDaysIcon, MapPinIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import Link from "next/link";
 import type { ComponentType } from "react";
@@ -10,6 +10,7 @@ import { BookmarkIcon } from "@/components/icons/animated/bookmark";
 
 import { ChatBubbleOvalLeftEllipsisIcon } from "@/components/icons/animated/chat-bubble-oval-left-ellipsis";
 import { HeartIcon } from "@/components/icons/animated/heart";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useEngagementAccess } from "@/features/engagement/hooks/use-engagement-access";
 import { useEntryBookmark } from "@/features/engagement/hooks/use-entry-interactions";
@@ -35,12 +36,15 @@ type PublicEntryCardViewProps = {
   entry: PublicEntryCard;
   imageIndex?: number;
   breadcrumbParent?: EntryBreadcrumbContext;
+  /** `lead` lays the card out horizontally across two grid columns on large screens. */
+  variant?: "default" | "lead";
 };
 
 function PublicEntryCardView({
   entry,
   imageIndex = 0,
   breadcrumbParent,
+  variant = "default",
 }: PublicEntryCardViewProps) {
   const {
     status,
@@ -96,14 +100,30 @@ function PublicEntryCardView({
     }
   }
 
+  const isLead = variant === "lead";
+
   return (
-    <Card className="group relative h-full overflow-hidden rounded-xl border border-border/80 bg-card p-3 shadow-[0_2px_10px_rgba(0,0,0,.05)] transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.01] hover:border-primary/20 hover:shadow-[0_8px_24px_rgba(0,0,0,.08)]">
+    <Card
+      data-variant={variant}
+      className={cn(
+        "group relative h-full gap-0 overflow-hidden rounded-card border border-line bg-surface py-0 shadow-none transition-[translate,box-shadow,border-color] duration-250 ease-expo hover:-translate-y-1 hover:border-transparent hover:shadow-lift has-[a:focus-visible]:-translate-y-1 has-[a:focus-visible]:shadow-lift",
+        isLead && "lg:flex-row",
+      )}
+    >
       <Link
         href={entryHref(entry)}
         data-entry-breadcrumb-context={serializeEntryBreadcrumbContext(breadcrumbParent)}
-        className="block h-full outline-none focus-visible:ring-3 focus-visible:ring-ring/40"
+        className={cn(
+          "flex h-full flex-col outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring",
+          isLead && "lg:flex-row",
+        )}
       >
-        <div className="relative aspect-video overflow-hidden rounded-xl bg-muted">
+        <div
+          className={cn(
+            "relative aspect-video shrink-0 overflow-hidden bg-media-ph",
+            isLead && "lg:aspect-auto lg:min-h-64 lg:w-[52%]",
+          )}
+        >
           <Image
             src={
               entry.coverImage?.thumbnailUrl ??
@@ -112,41 +132,66 @@ function PublicEntryCardView({
             }
             alt={entry.coverImage?.altText ?? entry.title}
             fill
-            sizes="(min-width: 1280px) 25vw, (min-width: 768px) 45vw, 100vw"
-            className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+            sizes={
+              isLead
+                ? "(min-width: 1024px) 40vw, 100vw"
+                : "(min-width: 1280px) 25vw, (min-width: 768px) 45vw, 100vw"
+            }
+            className="object-cover transition-transform duration-500 ease-expo group-hover:scale-105"
           />
-          <div className="absolute inset-x-0 bottom-0 flex justify-end bg-linear-to-t from-black/40 to-transparent p-3">
-            <span className="rounded-full bg-white/90 px-3 py-1 text-[12px] font-medium text-foreground backdrop-blur-sm">
-              {entry.category.name}
-            </span>
-          </div>
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 bg-linear-155 from-ink/12 to-ink/4 transition-opacity duration-300 group-hover:opacity-0"
+          />
+          <Badge variant="corner" className="absolute top-3 start-3 z-[1]">
+            {entry.category.name}
+          </Badge>
         </div>
 
-        <CardContent className=" pt-3 px-1 space-y-3 ">
-          <h2 className="line-clamp-1 text-[20px] font-semibold leading-7 text-foreground">
+        <CardContent
+          className={cn(
+            "flex min-w-0 flex-1 flex-col px-4.5 pt-4 pb-4",
+            isLead && "lg:justify-center lg:px-6 lg:py-6",
+          )}
+        >
+          <h2
+            className={cn(
+              "line-clamp-2 font-bold text-ink transition-colors duration-200 group-hover:text-brand-ink",
+              isLead ? "text-[18px] leading-[1.8] lg:line-clamp-3" : "text-[14.5px] leading-[1.9]",
+            )}
+          >
             {entry.title}
           </h2>
-          <p className="line-clamp-2 text-[14px] leading-7 text-muted-foreground">
+          <p
+            className={cn(
+              "mt-1.5 text-[12.5px] leading-[2] text-copy",
+              isLead ? "line-clamp-3" : "line-clamp-2",
+            )}
+          >
             {entry.summary}
           </p>
 
-          <div className="flex items-center justify-between text-[13px] text-muted-foreground">
-            <span className="inline-flex items-center gap-1.5">
+          <div className="mt-2.5 mb-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px] text-faint">
+            <span className="inline-flex items-center gap-1">
               <MapPinIcon className="size-3.5" aria-hidden="true" />
               {getEntryLocationLabel(entry)}
             </span>
-            <time dateTime={entry.publishedAt} className="inline-flex items-center gap-1.5">
+            <time dateTime={entry.publishedAt} className="inline-flex items-center gap-1">
               <CalendarDaysIcon className="size-3.5" aria-hidden="true" />
               {formatPersianDate(entry.publishedAt)}
             </time>
           </div>
 
-          <div className="flex items-center gap-4 text-muted-foreground border-t border-border/80 pt-3 text-[13px]">
+          <div className="mt-auto flex items-center gap-4 border-t border-line-soft pt-3 text-[11.5px] text-faint">
             <StaticEngagementItem icon={HeartIcon} label="پسندیدن مطلب" count={entry.likeCount} />
             <StaticEngagementItem
               icon={ChatBubbleOvalLeftEllipsisIcon}
               label="دیدگاه‌ها"
               count={entry.commentCount}
+            />
+            <ArrowLeftIcon
+              className="ms-auto size-4 text-brand transition-transform duration-250 ease-expo group-hover:-translate-x-1"
+              aria-hidden="true"
             />
           </div>
         </CardContent>
@@ -183,9 +228,9 @@ function BookmarkImageBadge({
       icon={BookmarkIcon}
       size={18}
       className={cn(
-        "absolute top-6 right-6 z-10 flex min-h-5 min-w-5 items-center justify-center rounded-2xl bg-card/90 p-2 text-foreground backdrop-blur-sm transition-colors hover:bg-card",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-2",
-        bookmarked && "text-primary",
+        "absolute top-3 end-3 z-10 flex min-h-5 min-w-5 items-center justify-center rounded-bubble-xs bg-surface/90 p-2 text-ink backdrop-blur-sm transition-colors hover:bg-surface",
+        "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+        bookmarked && "text-brand-ink",
         isLoading && "opacity-70",
       )}
     />
@@ -223,12 +268,12 @@ function StaticEngagementItem({
   count: number;
 }) {
   return (
-    <span className="inline-flex items-center gap-1.5 text-muted-foreground">
+    <span className="inline-flex items-center gap-1.5 text-faint">
       <span className="sr-only">{label}: </span>
       <span className="relative size-4">
         <Icon size={16} aria-hidden="true" />
       </span>
-      <span className="text-[13px] font-medium tabular-nums text-foreground/80">
+      <span className="text-[11.5px] font-medium tabular-nums text-copy">
         {formatPersianNumber(count)}
       </span>
     </span>

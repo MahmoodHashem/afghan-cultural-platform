@@ -13,12 +13,14 @@ type EntryDetailBreadcrumbProps = {
   entryPath: string;
   entryTitle: string;
   fallbackItems: PageBreadcrumbItem[];
+  tone?: "default" | "onDark";
 };
 
 function EntryDetailBreadcrumb({
   entryPath,
   entryTitle,
   fallbackItems,
+  tone = "default",
 }: EntryDetailBreadcrumbProps) {
   const [items, setItems] = useState(fallbackItems);
 
@@ -37,7 +39,7 @@ function EntryDetailBreadcrumb({
     }
   }, [entryPath, entryTitle, fallbackItems]);
 
-  return <PageBreadcrumb items={items} />;
+  return <PageBreadcrumb items={items} tone={tone} />;
 }
 
 export { EntryDetailBreadcrumb };

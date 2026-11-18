@@ -216,9 +216,9 @@ function EntryActionRail({
             aria-valuemax={100}
             aria-valuenow={Math.round(progress * 100)}
           >
-            <div className="relative h-full w-px rounded-full bg-border">
+            <div className="relative h-full w-px rounded-full bg-line">
               <div
-                className="absolute top-0 right-1/2 w-1.5 translate-x-1/2 rounded-full bg-primary transition-[height] duration-150"
+                className="absolute top-0 right-1/2 w-1.5 translate-x-1/2 rounded-full bg-brand transition-[height] duration-150"
                 style={{ height: `${Math.max(progress * 100, 4)}%` }}
               />
             </div>
@@ -241,7 +241,7 @@ function EntryActionRail({
               inert={!showMobileDock || readingChromeHidden}
               className={cn(
                 "fixed right-2 z-40 flex flex-col will-change-transform lg:hidden",
-                "inset-x-auto bottom-[calc(5rem+env(safe-area-inset-bottom))]  flex flex-col grid-cols-none items-center gap-1.5 bg-card ms-2 rounded-2xl py-2 shadow border",
+                "inset-x-auto bottom-[calc(5rem+env(safe-area-inset-bottom))] ms-2 flex grid-cols-none flex-col items-center gap-1.5 rounded-bubble-md border border-line bg-surface py-2 shadow-lift",
               )}
             >
               {renderActions("mobile")}
@@ -310,9 +310,9 @@ export function ActionButton({
       disabled={disabled || pending}
       {...triggerProps}
       className={cn(
-        "group flex min-h-12 min-w-12 flex-col items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-muted hover:text-primary focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/40 disabled:pointer-events-none disabled:opacity-60",
-        orientation === "mobile" && "rounded-full text-foreground",
-        active === true && "text-primary",
+        "group flex min-h-12 min-w-12 flex-col items-center justify-center rounded-bubble-sm border border-transparent text-copy transition-colors duration-200 hover:border-brand/30 hover:bg-brand-soft hover:text-brand-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-60",
+        orientation === "mobile" && "text-ink",
+        active === true && "text-brand-ink",
         className,
       )}
       aria-label={label}
@@ -326,7 +326,7 @@ export function ActionButton({
         aria-hidden="true"
       />
       {typeof count === "number" ? (
-        <span className="mt-1 text-[12px] font-bold leading-none">
+        <span className="mt-1 text-[11.5px] leading-none font-bold">
           {formatPersianNumber(count)}
         </span>
       ) : null}

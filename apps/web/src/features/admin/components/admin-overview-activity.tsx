@@ -21,10 +21,10 @@ import { formatPersianDate } from "@/lib/utils/formatters";
 import { createUserInitials, getUserAvatarColorClass } from "@/lib/utils/user";
 
 const activityToneClasses: Record<AdminActivityTone, string> = {
-  blue: "bg-blue-500",
-  green: "bg-emerald-500",
-  orange: "bg-amber-500",
-  red: "bg-red-500",
+  blue: "bg-lapis dark:bg-copy",
+  green: "bg-ok",
+  orange: "bg-gold",
+  red: "bg-brand",
   neutral: "bg-muted-foreground",
 };
 

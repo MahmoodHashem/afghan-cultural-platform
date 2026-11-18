@@ -50,10 +50,10 @@ function MobileShellAuthDrawer({
     <Drawer open={open} onOpenChange={onOpenChange} showSwipeHandle>
       <DrawerContent
         dir="rtl"
-        className="max-h-[92dvh] overflow-hidden border-border p-0 [overscroll-behavior-block:contain]"
+        className="max-h-[92dvh] overflow-hidden border-line p-0 [overscroll-behavior-block:contain]"
       >
-        <DrawerHeader className="border-b border-border px-5 pt-3 pb-4 text-start">
-          <DrawerTitle className="text-[18px] font-bold">{title}</DrawerTitle>
+        <DrawerHeader className="border-b border-line-soft px-5 pt-3 pb-4 text-start">
+          <DrawerTitle className="text-[17px] font-bold text-ink">{title}</DrawerTitle>
           <DrawerDescription className="leading-6">{description}</DrawerDescription>
         </DrawerHeader>
 
@@ -63,11 +63,11 @@ function MobileShellAuthDrawer({
               <div
                 role="tablist"
                 aria-label="ورود یا ثبت‌نام"
-                className="relative mb-5 grid grid-cols-2 rounded-lg bg-muted p-1"
+                className="relative mb-5 grid grid-cols-2 rounded-full border border-line bg-paper p-1"
               >
                 <motion.span
                   aria-hidden="true"
-                  className="absolute top-1 right-1 bottom-1 w-[calc(50%_-_4px)] rounded-md bg-card shadow-sm"
+                  className="absolute top-1 right-1 bottom-1 w-[calc(50%_-_4px)] rounded-full bg-primary"
                   animate={{ x: mode === "register" ? "-100%" : "0" }}
                   transition={
                     reducedMotion
@@ -103,11 +103,11 @@ function MobileShellAuthDrawer({
 
           {reason === "unverified" && user ? (
             <div className="space-y-4">
-              <p dir="ltr" className="truncate text-start text-[13px] text-muted-foreground">
+              <p dir="ltr" className="truncate text-start text-[13px] text-faint">
                 {user.email}
               </p>
               <EmailVerificationButton email={user.email} className="w-full" />
-              <p className="flex items-center gap-2 text-[12px] leading-6 text-muted-foreground">
+              <p className="flex items-center gap-2 text-[12px] leading-6 text-faint">
                 <EnvelopeIcon className="size-4 shrink-0" aria-hidden="true" />
                 پس از تأیید ایمیل دوباره این کار را انجام دهید.
               </p>
@@ -115,7 +115,7 @@ function MobileShellAuthDrawer({
           ) : null}
 
           {reason === "suspended" ? (
-            <p className="flex items-start gap-2 rounded-lg bg-destructive/8 p-4 text-[13px] leading-7 text-destructive">
+            <p className="flex items-start gap-2 rounded-bubble-sm bg-brand-soft p-4 text-[13px] leading-7 text-brand-ink">
               <ExclamationTriangleIcon className="mt-1 size-5 shrink-0" aria-hidden="true" />
               در حال حاضر امکان انجام این کار با این حساب وجود ندارد.
             </p>
@@ -140,10 +140,10 @@ function AuthTab({
       type="button"
       role="tab"
       aria-selected={active}
-      className="relative z-10 flex h-9 items-center justify-center rounded-md px-3 text-[13px] font-medium outline-none transition-colors focus-visible:ring-3 focus-visible:ring-ring/40"
+      className="relative z-10 flex h-9 items-center justify-center rounded-full px-3 text-[13px] font-bold outline-none transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
       onClick={onClick}
     >
-      <span className={cn(active ? "text-foreground" : "text-muted-foreground")}>{children}</span>
+      <span className={cn(active ? "text-primary-foreground" : "text-copy")}>{children}</span>
     </button>
   );
 }

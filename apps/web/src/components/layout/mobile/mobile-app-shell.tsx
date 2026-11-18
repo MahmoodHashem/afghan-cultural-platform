@@ -236,28 +236,34 @@ function MobileTopBar({
       aria-hidden={hidden}
       inert={hidden}
       className={cn(
-        "fixed inset-x-0 top-2 z-40 border pt-[env(safe-area-inset-top)] will-change-transform transition-[background-color,border-color,box-shadow,color] duration-300",
+        "fixed inset-x-0 top-0 z-40 border-b pt-[env(safe-area-inset-top)] will-change-transform transition-[background-color,border-color,box-shadow,color] duration-300",
         transparent
           ? "border-transparent bg-transparent text-white"
-          : "border-border/80 bg-background/95 text-foreground shadow-[0_6px_20px_rgba(31,41,55,0.06)] backdrop-blur-xl rounded-full mx-4",
+          : "border-line bg-header text-ink shadow-header backdrop-blur-md",
       )}
     >
       <div
         className={cn(
-          "flex  items-center gap-3 ps-2 transition-all",
-          routeContext.kind === "profile" && "p-2",
+          "flex h-14 items-center gap-2.5 px-3 transition-all",
+          routeContext.kind === "profile" && "py-2",
         )}
       >
         {backHref ? (
           <Link
             href={backHref}
             aria-label={backLabel}
-            className="flex size-11 shrink-0 items-center justify-center rounded-full outline-none transition-colors hover:bg-black/5 focus-visible:ring-3 focus-visible:ring-ring/40"
+            className={cn(
+              mobileIconButtonClassName,
+              transparent ? mobileIconOnPhoto : mobileIconSolid,
+            )}
           >
             <ArrowRightIcon className="size-5" aria-hidden="true" />
           </Link>
         ) : routeContext.kind === "home" ? (
-          <Link href="/" className="flex min-w-0 items-center gap-2 font-bold">
+          <Link
+            href="/"
+            className="flex min-w-0 items-center gap-2 rounded-bubble-xs font-bold outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+          >
             <Image
               src="/images/small-logo.png"
               alt=""
@@ -265,7 +271,7 @@ function MobileTopBar({
               height={36}
               className={cn("h-8 w-auto", transparent && "brightness-0 invert")}
             />
-            <span className="truncate text-[15px]">میراث افغانستان</span>
+            <span className="truncate text-[16px]">میراث افغانستان</span>
           </Link>
         ) : (
           <p className="min-w-0 flex-1 truncate text-[16px] font-bold">{routeContext.title}</p>
@@ -284,7 +290,11 @@ function MobileTopBar({
             type="button"
             aria-label="باز کردن فیلترهای مطالب"
             onClick={() => window.dispatchEvent(new Event(OPEN_EXPLORE_FILTERS_EVENT))}
-            className="ms-auto flex size-11 shrink-0 items-center justify-center rounded-full outline-none transition-colors hover:bg-black/5 focus-visible:ring-3 focus-visible:ring-ring/40"
+            className={cn(
+              mobileIconButtonClassName,
+              "ms-auto",
+              transparent ? mobileIconOnPhoto : mobileIconSolid,
+            )}
           >
             <AdjustmentsHorizontalIcon className="size-5" aria-hidden="true" />
           </button>
@@ -293,7 +303,11 @@ function MobileTopBar({
             type="button"
             aria-label="باز کردن فهرست مطالب"
             onClick={() => window.dispatchEvent(new Event(OPEN_ENTRY_CONTENTS_EVENT))}
-            className="ms-auto flex size-11 shrink-0 items-center justify-center rounded-full outline-none transition-colors hover:bg-black/5 focus-visible:ring-3 focus-visible:ring-ring/40"
+            className={cn(
+              mobileIconButtonClassName,
+              "ms-auto",
+              transparent ? mobileIconOnPhoto : mobileIconSolid,
+            )}
           >
             <ListBulletIcon className="size-5" aria-hidden="true" />
           </button>
@@ -301,7 +315,11 @@ function MobileTopBar({
           <Link
             href="/explore"
             aria-label="جست‌وجوی مطالب"
-            className="ms-auto flex size-11 shrink-0 items-center justify-center rounded-full outline-none transition-colors hover:bg-black/5 focus-visible:ring-3 focus-visible:ring-ring/40"
+            className={cn(
+              mobileIconButtonClassName,
+              "ms-auto",
+              transparent ? mobileIconOnPhoto : mobileIconSolid,
+            )}
           >
             <MagnifyingGlassIcon className="size-5" aria-hidden="true" />
           </Link>
@@ -309,7 +327,7 @@ function MobileTopBar({
       </div>
       {routeContext.kind === "entry" ? (
         <div
-          className="absolute inset-x-5 bottom-0 h-0.5 overflow-hidden rounded-full bg-border/55"
+          className="absolute inset-x-0 -bottom-px h-0.5 overflow-hidden bg-transparent"
           role="progressbar"
           aria-label="پیشرفت مطالعه"
           aria-valuemin={0}
@@ -317,7 +335,7 @@ function MobileTopBar({
           aria-valuenow={readingProgress}
         >
           <motion.div
-            className="h-full origin-right rounded-full bg-primary"
+            className="h-full origin-right bg-brand"
             style={{ scaleX: reducedMotion ? scrollYProgress : smoothReadingProgress }}
           />
         </div>
@@ -346,7 +364,7 @@ function MobileBottomNavigation({
       transition={getChromeTransition(reducedMotion)}
       aria-hidden={hidden}
       inert={hidden}
-      className="fixed inset-x-0 bottom-2 rounded-full mx-6 z-40 border-t border-border/80 bg-card/95 px-2 pt-1 pb-[calc(0.3rem+env(safe-area-inset-bottom))] shadow-[0_-8px_28px_rgba(31,41,55,0.08)] backdrop-blur-xl"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-header px-2 pt-1.5 pb-[calc(0.35rem+env(safe-area-inset-bottom))] shadow-[0_-1px_0_var(--line-soft),0_-10px_30px_-12px_rgba(24,44,65,0.16)] backdrop-blur-md"
       aria-label="ناوبری اصلی موبایل"
     >
       <div className="mx-auto grid max-w-md grid-cols-5 items-end">
@@ -362,15 +380,15 @@ function MobileBottomNavigation({
               aria-disabled={status === "initializing" && item.protected}
               onClick={(event) => onProtectedNavigation(event, item)}
               className={cn(
-                "relative flex min-h-12 flex-col items-center justify-end gap-0.5 rounded-xl px-1 text-[11px] font-medium text-muted-foreground outline-none transition-colors focus-visible:ring-3 focus-visible:ring-ring/40",
-                active && "text-primary",
-                item.prominent && "-mt-5",
+                "relative flex min-h-12 flex-col items-center justify-end gap-0.5 rounded-bubble-xs px-1 text-[11px] font-medium text-faint outline-none transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+                active && "font-bold text-ink",
+                item.prominent && "-mt-6",
               )}
             >
               {active && !item.prominent ? (
                 <motion.span
                   layoutId="mobile-navigation-active"
-                  className="absolute inset-x-7 bottom-0 h-0.5 rounded-full bg-primary"
+                  className="absolute -top-1.5 left-1/2 h-0.5 w-4.5 -translate-x-1/2 rounded-full bg-gold"
                   transition={reducedMotion ? { duration: 0 } : { duration: 0.24 }}
                   aria-hidden="true"
                 />
@@ -379,12 +397,12 @@ function MobileBottomNavigation({
                 className={cn(
                   "flex size-7 items-center justify-center",
                   item.prominent &&
-                    "size-12 rounded-full border-4 border-card bg-primary text-primary-foreground ",
+                    "size-12 rounded-bubble border-4 border-surface bg-primary text-primary-foreground shadow-lift",
                 )}
               >
                 <Icon className={item.prominent ? "size-6" : "size-5"} aria-hidden="true" />
               </span>
-              <span className={cn(item.prominent && "font-semibold text-primary")}>
+              <span className={cn(item.prominent && "font-bold text-brand-ink")}>
                 {item.label}
               </span>
             </Link>
@@ -394,6 +412,13 @@ function MobileBottomNavigation({
     </motion.nav>
   );
 }
+
+const mobileIconButtonClassName =
+  "flex size-10 shrink-0 items-center justify-center rounded-bubble-sm border outline-none transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2";
+const mobileIconSolid =
+  "border-line bg-surface text-copy hover:border-brand hover:bg-brand-soft hover:text-brand-ink focus-visible:outline-ring";
+const mobileIconOnPhoto =
+  "border-white/35 bg-white/10 text-white hover:bg-white/20 focus-visible:outline-white";
 
 function getChromeTransition(reducedMotion: boolean) {
   if (reducedMotion) return { duration: 0 } as const;

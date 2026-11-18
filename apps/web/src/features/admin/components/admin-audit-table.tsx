@@ -192,9 +192,9 @@ function AdminAuditTable({
 function ActionBadge({ action }: { action: AdminAuditItem["action"] }) {
   const meta = getAdminAuditActionMeta(action);
   const tones = {
-    blue: "text-blue-700",
-    green: "text-primary",
-    orange: "text-amber-700",
+    blue: "text-lapis dark:text-copy",
+    green: "text-ok",
+    orange: "text-saffron-deep dark:text-gold",
     red: "text-destructive",
     neutral: "text-muted-foreground",
   };

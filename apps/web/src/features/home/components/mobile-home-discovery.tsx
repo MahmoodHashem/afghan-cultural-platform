@@ -10,7 +10,7 @@ const discoveryItems = [
 function MobileHomeDiscovery() {
   return (
     <nav aria-label="راه‌های دسترسی به مطالب" className="relative z-20 -mt-7 px-4 md:hidden">
-      <div className="grid grid-cols-3 gap-2 rounded-2xl border border-border/80 bg-card p-2 shadow-[0_12px_30px_rgba(31,41,55,0.1)]">
+      <div className="grid grid-cols-3 gap-2 rounded-bubble border border-line-soft bg-surface p-2 shadow-lift">
         {discoveryItems.map((item) => {
           const Icon = item.icon;
 
@@ -18,9 +18,9 @@ function MobileHomeDiscovery() {
             <Link
               key={item.href}
               href={item.href}
-              className="flex min-h-16 flex-col items-center justify-center gap-1.5 rounded-xl text-[12px] font-semibold text-foreground outline-none transition-colors hover:bg-primary-light/45 hover:text-primary focus-visible:ring-3 focus-visible:ring-ring/40"
+              className="flex min-h-16 flex-col items-center justify-center gap-1.5 rounded-[14px_14px_14px_4px] text-[12px] font-semibold text-ink outline-none transition-colors hover:bg-brand-soft hover:text-brand-ink focus-visible:outline-2 focus-visible:outline-ring"
             >
-              <Icon className="size-5 text-primary" aria-hidden="true" />
+              <Icon className="size-5 text-brand" aria-hidden="true" />
               {item.label}
             </Link>
           );

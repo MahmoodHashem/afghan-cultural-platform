@@ -5,9 +5,9 @@ import { motion } from "motion/react";
 import Link from "next/link";
 import { type ReactNode, useMemo, useState } from "react";
 
+import { EmptyState } from "@/components/common/empty-state";
 import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
 import { normalizePersianSearch } from "@/lib/utils/persian";
 import type { EntryListResponse } from "../types/public-entry";
 import type { EntryBreadcrumbContext } from "../utils/entry-breadcrumb";
@@ -57,7 +57,7 @@ function FilterableEntryResults({
         <label htmlFor="entry-filter-search" className="relative block w-full lg:w-72">
           <span className="sr-only">جست‌وجو در نتایج</span>
           <MagnifyingGlassIcon
-            className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted-foreground"
+            className="pointer-events-none absolute top-1/2 right-3.5 size-4 -translate-y-1/2 text-faint"
             aria-hidden="true"
           />
           <Input
@@ -66,7 +66,7 @@ function FilterableEntryResults({
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder="جست‌وجو در نتایج..."
-            className="h-10 rounded-full border-border bg-card pr-10 text-[13px] shadow-[0_1px_6px_rgba(31,41,55,0.05)] focus-visible:border-primary"
+            className="h-11 pr-10 md:text-[13px]"
           />
         </label>
       </div>
@@ -77,10 +77,10 @@ function FilterableEntryResults({
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-[28px] border border-dashed border-border bg-card p-8 text-center"
+          className="rounded-card border-[1.5px] border-dashed border-line p-8 text-center"
         >
-          <p className="text-[20px] font-bold text-foreground">مطلبی پیدا نشد</p>
-          <p className="mx-auto mt-3 max-w-xl text-[15px] leading-8 text-muted-foreground">
+          <p className="text-card-title text-ink">مطلبی پیدا نشد</p>
+          <p className="mx-auto mt-2 max-w-xl text-[14px] leading-8 text-copy">
             با این جست‌وجو نتیجه‌ای در فهرست فعلی پیدا نشد.
           </p>
         </motion.div>
@@ -98,18 +98,15 @@ function EntryResultsEmptyState({
   actionLabel,
 }: FilterableEntryResultsProps["emptyState"]) {
   return (
-    <div className="rounded-[28px] border border-dashed border-border bg-card p-8 text-center">
-      <p className="text-[20px] font-bold text-foreground">{title}</p>
-      <p className="mx-auto mt-3 max-w-xl text-[15px] leading-8 text-muted-foreground">
-        {description}
-      </p>
-      <Link
-        href={actionHref}
-        className={cn(buttonVariants({ variant: "default" }), "mt-5 rounded-full")}
-      >
-        {actionLabel}
-      </Link>
-    </div>
+    <EmptyState
+      title={title}
+      description={description}
+      action={
+        <Link href={actionHref} className={buttonVariants({ variant: "pill" })}>
+          {actionLabel}
+        </Link>
+      }
+    />
   );
 }
 

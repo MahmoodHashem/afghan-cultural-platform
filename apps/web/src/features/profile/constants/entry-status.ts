@@ -16,27 +16,27 @@ const ENTRY_STATUS_META = {
   DRAFT: {
     label: "پیش‌نویس",
     description: "هنوز برای بررسی فرستاده نشده است.",
-    badgeClassName: "border-primary/25 bg-primary-light text-primary",
+    badgeClassName: "border-line bg-line-soft text-copy",
   },
   PENDING_REVIEW: {
     label: "در انتظار بررسی",
     description: "مطلب برای بررسی فرستاده شده است.",
-    badgeClassName: "border-gold/35 bg-gold/12 text-[#8A641C]",
+    badgeClassName: "border-gold/40 bg-tint-sand text-saffron-deep dark:text-gold",
   },
   CHANGES_REQUESTED: {
     label: "نیازمند اصلاح",
     description: "پس از اصلاح می‌توانید دوباره بفرستید.",
-    badgeClassName: "border-terracotta/30 bg-terracotta/10 text-terracotta",
+    badgeClassName: "border-brand/25 bg-tint-rose text-anar dark:text-brand-ink",
   },
   PUBLISHED: {
     label: "منتشرشده",
     description: "این مطلب در سایت قابل خواندن است.",
-    badgeClassName: "border-emerald-200 bg-emerald-50 text-emerald-700",
+    badgeClassName: "border-ok/25 bg-ok-soft text-ok",
   },
   REJECTED: {
     label: "ردشده",
     description: "این نسخه تأیید نشده است.",
-    badgeClassName: "border-destructive/25 bg-destructive/10 text-destructive",
+    badgeClassName: "border-brand/25 bg-brand-soft text-brand-ink",
   },
   HIDDEN: {
     label: "پنهان",

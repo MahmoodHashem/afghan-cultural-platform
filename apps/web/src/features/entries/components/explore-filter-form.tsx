@@ -169,7 +169,7 @@ function ExploreFilterForm({
       className={cn(
         "bg-card",
         variant === "bar"
-          ? "grid w-full grid-cols-2 gap-1 rounded-2xl border border-border p-2 shadow-[0_6px_24px_rgba(31,41,55,0.035)] lg:grid-cols-4"
+          ? "grid w-full grid-cols-2 gap-1 rounded-card border border-line-soft p-1.5 shadow-card lg:grid-cols-4"
           : "flex min-h-0 flex-1 flex-col overflow-hidden",
       )}
     >
@@ -182,17 +182,17 @@ function ExploreFilterForm({
       </div>
 
       {variant === "drawer" ? (
-        <div className="grid shrink-0 grid-cols-[auto_1fr] gap-3 border-t border-border bg-card px-4 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+        <div className="grid shrink-0 grid-cols-[auto_1fr] gap-3 border-t border-line-soft bg-surface px-4 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
           <button
             type="button"
             onClick={handleReset}
             disabled={isPending}
-            className={cn(buttonVariants({ variant: "outline" }), "rounded-lg px-4")}
+            className={cn(buttonVariants({ variant: "outline" }), "px-4")}
           >
             حذف همه
           </button>
 
-          <Button type="submit" className="rounded-lg" disabled={isPending}>
+          <Button type="submit" disabled={isPending}>
             {isPending ? "در حال نمایش..." : "نمایش نتایج"}
           </Button>
         </div>
@@ -250,33 +250,33 @@ function SelectField({
         aria-label={label}
         className="
         group h-auto w-full min-w-0
-        rounded-xl border-0 bg-transparent
-        px-3 py-3 shadow-none
+        rounded-bubble-sm border-0 bg-transparent
+        px-3 py-2.5 shadow-none
         transition-colors
-        hover:bg-muted/50
-        focus-visible:ring-2 focus-visible:ring-primary/20
-        data-[state=open]:bg-muted/60
+        hover:bg-paper
+        focus-visible:bg-paper focus-visible:shadow-none
+        data-[popup-open]:bg-paper
       "
       >
         <div className="flex min-w-0 flex-1 items-center gap-3 text-right">
           <span
             className="
-            shrink-0 text-muted-foreground
+            shrink-0 text-faint
             transition-colors
-            group-hover:text-primary
-            group-data-[state=open]:text-primary
+            group-hover:text-brand-ink
+            group-data-[popup-open]:text-brand-ink
           "
           >
             {icon}
           </span>
 
           <div className="min-w-0">
-            <p className="text-[13px] font-semibold text-foreground">{label}</p>
+            <p className="text-[13px] font-bold text-ink">{label}</p>
 
             <p
               className={cn(
-                "mt-0.5 truncate text-[12px] text-muted-foreground",
-                value && "font-medium text-primary",
+                "mt-0.5 truncate text-[12px] text-faint",
+                value && "font-bold text-brand-ink",
               )}
             >
               {findOptionLabel(options, value) ?? placeholder}
@@ -290,7 +290,7 @@ function SelectField({
       <SelectContent align="end" alignItemWithTrigger={false} className="min-w-64 max-h-80">
         {isSearchable ? (
           <form
-            className="sticky top-0 z-10 border-b border-border bg-popover p-2"
+            className="sticky top-0 z-10 border-b border-line-soft bg-popover p-2"
             onKeyDown={(event) => event.stopPropagation()}
           >
             <div className="relative">
@@ -303,8 +303,7 @@ function SelectField({
                 value={searchValue}
                 onChange={(event) => setSearchValue(event.target.value)}
                 placeholder={`جست‌وجوی ${label}...`}
-                className="   h-9 rounded-lgborder-border bg-background  pr-9 text-[13px] shadow-none focus-visible:ring-2 focus-visible:ring-primary/20
-          "
+                className="h-9 pr-9 text-[13px]"
                 autoComplete="off"
               />
             </div>

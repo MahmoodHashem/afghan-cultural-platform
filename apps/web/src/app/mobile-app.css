@@ -1,3 +1,5 @@
+/* Mobile-only adjustments for the app shell (below 768px). Sizes follow the design tokens in
+   globals.css; card shape and colours are left to the components themselves. */
 @media (max-width: 767px) {
   body:has([data-mobile-app-shell]) {
     overflow-x: clip;
@@ -56,12 +58,6 @@
     min-height: 2.75rem;
   }
 
-  body:has([data-mobile-route="explore"]) main [data-slot="card"],
-  body:has([data-mobile-route="province"]) main [data-slot="card"],
-  body:has([data-mobile-route="category"]) main [data-slot="card"] {
-    border-radius: 0.75rem;
-  }
-
   body:has([data-mobile-route="explore"]) main .grid:has([data-slot="card"]),
   body:has([data-mobile-route="province"]) main .grid:has([data-slot="card"]),
   body:has([data-mobile-route="category"]) main .grid:has([data-slot="card"]) {
@@ -89,8 +85,8 @@
   }
 
   body:has([data-mobile-route="home"]) [data-mobile-home-feed] h2 {
-    font-size: 1.25rem;
-    line-height: 1.85;
+    font-size: 21px;
+    line-height: 1.9;
   }
 
   body:has([data-mobile-route="home"]) [data-mobile-home-feed] .grid {
@@ -103,26 +99,26 @@
   }
 
   body:has([data-mobile-route="entry"]) [data-entry-detail] .article-container {
-    font-size: 1.0625rem;
-    line-height: 2.1;
+    font-size: 15.5px;
+    line-height: 2.2;
   }
 
   body:has([data-mobile-route="entry"]) [data-entry-detail] .article-container h2 {
     scroll-margin-top: calc(4.5rem + env(safe-area-inset-top));
     padding-top: 0.75rem;
-    font-size: 1.5rem;
-    line-height: 1.75;
+    font-size: 1.25rem;
+    line-height: 1.9;
   }
 
   body:has([data-mobile-route="entry"]) [data-entry-detail] .article-container h3 {
     scroll-margin-top: calc(4.5rem + env(safe-area-inset-top));
     padding-top: 0.5rem;
-    font-size: 1.25rem;
-    line-height: 1.8;
+    font-size: 1.125rem;
+    line-height: 1.9;
   }
 
   body:has([data-mobile-route="entry"]) [data-entry-detail] .article-container p,
   body:has([data-mobile-route="entry"]) [data-entry-detail] .article-container li {
-    line-height: 2.1;
+    line-height: 2.2;
   }
 }

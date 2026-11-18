@@ -34,7 +34,7 @@ function ProfilePageSkeleton() {
                 <Skeleton className="h-8 w-14" />
                 <Skeleton className="mt-1 h-4 w-12" />
               </div>
-              {item < 3 ? <div className="h-7 w-px bg-border lg:bg-slate-300" /> : null}
+              {item < 3 ? <div className="h-7 w-px bg-border lg:bg-line" /> : null}
             </div>
           ))}
         </div>

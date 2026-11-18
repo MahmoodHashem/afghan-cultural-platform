@@ -64,9 +64,9 @@ function AdminOverviewAttention({ data }: { data: AdminOverviewAttentionData }) 
                   <span
                     className={cn(
                       "flex size-8 shrink-0 items-center justify-center rounded-lg",
-                      item.tone === "red" && "bg-red-50 text-red-600",
-                      item.tone === "orange" && "bg-amber-50 text-amber-600",
-                      item.tone === "blue" && "bg-blue-50 text-blue-600",
+                      item.tone === "red" && "bg-brand-soft text-brand-ink",
+                      item.tone === "orange" && "bg-tint-sand text-saffron-deep dark:text-gold",
+                      item.tone === "blue" && "bg-tint-navy text-lapis dark:text-copy",
                     )}
                     aria-hidden="true"
                   >

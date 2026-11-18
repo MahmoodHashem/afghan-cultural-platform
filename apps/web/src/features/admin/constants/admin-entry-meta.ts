@@ -4,36 +4,36 @@ const adminEntryStatusMeta: Record<
   AdminEntryStatus,
   { label: string; className: string; shortLabel: string }
 > = {
-  DRAFT: { label: "پیش‌نویس", shortLabel: "پیش‌نویس", className: "bg-muted text-foreground" },
+  DRAFT: { label: "پیش‌نویس", shortLabel: "پیش‌نویس", className: "border-line bg-line-soft text-copy" },
   PENDING_REVIEW: {
     label: "در انتظار بررسی",
     shortLabel: "در انتظار",
-    className: "bg-amber-50 text-amber-800 ring-amber-200",
+    className: "border-gold/40 bg-tint-sand text-saffron-deep dark:text-gold",
   },
   CHANGES_REQUESTED: {
     label: "نیازمند تغییر",
     shortLabel: "نیازمند تغییر",
-    className: "bg-orange-50 text-orange-800 ring-orange-200",
+    className: "border-brand/25 bg-tint-rose text-anar dark:text-brand-ink",
   },
   PUBLISHED: {
     label: "منتشرشده",
     shortLabel: "منتشرشده",
-    className: "bg-emerald-50 text-emerald-800 ring-emerald-200",
+    className: "border-ok/25 bg-ok-soft text-ok",
   },
   REJECTED: {
     label: "ردشده",
     shortLabel: "ردشده",
-    className: "bg-red-50 text-red-800 ring-red-200",
+    className: "border-brand/25 bg-brand-soft text-brand-ink",
   },
   HIDDEN: {
     label: "پنهان",
     shortLabel: "پنهان",
-    className: "bg-slate-100 text-slate-700 ring-slate-200",
+    className: "border-line bg-paper text-faint",
   },
   ARCHIVED: {
     label: "بایگانی‌شده",
     shortLabel: "بایگانی",
-    className: "bg-stone-100 text-stone-700 ring-stone-200",
+    className: "border-line bg-line-soft text-faint",
   },
 };
 
