@@ -12,11 +12,11 @@ import {
   SunIcon,
 } from "@heroicons/react/24/outline";
 import { useTheme } from "next-themes";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { type SubmitEvent, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { Logo } from "@/components/brand/mirasaf-logo";
 import { ArrowRightStartOnRectangleIcon as AnimatedLogoutIcon } from "@/components/icons/animated/arrow-right-start-on-rectangle";
 import { ClipboardDocumentCheckIcon as AnimatedClipboardDocumentCheckIcon } from "@/components/icons/animated/clipboard-document-check";
 import { MagnifyingGlassIcon } from "@/components/icons/animated/magnifying-glass";
@@ -153,27 +153,10 @@ function PublicHeader({ variant = "solid" }: PublicHeaderProps) {
         >
           <Link
             href="/"
+            aria-label="میراث افغانستان، رفتن به خانه"
             className="flex shrink-0 items-center gap-2.5 rounded-bubble-xs outline-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
           >
-            <Image
-              src="/images/small-logo.png"
-              alt=""
-              width={42}
-              height={48}
-              sizes="42px"
-              className={cn("h-9 w-auto", isCompact ? null : "brightness-0 invert")}
-            />
-            <span className="hidden flex-col leading-none sm:flex">
-              <span className="text-[17px] font-bold">میراث افغانستان</span>
-              <span
-                className={cn(
-                  "mt-1 text-[10px] font-medium",
-                  isCompact ? "text-faint" : "text-white/75",
-                )}
-              >
-                فرهنگ، تاریخ، هویت ما
-              </span>
-            </span>
+            <Logo tone={isCompact ? "color" : "onDark"} wordmarkClassName="hidden sm:flex" />
           </Link>
 
           <Menubar className="hidden h-auto gap-0.5 border-0 bg-transparent p-0 shadow-none lg:flex">
@@ -386,14 +369,7 @@ function MobileNavigation({ isCompact }: { isCompact: boolean }) {
         >
           <SheetHeader className="border-b border-line-soft px-5 py-5 text-start">
             <SheetTitle className="flex items-center gap-3 text-[17px] font-bold text-ink">
-              <Image
-                src="/images/small-logo.png"
-                alt=""
-                width={34}
-                height={39}
-                className="h-9 w-auto"
-              />
-              میراث افغانستان
+              <Logo size="sm" withTagline={false} />
             </SheetTitle>
           </SheetHeader>
 

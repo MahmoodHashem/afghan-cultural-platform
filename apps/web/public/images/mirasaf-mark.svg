@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="512" height="512">
+  <title>میراث افغانستان</title>
+  <path d="M26 7H31Q47 7 47 23V47H23Q7 47 7 31V26Q7 7 26 7Z" fill="#27477e"/>
+  <path d="M26 7H31Q47 7 47 23V47H23Q7 47 7 31V26Q7 7 26 7Z" fill="#0f6f66" transform="rotate(90 50 50)"/>
+  <path d="M26 7H31Q47 7 47 23V47H23Q7 47 7 31V26Q7 7 26 7Z" fill="#e0253c" transform="rotate(180 50 50)"/>
+  <path d="M26 7H31Q47 7 47 23V47H23Q7 47 7 31V26Q7 7 26 7Z" fill="#dfa63e" transform="rotate(270 50 50)"/>
+  <circle cx="50" cy="50" r="4.5" fill="#182c41"/>
+</svg>

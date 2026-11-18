@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 
 import {
@@ -8,6 +7,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { LogoMark } from "@/components/brand/mirasaf-logo";
 import { AdminNavigation } from "@/features/admin/components/admin-navigation";
 import { AdminSidebarLabel } from "@/features/admin/components/admin-sidebar-label";
 import { AdminUserMenu } from "@/features/admin/components/admin-user-menu";
@@ -20,14 +20,7 @@ function AdminSidebar() {
           href="/admin"
           className="flex min-w-0 items-center gap-3 rounded-control outline-none transition-all focus-visible:outline-2 focus-visible:outline-sidebar-ring group-data-[collapsible=icon]:justify-center"
         >
-          <Image
-            src="/images/small-logo.png"
-            alt=""
-            width={30}
-            height={35}
-            sizes="40px"
-            className="h-7 w-auto shrink-0 brightness-0 invert"
-          />
+          <LogoMark tone="onDark" className="size-8" />
           <AdminSidebarLabel className="block">
             <span className="block truncate text-[16px] font-bold text-white">
               میراث افغانستان

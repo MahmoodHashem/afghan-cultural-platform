@@ -7,7 +7,6 @@ import {
   MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
 import { motion, useMotionValueEvent, useReducedMotion, useScroll, useSpring } from "motion/react";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { type MouseEvent, useCallback, useEffect, useRef, useState } from "react";
@@ -26,6 +25,7 @@ import {
   OPEN_ENTRY_CONTENTS_EVENT,
   OPEN_EXPLORE_FILTERS_EVENT,
 } from "@/components/layout/mobile/mobile-shell-events";
+import { Logo } from "@/components/brand/mirasaf-logo";
 import { useMobileChromeVisibility } from "@/components/layout/mobile/use-mobile-chrome-visibility";
 import { ProfileMenu, PUBLIC_HEADER_CONTEXT_EVENT } from "@/components/layout/public-header";
 import { cn } from "@/lib/utils";
@@ -264,14 +264,12 @@ function MobileTopBar({
             href="/"
             className="flex min-w-0 items-center gap-2 rounded-bubble-xs font-bold outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           >
-            <Image
-              src="/images/small-logo.png"
-              alt=""
-              width={32}
-              height={36}
-              className={cn("h-8 w-auto", transparent && "brightness-0 invert")}
+            <Logo
+              tone={transparent ? "onDark" : "color"}
+              size="sm"
+              withTagline={false}
+              className="min-w-0"
             />
-            <span className="truncate text-[16px]">میراث افغانستان</span>
           </Link>
         ) : (
           <p className="min-w-0 flex-1 truncate text-[16px] font-bold">{routeContext.title}</p>

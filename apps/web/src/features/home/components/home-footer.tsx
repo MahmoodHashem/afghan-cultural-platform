@@ -1,6 +1,6 @@
-import Image from "next/image";
 import Link from "next/link";
 
+import { Logo } from "@/components/brand/mirasaf-logo";
 import { formatPersianNumber } from "@/lib/utils/formatters";
 
 type FooterLink = {
@@ -89,20 +89,7 @@ function BrandColumn() {
         className="inline-flex items-center gap-3 rounded-bubble-sm outline-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
         aria-label="میراث افغانستان، رفتن به خانه"
       >
-        <Image
-          src="/images/small-logo.png"
-          alt=""
-          width={54}
-          height={62}
-          sizes="54px"
-          className="h-12 w-auto brightness-0 invert"
-        />
-        <span>
-          <span className="block text-[20px] font-bold text-white">میراث افغانستان</span>
-          <span className="mt-1 block text-[12px] font-medium text-footer-text/80">
-            فرهنگ، تاریخ، هویت ما
-          </span>
-        </span>
+        <Logo tone="onDark" size="lg" />
       </Link>
 
       <p className="max-w-md text-[13.5px] leading-[2.1]">

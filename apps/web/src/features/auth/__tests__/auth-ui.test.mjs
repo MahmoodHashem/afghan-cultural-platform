@@ -338,9 +338,9 @@ test("form controls include keyboard-accessible controls and associated errors",
   assert.match(passwordField, /type="button"/);
 });
 
-test("login and register use the same approved login logo asset", () => {
-  assert.match(authAssets, /AUTH_LOGO_SRC = "\/images\/large-logo\.png"/);
-  assert.doesNotMatch(authAssets, /AUTH_LOGO_SRC = "\/images\/small-logo\.png"/);
+test("login and register use the shared brand logo", () => {
+  assert.match(read("src/features/auth/components/auth-logo.tsx"), /<Logo size="lg" \/>/);
+  assert.doesNotMatch(authAssets, /AUTH_LOGO_SRC/);
 });
 
 test("OAuth buttons are connected through click handlers", () => {
@@ -873,7 +873,7 @@ test("public routes provide skeleton loading and controlled error states", () =>
 test("site footer keeps brand, link groups, and a legal bar", () => {
   assert.match(homeFooter, /<footer className="[^"]*bg-footer/);
   assert.match(homeFooter, /میراث افغانستان/);
-  assert.match(homeFooter, /فرهنگ، تاریخ، هویت ما/);
+  assert.match(homeFooter, /<Logo tone="onDark"/);
   assert.match(homeFooter, /دسترسی سریع/);
   assert.match(homeFooter, /منابع/);
   assert.match(homeFooter, /aria-label="پیوندهای حقوقی"/);
