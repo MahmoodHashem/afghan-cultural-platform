@@ -772,10 +772,10 @@ test("homepage composes the public landing page from real public API data", () =
 });
 
 test("homepage hero uses the approved Afghan heritage carousel images", () => {
-  assert.match(homeHero, /\/images\/gunbads2\.jpg/);
-  assert.match(homeHero, /\/images\/bamyan\.jpg/);
-  assert.match(homeHero, /\/images\/HERAT02\.jpg/);
-  assert.match(homeHero, /\/images\/menaras\.jpg/);
+  assert.match(homeHero, /\/images\/hero\/kabul-turquoise-domes\.jpg/);
+  assert.match(homeHero, /\/images\/hero\/band-e-amir\.jpg/);
+  assert.match(homeHero, /\/images\/hero\/istalif-pottery\.jpg/);
+  assert.match(homeHero, /\/images\/hero\/buzkashi\.jpg/);
   assert.match(homeHero, /setInterval/);
 });
 

@@ -8,9 +8,11 @@ type ProvinceWithImage = {
   } | null;
 };
 
+/** Static photos per province slug; credits for the newer ones in public/images/provinces/CREDITS.md. */
 const provinceImageBySlug: Record<string, string> = {
   badakhshan: "/images/provinces/badakhshan.jpg",
   badghis: "/images/provinces/badghis.jpg",
+  baghlan: "/images/provinces/baghlan.jpg",
   balkh: "/images/provinces/balkh.jpg",
   bamyan: "/images/provinces/bamyan.webp",
   daykundi: "/images/provinces/daikundi.jpg",
@@ -23,12 +25,22 @@ const provinceImageBySlug: Record<string, string> = {
   jowzjan: "/images/provinces/jawzjan.jpeg",
   kabul: "/images/provinces/kabul.jpg",
   kandahar: "/images/provinces/kandahar.jpg",
+  kapisa: "/images/provinces/kapisa.jpg",
+  khost: "/images/provinces/khost.jpg",
+  kunar: "/images/provinces/kunar.jpg",
+  kunduz: "/images/provinces/kunduz.jpg",
+  laghman: "/images/provinces/laghman.jpg",
+  logar: "/images/provinces/logar.jpg",
+  nangarhar: "/images/provinces/nangarhar.jpg",
   nimroz: "/images/provinces/nimroz.jpg",
+  nuristan: "/images/provinces/nuristan.jpg",
   paktia: "/images/provinces/paktia.jpg",
   paktika: "/images/provinces/paktika.jpg",
+  panjshir: "/images/provinces/panjshir.jpg",
   parwan: "/images/provinces/parwan.jpeg",
   samangan: "/images/provinces/samangan.jpg",
   "sar-e-pol": "/images/provinces/saripul.jpg",
+  takhar: "/images/provinces/takhar.jpg",
   uruzgan: "/images/provinces/urzgan.jpg",
   wardak: "/images/provinces/wardak.jpg",
   zabul: "/images/provinces/zabul.jpg",
