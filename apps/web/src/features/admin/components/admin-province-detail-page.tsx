@@ -138,9 +138,7 @@ function AdminProvinceDetailPage({ provinceId }: { provinceId: string }) {
                 className="object-cover"
               />
               {!province.image ? (
-                <Badge className="absolute start-3 top-3 bg-paper/90 text-ink">
-                  تصویر پیش‌فرض
-                </Badge>
+                <Badge className="absolute start-3 top-3 bg-paper/90 text-ink">تصویر پیش‌فرض</Badge>
               ) : null}
             </div>
             <div className="flex flex-col justify-between gap-6 p-5 md:p-6">
@@ -200,9 +198,7 @@ function AdminProvinceDetailPage({ provinceId }: { provinceId: string }) {
         <div className="flex flex-col gap-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between md:p-5">
           <div>
             <h2 className="text-[18px] font-semibold">ولسوالی‌ها</h2>
-            <p className="mt-1 text-[13px] text-copy">
-              ولسوالی‌های وابسته به {province.name}
-            </p>
+            <p className="mt-1 text-[13px] text-copy">ولسوالی‌های وابسته به {province.name}</p>
           </div>
           <div className="flex flex-wrap gap-2">
             {reorderMode ? (

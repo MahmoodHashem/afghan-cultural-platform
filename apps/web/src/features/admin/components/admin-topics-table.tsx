@@ -131,9 +131,7 @@ function AdminTopicsTable({
             <div className="flex min-h-64 items-center justify-center px-6 text-center">
               <div className="space-y-2">
                 <h2 className="text-[16px] font-semibold">موردی پیدا نشد</h2>
-                <p className="text-[13px] text-copy">
-                  عبارت جست‌وجو یا فیلترها را تغییر دهید.
-                </p>
+                <p className="text-[13px] text-copy">عبارت جست‌وجو یا فیلترها را تغییر دهید.</p>
               </div>
             </div>
           ) : null}
@@ -260,9 +258,7 @@ function TopicStatusBadge({ active }: { active: boolean }) {
   return (
     <Badge
       variant="outline"
-      className={
-        active ? "border-brand/20 bg-brand-soft text-brand-ink" : "bg-line-soft text-copy"
-      }
+      className={active ? "border-brand/20 bg-brand-soft text-brand-ink" : "bg-line-soft text-copy"}
     >
       {active ? "فعال" : "غیرفعال"}
     </Badge>

@@ -93,9 +93,7 @@ function ModerationReviewContent({ submission }: { submission: ModerationSubmiss
           </div>
           <div className="space-y-3">
             <h1 className="text-page-title text-ink">{snapshot.title}</h1>
-            <p className="max-w-3xl text-[17px] leading-9 text-copy">
-              {snapshot.summary}
-            </p>
+            <p className="max-w-3xl text-[17px] leading-9 text-copy">{snapshot.summary}</p>
           </div>
           <SubmissionMeta submission={submission} />
         </div>
@@ -195,9 +193,7 @@ function ModerationActions({ submission }: { submission: ModerationSubmission })
     <section className="rounded-control border border-line-soft bg-surface p-4 shadow-card">
       <div className="mb-4">
         <h2 className="font-bold text-ink">نتیجه بررسی</h2>
-        <p className="mt-1 text-[13px] leading-6 text-copy">
-          تصمیم پس از تأیید سرور ثبت می‌شود.
-        </p>
+        <p className="mt-1 text-[13px] leading-6 text-copy">تصمیم پس از تأیید سرور ثبت می‌شود.</p>
       </div>
       <div className="grid gap-2">
         <Button
@@ -392,9 +388,7 @@ function ModerationSources({ sources }: { sources: ModerationSnapshotSource[] })
                     <p className="text-[13px] text-copy">{source.authorOrProvider}</p>
                   ) : null}
                   {source.explanation ? (
-                    <p className="text-[13px] leading-7 text-copy">
-                      {source.explanation}
-                    </p>
+                    <p className="text-[13px] leading-7 text-copy">{source.explanation}</p>
                   ) : null}
                 </div>
               </div>
@@ -428,9 +422,7 @@ function ReviewErrorState({ message, onRetry }: { message: string; onRetry: () =
       <div className="rounded-control border border-brand/20 bg-surface px-5 py-14 text-center">
         <ExclamationTriangleIcon className="mx-auto size-10 text-brand-ink" aria-hidden="true" />
         <h1 className="mt-4 text-[20px] font-bold text-ink">مطلب باز نشد</h1>
-        <p className="mx-auto mt-2 max-w-lg text-[14px] leading-7 text-copy">
-          {message}
-        </p>
+        <p className="mx-auto mt-2 max-w-lg text-[14px] leading-7 text-copy">{message}</p>
         <div className="mt-5 flex flex-wrap justify-center gap-2">
           <Button type="button" variant="outline" className="rounded-full" onClick={onRetry}>
             تلاش دوباره

@@ -3,7 +3,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 function CommentListSkeleton({ compact = false }: { compact?: boolean }) {
   return (
     <div
-      className={compact ? "space-y-5 py-4" : "rounded-control border border-line-soft bg-surface p-5"}
+      className={
+        compact ? "space-y-5 py-4" : "rounded-control border border-line-soft bg-surface p-5"
+      }
       role="status"
     >
       <span className="sr-only">در حال بارگذاری دیدگاه‌ها</span>

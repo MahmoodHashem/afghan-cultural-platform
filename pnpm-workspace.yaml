@@ -11,3 +11,10 @@ allowBuilds:
   prisma: true
   sharp: true
   unrs-resolver: true
+# Slow or unstable connections: give large packages (next, @next/swc-*) time to download
+# instead of failing after the default 60 s, retry more, and download fewer files at once.
+fetchTimeout: 600000
+fetchRetries: 5
+fetchRetryMintimeout: 10000
+fetchRetryMaxtimeout: 120000
+networkConcurrency: 4

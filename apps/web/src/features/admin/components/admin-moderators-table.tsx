@@ -94,9 +94,7 @@ function AdminModeratorsTable({
       <div className="flex min-h-64 items-center justify-center px-6 text-center">
         <div className="space-y-2">
           <h2 className="text-[16px] font-semibold">ناظری پیدا نشد</h2>
-          <p className="text-[13px] text-copy">
-            فیلترها را تغییر دهید یا یک ناظر جدید اضافه کنید.
-          </p>
+          <p className="text-[13px] text-copy">فیلترها را تغییر دهید یا یک ناظر جدید اضافه کنید.</p>
         </div>
       </div>
     );
@@ -248,9 +246,7 @@ function ModeratorActions({
 
 function MutedDate({ value }: { value: string | null }) {
   return (
-    <span className="text-[12px] text-copy">
-      {value ? formatPersianDate(value) : "ثبت نشده"}
-    </span>
+    <span className="text-[12px] text-copy">{value ? formatPersianDate(value) : "ثبت نشده"}</span>
   );
 }
 

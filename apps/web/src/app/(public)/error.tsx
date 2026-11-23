@@ -14,6 +14,7 @@ function PublicRouteError({ reset }: { error: Error & { digest?: string }; reset
         eyebrow="کمی صبر کنید"
         title="این صفحه بارگذاری نشد"
         word="دوباره"
+        illustration="error"
         description="ممکن است ارتباط با سرور موقتاً قطع شده باشد. دوباره تلاش کنید یا به صفحه اصلی برگردید."
         actions={
           <>

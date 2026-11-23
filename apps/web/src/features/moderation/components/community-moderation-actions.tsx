@@ -63,9 +63,7 @@ function CommunityModerationActions({ entryId }: { entryId: string }) {
 
   return (
     <section className="flex flex-wrap items-center gap-2 border-y border-line-soft py-5">
-      <span className="me-2 text-[13px] text-copy">
-        در بهترشدن این مطلب سهم بگیرید:
-      </span>
+      <span className="me-2 text-[13px] text-copy">در بهترشدن این مطلب سهم بگیرید:</span>
       <Button
         type="button"
         variant="outline"

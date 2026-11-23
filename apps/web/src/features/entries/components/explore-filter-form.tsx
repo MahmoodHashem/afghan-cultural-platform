@@ -320,9 +320,7 @@ function SelectField({
               </SelectItem>
             ))
           ) : (
-            <div className="px-3 py-6 text-center text-[13px] text-copy">
-              نتیجه‌ای پیدا نشد
-            </div>
+            <div className="px-3 py-6 text-center text-[13px] text-copy">نتیجه‌ای پیدا نشد</div>
           )}
         </SelectGroup>
       </SelectContent>

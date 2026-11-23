@@ -58,9 +58,7 @@ function AdminUserDetailPage({ userId }: { userId: string }) {
           <ExclamationTriangleIcon className="size-8 text-brand-ink" aria-hidden="true" />
           <div className="space-y-1">
             <h1 className="text-[18px] font-semibold">اطلاعات کاربر در دسترس نیست</h1>
-            <p className="text-[13px] text-copy">
-              {getAdminUserErrorMessage(userQuery.error)}
-            </p>
+            <p className="text-[13px] text-copy">{getAdminUserErrorMessage(userQuery.error)}</p>
           </div>
           <Button type="button" variant="outline" onClick={() => void userQuery.refetch()}>
             تلاش دوباره
@@ -91,9 +89,7 @@ function AdminUserDetailPage({ userId }: { userId: string }) {
           بازگشت به کاربران
         </Button>
         <div>
-          <h1 className="text-[28px] font-bold leading-10 text-ink sm:text-[34px]">
-            جزئیات کاربر
-          </h1>
+          <h1 className="text-[28px] font-bold leading-10 text-ink sm:text-[34px]">جزئیات کاربر</h1>
           <p className="mt-1 text-[14px] text-copy">
             اطلاعات حساب، مشارکت‌ها و تاریخچه اقدام‌های مدیریتی
           </p>

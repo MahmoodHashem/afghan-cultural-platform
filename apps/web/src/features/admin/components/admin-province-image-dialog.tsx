@@ -129,9 +129,7 @@ function AdminProvinceImageDialog({
               placeholder="مثلاً نمایی از ولایت هرات"
             />
             {form.formState.errors.altText ? (
-              <p className="text-[12px] text-brand-ink">
-                {form.formState.errors.altText.message}
-              </p>
+              <p className="text-[12px] text-brand-ink">{form.formState.errors.altText.message}</p>
             ) : null}
           </div>
         </form>

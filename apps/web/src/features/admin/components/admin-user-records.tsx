@@ -137,17 +137,12 @@ function AdminUserRecords({
                       <Badge variant="outline" className="rounded-full">
                         {adminCommentStatusLabels[comment.status]}
                       </Badge>
-                      <time
-                        className="text-[12px] text-copy"
-                        dateTime={comment.createdAt}
-                      >
+                      <time className="text-[12px] text-copy" dateTime={comment.createdAt}>
                         {formatPersianDate(comment.createdAt)}
                       </time>
                     </div>
                   </div>
-                  <p className="line-clamp-3 text-[13px] leading-7 text-ink">
-                    {comment.body}
-                  </p>
+                  <p className="line-clamp-3 text-[13px] leading-7 text-ink">{comment.body}</p>
                 </article>
               ))}
             </div>

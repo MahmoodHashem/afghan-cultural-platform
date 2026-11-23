@@ -228,9 +228,7 @@ export function CreateEntryEditorSection({
       >
         <span>
           <span className="block text-[15.5px] font-bold text-ink">{title}</span>
-          {summary ? (
-            <span className="mt-1 block text-small text-faint">{summary}</span>
-          ) : null}
+          {summary ? <span className="mt-1 block text-small text-faint">{summary}</span> : null}
         </span>
         <ChevronDownIcon
           aria-hidden="true"

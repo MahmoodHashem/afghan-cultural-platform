@@ -65,9 +65,7 @@ function EntryRevisionQueue() {
                 <h2 className="font-bold text-ink">{revision.title}</h2>
                 <Badge variant="outline">ویرایش منتشرشده</Badge>
               </div>
-              <p className="mt-2 line-clamp-1 text-[13px] text-copy">
-                {revision.summary}
-              </p>
+              <p className="mt-2 line-clamp-1 text-[13px] text-copy">{revision.summary}</p>
             </div>
             <div className="space-y-1 text-[13px] text-copy">
               <span className="flex items-center gap-2">
@@ -126,11 +124,7 @@ function EntryRevisionReview({ revisionId }: { revisionId: string }) {
   const [decision, setDecision] = useState<ModerationDecision | null>(null);
 
   if (query.isLoading)
-    return (
-      <div className="content-container py-16 text-copy">
-        در حال آماده‌سازی ویرایش...
-      </div>
-    );
+    return <div className="content-container py-16 text-copy">در حال آماده‌سازی ویرایش...</div>;
   if (!query.data || query.isError)
     return <div className="content-container py-16 text-brand-ink">ویرایش مورد نظر باز نشد.</div>;
   const revision = query.data;
@@ -146,9 +140,7 @@ function EntryRevisionReview({ revisionId }: { revisionId: string }) {
           <Badge variant="outline">{revision.contentType?.name}</Badge>
         </div>
         <h1 className="mt-4 text-page-title text-ink">{revision.title}</h1>
-        <p className="mt-3 max-w-3xl text-[16px] leading-8 text-copy">
-          {revision.summary}
-        </p>
+        <p className="mt-3 max-w-3xl text-[16px] leading-8 text-copy">{revision.summary}</p>
         <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-[13px] text-copy">
           <span className="flex items-center gap-2">
             <UserCircleIcon className="size-4" aria-hidden="true" />

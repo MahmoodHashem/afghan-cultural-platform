@@ -14,9 +14,9 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { EmptyState } from "@/components/common/empty-state";
 import { EyeIcon } from "@/components/icons/animated/eye";
 import { TrashIcon } from "@/components/icons/animated/trash";
-import { EmptyState } from "@/components/common/empty-state";
 import { useMobileChromeHidden } from "@/components/layout/mobile/use-mobile-chrome-hidden";
 import {
   AlertDialog,
@@ -82,10 +82,10 @@ const profileTabs: Array<{
   label: string;
   icon: typeof DocumentTextIcon;
 }> = [
-    { value: "entries", label: "مطالب من", icon: DocumentTextIcon },
-    { value: "comments", label: "دیدگاه‌ها", icon: ChatBubbleLeftRightIcon },
-    { value: "bookmarks", label: "ذخیره‌ها", icon: BookmarkIcon },
-  ];
+  { value: "entries", label: "مطالب من", icon: DocumentTextIcon },
+  { value: "comments", label: "دیدگاه‌ها", icon: ChatBubbleLeftRightIcon },
+  { value: "bookmarks", label: "ذخیره‌ها", icon: BookmarkIcon },
+];
 
 const ownerEntrySkeletonKeys = ["first", "second", "third", "fourth"] as const;
 const ownerFeedbackSkeletonKeys = ["first", "second", "third"] as const;
@@ -492,10 +492,7 @@ function OwnerEntryToolbar({ query, total }: { query: ProfileQuery; total: numbe
 
 function OwnerCommentList({ comments }: { comments: ProfileComment[] }) {
   return (
-    <motion.ul
-      layout
-      className="space-y-3"
-    >
+    <motion.ul layout className="space-y-3">
       {comments.map((comment) => (
         <motion.li
           key={comment.id}
@@ -554,10 +551,7 @@ function OwnerCommentRow({ comment }: { comment: ProfileComment }) {
 
 function OwnerBookmarkList({ bookmarks }: { bookmarks: ProfileBookmark[] }) {
   return (
-    <motion.ul
-      layout
-      className="space-y-3"
-    >
+    <motion.ul layout className="space-y-3">
       {bookmarks.map((bookmark) => (
         <motion.li
           key={bookmark.id}
@@ -614,10 +608,7 @@ function OwnerEntryList({ entries }: { entries: OwnEntry[] }) {
 
   return (
     <>
-      <motion.ul
-        layout
-        className="space-y-3"
-      >
+      <motion.ul layout className="space-y-3">
         {entries.map((entry) => (
           <motion.li
             key={entry.id}
@@ -700,7 +691,7 @@ function OwnerEntryRow({ entry, onDelete }: { entry: OwnEntry; onDelete: () => v
             </div>
           </div>
           {entry.latestModerationReview?.comments &&
-            (entry.status === "CHANGES_REQUESTED" || entry.status === "REJECTED") ? (
+          (entry.status === "CHANGES_REQUESTED" || entry.status === "REJECTED") ? (
             <div className="flex gap-3 rounded-[14px_14px_14px_4px] border border-saffron/25 bg-tint-sand px-4 py-3 text-[13.5px] leading-[1.95] text-ink">
               <ChatBubbleLeftRightIcon
                 className="mt-1 size-5 shrink-0 text-saffron"
@@ -710,9 +701,7 @@ function OwnerEntryRow({ entry, onDelete }: { entry: OwnEntry; onDelete: () => v
                 <p className="font-bold">
                   {entry.status === "CHANGES_REQUESTED" ? "نظر بررسی‌کننده" : "دلیل رد مطلب"}
                 </p>
-                <p className="mt-1 text-copy">
-                  {entry.latestModerationReview.comments}
-                </p>
+                <p className="mt-1 text-copy">{entry.latestModerationReview.comments}</p>
                 <p className="mt-1 text-[12px] text-faint">
                   {entry.latestModerationReview.moderator.displayName} ·{" "}
                   {formatPersianDate(entry.latestModerationReview.createdAt)}
@@ -1086,9 +1075,7 @@ function DeleteDraftDialog({
     <AlertDialog open={Boolean(entry)} onOpenChange={onOpenChange}>
       <AlertDialogContent className="p-5">
         <AlertDialogHeader className="place-items-start text-start">
-          <AlertDialogTitle>
-            پیش‌نویس حذف شود؟
-          </AlertDialogTitle>
+          <AlertDialogTitle>پیش‌نویس حذف شود؟</AlertDialogTitle>
           <AlertDialogDescription className="leading-7">
             این کار فقط برای پیش‌نویس‌های حذف‌پذیر انجام می‌شود و پس از تأیید backend قطعی خواهد شد.
           </AlertDialogDescription>

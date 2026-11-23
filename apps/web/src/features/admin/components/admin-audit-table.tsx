@@ -224,11 +224,7 @@ function Person({ person }: { person: AdminAuditPerson | null }) {
 }
 
 function TargetUser({ person }: { person: AdminAuditPerson | null }) {
-  return person ? (
-    <Person person={person} />
-  ) : (
-    <span className="text-[12px] text-copy">-</span>
-  );
+  return person ? <Person person={person} /> : <span className="text-[12px] text-copy">-</span>;
 }
 
 function AuditContext({ item }: { item: AdminAuditItem }) {

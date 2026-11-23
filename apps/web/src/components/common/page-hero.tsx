@@ -55,9 +55,7 @@ function PageHero({
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 -z-10 font-calli text-white opacity-[0.05] select-none"
       >
-        <span className="absolute top-6 start-[8%] text-[72px] leading-none">
-          {motifWords[0]}
-        </span>
+        <span className="absolute top-6 start-[8%] text-[72px] leading-none">{motifWords[0]}</span>
         <span className="absolute top-[40%] start-[38%] text-[56px] leading-none">
           {motifWords[1]}
         </span>

@@ -56,9 +56,7 @@ function AdminEntryLifecycleDialog({
             className="min-h-28 resize-none"
             placeholder="دلیل این تصمیم را کوتاه و روشن بنویسید..."
           />
-          <p className="text-[12px] text-copy">
-            این توضیح در تاریخچه بررسی مطلب ثبت می‌شود.
-          </p>
+          <p className="text-[12px] text-copy">این توضیح در تاریخچه بررسی مطلب ثبت می‌شود.</p>
         </div>
         <AlertDialogFooter className="mt-3 sm:justify-start">
           <AlertDialogCancel disabled={pending}>انصراف</AlertDialogCancel>

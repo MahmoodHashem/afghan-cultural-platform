@@ -221,9 +221,7 @@ function ModerationQueueRow({ submission }: { submission: ModerationSubmission }
       <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_1fr_1fr_150px] lg:items-center">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <h2 className="line-clamp-1 text-[17px] font-bold text-ink">
-              {submission.title}
-            </h2>
+            <h2 className="line-clamp-1 text-[17px] font-bold text-ink">{submission.title}</h2>
             <Badge className="rounded-full border border-saffron/30 bg-tint-sand text-saffron">
               در انتظار بررسی
             </Badge>

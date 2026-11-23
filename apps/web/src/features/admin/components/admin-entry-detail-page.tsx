@@ -156,9 +156,7 @@ function AdminEntryDetailPage({ entryId }: { entryId: string }) {
                       />
                     </div>
                     {image.caption ? (
-                      <figcaption className="text-[12px] text-copy">
-                        {image.caption}
-                      </figcaption>
+                      <figcaption className="text-[12px] text-copy">{image.caption}</figcaption>
                     ) : null}
                   </figure>
                 ))}
@@ -204,9 +202,7 @@ function AdminEntryDetailPage({ entryId }: { entryId: string }) {
                 {entry.youtubeVideo.title ?? `YouTube: ${entry.youtubeVideo.videoId}`}
               </a>
               {entry.youtubeVideo.description ? (
-                <p className="mt-2 text-sm leading-7 text-copy">
-                  {entry.youtubeVideo.description}
-                </p>
+                <p className="mt-2 text-sm leading-7 text-copy">{entry.youtubeVideo.description}</p>
               ) : null}
             </Panel>
           ) : null}
@@ -374,10 +370,7 @@ function HistoryPanel({ entry }: { entry: AdminEntryDetail }) {
           <p className="mb-3 text-[12px] font-semibold">نسخه‌های ثبت‌شده</p>
           <ul className="space-y-2">
             {entry.contentVersions.map((version) => (
-              <li
-                key={version.id}
-                className="flex justify-between text-[11px] text-copy"
-              >
+              <li key={version.id} className="flex justify-between text-[11px] text-copy">
                 <span>نسخه {formatPersianNumber(version.versionNumber)}</span>
                 <time>{formatPersianDate(version.createdAt)}</time>
               </li>

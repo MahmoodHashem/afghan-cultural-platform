@@ -215,9 +215,7 @@ function ExploreToolbar({
   return (
     <div className="sticky top-[calc(3.5rem+env(safe-area-inset-top))] z-20 -mx-1 border-b border-line-soft bg-paper/92 px-1 py-2.5 backdrop-blur-md lg:top-16.5">
       <div className="flex items-center justify-between gap-3 md:hidden">
-        <p className="shrink-0 text-[14px] font-bold text-ink">
-          {formatPersianNumber(total)} مطلب
-        </p>
+        <p className="shrink-0 text-[14px] font-bold text-ink">{formatPersianNumber(total)} مطلب</p>
         <div className="flex min-w-0 items-center gap-2">
           <SortSelect query={query} />
           <ExploreFilterSheet taxonomy={taxonomy} query={query} showTrigger={false} />
@@ -232,9 +230,7 @@ function ExploreToolbar({
       <div className="hidden min-h-11 items-center justify-between gap-4 md:flex">
         <div className="flex min-w-0 flex-wrap items-center gap-2">
           <p className="shrink-0 text-[14px] text-faint">
-            <span className="text-[18px] font-bold text-ink">
-              {formatPersianNumber(total)}
-            </span>{" "}
+            <span className="text-[18px] font-bold text-ink">{formatPersianNumber(total)}</span>{" "}
             مطلب
           </p>
           <ActiveFilterChips query={query} taxonomy={taxonomy} />

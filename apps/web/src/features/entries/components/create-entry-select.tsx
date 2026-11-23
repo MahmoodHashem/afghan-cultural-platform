@@ -230,9 +230,7 @@ function MobileCreateEntrySelect({
                 })}
               </div>
             ) : (
-              <p className="py-10 text-center text-small text-faint">
-                نتیجه‌ای پیدا نشد.
-              </p>
+              <p className="py-10 text-center text-small text-faint">نتیجه‌ای پیدا نشد.</p>
             )}
           </div>
         </DrawerContent>
@@ -538,9 +536,7 @@ function TagMultiSelect({ label, selectedValues, options, onChange, error }: Tag
             );
           })
         ) : (
-          <p className="w-full py-4 text-center text-small text-faint">
-            برچسبی پیدا نشد.
-          </p>
+          <p className="w-full py-4 text-center text-small text-faint">برچسبی پیدا نشد.</p>
         )}
       </div>
       {error ? <p className="text-small text-brand-ink">{error}</p> : null}

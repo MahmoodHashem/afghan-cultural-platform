@@ -66,9 +66,7 @@ function AdminReportsPage() {
             </span>
             <div className="space-y-1">
               <h2 className="text-[16px] font-semibold">فهرست گزارش‌ها بارگذاری نشد</h2>
-              <p className="text-[13px] text-copy">
-                ارتباط با سرور برقرار نشد. دوباره تلاش کنید.
-              </p>
+              <p className="text-[13px] text-copy">ارتباط با سرور برقرار نشد. دوباره تلاش کنید.</p>
             </div>
             <Button variant="outline" onClick={() => void reportsQuery.refetch()}>
               تلاش دوباره

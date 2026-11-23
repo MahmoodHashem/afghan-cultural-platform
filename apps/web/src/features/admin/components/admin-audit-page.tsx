@@ -66,9 +66,7 @@ function AdminAuditPage() {
             </span>
             <div className="space-y-1">
               <h2 className="text-[16px] font-semibold">تاریخچه بارگذاری نشد</h2>
-              <p className="text-[13px] text-copy">
-                {getAdminAuditErrorMessage(auditQuery.error)}
-              </p>
+              <p className="text-[13px] text-copy">{getAdminAuditErrorMessage(auditQuery.error)}</p>
             </div>
             <Button variant="outline" onClick={() => void auditQuery.refetch()}>
               تلاش دوباره

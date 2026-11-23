@@ -109,9 +109,7 @@ function AdminReportDetailPage({ reportId }: { reportId: string }) {
             <Panel title="مطلب گزارش‌شده" icon={<DocumentTextIcon />}>
               <div className="space-y-3">
                 <h2 className="text-[18px] font-semibold">{report.entry.title}</h2>
-                <p className="text-[14px] leading-8 text-copy">
-                  {report.entry.summary}
-                </p>
+                <p className="text-[14px] leading-8 text-copy">{report.entry.summary}</p>
               </div>
             </Panel>
           )}

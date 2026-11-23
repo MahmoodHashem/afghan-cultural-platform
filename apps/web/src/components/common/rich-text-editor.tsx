@@ -152,7 +152,9 @@ function RichTextEditor({
 
   if (!editor) {
     return (
-      <div className={cn("rounded-card border border-line-soft bg-surface p-4 text-small", className)}>
+      <div
+        className={cn("rounded-card border border-line-soft bg-surface p-4 text-small", className)}
+      >
         ویرایشگر در حال آماده‌سازی است...
       </div>
     );
@@ -182,7 +184,9 @@ function RichTextEditor({
   const shouldShowToolbar = toolbarMode === "always" || (toolbarMode === "toggle" && isToolbarOpen);
 
   return (
-    <div className={cn("overflow-hidden rounded-card border border-line-soft bg-surface", className)}>
+    <div
+      className={cn("overflow-hidden rounded-card border border-line-soft bg-surface", className)}
+    >
       {toolbarMode === "toggle" ? (
         <div className="flex flex-wrap items-center gap-2   p-2">
           <Button

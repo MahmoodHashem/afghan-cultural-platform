@@ -10,6 +10,7 @@ import { motion, useMotionValueEvent, useReducedMotion, useScroll, useSpring } f
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { type MouseEvent, useCallback, useEffect, useRef, useState } from "react";
+import { Logo } from "@/components/brand/mirasaf-logo";
 import {
   getMobileRouteContext,
   isMobileNavItemActive,
@@ -25,7 +26,6 @@ import {
   OPEN_ENTRY_CONTENTS_EVENT,
   OPEN_EXPLORE_FILTERS_EVENT,
 } from "@/components/layout/mobile/mobile-shell-events";
-import { Logo } from "@/components/brand/mirasaf-logo";
 import { useMobileChromeVisibility } from "@/components/layout/mobile/use-mobile-chrome-visibility";
 import { ProfileMenu, PUBLIC_HEADER_CONTEXT_EVENT } from "@/components/layout/public-header";
 import { cn } from "@/lib/utils";
@@ -400,9 +400,7 @@ function MobileBottomNavigation({
               >
                 <Icon className={item.prominent ? "size-6" : "size-5"} aria-hidden="true" />
               </span>
-              <span className={cn(item.prominent && "font-bold text-brand-ink")}>
-                {item.label}
-              </span>
+              <span className={cn(item.prominent && "font-bold text-brand-ink")}>{item.label}</span>
             </Link>
           );
         })}

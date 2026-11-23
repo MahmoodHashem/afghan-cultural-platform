@@ -115,10 +115,7 @@ function AdminHeader() {
               <span className="hidden max-w-28 truncate text-[12px] font-semibold xl:block">
                 {user.displayName}
               </span>
-              <ChevronDownIcon
-                className="hidden size-3.5 text-copy xl:block"
-                aria-hidden="true"
-              />
+              <ChevronDownIcon className="hidden size-3.5 text-copy xl:block" aria-hidden="true" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" sideOffset={8} className="min-w-56">
               <DropdownMenuGroup>

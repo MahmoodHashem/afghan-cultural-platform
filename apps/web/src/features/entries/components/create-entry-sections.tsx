@@ -377,10 +377,7 @@ export function SourcesSection({
                       {sourceTypeLabels[sourceValues[index]?.type ?? field.type]}
                     </span>
                   </span>
-                  <PencilSquareIcon
-                    className="size-5 shrink-0 text-faint"
-                    aria-hidden="true"
-                  />
+                  <PencilSquareIcon className="size-5 shrink-0 text-faint" aria-hidden="true" />
                 </button>
               ))}
             </div>
@@ -691,10 +688,7 @@ function SourceFields({
           )}
         />
         <div>
-          <label
-            htmlFor={`source-title-${index}`}
-            className="text-small font-semibold text-ink"
-          >
+          <label htmlFor={`source-title-${index}`} className="text-small font-semibold text-ink">
             عنوان
           </label>
           <Input
@@ -706,10 +700,7 @@ function SourceFields({
           />
         </div>
         <div>
-          <label
-            htmlFor={`source-provider-${index}`}
-            className="text-small font-semibold text-ink"
-          >
+          <label htmlFor={`source-provider-${index}`} className="text-small font-semibold text-ink">
             نویسنده یا نهاد
           </label>
           <Input
@@ -721,10 +712,7 @@ function SourceFields({
           />
         </div>
         <div>
-          <label
-            htmlFor={`source-url-${index}`}
-            className="text-small font-semibold text-ink"
-          >
+          <label htmlFor={`source-url-${index}`} className="text-small font-semibold text-ink">
             نشانی اینترنتی
           </label>
           <Input
@@ -737,10 +725,7 @@ function SourceFields({
           />
         </div>
         <div>
-          <label
-            htmlFor={`source-date-${index}`}
-            className="text-small font-semibold text-ink"
-          >
+          <label htmlFor={`source-date-${index}`} className="text-small font-semibold text-ink">
             تاریخ نشر
           </label>
           <Controller
@@ -761,10 +746,7 @@ function SourceFields({
           />
         </div>
         <div className="md:col-span-2">
-          <label
-            htmlFor={`source-details-${index}`}
-            className="text-small font-semibold text-ink"
-          >
+          <label htmlFor={`source-details-${index}`} className="text-small font-semibold text-ink">
             توضیح یا جزئیات
           </label>
           <Textarea
@@ -952,10 +934,7 @@ function ImageList({ images, onChange, onMove, onRemove }: ImageListProps) {
   return (
     <div className="grid gap-4 md:grid-cols-2">
       {images.map((image, index) => (
-        <div
-          key={image.clientId}
-          className="rounded-card border border-line-soft bg-paper/50 p-3"
-        >
+        <div key={image.clientId} className="rounded-card border border-line-soft bg-paper/50 p-3">
           <div className="relative aspect-[4/3] overflow-hidden rounded-control bg-line-soft">
             <Image
               src={image.previewUrl}

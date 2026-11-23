@@ -86,10 +86,7 @@ function AdminUsersToolbar({
               htmlFor="admin-user-search"
               className="group flex h-10 min-w-0 flex-1 items-center gap-2 rounded-control border border-line bg-surface px-3 transition-shadow focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/35"
             >
-              <MagnifyingGlassIcon
-                className="size-4 shrink-0 text-copy"
-                aria-hidden="true"
-              />
+              <MagnifyingGlassIcon className="size-4 shrink-0 text-copy" aria-hidden="true" />
               <span className="sr-only">جست‌وجوی کاربر</span>
               <Input
                 id="admin-user-search"

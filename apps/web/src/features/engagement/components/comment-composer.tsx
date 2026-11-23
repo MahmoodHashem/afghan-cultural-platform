@@ -205,9 +205,7 @@ function CommentComposer({
               {helperText ?? "لطفاً با احترام و مرتبط با موضوع، نظر خود را بنویسید."}
             </p>
           ) : (
-            <span className="text-[12px] text-copy">
-              {formatPersianNumber(body.length)}/۱۰۰۰
-            </span>
+            <span className="text-[12px] text-copy">{formatPersianNumber(body.length)}/۱۰۰۰</span>
           )}
           <div className="ms-auto flex items-center gap-2">
             <CommentEmojiPicker
@@ -215,9 +213,7 @@ function CommentComposer({
               onSelect={insertEmoji}
             />
             {!compact ? (
-              <span className="text-[12px] text-copy">
-                {formatPersianNumber(body.length)}/۱۰۰۰
-              </span>
+              <span className="text-[12px] text-copy">{formatPersianNumber(body.length)}/۱۰۰۰</span>
             ) : null}
             {onCancel ? (
               <Button

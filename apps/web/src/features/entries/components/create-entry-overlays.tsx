@@ -210,10 +210,7 @@ function SubmissionReadinessDrawer({
                   onClick={() => onSelectIssue(issue)}
                 >
                   <span className="flex items-center gap-2">
-                    <ExclamationTriangleIcon
-                      className="size-5 text-saffron"
-                      aria-hidden="true"
-                    />
+                    <ExclamationTriangleIcon className="size-5 text-saffron" aria-hidden="true" />
                     {issue.label}
                   </span>
                   <ChevronLeftIcon className="size-4 text-faint" aria-hidden="true" />

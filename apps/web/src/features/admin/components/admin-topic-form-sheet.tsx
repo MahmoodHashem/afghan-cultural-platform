@@ -60,11 +60,11 @@ function AdminTopicFormSheet({
     form.reset(
       topic
         ? {
-          name: topic.name,
-          description: topic.description ?? "",
-          sortOrder: topic.sortOrder,
-          isActive: topic.isActive,
-        }
+            name: topic.name,
+            description: topic.description ?? "",
+            sortOrder: topic.sortOrder,
+            isActive: topic.isActive,
+          }
         : EMPTY_VALUES,
     );
   }, [form, open, topic]);
@@ -199,9 +199,7 @@ function TopicField({
       </Label>
       {children}
       {error ? <p className="text-[12px] leading-5 text-brand-ink">{error}</p> : null}
-      {!error && hint ? (
-        <p className="text-[12px] leading-5 text-copy">{hint}</p>
-      ) : null}
+      {!error && hint ? <p className="text-[12px] leading-5 text-copy">{hint}</p> : null}
     </div>
   );
 }

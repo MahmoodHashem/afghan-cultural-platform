@@ -23,8 +23,8 @@ function ModeratorShellLayout({ children }: Readonly<{ children: React.ReactNode
           <div className="content-container space-y-1.5">
             <p className="font-hand text-[19px] text-gold">میز بررسی محتوا</p>
             <p className="max-w-[60ch] text-[14px] leading-[2] text-white/78">
-              هر بررسی دقیق و محترمانه، اعتماد مردم به میراث را بیشتر می‌کند و نویسندگان را به
-              نوشتن دوباره دلگرم.
+              هر بررسی دقیق و محترمانه، اعتماد مردم به میراث را بیشتر می‌کند و نویسندگان را به نوشتن
+              دوباره دلگرم.
             </p>
           </div>
         </div>

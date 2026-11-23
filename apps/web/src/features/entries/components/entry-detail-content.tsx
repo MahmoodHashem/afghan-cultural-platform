@@ -275,9 +275,7 @@ function SourcesList({ entry }: { entry: PublicEntryDetail }) {
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="chip">{sourceTypeLabel(source.type)}</Badge>
                 {source.publicationDate ? (
-                  <span className="text-[12px] text-faint">
-                    {source.publicationDate}
-                  </span>
+                  <span className="text-[12px] text-faint">{source.publicationDate}</span>
                 ) : null}
               </div>
               <h3 className="text-[14.5px] font-bold text-ink">

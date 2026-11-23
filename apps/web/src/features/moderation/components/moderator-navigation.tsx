@@ -33,7 +33,8 @@ function ModeratorNavigation() {
               aria-current={active ? "page" : undefined}
               className={cn(
                 "rounded-full px-4 py-2 text-[13px] font-bold text-copy transition-colors outline-none hover:bg-paper hover:text-ink focus-visible:outline-2 focus-visible:outline-ring",
-                active && "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground",
+                active &&
+                  "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground",
               )}
             >
               {item.label}

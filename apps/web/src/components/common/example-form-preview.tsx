@@ -47,9 +47,7 @@ function ExampleFormPreview() {
           dir="ltr"
           {...register("email")}
         />
-        {errors.email ? (
-          <p className="text-small text-brand-ink">{errors.email.message}</p>
-        ) : null}
+        {errors.email ? <p className="text-small text-brand-ink">{errors.email.message}</p> : null}
       </div>
 
       <div className="flex flex-wrap items-center gap-3">

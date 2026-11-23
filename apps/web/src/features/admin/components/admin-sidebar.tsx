@@ -1,5 +1,5 @@
 import Link from "next/link";
-
+import { LogoMark } from "@/components/brand/mirasaf-logo";
 import {
   Sidebar,
   SidebarContent,
@@ -7,7 +7,6 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { LogoMark } from "@/components/brand/mirasaf-logo";
 import { AdminNavigation } from "@/features/admin/components/admin-navigation";
 import { AdminSidebarLabel } from "@/features/admin/components/admin-sidebar-label";
 import { AdminUserMenu } from "@/features/admin/components/admin-user-menu";
@@ -22,9 +21,7 @@ function AdminSidebar() {
         >
           <LogoMark tone="onDark" className="size-8" />
           <AdminSidebarLabel className="block">
-            <span className="block truncate text-[16px] font-bold text-white">
-              میراث افغانستان
-            </span>
+            <span className="block truncate text-[16px] font-bold text-white">میراث افغانستان</span>
             <span className="block truncate font-hand text-[15px] text-gold">پنل مدیریت</span>
           </AdminSidebarLabel>
         </Link>

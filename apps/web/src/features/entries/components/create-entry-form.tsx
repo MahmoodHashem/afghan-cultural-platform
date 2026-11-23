@@ -51,6 +51,7 @@ import {
 import { profileQueryKeys } from "@/features/profile/constants/profile-query-keys";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { formatPersianNumber } from "@/lib/utils/formatters";
+import { ContributionGuide } from "./contribution-guide";
 import {
   CreateEntryEditorHeader,
   CreateEntryEditorSection,
@@ -68,7 +69,6 @@ import {
   SourcesSection,
   YouTubeSection,
 } from "./create-entry-sections";
-import { ContributionGuide } from "./contribution-guide";
 import { CreateEntryWritingSurface } from "./create-entry-writing-surface";
 
 type CreateEntryFormProps = {

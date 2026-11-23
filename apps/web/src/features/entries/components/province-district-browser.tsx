@@ -68,10 +68,7 @@ function ProvinceDistrictBrowser({
         <div>
           <div className="flex items-center gap-2">
             <MapPinIcon className="size-5 text-brand" aria-hidden="true" />
-            <h2
-              id="districts-title"
-              className="text-[19px] leading-[2] font-bold text-ink"
-            >
+            <h2 id="districts-title" className="text-[19px] leading-[2] font-bold text-ink">
               ولسوالی‌های {provinceName}
             </h2>
           </div>

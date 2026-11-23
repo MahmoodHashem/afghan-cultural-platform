@@ -26,7 +26,10 @@
     "prisma:seed:districts": "tsx -r tsconfig-paths/register prisma/seed-districts.ts",
     "prisma:seed:taxonomy": "tsx -r tsconfig-paths/register prisma/seed-taxonomy.ts",
     "prisma:seed:province-descriptions": "tsx -r tsconfig-paths/register prisma/seed-province-descriptions.ts",
-    "prisma:seed:demo": "tsx -r tsconfig-paths/register prisma/seed-demo.ts"
+    "prisma:seed:demo": "tsx -r tsconfig-paths/register prisma/seed-demo.ts",
+    "prisma:check:db": "tsx -r tsconfig-paths/register prisma/check-db-connection.ts",
+    "prisma:ensure:heritage-taxonomy": "tsx -r tsconfig-paths/register prisma/ensure-heritage-taxonomy.ts",
+    "prisma:import:heritage": "tsx -r tsconfig-paths/register prisma/import-heritage-batch.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

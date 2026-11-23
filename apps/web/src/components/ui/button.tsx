@@ -28,11 +28,9 @@ const buttonVariants = cva(
         /** Primary pill (reference "btn-support"). */
         pill: "rounded-full bg-primary text-primary-foreground hover:bg-primary-hover",
         /** Outline call-to-action pill that fills red on hover; arrows nudge toward the reading direction. */
-        cta:
-          "rounded-full border-[color-mix(in_oklab,var(--brand)_42%,var(--line))] bg-transparent text-brand-ink hover:border-primary hover:bg-primary hover:text-primary-foreground hover:[&_svg]:-translate-x-1",
+        cta: "rounded-full border-[color-mix(in_oklab,var(--brand)_42%,var(--line))] bg-transparent text-brand-ink hover:border-primary hover:bg-primary hover:text-primary-foreground hover:[&_svg]:-translate-x-1",
         /** Section "see all" link pill. */
-        more:
-          "rounded-full border-line bg-surface text-brand-ink hover:border-brand hover:bg-brand-soft hover:[&_svg]:-translate-x-1",
+        more: "rounded-full border-line bg-surface text-brand-ink hover:border-brand hover:bg-brand-soft hover:[&_svg]:-translate-x-1",
         /** Ghost control for use on navy heroes and photos. */
         glass:
           "rounded-full bg-transparent text-white/92 shadow-[inset_0_0_0_1.5px_rgba(255,255,255,0.32)] hover:bg-white/12 hover:shadow-[inset_0_0_0_1.5px_rgba(255,255,255,0.55)] focus-visible:outline-white aria-pressed:bg-white/16",
@@ -40,12 +38,9 @@ const buttonVariants = cva(
       size: {
         default:
           "h-10 gap-1.5 px-4 has-data-[icon=inline-end]:pe-3 has-data-[icon=inline-start]:ps-3",
-        xs:
-          "h-6 gap-1 rounded-bubble-xs px-2 text-xs in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pe-1.5 has-data-[icon=inline-start]:ps-1.5 [&_svg:not([class*='size-'])]:size-3",
-        sm:
-          "h-8 gap-1 rounded-bubble-xs px-3 text-[12.5px] in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pe-2 has-data-[icon=inline-start]:ps-2 [&_svg:not([class*='size-'])]:size-3.5",
-        lg:
-          "h-11.5 gap-2 px-6 text-[14px] has-data-[icon=inline-end]:pe-5 has-data-[icon=inline-start]:ps-5",
+        xs: "h-6 gap-1 rounded-bubble-xs px-2 text-xs in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pe-1.5 has-data-[icon=inline-start]:ps-1.5 [&_svg:not([class*='size-'])]:size-3",
+        sm: "h-8 gap-1 rounded-bubble-xs px-3 text-[12.5px] in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pe-2 has-data-[icon=inline-start]:ps-2 [&_svg:not([class*='size-'])]:size-3.5",
+        lg: "h-11.5 gap-2 px-6 text-[14px] has-data-[icon=inline-end]:pe-5 has-data-[icon=inline-start]:ps-5",
         icon: "size-9",
         "icon-xs":
           "size-6 rounded-bubble-xs in-data-[slot=button-group]:rounded-lg [&_svg:not([class*='size-'])]:size-3",

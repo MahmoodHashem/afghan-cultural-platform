@@ -257,9 +257,7 @@ function ReportsEmpty() {
     <div className="flex min-h-64 items-center justify-center p-6 text-center">
       <div className="space-y-2">
         <h2 className="text-[16px] font-semibold">گزارشی پیدا نشد</h2>
-        <p className="text-[13px] text-copy">
-          فیلترها را تغییر دهید یا بعداً دوباره بررسی کنید.
-        </p>
+        <p className="text-[13px] text-copy">فیلترها را تغییر دهید یا بعداً دوباره بررسی کنید.</p>
       </div>
     </div>
   );

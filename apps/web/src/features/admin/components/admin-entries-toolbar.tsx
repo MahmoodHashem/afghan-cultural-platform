@@ -74,10 +74,7 @@ function AdminEntriesToolbar({
               htmlFor="admin-entry-search"
               className="flex h-10 min-w-0 flex-1 items-center gap-2 rounded-control border border-line bg-surface px-3 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/35"
             >
-              <MagnifyingGlassIcon
-                className="size-4 shrink-0 text-copy"
-                aria-hidden="true"
-              />
+              <MagnifyingGlassIcon className="size-4 shrink-0 text-copy" aria-hidden="true" />
               <span className="sr-only">جست‌وجوی مطلب</span>
               <Input
                 id="admin-entry-search"

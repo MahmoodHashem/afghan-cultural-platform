@@ -44,9 +44,7 @@ function FilterTabs({ ariaLabel, items, className }: FilterTabsProps) {
             aria-current={item.isActive ? "page" : undefined}
             className={cn(
               "relative inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-full px-4 text-[13px] font-bold outline-none transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
-              item.isActive
-                ? "text-primary-foreground"
-                : "text-copy hover:text-brand-ink",
+              item.isActive ? "text-primary-foreground" : "text-copy hover:text-brand-ink",
             )}
           >
             {item.isActive ? (

@@ -80,10 +80,7 @@ function EntryComments({ entryId, initialComments, renderedAt }: EntryCommentsPr
             <ChatBubbleLeftRightIcon className="size-5" aria-hidden="true" />
           </span>
           <div>
-            <h2
-              id="entry-comments-title"
-              className="text-[25px] font-bold text-ink sm:text-[28px]"
-            >
+            <h2 id="entry-comments-title" className="text-[25px] font-bold text-ink sm:text-[28px]">
               دیدگاه‌ها
             </h2>
             <p className="mt-1 text-[13px] text-copy" aria-live="polite">

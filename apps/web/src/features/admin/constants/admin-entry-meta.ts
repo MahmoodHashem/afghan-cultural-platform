@@ -4,7 +4,11 @@ const adminEntryStatusMeta: Record<
   AdminEntryStatus,
   { label: string; className: string; shortLabel: string }
 > = {
-  DRAFT: { label: "پیش‌نویس", shortLabel: "پیش‌نویس", className: "border-line bg-line-soft text-copy" },
+  DRAFT: {
+    label: "پیش‌نویس",
+    shortLabel: "پیش‌نویس",
+    className: "border-line bg-line-soft text-copy",
+  },
   PENDING_REVIEW: {
     label: "در انتظار بررسی",
     shortLabel: "در انتظار",

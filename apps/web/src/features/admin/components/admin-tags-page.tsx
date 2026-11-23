@@ -83,9 +83,7 @@ function AdminTagsPage() {
             </span>
             <div className="space-y-1">
               <h2 className="text-[16px] font-semibold">فهرست برچسب‌ها بارگذاری نشد</h2>
-              <p className="text-[13px] text-copy">
-                ارتباط با سرور برقرار نشد. دوباره تلاش کنید.
-              </p>
+              <p className="text-[13px] text-copy">ارتباط با سرور برقرار نشد. دوباره تلاش کنید.</p>
             </div>
             <Button type="button" variant="outline" onClick={() => void tagsQuery.refetch()}>
               تلاش دوباره

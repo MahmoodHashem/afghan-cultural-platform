@@ -158,7 +158,7 @@ Arbitrary bubble radii such as `rounded-[28px_28px_28px_8px]` are used for very 
 | `PageHero` | Navy band for inner pages: breadcrumb (`tone="onDark"`), handwritten eyebrow, title, description, actions, optional aside, faint calligraphy, `overlap` for matted figures |
 | `SectionHead` | Section title with the red bar, optional calligraphic word behind it, optional "see all" pill; `tone="band"` for the red band, `size="prose"` inside articles |
 | `EmptyState` | Dashed box with an arched niche + lamp drawing, one clear action |
-| `StatusPage` | Full-height navy page for 404 and errors |
+| `StatusPage` | Full-height navy page for 404 and errors; the logo bubbles as a scene (`illustration="missing"`: one bubble drifted away, `"error"`: bubbles pulled apart) |
 | `PageHeroSkeleton`, `EntryGridSkeleton` | Loading states matching the hero and card grid |
 | `TiptapDocument` | Reading typography: red bar on `h2`, reference-style blockquote, dashed `hr` |
 | `RichTextEditor` | Writing surface; selection toolbar is navy |

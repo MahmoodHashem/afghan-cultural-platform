@@ -116,9 +116,7 @@ function ReportsQueue() {
               </div>
               <p className="line-clamp-1 text-[13px] text-copy">{report.explanation}</p>
             </div>
-            <span className="text-[13px] text-copy">
-              {reportReasonLabels[report.reason]}
-            </span>
+            <span className="text-[13px] text-copy">{reportReasonLabels[report.reason]}</span>
             <Meta icon={<CalendarDaysIcon />} text={formatPersianDate(report.createdAt)} />
             <Link
               href={`/moderator/reports/${report.id}`}
@@ -164,14 +162,10 @@ function ModerationHistory() {
                     {item.entry?.title ?? "محتوای حذف‌شده یا در دسترس‌نبودنی"}
                   </p>
                 </div>
-                <time className="text-[12px] text-copy">
-                  {formatPersianDate(item.createdAt)}
-                </time>
+                <time className="text-[12px] text-copy">{formatPersianDate(item.createdAt)}</time>
               </div>
               {item.actor ? (
-                <p className="mt-3 text-[13px] text-copy">
-                  انجام‌دهنده: {item.actor.displayName}
-                </p>
+                <p className="mt-3 text-[13px] text-copy">انجام‌دهنده: {item.actor.displayName}</p>
               ) : null}
             </article>
           </li>

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { BUBBLE_PATH } from "@/components/brand/mirasaf-logo";
 import { cn } from "@/lib/utils";
 
 type StatusPageProps = {
@@ -12,12 +13,14 @@ type StatusPageProps = {
   children?: ReactNode;
   /** Calligraphic word written large behind the content (decorative). */
   word?: string;
+  /** `missing` for 404 (one bubble drifted away), `error` for failures (bubbles pulled apart). */
+  illustration?: "missing" | "error";
   className?: string;
 };
 
 /**
- * Full-height navy band for 404 and error states: an arched niche with a lamp, a short message
- * and a few clear ways forward.
+ * Full-height navy band for 404 and error states: the logo's story bubbles told as a small
+ * scene, a short message and a few clear ways forward.
  */
 function StatusPage({
   code,
@@ -27,6 +30,7 @@ function StatusPage({
   actions,
   children,
   word,
+  illustration = "missing",
   className,
 }: StatusPageProps) {
   return (
@@ -55,7 +59,7 @@ function StatusPage({
         </div>
 
         <div className="relative mx-auto hidden w-full max-w-xs lg:block" aria-hidden="true">
-          <NicheLamp />
+          <BubbleScene variant={illustration} />
           {code ? (
             <span className="absolute inset-x-0 bottom-10 text-center font-hand text-[64px] leading-none text-gold/90">
               {code}
@@ -67,29 +71,70 @@ function StatusPage({
   );
 }
 
-/** Line drawing of an arched niche (mihrab-like alcove) with a hanging lamp. */
-function NicheLamp() {
+/** Bright tile colours of the logo, for use on the navy band. */
+const TILE_COLOURS = ["#6b8fd0", "#2bb3a3", "#ef4257", "#e7b458"] as const;
+
+/**
+ * The logo's four story bubbles, told as a small scene:
+ * - `missing` (404): three bubbles in place, the fourth drifted away, its spot left as an outline.
+ * - `error`: all four pulled slightly apart, waiting to come back together.
+ */
+function BubbleScene({ variant }: { variant: "missing" | "error" }) {
+  const spread = variant === "error" ? 9 : 0;
+  const offsets = [
+    [-spread, -spread],
+    [spread, -spread],
+    [spread, spread],
+    [-spread, spread],
+  ] as const;
+
   return (
-    <svg
-      viewBox="0 0 240 320"
-      className="w-full text-white/30"
-      fill="none"
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M20 310 V140 C20 70 70 20 120 20 C170 20 220 70 220 140 V310" strokeWidth="1.5" />
-      <path d="M40 310 V146 C40 88 80 44 120 44 C160 44 200 88 200 146 V310" strokeWidth="1" />
-      <path d="M8 310 H232" strokeWidth="1.5" />
-      <path d="M120 44 V96" strokeWidth="1" />
-      <path
-        d="M104 96 H136 L130 124 C128 132 112 132 110 124 Z"
-        className="text-gold"
-        stroke="currentColor"
-        strokeWidth="1.5"
-      />
-      <circle cx="120" cy="112" r="4" className="fill-gold/60" stroke="none" />
-      <path d="M100 150 C110 140 130 140 140 150" className="text-gold/50" stroke="currentColor" />
+    <svg viewBox="0 0 240 300" className="w-full overflow-visible">
+      <g transform="translate(36 28) scale(1.68)">
+        {TILE_COLOURS.map((colour, index) => {
+          const [x, y] = offsets[index];
+          const isDrifted = variant === "missing" && index === 3;
+
+          return isDrifted ? (
+            <path
+              key={colour}
+              d={BUBBLE_PATH}
+              transform={`rotate(${index * 90} 50 50)`}
+              fill="none"
+              stroke="#ffffff"
+              strokeOpacity="0.35"
+              strokeWidth="1.2"
+              strokeDasharray="3 3"
+            />
+          ) : (
+            <path
+              key={colour}
+              d={BUBBLE_PATH}
+              fill={colour}
+              transform={`translate(${x} ${y}) rotate(${index * 90} 50 50)`}
+            />
+          );
+        })}
+
+        {variant === "missing" ? (
+          <g transform="translate(-17 24) rotate(-14 27 73)">
+            <path d={BUBBLE_PATH} fill={TILE_COLOURS[3]} transform="rotate(270 50 50)" />
+          </g>
+        ) : (
+          <circle
+            cx="50"
+            cy="50"
+            r="44"
+            fill="none"
+            stroke="#ffffff"
+            strokeOpacity="0.25"
+            strokeWidth="0.8"
+            strokeDasharray="2 4"
+          />
+        )}
+
+        <circle cx="50" cy="50" r="4.5" fill="#ffffff" opacity={variant === "error" ? 0.6 : 1} />
+      </g>
     </svg>
   );
 }

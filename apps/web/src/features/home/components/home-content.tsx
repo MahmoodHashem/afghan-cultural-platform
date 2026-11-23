@@ -85,8 +85,7 @@ const contributionSteps: { title: string; description: string; icon: HeroIcon }[
   },
   {
     title: "ماندگار می‌شود",
-    description:
-      "مطلب منتشر می‌شود، دیگران می‌خوانند و کامل‌ترش می‌کنند و برای نسل‌های بعد می‌ماند.",
+    description: "مطلب منتشر می‌شود، دیگران می‌خوانند و کامل‌ترش می‌کنند و برای نسل‌های بعد می‌ماند.",
     icon: GlobeAsiaAustraliaIcon,
   },
 ];
@@ -112,8 +111,7 @@ function HomeContent({ data }: { data: HomeData }) {
             action={{ href: "/explore", label: "همه‌ی مطالب" }}
           />
           <p className="mt-3 max-w-[60ch] text-[14.5px] leading-[2] text-copy">
-            هر کدام از این مطالب را کسی نوشته که چیزی از فرهنگ سرزمینش می‌دانست و نخواست فراموش
-            شود.
+            هر کدام از این مطالب را کسی نوشته که چیزی از فرهنگ سرزمینش می‌دانست و نخواست فراموش شود.
           </p>
 
           <div className="mt-8 grid gap-5 lg:grid-cols-[1.25fr_0.75fr]">
@@ -194,9 +192,9 @@ function KnowledgeMattersSection() {
         <div className="space-y-4 lg:sticky lg:top-28 lg:self-start">
           <SectionHead id="home-knowledge" title="آنچه شما می‌دانید، میراث است" word="دانش" />
           <p className="text-[15px] leading-[2.1] text-copy">
-            بخش بزرگی از فرهنگ افغانستان در کتاب‌ها نیست؛ در یاد مردم است. در قصه‌های مادربزرگ‌ها،
-            در دست‌های یک استاد قالین‌باف و در نام کوچه‌ها و قلعه‌های هر ده. اگر نوشته نشود، با
-            رفتن هر نسل کم‌رنگ‌تر می‌شود.
+            بخش بزرگی از فرهنگ افغانستان در کتاب‌ها نیست؛ در یاد مردم است. در قصه‌های مادربزرگ‌ها، در
+            دست‌های یک استاد قالین‌باف و در نام کوچه‌ها و قلعه‌های هر ده. اگر نوشته نشود، با رفتن هر نسل
+            کم‌رنگ‌تر می‌شود.
           </p>
           <p className="text-[15px] leading-[2.1] text-copy">
             میراث تنها جایی برای خواندن نیست؛ جایی است که هر کس، از هر ولایت، می‌تواند سهمی از این
@@ -390,8 +388,8 @@ function ProvincesSection({ provinces }: { provinces: TaxonomyItem[] }) {
         action={{ href: "/provinces", label: "همه‌ی ولایت‌ها" }}
       />
       <p className="mt-3 max-w-[62ch] text-[14.5px] leading-[2] text-copy">
-        فرهنگ افغانستان را ولایت به ولایت ببینید. ولایت شما هنوز کم‌روایت است؟ نخستین روایت آن را
-        شما بنویسید.
+        فرهنگ افغانستان را ولایت به ولایت ببینید. ولایت شما هنوز کم‌روایت است؟ نخستین روایت آن را شما
+        بنویسید.
       </p>
 
       {provinces.length > 0 ? (
@@ -460,8 +458,8 @@ function NationalScopeSection({ entries }: { entries: PublicEntryCard[] }) {
         <div className="space-y-4">
           <SectionHead id="home-national" tone="band" title="فرهنگ مشترک افغانستان" />
           <p className="text-[15px] leading-[2.1] text-white/85">
-            بعضی رسم‌ها، چهره‌ها و روایت‌ها از مرز یک ولایت فراتر می‌روند و همه‌ی مردم افغانستان
-            آن‌ها را می‌شناسند. این‌ها رشته‌هایی‌اند که ما را به هم وصل می‌کنند.
+            بعضی رسم‌ها، چهره‌ها و روایت‌ها از مرز یک ولایت فراتر می‌روند و همه‌ی مردم افغانستان آن‌ها را
+            می‌شناسند. این‌ها رشته‌هایی‌اند که ما را به هم وصل می‌کنند.
           </p>
           <Link
             href="/explore?geographicScope=NATIONAL"
@@ -506,8 +504,8 @@ function NationalScopeSection({ entries }: { entries: PublicEntryCard[] }) {
           </ul>
         ) : (
           <p className="rounded-[18px_18px_18px_6px] border border-dashed border-white/30 p-6 text-[14px] leading-[2] text-white/85">
-            هنوز مطلب سراسری منتشر نشده است. رسمی را می‌شناسید که همه‌ی افغانستان با آن آشناست؟
-            نخستین کسی باشید که آن را ثبت می‌کند.
+            هنوز مطلب سراسری منتشر نشده است. رسمی را می‌شناسید که همه‌ی افغانستان با آن آشناست؟ نخستین
+            کسی باشید که آن را ثبت می‌کند.
           </p>
         )}
       </div>
@@ -561,8 +559,8 @@ function LatestEntriesSection({ entries }: { entries: PublicEntryCard[] }) {
         action={{ href: "/explore?sort=recentlyUpdated", label: "دیدن همه" }}
       />
       <p className="mt-3 max-w-[62ch] text-[14.5px] leading-[2] text-copy">
-        مطالبی که به‌تازگی ویرایش و کامل‌تر شده‌اند. دانش جمعی هیچ‌وقت تمام نمی‌شود؛ هر کسی
-        می‌تواند نکته‌ای به آن بیفزاید.
+        مطالبی که به‌تازگی ویرایش و کامل‌تر شده‌اند. دانش جمعی هیچ‌وقت تمام نمی‌شود؛ هر کسی می‌تواند
+        نکته‌ای به آن بیفزاید.
       </p>
 
       {entries.length > 0 ? (
@@ -607,8 +605,8 @@ function ContributionCallout({ contentTypes }: { contentTypes: TaxonomyItem[] })
               حافظه‌ی یک ملت را همه‌ی ما با هم می‌نویسیم
             </h2>
             <p className="max-w-[56ch] text-[15px] leading-[2.1] text-white/80">
-              کودکانی که فردا می‌خواهند بدانند پدران و مادران‌شان چگونه زندگی می‌کردند، چه
-              می‌خواندند و چه می‌ساختند، پاسخ را در نوشته‌های امروز ما پیدا می‌کنند.
+              کودکانی که فردا می‌خواهند بدانند پدران و مادران‌شان چگونه زندگی می‌کردند، چه می‌خواندند و
+              چه می‌ساختند، پاسخ را در نوشته‌های امروز ما پیدا می‌کنند.
             </p>
             <div className="flex flex-wrap gap-3 pt-1">
               <Link

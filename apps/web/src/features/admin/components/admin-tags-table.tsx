@@ -50,9 +50,7 @@ function AdminTagsTable({
         tagColumnHelper.accessor("normalizedName", {
           header: "نام یکسان‌شده",
           cell: ({ row }) => (
-            <span className="truncate text-[12px] text-copy">
-              {row.original.normalizedName}
-            </span>
+            <span className="truncate text-[12px] text-copy">{row.original.normalizedName}</span>
           ),
         }),
         tagColumnHelper.accessor("slug", {
@@ -120,9 +118,7 @@ function AdminTagsTable({
             <div className="flex min-h-64 items-center justify-center px-6 text-center">
               <div className="space-y-2">
                 <h2 className="text-[16px] font-semibold">برچسبی پیدا نشد</h2>
-                <p className="text-[13px] text-copy">
-                  عبارت جست‌وجو یا فیلترها را تغییر دهید.
-                </p>
+                <p className="text-[13px] text-copy">عبارت جست‌وجو یا فیلترها را تغییر دهید.</p>
               </div>
             </div>
           ) : null}
@@ -231,9 +227,7 @@ function TagStatusBadge({ active }: { active: boolean }) {
   return (
     <Badge
       variant="outline"
-      className={
-        active ? "border-brand/20 bg-brand-soft text-brand-ink" : "bg-line-soft text-copy"
-      }
+      className={active ? "border-brand/20 bg-brand-soft text-brand-ink" : "bg-line-soft text-copy"}
     >
       {active ? "فعال" : "غیرفعال"}
     </Badge>

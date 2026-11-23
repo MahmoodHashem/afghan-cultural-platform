@@ -149,9 +149,7 @@ export default function FaqPage() {
           </ul>
           <div className="mt-6 hidden rounded-[18px_18px_18px_6px] bg-tint-navy p-5 lg:block">
             <p className="text-[14px] font-bold text-ink">پاسخ خود را پیدا نکردید؟</p>
-            <p className="mt-1 text-[13px] leading-[1.9] text-copy">
-              پرسش خود را برای ما بفرستید.
-            </p>
+            <p className="mt-1 text-[13px] leading-[1.9] text-copy">پرسش خود را برای ما بفرستید.</p>
             <Link
               href="/contact"
               className="mt-3 inline-block text-[13px] font-bold text-brand-ink underline decoration-brand/30 underline-offset-4 hover:decoration-brand"

@@ -65,9 +65,7 @@ function AdminUserStatusDialog({
               disabled={pending}
               className="min-h-28 resize-none"
             />
-            <p className="text-[12px] text-copy">
-              این توضیح در تاریخچه مدیریتی حساب ثبت می‌شود.
-            </p>
+            <p className="text-[12px] text-copy">این توضیح در تاریخچه مدیریتی حساب ثبت می‌شود.</p>
           </div>
         ) : null}
 

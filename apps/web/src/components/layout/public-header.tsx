@@ -11,9 +11,9 @@ import {
   PlusIcon as StaticPlusIcon,
   SunIcon,
 } from "@heroicons/react/24/outline";
-import { useTheme } from "next-themes";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useTheme } from "next-themes";
 import { type SubmitEvent, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Logo } from "@/components/brand/mirasaf-logo";
@@ -137,10 +137,7 @@ function PublicHeader({ variant = "solid" }: PublicHeaderProps) {
         isCompact && isScrolled ? "border-transparent shadow-header" : null,
       )}
     >
-      <nav
-        className="content-container relative grid h-16.5 items-center"
-        aria-label="ناوبری اصلی"
-      >
+      <nav className="content-container relative grid h-16.5 items-center" aria-label="ناوبری اصلی">
         <div
           className={cn(
             "col-start-1 row-start-1 flex min-w-0 items-center gap-6 transition-all duration-300 ease-out",
@@ -413,9 +410,7 @@ function MobileNavigation({ isCompact }: { isCompact: boolean }) {
                       </AvatarFallback>
                     </Avatar>
                     <div className="min-w-0">
-                      <p className="truncate text-[14px] font-bold text-ink">
-                        {user.displayName}
-                      </p>
+                      <p className="truncate text-[14px] font-bold text-ink">{user.displayName}</p>
                       <p className="truncate text-[12px] text-faint" dir="ltr">
                         {user.email}
                       </p>
@@ -424,10 +419,7 @@ function MobileNavigation({ isCompact }: { isCompact: boolean }) {
                   <Link
                     href="/entries/new"
                     onClick={closeMenu}
-                    className={cn(
-                      buttonVariants({ variant: "pill" }),
-                      "h-11 w-full",
-                    )}
+                    className={cn(buttonVariants({ variant: "pill" }), "h-11 w-full")}
                   >
                     <StaticPlusIcon className="size-4" aria-hidden="true" />
                     افزودن مطلب
@@ -495,10 +487,7 @@ function MobileNavigation({ isCompact }: { isCompact: boolean }) {
                   <Link
                     href="/register"
                     onClick={closeMenu}
-                    className={cn(
-                      buttonVariants({ variant: "pill" }),
-                      "h-11 w-full",
-                    )}
+                    className={cn(buttonVariants({ variant: "pill" }), "h-11 w-full")}
                   >
                     ثبت‌نام
                   </Link>
@@ -626,11 +615,7 @@ function ProfileMenu({ user, mobile = false }: { user: SafeUser; mobile?: boolea
           />
         ) : null}
       </DropdownMenuTrigger>
-      <DropdownMenuContent
-        align="end"
-        sideOffset={12}
-        className="w-64 p-2"
-      >
+      <DropdownMenuContent align="end" sideOffset={12} className="w-64 p-2">
         <DropdownMenuGroup>
           <DropdownMenuLabel className="px-3 py-3">
             <p className="truncate text-[14px] font-bold text-ink">{user.displayName}</p>
@@ -708,12 +693,8 @@ function LogoutConfirmationDialog({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader className="place-items-start text-start">
-          <AlertDialogTitle>
-            از حساب خارج می‌شوید؟
-          </AlertDialogTitle>
-          <AlertDialogDescription>
-            هر وقت خواستید می‌توانید دوباره وارد شوید.
-          </AlertDialogDescription>
+          <AlertDialogTitle>از حساب خارج می‌شوید؟</AlertDialogTitle>
+          <AlertDialogDescription>هر وقت خواستید می‌توانید دوباره وارد شوید.</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="sm:justify-start">
           <AlertDialogCancel>انصراف</AlertDialogCancel>

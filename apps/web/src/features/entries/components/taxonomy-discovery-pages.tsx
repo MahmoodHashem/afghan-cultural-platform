@@ -103,8 +103,7 @@ const categoryDescriptions: Record<string, string> = {
   "poetry-and-literature": "شاعران، نویسندگان، آثار ادبی و ادبیات زبان‌های مختلف افغانستان.",
   "oral-stories": "قصه‌ها، خاطره‌ها و روایت‌هایی که سینه‌به‌سینه نقل شده‌اند.",
   "festivals-and-ceremonies": "جشن‌ها، مراسم و آیین‌های جمعی در بخش‌های مختلف افغانستان.",
-  "languages-and-expressions":
-    "زبان‌ها، گویش‌ها، اصطلاحات و تعبیرهای رایج در مناطق مختلف افغانستان.",
+  "languages-and-expressions": "زبان‌ها، گویش‌ها، اصطلاحات و تعبیرهای رایج در مناطق مختلف افغانستان.",
   architecture: "سبک‌های معماری، شیوه‌های ساخت و جزئیات بناهای بومی و تاریخی.",
   "cultural-objects": "اشیا و ابزارهایی که در زندگی و فرهنگ مردم کاربرد یا معنای ویژه دارند.",
   "local-games": "بازی‌ها و سرگرمی‌های محلی در مناطق مختلف افغانستان.",
@@ -271,8 +270,7 @@ function ProvinceDetailContent({
               selectedDistrictName
                 ? {
                     title: `هنوز مطلبی درباره ولسوالی ${selectedDistrictName} منتشر نشده است.`,
-                    description:
-                      `اگر درباره فرهنگ و تاریخ ولسوالی ${selectedDistrictName} چیزی می‌دانید، می‌توانید آن را ثبت کنید.`,
+                    description: `اگر درباره فرهنگ و تاریخ ولسوالی ${selectedDistrictName} چیزی می‌دانید، می‌توانید آن را ثبت کنید.`,
                   }
                 : undefined
             }

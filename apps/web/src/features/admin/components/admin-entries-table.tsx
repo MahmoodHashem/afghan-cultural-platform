@@ -69,18 +69,14 @@ function AdminEntriesTable({
           id: "category",
           header: "موضوع",
           cell: ({ row }) => (
-            <span className="truncate text-[12px] text-copy">
-              {row.original.category.name}
-            </span>
+            <span className="truncate text-[12px] text-copy">{row.original.category.name}</span>
           ),
         }),
         helper.display({
           id: "location",
           header: "محدوده",
           cell: ({ row }) => (
-            <span className="truncate text-[12px] text-copy">
-              {entryLocation(row.original)}
-            </span>
+            <span className="truncate text-[12px] text-copy">{entryLocation(row.original)}</span>
           ),
         }),
         helper.accessor("viewCount", {
@@ -124,9 +120,7 @@ function AdminEntriesTable({
             <div className="flex min-h-64 items-center justify-center p-6 text-center">
               <div className="space-y-2">
                 <h2 className="text-[16px] font-semibold">مطلبی پیدا نشد</h2>
-                <p className="text-[13px] text-copy">
-                  عبارت جست‌وجو یا فیلترها را تغییر دهید.
-                </p>
+                <p className="text-[13px] text-copy">عبارت جست‌وجو یا فیلترها را تغییر دهید.</p>
               </div>
             </div>
           ) : null}
@@ -204,12 +198,8 @@ function AdminEntriesTable({
                       </div>
                       <div className="flex flex-wrap items-center gap-2">
                         <AdminEntryStatusBadge status={entry.status} />
-                        <span className="text-[12px] text-copy">
-                          {entry.category.name}
-                        </span>
-                        <span className="text-[12px] text-copy">
-                          {entryLocation(entry)}
-                        </span>
+                        <span className="text-[12px] text-copy">{entry.category.name}</span>
+                        <span className="text-[12px] text-copy">{entryLocation(entry)}</span>
                       </div>
                     </motion.article>
                   ))}
