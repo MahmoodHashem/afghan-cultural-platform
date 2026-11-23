@@ -156,12 +156,8 @@ function LoginForm({
 
       <OAuthButtons
         googleLabel="ورود با گوگل"
-        facebookLabel="ورود با فیسبوک"
         onGoogleClick={() =>
           redirectToOAuthProvider("google", nextPath ?? searchParams.get("next"))
-        }
-        onFacebookClick={() =>
-          redirectToOAuthProvider("facebook", nextPath ?? searchParams.get("next"))
         }
       />
 

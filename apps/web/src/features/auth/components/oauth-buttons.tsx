@@ -1,23 +1,16 @@
 import type { SimpleIcon } from "simple-icons";
-import { siFacebook, siGoogle } from "simple-icons";
+import { siGoogle } from "simple-icons";
 
 import { Button } from "@/components/ui/button";
 
 type OAuthButtonsProps = {
   googleLabel: string;
-  facebookLabel: string;
   onGoogleClick?: () => void;
-  onFacebookClick?: () => void;
 };
 
-function OAuthButtons({
-  googleLabel,
-  facebookLabel,
-  onGoogleClick,
-  onFacebookClick,
-}: OAuthButtonsProps) {
+function OAuthButtons({ googleLabel, onGoogleClick }: OAuthButtonsProps) {
   return (
-    <div className="grid gap-3 sm:grid-cols-2">
+    <div>
       <Button
         type="button"
         variant="outline"
@@ -27,16 +20,6 @@ function OAuthButtons({
       >
         <BrandIcon icon={siGoogle} />
         <span>{googleLabel}</span>
-      </Button>
-      <Button
-        type="button"
-        variant="outline"
-        onClick={onFacebookClick}
-        className="h-11.5 justify-center gap-3 rounded-control border-line bg-surface text-ink hover:border-brand/30 hover:bg-paper"
-        aria-label={facebookLabel}
-      >
-        <BrandIcon icon={siFacebook} />
-        <span>{facebookLabel}</span>
       </Button>
     </div>
   );

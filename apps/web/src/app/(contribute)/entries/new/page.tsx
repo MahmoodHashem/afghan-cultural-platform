@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { PageTransition } from "@/components/layout/page-transition";
-import { RequireAuth, RequireVerifiedEmail } from "@/features/auth/components/route-gates";
+import { RequireAuth } from "@/features/auth/components/route-gates";
 import { getContributionTaxonomyData } from "@/features/entries/api/contribution-taxonomy-api";
 import { CreateEntryForm } from "@/features/entries/components/create-entry-form";
 
@@ -18,11 +18,9 @@ export default async function NewEntryPage() {
 
   return (
     <RequireAuth>
-      <RequireVerifiedEmail>
-        <PageTransition>
-          <CreateEntryForm taxonomy={taxonomy} />
-        </PageTransition>
-      </RequireVerifiedEmail>
+      <PageTransition>
+        <CreateEntryForm taxonomy={taxonomy} />
+      </PageTransition>
     </RequireAuth>
   );
 }

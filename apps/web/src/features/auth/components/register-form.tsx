@@ -236,12 +236,8 @@ function RegisterForm({
 
       <OAuthButtons
         googleLabel="ثبت‌نام با گوگل"
-        facebookLabel="ثبت‌نام با فیسبوک"
         onGoogleClick={() =>
           redirectToOAuthProvider("google", nextPath ?? searchParams.get("next"))
-        }
-        onFacebookClick={() =>
-          redirectToOAuthProvider("facebook", nextPath ?? searchParams.get("next"))
         }
       />
 

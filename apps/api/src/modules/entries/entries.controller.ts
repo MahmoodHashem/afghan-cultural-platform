@@ -30,7 +30,6 @@ import { Throttle } from "@nestjs/throttler";
 import { memoryStorage } from "multer";
 
 import { CurrentUser } from "../auth/decorators/current-user.decorator";
-import { RequireVerifiedEmail } from "../auth/decorators/require-verified-email.decorator";
 import type { AuthenticatedUser } from "../auth/types/authenticated-user.type";
 import { CreateEntryDraftDto, UpdateEntryDraftDto } from "./dto/create-entry-draft.dto";
 import {
@@ -88,7 +87,6 @@ import { YouTubeMetadataService } from "./youtube-metadata.service";
   UpsertEntryYouTubeVideoDto,
   YouTubeMetadataRequestDto,
 )
-@RequireVerifiedEmail()
 @Controller()
 class EntriesController {
   constructor(
@@ -119,7 +117,7 @@ class EntriesController {
   @ApiOperation({
     summary: "Create a Cultural Entry draft",
     description:
-      "Creates an authenticated user's draft. Email verification is required. Submission, publishing, media, sources, tags, and moderation are not handled by this endpoint.",
+      "Creates an authenticated user's draft. Submission, publishing, media, sources, tags, and moderation are not handled by this endpoint.",
   })
   @ApiBody({ type: CreateEntryDraftDto })
   @ApiOkResponse({ type: EntryResponseDto })
@@ -129,8 +127,7 @@ class EntriesController {
   })
   @ApiUnauthorizedResponse({ description: "Missing or invalid bearer token" })
   @ApiForbiddenResponse({
-    description:
-      "AUTH_EMAIL_VERIFICATION_REQUIRED, AUTH_ACCOUNT_SUSPENDED, or ENTRY_INVALID_STATUS",
+    description: "AUTH_ACCOUNT_SUSPENDED or ENTRY_INVALID_STATUS",
   })
   createDraft(@CurrentUser() user: AuthenticatedUser, @Body() body: CreateEntryDraftDto) {
     return this.entriesService.createDraft(user, body);

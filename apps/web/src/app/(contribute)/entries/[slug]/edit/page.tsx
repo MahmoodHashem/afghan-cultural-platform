@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { PageTransition } from "@/components/layout/page-transition";
-import { RequireAuth, RequireVerifiedEmail } from "@/features/auth/components/route-gates";
+import { RequireAuth } from "@/features/auth/components/route-gates";
 import { getContributionTaxonomyData } from "@/features/entries/api/contribution-taxonomy-api";
 import { CreateEntryForm } from "@/features/entries/components/create-entry-form";
 
@@ -27,15 +27,13 @@ export default async function EditEntryPage({ params, searchParams }: EditEntryP
 
   return (
     <RequireAuth>
-      <RequireVerifiedEmail>
-        <PageTransition>
-          <CreateEntryForm
-            initialDraftId={slug}
-            revisionMode={mode === "revision"}
-            taxonomy={taxonomy}
-          />
-        </PageTransition>
-      </RequireVerifiedEmail>
+      <PageTransition>
+        <CreateEntryForm
+          initialDraftId={slug}
+          revisionMode={mode === "revision"}
+          taxonomy={taxonomy}
+        />
+      </PageTransition>
     </RequireAuth>
   );
 }

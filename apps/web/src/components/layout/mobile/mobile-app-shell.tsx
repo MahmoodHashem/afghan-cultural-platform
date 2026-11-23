@@ -29,7 +29,7 @@ import {
 import { useMobileChromeVisibility } from "@/components/layout/mobile/use-mobile-chrome-visibility";
 import { ProfileMenu, PUBLIC_HEADER_CONTEXT_EVENT } from "@/components/layout/public-header";
 import { cn } from "@/lib/utils";
-import { type AuthSession, type SafeUser, useAuthStore } from "@/stores/auth-store";
+import { type SafeUser, useAuthStore } from "@/stores/auth-store";
 
 type HeaderContext = {
   title: string;
@@ -128,12 +128,7 @@ function MobileAppShell() {
       return;
     }
 
-    const canCreate = user?.status === "ACTIVE" && Boolean(user.emailVerified);
-    if (
-      status === "authenticated" &&
-      user?.status === "ACTIVE" &&
-      (item.key !== "create" || canCreate)
-    ) {
+    if (status === "authenticated" && user?.status === "ACTIVE") {
       return;
     }
 
@@ -141,9 +136,8 @@ function MobileAppShell() {
     openAuth(item);
   }
 
-  function handleAuthenticated(session: AuthSession) {
+  function handleAuthenticated() {
     if (!pendingItem) return;
-    if (pendingItem.key === "create" && !session.user.emailVerified) return;
     const destination = pendingItem.href;
     closeAuth();
     router.push(destination);
@@ -429,9 +423,6 @@ function getChromeTransition(reducedMotion: boolean) {
 
 function getProtectedDestinationDescription(key: MobileNavItem["key"], reason: ShellAuthReason) {
   if (reason === "suspended") return "در حال حاضر امکان انجام این کار وجود ندارد.";
-  if (reason === "unverified" && key === "create") {
-    return "برای افزودن مطلب، ابتدا ایمیل خود را تأیید کنید.";
-  }
   if (key === "create") return "برای افزودن مطلب وارد حساب خود شوید.";
   return "برای دیدن حساب کاربری خود وارد شوید.";
 }

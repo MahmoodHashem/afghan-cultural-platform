@@ -6,8 +6,10 @@ import { ReplaceRevisionTagsDto } from "./dto/entry-revision.dto";
 import { EntryRevisionsController } from "./entry-revisions.controller";
 
 describe("EntryRevisionsController authorization metadata", () => {
-  it("requires a verified account for every author revision route", () => {
-    expect(Reflect.getMetadata(REQUIRE_VERIFIED_EMAIL_KEY, EntryRevisionsController)).toBe(true);
+  it("allows authenticated exhibition users to revise without verified email", () => {
+    expect(
+      Reflect.getMetadata(REQUIRE_VERIFIED_EMAIL_KEY, EntryRevisionsController),
+    ).toBeUndefined();
   });
 
   it("keeps request DTO classes available to runtime validation", () => {

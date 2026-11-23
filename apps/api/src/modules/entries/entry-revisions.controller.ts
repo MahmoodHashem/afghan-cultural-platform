@@ -16,7 +16,6 @@ import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiTags } from "@nestjs/swagg
 import { memoryStorage } from "multer";
 
 import { CurrentUser } from "../auth/decorators/current-user.decorator";
-import { RequireVerifiedEmail } from "../auth/decorators/require-verified-email.decorator";
 import type { AuthenticatedUser } from "../auth/types/authenticated-user.type";
 import type { UpdateEntryDraftDto } from "./dto/create-entry-draft.dto";
 import type { UpdateEntryImageMetadataDto, UploadEntryImageDto } from "./dto/entry-images.dto";
@@ -27,7 +26,6 @@ import { EntryRevisionsService } from "./entry-revisions.service";
 
 @ApiTags("Entry revisions")
 @ApiBearerAuth()
-@RequireVerifiedEmail()
 @Controller("me/entries/:entryId/revision")
 class EntryRevisionsController {
   constructor(

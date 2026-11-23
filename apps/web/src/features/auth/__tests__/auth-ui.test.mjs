@@ -288,7 +288,7 @@ test("login page renders required fields and links", () => {
   assert.match(loginForm, /رمز عبور/);
   assert.match(loginForm, /\/forgot-password/);
   assert.match(loginForm, /ورود با گوگل/);
-  assert.match(loginForm, /ورود با فیسبوک/);
+  assert.doesNotMatch(loginForm, /ورود با فیسبوک/);
   assert.match(loginForm, /createRegisterPath/);
 });
 
@@ -301,7 +301,7 @@ test("register page renders required fields and links", () => {
   assert.match(registerForm, /\/terms/);
   assert.match(registerForm, /\/privacy/);
   assert.match(registerForm, /ثبت‌نام با گوگل/);
-  assert.match(registerForm, /ثبت‌نام با فیسبوک/);
+  assert.doesNotMatch(registerForm, /ثبت‌نام با فیسبوک/);
   assert.match(registerForm, /createLoginPath/);
 });
 
@@ -343,9 +343,9 @@ test("login and register use the shared brand logo", () => {
   assert.doesNotMatch(authAssets, /AUTH_LOGO_SRC/);
 });
 
-test("OAuth buttons are connected through click handlers", () => {
+test("Google OAuth remains connected while Facebook is hidden for the exhibition", () => {
   assert.match(oauthButtons, /onGoogleClick/);
-  assert.match(oauthButtons, /onFacebookClick/);
+  assert.doesNotMatch(oauthButtons, /onFacebookClick|siFacebook/);
   assert.match(
     loginForm,
     /redirectToOAuthProvider\("google", nextPath \?\? searchParams\.get\("next"\)\)/,
@@ -601,14 +601,14 @@ test("verified-email and role gates are opt-in frontend UX gates", () => {
   assert.match(routeGates, /!user\?\.emailVerified/);
   assert.match(routeGates, /function RequireRole/);
   assert.match(routeGates, /roles\.includes\(user\.role\)/);
-  assert.match(verifiedEmailBanner, /برای افزودن مطلب، نوشتن دیدگاه و فرستادن گزارش/);
+  assert.match(verifiedEmailBanner, /برای نوشتن دیدگاه، پسندیدن و فرستادن گزارش/);
 });
 
-test("create entry route is private, verified-email gated, and noindexed", () => {
+test("create entry route is private, exhibition-accessible, and noindexed", () => {
   assert.match(createEntryPage, /robots: \{/);
   assert.match(createEntryPage, /index: false/);
   assert.match(createEntryPage, /RequireAuth/);
-  assert.match(createEntryPage, /RequireVerifiedEmail/);
+  assert.doesNotMatch(createEntryPage, /RequireVerifiedEmail/);
   assert.match(createEntryPage, /getContributionTaxonomyData\(\)/);
   assert.match(createEntryPage, /<CreateEntryForm taxonomy=\{taxonomy\} \/>/);
   assert.match(createEntryLoading, /NewEntryLoading/);
