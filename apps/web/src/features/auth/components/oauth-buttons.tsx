@@ -15,7 +15,7 @@ function OAuthButtons({ googleLabel, onGoogleClick }: OAuthButtonsProps) {
         type="button"
         variant="outline"
         onClick={onGoogleClick}
-        className="h-11.5 justify-center gap-3 rounded-control border-line bg-surface text-ink hover:border-brand/30 hover:bg-paper"
+        className="h-11.5 w-full justify-center gap-3 rounded-control border-line bg-surface text-ink hover:border-brand/30 hover:bg-paper"
         aria-label={googleLabel}
       >
         <BrandIcon icon={siGoogle} />

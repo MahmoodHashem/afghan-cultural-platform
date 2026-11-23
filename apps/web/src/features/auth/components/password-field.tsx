@@ -51,20 +51,19 @@ function PasswordField({
           className={cn("pe-10 ps-12", error && "border-destructive")}
           {...registration}
         />
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          aria-label={toggleLabel}
-          onClick={() => setIsVisible((current) => !current)}
-          className="absolute top-1/2 inset-s-1.5 size-8 -translate-y-1/2 rounded-[9px] text-faint hover:bg-paper hover:text-ink"
-        >
-          {isVisible ? (
-            <EyeSlashIcon className="size-5" aria-hidden="true" />
-          ) : (
-            <EyeIcon className="size-5" aria-hidden="true" />
-          )}
-        </Button>
+        <div className="absolute inset-y-0 inset-s-1.5 flex items-center">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            aria-label={toggleLabel}
+            onClick={() => setIsVisible((current) => !current)}
+            className="size-8 rounded-[9px] text-faint transition-none hover:bg-paper hover:text-ink active:translate-y-0 [&_svg]:transition-none"
+          >
+            <EyeSlashIcon className={cn("size-5", !isVisible && "hidden")} aria-hidden="true" />
+            <EyeIcon className={cn("size-5", isVisible && "hidden")} aria-hidden="true" />
+          </Button>
+        </div>
       </div>
       <FieldError id={errorId} message={error} />
     </div>
