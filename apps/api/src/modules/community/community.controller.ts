@@ -26,7 +26,6 @@ import {
 
 import { CurrentUser } from "../auth/decorators/current-user.decorator";
 import { Public } from "../auth/decorators/public.decorator";
-import { RequireVerifiedEmail } from "../auth/decorators/require-verified-email.decorator";
 import type { AuthenticatedUser } from "../auth/types/authenticated-user.type";
 import { CommunityService } from "./community.service";
 import { CommentPaginationQueryDto, EntryCommentQueryDto } from "./dto/comment-query.dto";
@@ -78,13 +77,11 @@ class CommunityController {
 
   @Post("comments")
   @ApiBearerAuth()
-  @RequireVerifiedEmail()
   @ApiOperation({ summary: "Create a root comment or reply on a published entry" })
   @ApiBody({ type: CreateEntryCommentDto })
   @ApiOkResponse({ type: EntryCommentResponseDto })
   @ApiBadRequestResponse({ description: "COMMENT_BODY_INVALID or COMMENT_PARENT_INVALID" })
   @ApiUnauthorizedResponse({ description: "Missing or invalid bearer token" })
-  @ApiForbiddenResponse({ description: "AUTH_EMAIL_VERIFICATION_REQUIRED" })
   @ApiNotFoundResponse({ description: "COMMUNITY_ENTRY_NOT_FOUND or COMMENT_PARENT_UNAVAILABLE" })
   createComment(
     @CurrentUser() user: AuthenticatedUser,
@@ -96,11 +93,10 @@ class CommunityController {
 
   @Patch("comments/:commentId")
   @ApiBearerAuth()
-  @RequireVerifiedEmail()
   @ApiOperation({ summary: "Edit one of the current user's active comments" })
   @ApiBody({ type: UpdateEntryCommentDto })
   @ApiOkResponse({ type: EntryCommentResponseDto })
-  @ApiForbiddenResponse({ description: "COMMENT_NOT_OWNED or AUTH_EMAIL_VERIFICATION_REQUIRED" })
+  @ApiForbiddenResponse({ description: "COMMENT_NOT_OWNED" })
   @ApiNotFoundResponse({ description: "COMMUNITY_ENTRY_NOT_FOUND or COMMENT_NOT_FOUND" })
   updateComment(
     @CurrentUser() user: AuthenticatedUser,
@@ -113,10 +109,9 @@ class CommunityController {
 
   @Delete("comments/:commentId")
   @ApiBearerAuth()
-  @RequireVerifiedEmail()
   @ApiOperation({ summary: "Soft-delete one of the current user's active comments" })
   @ApiOkResponse({ type: CommunityMessageResponseDto })
-  @ApiForbiddenResponse({ description: "COMMENT_NOT_OWNED or AUTH_EMAIL_VERIFICATION_REQUIRED" })
+  @ApiForbiddenResponse({ description: "COMMENT_NOT_OWNED" })
   @ApiNotFoundResponse({ description: "COMMUNITY_ENTRY_NOT_FOUND or COMMENT_NOT_FOUND" })
   deleteComment(
     @CurrentUser() user: AuthenticatedUser,
@@ -128,7 +123,6 @@ class CommunityController {
 
   @Get("comment-interactions")
   @ApiBearerAuth()
-  @RequireVerifiedEmail()
   @ApiOperation({ summary: "Get comment IDs liked by the current user for an entry" })
   @ApiOkResponse({ type: CommentInteractionStateResponseDto })
   getCommentInteractions(
@@ -140,11 +134,10 @@ class CommunityController {
 
   @Put("comments/:commentId/like")
   @ApiBearerAuth()
-  @RequireVerifiedEmail()
   @ApiOperation({ summary: "Like an active comment", description: "Idempotent." })
   @ApiOkResponse({ type: CommentLikeStateResponseDto })
   @ApiForbiddenResponse({
-    description: "AUTH_EMAIL_VERIFICATION_REQUIRED or COMMENT_SELF_LIKE_FORBIDDEN",
+    description: "COMMENT_SELF_LIKE_FORBIDDEN",
   })
   likeComment(
     @CurrentUser() user: AuthenticatedUser,
@@ -156,7 +149,6 @@ class CommunityController {
 
   @Delete("comments/:commentId/like")
   @ApiBearerAuth()
-  @RequireVerifiedEmail()
   @ApiOperation({ summary: "Remove the current user's comment like", description: "Idempotent." })
   @ApiOkResponse({ type: CommentLikeStateResponseDto })
   unlikeComment(
@@ -180,7 +172,6 @@ class CommunityController {
 
   @Put("like")
   @ApiBearerAuth()
-  @RequireVerifiedEmail()
   @ApiOperation({ summary: "Like a published entry", description: "Idempotent." })
   @ApiOkResponse({ type: LikeStateResponseDto })
   likeEntry(
@@ -192,7 +183,6 @@ class CommunityController {
 
   @Delete("like")
   @ApiBearerAuth()
-  @RequireVerifiedEmail()
   @ApiOperation({ summary: "Unlike a published entry", description: "Idempotent." })
   @ApiOkResponse({ type: LikeStateResponseDto })
   unlikeEntry(

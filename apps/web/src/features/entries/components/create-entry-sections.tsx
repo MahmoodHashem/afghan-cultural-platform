@@ -49,6 +49,8 @@ import { formatPersianNumber } from "@/lib/utils/formatters";
 import { EmptyRow, FieldError } from "./create-entry-editor-layout";
 import { CreateEntrySelect, type SelectOption, TagMultiSelect } from "./create-entry-select";
 
+const ENTRY_TAGS_VISIBLE = false;
+
 type DetailsSectionProps = {
   categoryOptions: SelectOption[];
   contentTypeOptions: SelectOption[];
@@ -190,24 +192,26 @@ export function DetailsSection({
         />
         <FieldError message={errors.villageOrLocation?.message} />
       </div>
-      <div className="md:col-span-2">
-        <Controller
-          control={control}
-          name="tagIds"
-          render={({ field }) => (
-            <TagMultiSelect
-              label="برچسب‌ها"
-              selectedValues={field.value}
-              options={tagOptions}
-              onChange={(values) => {
-                field.onChange(values);
-                onDirty();
-              }}
-              error={errors.tagIds?.message}
-            />
-          )}
-        />
-      </div>
+      {ENTRY_TAGS_VISIBLE ? (
+        <div className="md:col-span-2">
+          <Controller
+            control={control}
+            name="tagIds"
+            render={({ field }) => (
+              <TagMultiSelect
+                label="برچسب‌ها"
+                selectedValues={field.value}
+                options={tagOptions}
+                onChange={(values) => {
+                  field.onChange(values);
+                  onDirty();
+                }}
+                error={errors.tagIds?.message}
+              />
+            )}
+          />
+        </div>
+      ) : null}
     </div>
   );
 }

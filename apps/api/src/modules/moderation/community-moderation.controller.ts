@@ -4,7 +4,6 @@ import {
   ApiConflictResponse,
   ApiCreatedResponse,
   ApiExtraModels,
-  ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiOperation,
   ApiTags,
@@ -12,7 +11,6 @@ import {
 } from "@nestjs/swagger";
 
 import { CurrentUser } from "../auth/decorators/current-user.decorator";
-import { RequireVerifiedEmail } from "../auth/decorators/require-verified-email.decorator";
 import type { AuthenticatedUser } from "../auth/types/authenticated-user.type";
 import { ContentModerationService } from "./content-moderation.service";
 import { SubmitCorrectionDto, SubmitReportDto } from "./dto/content-moderation.dto";
@@ -20,7 +18,6 @@ import { SubmitCorrectionDto, SubmitReportDto } from "./dto/content-moderation.d
 @ApiTags("Community moderation")
 @ApiExtraModels(SubmitCorrectionDto, SubmitReportDto)
 @ApiBearerAuth()
-@RequireVerifiedEmail()
 @Controller("entries/:entryId")
 class CommunityModerationController {
   constructor(
@@ -32,7 +29,6 @@ class CommunityModerationController {
   @ApiOperation({ summary: "Suggest a correction to a published Cultural Entry" })
   @ApiCreatedResponse({ description: "Correction suggestion created" })
   @ApiUnauthorizedResponse({ description: "Missing or invalid bearer token" })
-  @ApiForbiddenResponse({ description: "AUTH_EMAIL_VERIFICATION_REQUIRED" })
   @ApiNotFoundResponse({ description: "CORRECTION_ENTRY_NOT_FOUND" })
   @ApiConflictResponse({ description: "CORRECTION_ALREADY_PENDING" })
   submitCorrection(
@@ -47,7 +43,6 @@ class CommunityModerationController {
   @ApiOperation({ summary: "Report a published Cultural Entry" })
   @ApiCreatedResponse({ description: "Report created" })
   @ApiUnauthorizedResponse({ description: "Missing or invalid bearer token" })
-  @ApiForbiddenResponse({ description: "AUTH_EMAIL_VERIFICATION_REQUIRED" })
   @ApiNotFoundResponse({ description: "REPORT_TARGET_NOT_FOUND" })
   @ApiConflictResponse({ description: "REPORT_ALREADY_OPEN" })
   reportEntry(
@@ -62,7 +57,6 @@ class CommunityModerationController {
   @ApiOperation({ summary: "Report an active entry comment" })
   @ApiCreatedResponse({ description: "Comment report created" })
   @ApiUnauthorizedResponse({ description: "Missing or invalid bearer token" })
-  @ApiForbiddenResponse({ description: "AUTH_EMAIL_VERIFICATION_REQUIRED" })
   @ApiNotFoundResponse({ description: "REPORT_TARGET_NOT_FOUND" })
   @ApiConflictResponse({ description: "REPORT_ALREADY_OPEN" })
   reportComment(

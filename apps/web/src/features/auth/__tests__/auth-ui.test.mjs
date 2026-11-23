@@ -601,7 +601,7 @@ test("verified-email and role gates are opt-in frontend UX gates", () => {
   assert.match(routeGates, /!user\?\.emailVerified/);
   assert.match(routeGates, /function RequireRole/);
   assert.match(routeGates, /roles\.includes\(user\.role\)/);
-  assert.match(verifiedEmailBanner, /برای نوشتن دیدگاه، پسندیدن و فرستادن گزارش/);
+  assert.match(verifiedEmailBanner, /برای افزایش امنیت حساب و بازیابی آسان‌تر آن/);
 });
 
 test("create entry route is private, exhibition-accessible, and noindexed", () => {
@@ -688,7 +688,10 @@ test("create entry API integration uses existing backend draft contracts", () =>
   assert.match(youtubeMetadataHook, /signal/);
   assert.match(createEntrySections, /lastProcessedVideoIdRef/);
   assert.match(createEntrySections, /عنوان و توضیح ویدیو دریافت شد/);
-  assert.match(contributionTaxonomyApi, /\/taxonomy\/districts\?limit=500/);
+  assert.match(contributionTaxonomyApi, /fetchAllTaxonomy<ContributionDistrict>/);
+  assert.match(contributionTaxonomyApi, /page=1&limit=100/);
+  assert.match(contributionTaxonomyApi, /firstPage\.meta\.totalPages/);
+  assert.doesNotMatch(contributionTaxonomyApi, /limit=500/);
   assert.match(createEntryForm, /submitEntryForReview\(savedDraft\.id\)/);
   assert.match(
     createEntryForm,
@@ -1111,7 +1114,7 @@ test("animated icons use desktop hover and accessible reduced-motion behavior", 
   assert.match(entryActionRail, /playStateChange/);
 });
 
-test("entry detail supports threaded comments and verified-user feedback", () => {
+test("entry detail supports threaded comments and authenticated-user feedback", () => {
   assert.match(entryDetailContent, /EntryComments/);
   assert.doesNotMatch(entryDetailContent, /EntryFeedback|averageRating|ratingCount/);
   assert.doesNotMatch(engagementApi, /\/rating/);
@@ -1166,8 +1169,11 @@ test("engagement access uses one contextual dialog and safe temporary intents", 
   assert.match(engagementAccessProvider, /ensureVerifiedAccess/);
   assert.match(engagementAccessProvider, /readPendingEngagementIntent/);
   assert.match(engagementAccessProvider, /takePendingToggleIntent/);
-  assert.match(engagementAccessProvider, /getCurrentUser/);
-  assert.match(engagementAccessProvider, /subscribeToAuthEvents/);
+  assert.match(
+    engagementAccessProvider,
+    /status === "authenticated" && user\?\.status === "ACTIVE"/,
+  );
+  assert.doesNotMatch(engagementAccessProvider, /user\.emailVerified/);
   assert.match(engagementAccessDialog, /<Dialog/);
   assert.match(engagementAccessDialog, /<Drawer/);
   assert.match(engagementAccessDialog, /showSwipeHandle/);
@@ -1338,7 +1344,7 @@ test("reports share one queue and only expose supported resolution actions", () 
   assert.doesNotMatch(contentModerationDetails, /ESCALATE_TO_ADMIN|REMOVE_IMAGE|REMOVE_YOUTUBE/);
 });
 
-test("community moderation actions preserve failures and require verified access", () => {
+test("community moderation actions preserve failures and require authenticated access", () => {
   assert.match(
     communityModerationActions,
     /ensureVerifiedAccess\(action === "revision" \? "correction" : action\)/,

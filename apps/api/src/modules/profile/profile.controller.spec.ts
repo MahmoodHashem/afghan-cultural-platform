@@ -14,11 +14,11 @@ describe("ProfileController authorization metadata", () => {
   });
 
   it.each(["saveBookmark", "removeBookmark"] as const)(
-    "requires verified email for %s",
+    "allows authenticated exhibition users to use %s without email verification",
     (methodName) => {
       expect(
         Reflect.getMetadata(REQUIRE_VERIFIED_EMAIL_KEY, ProfileController.prototype[methodName]),
-      ).toBe(true);
+      ).toBeUndefined();
     },
   );
 });

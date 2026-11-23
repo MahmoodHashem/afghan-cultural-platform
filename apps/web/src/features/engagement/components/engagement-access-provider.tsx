@@ -1,11 +1,8 @@
 "use client";
 
-import { useQueryClient } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { getCurrentUser } from "@/features/auth/api/auth-api";
-import { subscribeToAuthEvents } from "@/features/auth/utils/auth-events";
 import { EngagementAccessDialog } from "@/features/engagement/components/engagement-access-dialog";
 import { EngagementAccessContext } from "@/features/engagement/contexts/engagement-access-context";
 import type {
@@ -21,10 +18,7 @@ import {
   readPendingEngagementIntent,
   writePendingEngagementIntent,
 } from "@/features/engagement/utils/pending-engagement-intent";
-import { setCurrentUserQuery } from "@/lib/auth/auth-query";
 import { useAuthStore } from "@/stores/auth-store";
-
-const USER_SYNC_THROTTLE_MS = 15_000;
 
 function EngagementAccessProvider({
   entryId,
@@ -35,19 +29,14 @@ function EngagementAccessProvider({
   entryPath?: string;
   children: ReactNode;
 }) {
-  const queryClient = useQueryClient();
   const status = useAuthStore((state) => state.status);
   const user = useAuthStore((state) => state.user);
-  const updateUser = useAuthStore((state) => state.updateUser);
   const [dialogAction, setDialogAction] = useState<EngagementAction | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [pendingIntent, setPendingIntent] = useState<PendingEngagementIntent | null>(null);
   const dialogFrameRef = useRef<number | null>(null);
   const dialogCloseTimerRef = useRef<number | null>(null);
-  const syncInFlightRef = useRef(false);
-  const lastSyncAtRef = useRef(0);
-  const canContribute =
-    status === "authenticated" && user?.status === "ACTIVE" && Boolean(user.emailVerified);
+  const canContribute = status === "authenticated" && user?.status === "ACTIVE";
 
   useEffect(() => {
     setPendingIntent(entryId ? readPendingEngagementIntent(entryId) : null);
@@ -102,62 +91,8 @@ function EngagementAccessProvider({
   );
 
   useEffect(() => {
-    if (status === "authenticated" && user && !user.emailVerified && pendingIntent) {
-      openAccessDialog(pendingIntent.kind === "comment" ? "comment" : pendingIntent.kind);
-    }
-  }, [openAccessDialog, pendingIntent, status, user]);
-
-  useEffect(() => {
     if (canContribute && dialogAction) closeAccessDialog();
   }, [canContribute, closeAccessDialog, dialogAction]);
-
-  const syncCurrentUser = useCallback(async () => {
-    if (
-      status !== "authenticated" ||
-      !user ||
-      user.emailVerified ||
-      !pendingIntent ||
-      syncInFlightRef.current ||
-      Date.now() - lastSyncAtRef.current < USER_SYNC_THROTTLE_MS
-    ) {
-      return;
-    }
-
-    syncInFlightRef.current = true;
-    lastSyncAtRef.current = Date.now();
-
-    try {
-      const currentUser = await getCurrentUser();
-      updateUser(currentUser);
-      setCurrentUserQuery(queryClient, currentUser);
-    } catch {
-      // Existing auth/error handling remains authoritative; retry on a later focus event.
-    } finally {
-      syncInFlightRef.current = false;
-    }
-  }, [pendingIntent, queryClient, status, updateUser, user]);
-
-  useEffect(() => {
-    const unsubscribe = subscribeToAuthEvents((event) => {
-      if (event.type === "email-verified" && event.userId === user?.id) {
-        lastSyncAtRef.current = 0;
-        void syncCurrentUser();
-      }
-    });
-
-    function syncWhenVisible() {
-      if (document.visibilityState === "visible") void syncCurrentUser();
-    }
-
-    document.addEventListener("visibilitychange", syncWhenVisible);
-    window.addEventListener("focus", syncWhenVisible);
-
-    return () => {
-      unsubscribe();
-      document.removeEventListener("visibilitychange", syncWhenVisible);
-      window.removeEventListener("focus", syncWhenVisible);
-    };
-  }, [syncCurrentUser, user?.id]);
 
   const saveIntent = useCallback(
     (intent: EngagementIntentInput, target?: EngagementAccessTarget) => {
@@ -186,7 +121,7 @@ function EngagementAccessProvider({
     (action: EngagementAction, intent?: EngagementIntentInput, target?: EngagementAccessTarget) => {
       if (status === "initializing") return false;
 
-      if (status === "authenticated" && user?.status === "ACTIVE" && user.emailVerified) {
+      if (status === "authenticated" && user?.status === "ACTIVE") {
         return true;
       }
 

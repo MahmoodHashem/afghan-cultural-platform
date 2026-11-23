@@ -1,6 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton";
 
-const profileEntryLoadingKeys = ["first", "second", "third", "fourth"] as const;
 const profileStatKeys = ["entries", "comments", "bookmarks"] as const;
 
 /** Mirrors the profile dashboard: navy header with avatar and stats, pill tabs, entry cards. */
@@ -35,24 +34,15 @@ function ProfilePageSkeleton() {
       <section className="content-container relative z-10 -mt-7 space-y-5 max-lg:px-4">
         <Skeleton className="mx-auto h-12 w-72 max-w-full rounded-full bg-surface shadow-lift lg:mx-0" />
         <Skeleton className="h-11 rounded-full" />
-        {profileEntryLoadingKeys.map((key) => (
-          <div
-            key={`profile-entry-loading-${key}`}
-            className="rounded-card border border-line-soft bg-surface p-4 shadow-card sm:p-5"
-          >
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-              <div className="min-w-0 flex-1 space-y-3">
-                <Skeleton className="h-6 w-2/3 rounded-full" />
-                <Skeleton className="h-4 w-full rounded-full" />
-                <div className="flex gap-2">
-                  <Skeleton className="h-6 w-20 rounded-full" />
-                  <Skeleton className="h-6 w-24 rounded-full" />
-                </div>
-              </div>
-              <Skeleton className="h-8 w-28 rounded-full" />
-            </div>
+        <div className="flex flex-col items-center gap-3 rounded-card border-[1.5px] border-line bg-surface px-6 py-12 text-center">
+          <Skeleton className="h-20 w-28 rounded-card" />
+          <Skeleton className="h-6 w-52 max-w-full rounded-full" />
+          <div className="flex w-full max-w-md flex-col items-center gap-2">
+            <Skeleton className="h-4 w-full rounded-full" />
+            <Skeleton className="h-4 w-4/5 rounded-full" />
           </div>
-        ))}
+          <Skeleton className="mt-2 h-10 w-32 rounded-full" />
+        </div>
       </section>
     </section>
   );

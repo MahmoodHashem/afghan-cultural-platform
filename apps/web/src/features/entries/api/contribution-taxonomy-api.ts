@@ -37,11 +37,11 @@ const EMPTY_TAXONOMY_RESPONSE = {
 
 async function getContributionTaxonomyData(): Promise<ContributionTaxonomyData> {
   const [provinces, districts, categories, contentTypes, tags] = await Promise.all([
-    fetchTaxonomy<TaxonomyItem>("/taxonomy/provinces?limit=100"),
-    fetchTaxonomy<ContributionDistrict>("/taxonomy/districts?limit=500"),
-    fetchTaxonomy<TaxonomyItem>("/taxonomy/categories?limit=100"),
-    fetchTaxonomy<TaxonomyItem>("/taxonomy/content-types?limit=100"),
-    fetchTaxonomy<TaxonomyItem>("/taxonomy/tags?limit=100"),
+    fetchAllTaxonomy<TaxonomyItem>("/taxonomy/provinces"),
+    fetchAllTaxonomy<ContributionDistrict>("/taxonomy/districts"),
+    fetchAllTaxonomy<TaxonomyItem>("/taxonomy/categories"),
+    fetchAllTaxonomy<TaxonomyItem>("/taxonomy/content-types"),
+    fetchAllTaxonomy<TaxonomyItem>("/taxonomy/tags"),
   ]);
 
   return {
@@ -53,6 +53,30 @@ async function getContributionTaxonomyData(): Promise<ContributionTaxonomyData> 
     isUnavailable: [provinces, districts, categories, contentTypes, tags].some(
       (result) => result.isUnavailable,
     ),
+  };
+}
+
+async function fetchAllTaxonomy<TItem>(path: string): Promise<TaxonomyResult<TItem>> {
+  const firstPage = await fetchTaxonomy<TItem>(`${path}?page=1&limit=100`);
+
+  if (firstPage.isUnavailable || firstPage.meta.totalPages <= 1) {
+    return firstPage;
+  }
+
+  const remainingPages = await Promise.all(
+    Array.from({ length: firstPage.meta.totalPages - 1 }, (_, index) =>
+      fetchTaxonomy<TItem>(`${path}?page=${index + 2}&limit=100`),
+    ),
+  );
+
+  return {
+    data: [firstPage, ...remainingPages].flatMap((page) => page.data),
+    meta: {
+      ...firstPage.meta,
+      limit: firstPage.meta.total,
+      totalPages: 1,
+    },
+    isUnavailable: remainingPages.some((page) => page.isUnavailable),
   };
 }
 

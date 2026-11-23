@@ -20,7 +20,6 @@ import {
   ApiBody,
   ApiConsumes,
   ApiExtraModels,
-  ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -30,7 +29,6 @@ import {
 import { memoryStorage } from "multer";
 
 import { CurrentUser } from "../auth/decorators/current-user.decorator";
-import { RequireVerifiedEmail } from "../auth/decorators/require-verified-email.decorator";
 import type { AuthenticatedUser } from "../auth/types/authenticated-user.type";
 import { ProfileBookmarksQueryDto, ProfileCommentsQueryDto } from "./dto/profile-query.dto";
 import {
@@ -164,14 +162,12 @@ class ProfileController {
   }
 
   @Put("bookmarks/:entryId")
-  @RequireVerifiedEmail()
   @ApiOperation({
     summary: "Save one published entry to the current user's bookmarks",
     description: "Idempotent. The raw published entry is not duplicated.",
   })
   @ApiOkResponse({ type: ProfileBookmarkStatusResponseDto })
   @ApiUnauthorizedResponse({ description: "Missing or invalid bearer token" })
-  @ApiForbiddenResponse({ description: "AUTH_EMAIL_VERIFICATION_REQUIRED" })
   @ApiNotFoundResponse({ description: "PROFILE_BOOKMARK_ENTRY_NOT_FOUND" })
   saveBookmark(
     @CurrentUser() user: AuthenticatedUser,
@@ -181,14 +177,12 @@ class ProfileController {
   }
 
   @Delete("bookmarks/:entryId")
-  @RequireVerifiedEmail()
   @ApiOperation({
     summary: "Remove one entry from the current user's bookmarks",
     description: "Idempotent. Removing a missing bookmark still returns bookmarked=false.",
   })
   @ApiOkResponse({ type: ProfileBookmarkStatusResponseDto })
   @ApiUnauthorizedResponse({ description: "Missing or invalid bearer token" })
-  @ApiForbiddenResponse({ description: "AUTH_EMAIL_VERIFICATION_REQUIRED" })
   @ApiNotFoundResponse({ description: "PROFILE_BOOKMARK_ENTRY_NOT_FOUND" })
   removeBookmark(
     @CurrentUser() user: AuthenticatedUser,

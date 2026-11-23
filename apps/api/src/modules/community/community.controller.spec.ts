@@ -28,11 +28,11 @@ describe("CommunityController like authorization metadata", () => {
     "likeComment",
     "unlikeComment",
     "getCommentInteractions",
-  ] as const)("requires authentication and verified email for %s", (methodName) => {
+  ] as const)("requires authentication without email verification for %s", (methodName) => {
     const handler = CommunityController.prototype[methodName];
 
     expect(Reflect.getMetadata(IS_PUBLIC_ROUTE_KEY, handler)).toBeUndefined();
-    expect(Reflect.getMetadata(REQUIRE_VERIFIED_EMAIL_KEY, handler)).toBe(true);
+    expect(Reflect.getMetadata(REQUIRE_VERIFIED_EMAIL_KEY, handler)).toBeUndefined();
   });
 });
 

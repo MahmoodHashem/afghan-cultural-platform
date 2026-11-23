@@ -36,7 +36,7 @@ function OAuthCallbackCompletion() {
       onSuccess: (session) => {
         if (!session.user.emailVerified) {
           toast.message("ایمیل شما هنوز تأیید نشده است.", {
-            description: "برای برخی مشارکت‌ها بعداً به تأیید ایمیل نیاز دارید.",
+            description: "می‌توانید بعداً آن را از صفحهٔ حساب کاربری تأیید کنید.",
           });
         }
 

@@ -87,9 +87,6 @@ const profileTabs: Array<{
   { value: "bookmarks", label: "ذخیره‌ها", icon: BookmarkIcon },
 ];
 
-const ownerEntrySkeletonKeys = ["first", "second", "third", "fourth"] as const;
-const ownerFeedbackSkeletonKeys = ["first", "second", "third"] as const;
-
 const ENTRY_COMMENT_STATUS_META = {
   ACTIVE: {
     label: "منتشرشده",
@@ -926,52 +923,33 @@ function ProfilePagination({
 
 function OwnerEntryListSkeleton() {
   return (
-    <div className="space-y-3">
-      {ownerEntrySkeletonKeys.map((key) => (
-        <div
-          key={`profile-entry-skeleton-${key}`}
-          className="rounded-card border border-line-soft bg-surface p-4 shadow-card"
-        >
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-            <div className="flex-1 space-y-3">
-              <div className="flex gap-2">
-                <Skeleton className="h-6 w-20 rounded-full" />
-                <Skeleton className="h-6 w-24 rounded-full" />
-              </div>
-              <Skeleton className="h-7 w-2/3" />
-              <Skeleton className="h-5 w-full" />
-              <Skeleton className="h-5 w-1/2" />
-            </div>
-            <Skeleton className="h-8 w-28 rounded-full" />
-          </div>
-        </div>
-      ))}
+    <div
+      className="flex flex-col items-center gap-3 rounded-card border-[1.5px] border-line bg-surface px-6 py-12 text-center"
+      aria-hidden="true"
+    >
+      <Skeleton className="h-20 w-28 rounded-card" />
+      <Skeleton className="h-6 w-52 max-w-full rounded-full" />
+      <div className="flex w-full max-w-md flex-col items-center gap-2">
+        <Skeleton className="h-4 w-full rounded-full" />
+        <Skeleton className="h-4 w-4/5 rounded-full" />
+      </div>
+      <Skeleton className="mt-2 h-10 w-32 rounded-full" />
     </div>
   );
 }
 
 function OwnerFeedbackListSkeleton() {
   return (
-    <div className="space-y-3">
-      {ownerFeedbackSkeletonKeys.map((key) => (
-        <div
-          key={`profile-feedback-skeleton-${key}`}
-          className="rounded-card border border-line-soft bg-surface p-4 shadow-card"
-        >
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-            <div className="flex-1 space-y-3">
-              <div className="flex gap-2">
-                <Skeleton className="h-6 w-20 rounded-full" />
-                <Skeleton className="h-6 w-24 rounded-full" />
-              </div>
-              <Skeleton className="h-7 w-2/3" />
-              <Skeleton className="h-5 w-full" />
-              <Skeleton className="h-5 w-1/2" />
-            </div>
-            <Skeleton className="h-8 w-28 rounded-full" />
-          </div>
-        </div>
-      ))}
+    <div
+      className="flex flex-col items-center gap-3 rounded-card border-[1.5px] border-line bg-surface px-6 py-12 text-center"
+      aria-hidden="true"
+    >
+      <Skeleton className="size-12 rounded-[16px_16px_16px_5px]" />
+      <Skeleton className="h-6 w-48 max-w-full rounded-full" />
+      <div className="flex w-full max-w-md flex-col items-center gap-2">
+        <Skeleton className="h-4 w-full rounded-full" />
+        <Skeleton className="h-4 w-3/4 rounded-full" />
+      </div>
     </div>
   );
 }

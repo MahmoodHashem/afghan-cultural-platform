@@ -22,7 +22,7 @@ function VerifiedEmailBanner({ email }: VerifiedEmailBannerProps) {
         <div>
           <p className="font-bold text-ink">ایمیل شما هنوز تأیید نشده است.</p>
           <p className="mt-0.5 text-copy">
-            برای نوشتن دیدگاه، پسندیدن و فرستادن گزارش، ایمیل خود را تأیید کنید.
+            برای افزایش امنیت حساب و بازیابی آسان‌تر آن، ایمیل خود را تأیید کنید.
           </p>
           {emailAddress ? (
             <p className="mt-1 text-[12px] text-faint" dir="ltr">
